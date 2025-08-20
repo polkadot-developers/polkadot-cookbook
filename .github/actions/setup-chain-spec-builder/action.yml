@@ -1,0 +1,91 @@
+name: "Setup Polkadot chain-spec-builder"
+description: "Installs and configures Polkadot chain-spec-builder with caching and verification"
+
+inputs:
+  chain-spec-builder-version:
+    description: "Polkadot chain-spec-builder version"
+    required: false
+    default: "10.0.0"
+  rust-version:
+    description: "Rust version for installation"
+    required: false
+    default: "1.86"
+
+outputs:
+  version:
+    description: "Installed chain-spec-builder version"
+    value: ${{ steps.verify.outputs.version }}
+  binary-path:
+    description: "Path to chain-spec-builder binary"
+    value: ${{ steps.verify.outputs.path }}
+  cache-hit:
+    description: "Whether binary cache was hit"
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ ! "${{ inputs.chain-spec-builder-version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "❌ Invalid version format: ${{ inputs.chain-spec-builder-version }}"
+          echo "Expected format: X.Y.Z (e.g., 10.0.0)"
+          exit 1
+        fi
+
+    - name: Setup Rust
+      uses: ./.github/actions/setup-rust
+      with:
+        rust-version: ${{ inputs.rust-version }}
+
+    - name: Cache chain-spec-builder binary
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin/chain-spec-builder
+        key: ${{ runner.os }}-${{ runner.arch }}-chain-spec-builder-${{ inputs.chain-spec-builder-version }}
+
+    - name: Install chain-spec-builder
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "🔧 Installing staging-chain-spec-builder@${{ inputs.chain-spec-builder-version }}..."
+        cargo install --locked staging-chain-spec-builder@${{ inputs.chain-spec-builder-version }}
+        echo "✅ Installation completed"
+
+    - name: Add Cargo bin to PATH
+      shell: bash
+      run: echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Verify installation
+      id: verify
+      shell: bash
+      run: |
+        echo "🔍 Verifying chain-spec-builder installation..."
+        
+        # Check if binary exists and is executable
+        if ! command -v chain-spec-builder &> /dev/null; then
+          echo "❌ chain-spec-builder not found in PATH"
+          exit 1
+        fi
+        
+        # Get version and path
+        VERSION_OUTPUT=$(chain-spec-builder --version 2>&1)
+        BINARY_PATH=$(which chain-spec-builder)
+        
+        echo "✅ chain-spec-builder found at: $BINARY_PATH"
+        echo "✅ Version: $VERSION_OUTPUT"
+        
+        # Set outputs
+        echo "version=$VERSION_OUTPUT" >> $GITHUB_OUTPUT
+        echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
+        
+        # Test basic functionality
+        echo "🧪 Testing basic functionality..."
+        if chain-spec-builder --help > /dev/null 2>&1; then
+          echo "✅ chain-spec-builder is working correctly"
+        else
+          echo "❌ chain-spec-builder failed basic functionality test"
+          exit 1
+        fi

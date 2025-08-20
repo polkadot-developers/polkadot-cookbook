@@ -1,0 +1,150 @@
+name: "Setup Zero-to-Hero Tutorial Parachain"
+description: "Clones, builds, and caches the Zero-to-Hero tutorial parachain from polkadot-sdk-docs-tests repository"
+
+inputs:
+  template-repo:
+    description: "Repository URL for the parachain template"
+    required: false
+    default: "https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
+  rust-version:
+    description: "Rust version to use for building"
+    required: false
+    default: "1.86"
+  template-branch:
+    description: "Branch to clone"
+    required: false
+    default: "main"
+  cache-key-suffix:
+    description: "Suffix for build cache key"
+    required: false
+    default: ""
+  para-id:
+    description: "Parachain ID for configuration"
+    required: false
+    default: "1000"
+
+outputs:
+  template-path:
+    description: "Path to cloned parachain"
+    value: ${{ steps.setup.outputs.template-path }}
+  runtime-path:
+    description: "Path to WASM runtime file"
+    value: ${{ steps.setup.outputs.runtime-path }}
+  cache-hit:
+    description: "Whether build cache was hit"
+    value: ${{ steps.build-cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ ! "${{ inputs.para-id }}" =~ ^[0-9]+$ ]]; then
+          echo "❌ Invalid para-id: ${{ inputs.para-id }}"
+          echo "Expected: positive integer"
+          exit 1
+        fi
+        
+        # Validate repository URL format
+        if [[ ! "${{ inputs.template-repo }}" =~ ^https://github\.com/.+/.+$ ]]; then
+          echo "⚠️ Warning: template-repo '${{ inputs.template-repo }}' doesn't follow expected GitHub format"
+        fi
+
+    - name: Setup Rust
+      uses: ./.github/actions/setup-rust
+      with:
+        rust-version: ${{ inputs.rust-version }}
+
+    - name: Setup template and paths
+      id: setup
+      shell: bash
+      run: |
+        TEMPLATE_PATH="${GITHUB_WORKSPACE}/zero-to-hero-tutorial"
+        RUNTIME_PATH="${TEMPLATE_PATH}/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
+        
+        echo "template-path=$TEMPLATE_PATH" >> $GITHUB_OUTPUT
+        echo "runtime-path=$RUNTIME_PATH" >> $GITHUB_OUTPUT
+
+    - name: Clone zero-to-hero-tutorial parachain
+      shell: bash
+      run: |
+        echo "📥 Cloning zero-to-hero-tutorial from ${{ inputs.template-repo }} (branch: ${{ inputs.template-branch }})..."
+        
+        if [ -d "zero-to-hero-tutorial" ]; then
+          echo "🧹 Cleaning existing template directory..."
+          rm -rf zero-to-hero-tutorial
+        fi
+        
+        # Clone with sparse checkout to get only the zero-to-hero-tutorial directory
+        git clone --no-checkout --branch ${{ inputs.template-branch }} ${{ inputs.template-repo }} temp-repo
+        cd temp-repo
+        git sparse-checkout init --cone
+        git sparse-checkout set zero-to-hero-tutorial
+        git checkout
+        
+        # Move the zero-to-hero-tutorial to the workspace root
+        mv zero-to-hero-tutorial ../zero-to-hero-tutorial
+        cd ..
+        rm -rf temp-repo
+        
+        echo "✅ Template cloned successfully"
+        
+        # Verify critical files exist
+        if [ ! -f "zero-to-hero-tutorial/Cargo.toml" ]; then
+          echo "❌ Cargo.toml not found in template"
+          exit 1
+        fi
+
+    - name: Cache build artifacts
+      id: build-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          zero-to-hero-tutorial/target/release
+          zero-to-hero-tutorial/target/wbuild
+        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.template-repo) }}-${{ inputs.template-branch }}-${{ inputs.rust-version }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
+        restore-keys: |
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.template-repo) }}-${{ inputs.template-branch }}-${{ inputs.rust-version }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.template-repo) }}-${{ inputs.template-branch }}-
+
+    - name: Build parachain
+      if: steps.build-cache.outputs.cache-hit != 'true'
+      working-directory: zero-to-hero-tutorial
+      shell: bash
+      run: |
+        echo "🔨 Building zero-to-hero-tutorial parachain..."
+        echo "📊 Available disk space:"
+        df -h
+        
+        # Set build optimizations
+        export CARGO_PROFILE_RELEASE_LTO=thin
+        export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
+        
+        # Build with progress and error handling
+        cargo build --release --locked --verbose
+        
+        echo "✅ Build completed successfully"
+        
+        echo "📊 Final disk space:"
+        df -h
+
+    - name: Verify build artifacts
+      shell: bash
+      run: |
+        echo "🔍 Verifying build artifacts..."
+        
+        RUNTIME_PATH="${{ steps.setup.outputs.runtime-path }}"
+        
+        # Check runtime
+        if [ ! -f "$RUNTIME_PATH" ]; then
+          echo "❌ Runtime WASM not found at: $RUNTIME_PATH"
+          echo "🔍 Available runtime files:"
+          find zero-to-hero-tutorial/target -name "*.wasm" -type f || echo "No WASM files found"
+          exit 1
+        fi
+        
+        # Check file sizes
+        RUNTIME_SIZE=$(du -h "$RUNTIME_PATH" | cut -f1)
+        
+        echo "✅ Runtime verified: $RUNTIME_SIZE"

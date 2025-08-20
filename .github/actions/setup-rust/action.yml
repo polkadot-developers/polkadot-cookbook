@@ -1,0 +1,94 @@
+name: Setup Rust Toolchain
+description: Installs Rust and system dependencies for Polkadot builds
+
+inputs:
+  rust-version:
+    description: 'Rust version to install'
+    default: '1.86'
+    required: false
+
+outputs:
+  rust-version:
+    description: 'Installed Rust version'
+    value: ${{ steps.verify.outputs.version }}
+  cache-hit:
+    description: 'Whether cargo cache was hit'
+    value: ${{ steps.cargo-cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ ! "${{ inputs.rust-version }}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+          echo "❌ Invalid Rust version format: ${{ inputs.rust-version }}"
+          echo "Expected format: X.Y or X.Y.Z (e.g., 1.86 or 1.86.0)"
+          exit 1
+        fi
+
+    - name: Cache system dependencies
+      id: system-cache
+      uses: actions/cache@v4
+      with:
+        path: /var/cache/apt
+        key: ${{ runner.os }}-system-deps-${{ hashFiles('.github/actions/setup-rust/action.yml') }}
+
+    - name: Install system dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          curl \
+          git \
+          clang \
+          libssl-dev \
+          llvm \
+          libudev-dev \
+          protobuf-compiler
+
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ inputs.rust-version }}
+        targets: wasm32-unknown-unknown
+        components: rust-src
+
+    - name: Cache cargo registry and git
+      id: cargo-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/git/db
+        key: ${{ runner.os }}-cargo-${{ inputs.rust-version }}-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-${{ inputs.rust-version }}-
+          ${{ runner.os }}-cargo-
+
+    - name: Verify Rust installation
+      id: verify
+      shell: bash
+      run: |
+        echo "🔍 Verifying Rust installation..."
+        RUST_VERSION=$(rustc --version)
+        echo "✅ $RUST_VERSION"
+        echo "version=$RUST_VERSION" >> $GITHUB_OUTPUT
+        
+        echo ""
+        echo "🎯 Installed targets:"
+        rustup target list --installed
+        
+        echo ""
+        echo "🔧 Installed components:"
+        rustup component list --installed
+        
+        # Verify WASM target is available
+        if ! rustup target list --installed | grep -q "wasm32-unknown-unknown"; then
+          echo "❌ WASM target not installed"
+          exit 1
+        fi
+        
+        echo "✅ All required components verified"

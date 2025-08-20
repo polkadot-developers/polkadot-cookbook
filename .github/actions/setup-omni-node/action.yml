@@ -1,0 +1,91 @@
+name: "Setup Polkadot omni-node"
+description: "Installs and configures Polkadot omni-node with caching and verification"
+
+inputs:
+  omni-node-version:
+    description: "Polkadot omni-node version"
+    required: false
+    default: "0.5.0"
+  rust-version:
+    description: "Rust version for installation"
+    required: false
+    default: "1.86"
+
+outputs:
+  version:
+    description: "Installed omni-node version"
+    value: ${{ steps.verify.outputs.version }}
+  binary-path:
+    description: "Path to polkadot-omni-node binary"
+    value: ${{ steps.verify.outputs.path }}
+  cache-hit:
+    description: "Whether binary cache was hit"
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ ! "${{ inputs.omni-node-version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "❌ Invalid version format: ${{ inputs.omni-node-version }}"
+          echo "Expected format: X.Y.Z (e.g., 0.5.0)"
+          exit 1
+        fi
+
+    - name: Setup Rust
+      uses: ./.github/actions/setup-rust
+      with:
+        rust-version: ${{ inputs.rust-version }}
+
+    - name: Cache omni-node binary
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin/polkadot-omni-node
+        key: ${{ runner.os }}-${{ runner.arch }}-omni-node-${{ inputs.omni-node-version }}
+
+    - name: Install Polkadot omni-node
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "🔧 Installing polkadot-omni-node@${{ inputs.omni-node-version }}..."
+        cargo install --locked polkadot-omni-node@${{ inputs.omni-node-version }}
+        echo "✅ Installation completed"
+
+    - name: Add Cargo bin to PATH
+      shell: bash
+      run: echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Verify installation
+      id: verify
+      shell: bash
+      run: |
+        echo "🔍 Verifying polkadot-omni-node installation..."
+        
+        # Check if binary exists and is executable
+        if ! command -v polkadot-omni-node &> /dev/null; then
+          echo "❌ polkadot-omni-node not found in PATH"
+          exit 1
+        fi
+        
+        # Get version and path
+        VERSION_OUTPUT=$(polkadot-omni-node --version 2>&1)
+        BINARY_PATH=$(which polkadot-omni-node)
+        
+        echo "✅ polkadot-omni-node found at: $BINARY_PATH"
+        echo "✅ Version: $VERSION_OUTPUT"
+        
+        # Set outputs
+        echo "version=$VERSION_OUTPUT" >> $GITHUB_OUTPUT
+        echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
+        
+        # Test basic functionality
+        echo "🧪 Testing basic functionality..."
+        if polkadot-omni-node --help > /dev/null 2>&1; then
+          echo "✅ polkadot-omni-node is working correctly"
+        else
+          echo "❌ polkadot-omni-node failed basic functionality test"
+          exit 1
+        fi
