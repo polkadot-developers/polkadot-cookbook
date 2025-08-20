@@ -4,8 +4,7 @@ description: Installs Rust and system dependencies for Polkadot builds
 inputs:
   rust-version:
     description: 'Rust version to install'
-    default: '1.86'
-    required: false
+    required: true
 
 outputs:
   rust-version:

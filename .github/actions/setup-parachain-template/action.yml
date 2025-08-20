@@ -8,12 +8,11 @@ inputs:
     default: "https://github.com/paritytech/polkadot-sdk-parachain-template.git"
   rust-version:
     description: "Rust version to use for building"
-    required: false
-    default: "1.86"
+    required: true
   template-branch:
     description: "Branch of the parachain template to clone"
     required: false
-    default: "v0.0.4"
+    default: "main"
   cache-key-suffix:
     description: "Suffix for build cache key"
     required: false

@@ -1,16 +1,11 @@
-name: "Setup Zero-to-Hero Tutorial Parachain"
-description: "Clones, builds, and caches the Zero-to-Hero tutorial parachain from polkadot-sdk-docs-tests repository"
+name: "Setup Zero-to-Hero Parachain"
+description: "Clones, builds, and caches the Zero-to-Hero parachain from polkadot-sdk-docs-tests repository"
 
 inputs:
-  template-repo:
-    description: "Repository URL for the parachain template"
-    required: false
-    default: "https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
   rust-version:
     description: "Rust version to use for building"
-    required: false
-    default: "1.86"
-  template-branch:
+    required: true
+  branch:
     description: "Branch to clone"
     required: false
     default: "main"
@@ -18,13 +13,9 @@ inputs:
     description: "Suffix for build cache key"
     required: false
     default: ""
-  para-id:
-    description: "Parachain ID for configuration"
-    required: false
-    default: "1000"
 
 outputs:
-  template-path:
+  parachain-path:
     description: "Path to cloned parachain"
     value: ${{ steps.setup.outputs.template-path }}
   runtime-path:
@@ -37,20 +28,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Validate inputs
-      shell: bash
-      run: |
-        if [[ ! "${{ inputs.para-id }}" =~ ^[0-9]+$ ]]; then
-          echo "❌ Invalid para-id: ${{ inputs.para-id }}"
-          echo "Expected: positive integer"
-          exit 1
-        fi
-        
-        # Validate repository URL format
-        if [[ ! "${{ inputs.template-repo }}" =~ ^https://github\.com/.+/.+$ ]]; then
-          echo "⚠️ Warning: template-repo '${{ inputs.template-repo }}' doesn't follow expected GitHub format"
-        fi
-
     - name: Setup Rust
       uses: ./.github/actions/setup-rust
       with:
@@ -60,16 +37,16 @@ runs:
       id: setup
       shell: bash
       run: |
-        TEMPLATE_PATH="${GITHUB_WORKSPACE}/zero-to-hero-tutorial"
-        RUNTIME_PATH="${TEMPLATE_PATH}/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
+        PARACHAIN_PATH="${GITHUB_WORKSPACE}/zero-to-hero-tutorial"
+        RUNTIME_PATH="${PARACHAIN_PATH}/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
         
-        echo "template-path=$TEMPLATE_PATH" >> $GITHUB_OUTPUT
+        echo "parachain-path=$PARACHAIN_PATH" >> $GITHUB_OUTPUT
         echo "runtime-path=$RUNTIME_PATH" >> $GITHUB_OUTPUT
 
     - name: Clone zero-to-hero-tutorial parachain
       shell: bash
       run: |
-        echo "📥 Cloning zero-to-hero-tutorial from ${{ inputs.template-repo }} (branch: ${{ inputs.template-branch }})..."
+        echo "📥 Cloning zero-to-hero-tutorial from https://github.com/brunopgalvao/polkadot-sdk-docs-tests (branch: ${{ inputs.branch }})..."
         
         if [ -d "zero-to-hero-tutorial" ]; then
           echo "🧹 Cleaning existing template directory..."
@@ -77,7 +54,7 @@ runs:
         fi
         
         # Clone with sparse checkout to get only the zero-to-hero-tutorial directory
-        git clone --no-checkout --branch ${{ inputs.template-branch }} ${{ inputs.template-repo }} temp-repo
+        git clone --no-checkout --branch ${{ inputs.branch }} https://github.com/brunopgalvao/polkadot-sdk-docs-tests temp-repo
         cd temp-repo
         git sparse-checkout init --cone
         git sparse-checkout set zero-to-hero-tutorial
@@ -103,10 +80,10 @@ runs:
         path: |
           zero-to-hero-tutorial/target/release
           zero-to-hero-tutorial/target/wbuild
-        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.template-repo) }}-${{ inputs.template-branch }}-${{ inputs.rust-version }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
+        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/brunopgalvao/polkadot-sdk-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
         restore-keys: |
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.template-repo) }}-${{ inputs.template-branch }}-${{ inputs.rust-version }}-
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(inputs.template-repo) }}-${{ inputs.template-branch }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/brunopgalvao/polkadot-sdk-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/brunopgalvao/polkadot-sdk-docs-tests') }}-${{ inputs.branch }}-
 
     - name: Build parachain
       if: steps.build-cache.outputs.cache-hit != 'true'

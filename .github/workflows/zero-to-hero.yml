@@ -3,54 +3,63 @@ description: "Zero to Hero"
 
 on:
   workflow_dispatch:
-    inputs:
-      template-repo:
-        description: "Repository URL for the parachain template"
-        required: false
-        default: "https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
-        type: string
-      template-branch:
-        description: "Branch to clone"
-        required: false
-        default: "main"
-        type: string
-      chain-spec-builder-version:
-        description: 'Polkadot chain-spec-builder version'
-        default: '10.0.0'
-        required: false
-        type: string
-      omni-node-version:
-        description: 'Polkadot omni-node version'
-        default: '0.5.0'
-        required: false
-        type: string
-      para-id:
-        description: 'Parachain ID'
-        default: '1000'
-        required: false
-        type: string
-      relay-chain:
-        description: 'Relay chain to use'
-        default: 'paseo'
-        required: false
-        type: choice
-        options:
-          - "paseo"
-          - "westend"
-      run-duration:
-        description: 'How long to run the node (in seconds, 0 for indefinite)'
-        default: '120'
-        required: false
-        type: string
-
-env:
-  RUST_VERSION: "1.86"
 
 jobs:
-  # Parallel setup jobs for better performance
+  setup-dependencies:
+    name: Setup Dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      chain-spec-builder-version: ${{ steps.resolve.outputs.chain-spec-builder-version }}
+      omni-node-version: ${{ steps.resolve.outputs.omni-node-version }}
+      rust-version: ${{ steps.resolve.outputs.rust-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve dependency versions
+        id: resolve
+        run: |
+          # Install yq for YAML parsing
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          
+          DEPS_FILE=".github/versions.yml"
+          TUTORIAL="zero_to_hero"
+          
+          # Function to get version (tutorial-specific first, then global)
+          get_version() {
+            local dep="$1"
+            local version
+            
+            # Try tutorial-specific version first
+            version=$(yq eval ".${TUTORIAL}.${dep}" "$DEPS_FILE" 2>/dev/null)
+            if [ "$version" = "null" ] || [ -z "$version" ]; then
+              # Fallback to global version
+              version=$(yq eval ".versions.${dep}" "$DEPS_FILE" 2>/dev/null)
+            fi
+            
+            echo "$version"
+          }
+          
+          # Get versions from config file
+          CHAIN_SPEC_VERSION=$(get_version "chain_spec_builder")
+          OMNI_NODE_VERSION=$(get_version "polkadot_omni_node")
+          
+          RUST_VERSION=$(get_version "rust")
+          
+          echo "chain-spec-builder-version=$CHAIN_SPEC_VERSION" >> $GITHUB_OUTPUT
+          echo "omni-node-version=$OMNI_NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "rust-version=$RUST_VERSION" >> $GITHUB_OUTPUT
+          
+          echo "📋 Resolved versions:"
+          echo "  - chain-spec-builder: $CHAIN_SPEC_VERSION"
+          echo "  - omni-node: $OMNI_NODE_VERSION" 
+          echo "  - rust: $RUST_VERSION"
+  
   setup-tools:
     name: Setup Tools
     runs-on: ubuntu-latest
+    needs: setup-dependencies
     outputs:
       chain-spec-builder-version: ${{ steps.chain-spec.outputs.version }}
       omni-node-version: ${{ steps.omni-node.outputs.version }}
@@ -62,83 +71,61 @@ jobs:
         id: chain-spec
         uses: ./.github/actions/setup-chain-spec-builder
         with:
-          chain-spec-builder-version: ${{ inputs.chain-spec-builder-version }}
-          rust-version: ${{ env.RUST_VERSION }}
+          chain-spec-builder-version: ${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}
+          rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
       - name: Setup omni-node
         id: omni-node
         uses: ./.github/actions/setup-omni-node
         with:
-          omni-node-version: ${{ inputs.omni-node-version }}
-          rust-version: ${{ env.RUST_VERSION }}
+          omni-node-version: ${{ needs.setup-dependencies.outputs.omni-node-version }}
+          rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
       - name: Cache tools for main job
         uses: actions/cache/save@v4
         with:
           path: ~/.cargo/bin
-          key: tools-${{ runner.os }}-${{ runner.arch }}-${{ inputs.chain-spec-builder-version }}-${{ inputs.omni-node-version }}
+          key: tools-${{ runner.os }}-${{ runner.arch }}-${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}-${{ needs.setup-dependencies.outputs.omni-node-version }}
 
   build-parachain:
     name: Build Parachain
     runs-on: ubuntu-latest
+    needs: setup-dependencies
     outputs:
-      template-path: ${{ steps.setup-template.outputs.template-path }}
+      parachain-path: ${{ steps.setup-template.outputs.parachain-path }}
       runtime-path: ${{ steps.setup-template.outputs.runtime-path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Zero to Hero parachain
-        id: setup-template
+        id: setup-parachain
         uses: ./.github/actions/setup-zero-to-hero-parachain
         with:
-          template-repo: ${{ inputs.template-repo }}
-          template-branch: ${{ inputs.template-branch }}
-          rust-version: ${{ env.RUST_VERSION }}
-          para-id: ${{ inputs.para-id }}
+          branch: main
+          rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
       - name: Upload parachain artifacts
         uses: actions/upload-artifact@v4
         with:
           name: parachain-artifacts-${{ github.run_id }}
           path: |
-            ${{ steps.setup-template.outputs.binary-path }}
-            ${{ steps.setup-template.outputs.runtime-path }}
+            ${{ steps.setup-parachain.outputs.runtime-path }}
           retention-days: 1
 
   run-parachain:
     name: Run Parachain Node
     runs-on: ubuntu-latest
-    needs: [setup-tools, build-parachain]
+    needs: [setup-dependencies, setup-tools, build-parachain]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Validate inputs
-        run: |
-          if [[ ! "${{ inputs.para-id }}" =~ ^[0-9]+$ ]]; then
-            echo "❌ Invalid para-id: ${{ inputs.para-id }}"
-            exit 1
-          fi
-          
-          if [[ ! "${{ inputs.run-duration }}" =~ ^[0-9]+$ ]]; then
-            echo "❌ Invalid run-duration: ${{ inputs.run-duration }}"
-            exit 1
-          fi
-          
-          # Validate repository URL format
-          if [[ ! "${{ inputs.template-repo }}" =~ ^https://github\.com/.+/.+\.git$ ]]; then
-            echo "⚠️ Warning: template-repo '${{ inputs.template-repo }}' doesn't follow expected GitHub format"
-          fi
-          
-          echo "✅ Using template repository: ${{ inputs.template-repo }}"
-          echo "✅ Using template branch: ${{ inputs.template-branch }}"
 
       - name: Restore tools cache
         uses: actions/cache/restore@v4
         with:
           path: ~/.cargo/bin
-          key: tools-${{ runner.os }}-${{ runner.arch }}-${{ inputs.chain-spec-builder-version }}-${{ inputs.omni-node-version }}
+          key: tools-${{ runner.os }}-${{ runner.arch }}-${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}-${{ needs.setup-dependencies.outputs.omni-node-version }}
           fail-on-cache-miss: true
 
       - name: Download parachain artifacts
@@ -159,12 +146,6 @@ jobs:
           chain-spec-builder --version
           polkadot-omni-node --version
 
-      - name: Generate chain specification
-        run: |
-          echo "🔧 Generating chain specification..."
-          echo "📋 Using repository: ${{ inputs.template-repo }}"
-          echo "📋 Using branch: ${{ inputs.template-branch }}"
-          
           # Find the runtime WASM file
           RUNTIME_WASM=$(find ./artifacts -name "*.compressed.wasm" -type f | head -1)
           if [ -z "$RUNTIME_WASM" ]; then
@@ -174,14 +155,21 @@ jobs:
             exit 1
           fi
           
-          echo "✅ Using runtime: $RUNTIME_WASM"
+          mkdir -p ./target/release/wbuild/parachain-template-runtime/
+          cp $RUNTIME_WASM ./target/release/wbuild/parachain-template-runtime/
+
+      - name: Generate chain specification
+        run: |
+          echo "🔧 Generating chain specification..."
+          echo "📋 Using repository: https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
+          echo "📋 Using branch: main"
           
           # Generate chain spec
           chain-spec-builder create \
             -t development \
-            --relay-chain ${{ inputs.relay-chain }} \
-            --para-id ${{ inputs.para-id }} \
-            --runtime "$RUNTIME_WASM" \
+            --relay-chain paseo \
+            --para-id 1000 \
+            --runtime ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm \
             named-preset development
           
           # Verify chain spec was created
@@ -212,33 +200,23 @@ jobs:
           echo "📋 Chain Name: $CHAIN_NAME"
           echo "🆔 Para ID: $PARA_ID"
           echo "🔗 Relay Chain: $RELAY_CHAIN"
-          echo "📦 Template Source: ${{ inputs.template-repo }}@${{ inputs.template-branch }}"
+          echo "📦 Parachain Source: https://github.com/brunopgalvao/polkadot-sdk-docs-tests@main"
 
       - name: Start Polkadot omni-node
         timeout-minutes: 5
         run: |
           echo "🚀 Starting Polkadot omni-node..."
-          echo "📦 Built from: ${{ inputs.template-repo }}@${{ inputs.template-branch }}"
+          echo "📦 Built from: https://github.com/brunopgalvao/polkadot-sdk-docs-tests@main"
           
-          # Determine run duration
-          RUN_DURATION=${{ inputs.run-duration }}
-          if [ "$RUN_DURATION" = "0" ]; then
-            echo "⚠️ Running indefinitely (workflow will timeout after 6 hours)"
-            TIMEOUT_CMD=""
-          else
-            echo "⏱️ Running for ${RUN_DURATION} seconds"
-            TIMEOUT_CMD="timeout ${RUN_DURATION}s"
-          fi
+          # Run for 120 seconds
+          echo "⏱️ Running for 120 seconds"
+          TIMEOUT_CMD="timeout 120s"
           
           # Start node in background with logging
-          $TIMEOUT_CMD polkadot-omni-node \
+          $TIMEOUT_CMD \
+          polkadot-omni-node \
             --chain ./chain_spec.json \
             --dev \
-            --tmp \
-            --rpc-cors all \
-            --unsafe-rpc-external \
-            --rpc-methods unsafe \
-            --log info \
             > node.log 2>&1 &
           
           NODE_PID=$!

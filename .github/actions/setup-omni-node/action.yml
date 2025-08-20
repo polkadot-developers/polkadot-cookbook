@@ -1,15 +1,13 @@
 name: "Setup Polkadot omni-node"
-description: "Installs and configures Polkadot omni-node with caching and verification"
+description: "Installs and configures Polkadot omni-node"
 
 inputs:
   omni-node-version:
     description: "Polkadot omni-node version"
-    required: false
-    default: "0.5.0"
+    required: true
   rust-version:
     description: "Rust version for installation"
-    required: false
-    default: "1.86"
+    required: true
 
 outputs:
   version:

@@ -1,15 +1,13 @@
 name: "Setup Polkadot chain-spec-builder"
-description: "Installs and configures Polkadot chain-spec-builder with caching and verification"
+description: "Installs and configures Polkadot chain-spec-builder"
 
 inputs:
   chain-spec-builder-version:
     description: "Polkadot chain-spec-builder version"
-    required: false
-    default: "10.0.0"
+    required: true
   rust-version:
     description: "Rust version for installation"
-    required: false
-    default: "1.86"
+    required: true
 
 outputs:
   version:

@@ -1,0 +1,12 @@
+# Global dependency versions
+versions:
+  rust: "1.86"
+  polkadot_omni_node: "0.5.0"
+  chain_spec_builder: "10.0.0"
+  frame_omni_bencher: "0.13.0"
+
+# Tutorial-specific overrides
+zero_to_hero:
+  polkadot_omni_node: "0.5.0"
+  chain_spec_builder: "10.0.0"
+  rust: "1.86"
