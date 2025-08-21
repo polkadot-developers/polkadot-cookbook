@@ -1,5 +1,5 @@
-name: "Setup Zero-to-Hero Parachain"
-description: "Clones, builds, and caches the Zero-to-Hero parachain from polkadot-sdk-docs-tests repository"
+name: "Setup Kitchensink Parachain"
+description: "Clones, builds, and caches the kitchensink parachain from polkadot-docs-tests repository"
 
 inputs:
   branch:
@@ -29,38 +29,38 @@ runs:
       id: setup
       shell: bash
       run: |
-        PARACHAIN_PATH="${GITHUB_WORKSPACE}/zero-to-hero-tutorial"
+        PARACHAIN_PATH="${GITHUB_WORKSPACE}/kitchensink-parachain"
         RUNTIME_PATH="${PARACHAIN_PATH}/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
         
         echo "parachain-path=$PARACHAIN_PATH" >> $GITHUB_OUTPUT
         echo "runtime-path=$RUNTIME_PATH" >> $GITHUB_OUTPUT
 
-    - name: Clone zero-to-hero-tutorial parachain
+    - name: Clone kitchensink-parachain parachain
       shell: bash
       run: |
-        echo "📥 Cloning zero-to-hero-tutorial from https://github.com/polkadot-developers/polkadot-docs-tests (branch: ${{ inputs.branch }})..."
+        echo "📥 Cloning kitchensink-parachain from https://github.com/polkadot-developers/polkadot-docs-tests (branch: ${{ inputs.branch }})..."
         
-        if [ -d "zero-to-hero-tutorial" ]; then
+        if [ -d "kitchensink-parachain" ]; then
           echo "🧹 Cleaning existing template directory..."
-          rm -rf zero-to-hero-tutorial
+          rm -rf kitchensink-parachain
         fi
         
-        # Clone with sparse checkout to get only the zero-to-hero-tutorial directory
+        # Clone with sparse checkout to get only the kitchensink-parachain directory
         git clone --no-checkout --branch ${{ inputs.branch }} https://github.com/polkadot-developers/polkadot-docs-tests temp-repo
         cd temp-repo
         git sparse-checkout init --cone
-        git sparse-checkout set zero-to-hero-tutorial
+        git sparse-checkout set kitchensink-parachain
         git checkout
         
-        # Move the zero-to-hero-tutorial to the workspace root
-        mv zero-to-hero-tutorial ../zero-to-hero-tutorial
+        # Move the kitchensink-parachain to the workspace root
+        mv kitchensink-parachain ../kitchensink-parachain
         cd ..
         rm -rf temp-repo
         
         echo "✅ Template cloned successfully"
         
         # Verify critical files exist
-        if [ ! -f "zero-to-hero-tutorial/Cargo.toml" ]; then
+        if [ ! -f "kitchensink-parachain/Cargo.toml" ]; then
           echo "❌ Cargo.toml not found in template"
           exit 1
         fi
@@ -70,19 +70,19 @@ runs:
       uses: actions/cache@v4
       with:
         path: |
-          zero-to-hero-tutorial/target/release
-          zero-to-hero-tutorial/target/wbuild
-        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
+          kitchensink-parachain/target/release
+          kitchensink-parachain/target/wbuild
+        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ hashFiles('kitchensink-parachain/**/Cargo.toml', 'kitchensink-parachain/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
         restore-keys: |
           parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
           parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
 
     - name: Build parachain
       if: steps.build-cache.outputs.cache-hit != 'true'
-      working-directory: zero-to-hero-tutorial
+      working-directory: kitchensink-parachain
       shell: bash
       run: |
-        echo "🔨 Building zero-to-hero-tutorial parachain..."
+        echo "🔨 Building kitchensink-parachain parachain..."
         echo "📊 Available disk space:"
         df -h
         
@@ -109,7 +109,7 @@ runs:
         if [ ! -f "$RUNTIME_PATH" ]; then
           echo "❌ Runtime WASM not found at: $RUNTIME_PATH"
           echo "🔍 Available runtime files:"
-          find zero-to-hero-tutorial/target -name "*.wasm" -type f || echo "No WASM files found"
+          find kitchensink-parachain/target -name "*.wasm" -type f || echo "No WASM files found"
           exit 1
         fi
         
