@@ -1,5 +1,5 @@
 # Polkadot Docs - Tests
-A test suite for Polkadot tutorials found in [docs.polkadot.com](https://docs.polkadot.com)
+A test suite to ensure Polkadot tutorial code found in [docs.polkadot.com](https://docs.polkadot.com) works.
 
 [![Zero to Hero](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/zero-to-hero.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/zero-to-hero.yml)
 
