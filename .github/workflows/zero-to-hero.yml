@@ -2,7 +2,7 @@ name: Zero to Hero
 description: "Zero to Hero"
 
 env:
-  PARACHAIN_REPO: "https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
+  PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-sdk-docs-tests/"
   PARACHAIN_BRANCH: "main"
   NODE_TIMEOUT: "120s"
   PARA_ID: "1000"
