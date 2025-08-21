@@ -46,7 +46,7 @@ runs:
     - name: Clone zero-to-hero-tutorial parachain
       shell: bash
       run: |
-        echo "📥 Cloning zero-to-hero-tutorial from https://github.com/polkadot-developers/polkadot-sdk-docs-tests (branch: ${{ inputs.branch }})..."
+        echo "📥 Cloning zero-to-hero-tutorial from https://github.com/polkadot-developers/polkadot-docs-tests (branch: ${{ inputs.branch }})..."
         
         if [ -d "zero-to-hero-tutorial" ]; then
           echo "🧹 Cleaning existing template directory..."
@@ -54,7 +54,7 @@ runs:
         fi
         
         # Clone with sparse checkout to get only the zero-to-hero-tutorial directory
-        git clone --no-checkout --branch ${{ inputs.branch }} https://github.com/polkadot-developers/polkadot-sdk-docs-tests temp-repo
+        git clone --no-checkout --branch ${{ inputs.branch }} https://github.com/polkadot-developers/polkadot-docs-tests temp-repo
         cd temp-repo
         git sparse-checkout init --cone
         git sparse-checkout set zero-to-hero-tutorial
@@ -80,10 +80,10 @@ runs:
         path: |
           zero-to-hero-tutorial/target/release
           zero-to-hero-tutorial/target/wbuild
-        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-sdk-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
+        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
         restore-keys: |
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-sdk-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-sdk-docs-tests') }}-${{ inputs.branch }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
 
     - name: Build parachain
       if: steps.build-cache.outputs.cache-hit != 'true'
