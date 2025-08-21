@@ -12,7 +12,7 @@ inputs:
   template-branch:
     description: "Branch of the parachain template to clone"
     required: false
-    default: "main"
+    default: "master"
   cache-key-suffix:
     description: "Suffix for build cache key"
     required: false
