@@ -105,14 +105,12 @@ jobs:
         uses: ./.github/actions/setup-chain-spec-builder
         with:
           chain-spec-builder-version: ${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}
-          rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
       - name: Setup omni-node
         id: omni-node
         uses: ./.github/actions/setup-omni-node
         with:
           omni-node-version: ${{ needs.setup-dependencies.outputs.omni-node-version }}
-          rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
       - name: Cache tools for main job
         uses: actions/cache/save@v4
@@ -150,7 +148,6 @@ jobs:
         uses: ./.github/actions/setup-zero-to-hero-parachain
         with:
           branch: ${{ env.PARACHAIN_BRANCH }}
-          rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
       - name: Verify runtime artifacts
         run: |

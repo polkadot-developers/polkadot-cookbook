@@ -2,9 +2,6 @@ name: "Setup Zero-to-Hero Parachain"
 description: "Clones, builds, and caches the Zero-to-Hero parachain from polkadot-sdk-docs-tests repository"
 
 inputs:
-  rust-version:
-    description: "Rust version to use for building"
-    required: true
   branch:
     description: "Branch to clone"
     required: false
@@ -28,11 +25,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Rust
-      uses: ./.github/actions/setup-rust
-      with:
-        rust-version: ${{ inputs.rust-version }}
-
     - name: Setup template and paths
       id: setup
       shell: bash
@@ -80,9 +72,9 @@ runs:
         path: |
           zero-to-hero-tutorial/target/release
           zero-to-hero-tutorial/target/wbuild
-        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
+        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ hashFiles('zero-to-hero-tutorial/**/Cargo.toml', 'zero-to-hero-tutorial/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
         restore-keys: |
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ inputs.rust-version }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
           parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
 
     - name: Build parachain
