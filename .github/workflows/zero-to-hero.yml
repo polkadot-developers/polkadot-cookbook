@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Resolve dependency versions
+      - name: Read versions
         id: resolve
         run: |
           # Install yq for YAML parsing
