@@ -14,7 +14,7 @@ inputs:
 outputs:
   parachain-path:
     description: "Path to cloned parachain"
-    value: ${{ steps.setup.outputs.template-path }}
+    value: ${{ steps.setup.outputs.parachain-path }}
   runtime-path:
     description: "Path to WASM runtime file"
     value: ${{ steps.setup.outputs.runtime-path }}
@@ -65,17 +65,31 @@ runs:
           exit 1
         fi
 
+    - name: Generate cache key from git commit
+      id: cache-key
+      shell: bash
+      run: |
+        cd kitchensink-parachain
+        GIT_COMMIT=$(git rev-parse HEAD)
+        CARGO_LOCK_HASH=$(md5sum Cargo.lock | cut -d' ' -f1)
+        
+        echo "git-commit=$GIT_COMMIT" >> $GITHUB_OUTPUT
+        echo "cargo-lock-hash=$CARGO_LOCK_HASH" >> $GITHUB_OUTPUT
+        
+        echo "📋 Git commit: $GIT_COMMIT"
+        echo "📋 Cargo.lock hash: $CARGO_LOCK_HASH"
+
     - name: Cache build artifacts
       id: build-cache
       uses: actions/cache@v4
       with:
         path: |
-          kitchensink-parachain/target/release
-          kitchensink-parachain/target/wbuild
-        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-${{ hashFiles('kitchensink-parachain/**/Cargo.toml', 'kitchensink-parachain/**/Cargo.lock') }}${{ inputs.cache-key-suffix }}
+          kitchensink-parachain/target/release/wbuild
+          kitchensink-parachain/target/release/build
+        key: parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.cache-key.outputs.git-commit }}-${{ steps.cache-key.outputs.cargo-lock-hash }}${{ inputs.cache-key-suffix }}
         restore-keys: |
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
-          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('https://github.com/polkadot-developers/polkadot-docs-tests') }}-${{ inputs.branch }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.cache-key.outputs.git-commit }}-
+          parachain-build-${{ runner.os }}-${{ runner.arch }}-${{ inputs.branch }}-
 
     - name: Build parachain
       if: steps.build-cache.outputs.cache-hit != 'true'
@@ -84,19 +98,27 @@ runs:
       run: |
         echo "🔨 Building kitchensink-parachain parachain..."
         echo "📊 Available disk space:"
-        df -h
+        df -h . || true
         
         # Set build optimizations
         export CARGO_PROFILE_RELEASE_LTO=thin
         export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
         
+        # Clean any partial builds first
+        cargo clean --release
+        
         # Build with progress and error handling
+        echo "⏱️ Starting build at $(date -Iseconds)"
         cargo build --release --locked --verbose
         
-        echo "✅ Build completed successfully"
+        echo "✅ Build completed successfully at $(date -Iseconds)"
         
         echo "📊 Final disk space:"
-        df -h
+        df -h . || true
+        
+        # Show build artifacts
+        echo "📦 Build artifacts:"
+        find target/release/wbuild -name "*.wasm" -type f -exec ls -lh {} \; || echo "No WASM files found yet"
 
     - name: Verify build artifacts
       shell: bash
@@ -109,11 +131,16 @@ runs:
         if [ ! -f "$RUNTIME_PATH" ]; then
           echo "❌ Runtime WASM not found at: $RUNTIME_PATH"
           echo "🔍 Available runtime files:"
-          find kitchensink-parachain/target -name "*.wasm" -type f || echo "No WASM files found"
+          find kitchensink-parachain/target -name "*.wasm" -type f -ls 2>/dev/null || echo "No WASM files found"
+          
+          echo "🔍 Target directory structure:"
+          find kitchensink-parachain/target -type d -name "*runtime*" 2>/dev/null || echo "No runtime directories found"
           exit 1
         fi
         
-        # Check file sizes
+        # Check file sizes and permissions
         RUNTIME_SIZE=$(du -h "$RUNTIME_PATH" | cut -f1)
         
         echo "✅ Runtime verified: $RUNTIME_SIZE"
+        echo "📋 Runtime path: $RUNTIME_PATH"
+        echo "📋 Runtime permissions: $(ls -l "$RUNTIME_PATH")"
