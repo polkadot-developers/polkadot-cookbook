@@ -1,6 +1,13 @@
 name: Zero to Hero
 description: "Zero to Hero"
 
+env:
+  PARACHAIN_REPO: "https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
+  PARACHAIN_BRANCH: "main"
+  NODE_TIMEOUT: "120s"
+  PARA_ID: "1000"
+  RELAY_CHAIN: "paseo"
+
 on:
   workflow_dispatch:
 
@@ -26,6 +33,12 @@ jobs:
           DEPS_FILE=".github/versions.yml"
           TUTORIAL="zero_to_hero"
           
+          # Validate that config file exists
+          if [ ! -f "$DEPS_FILE" ]; then
+            echo "❌ Dependencies file not found: $DEPS_FILE"
+            exit 1
+          fi
+          
           # Function to get version (tutorial-specific first, then global)
           get_version() {
             local dep="$1"
@@ -44,14 +57,29 @@ jobs:
           # Get versions from config file
           CHAIN_SPEC_VERSION=$(get_version "chain_spec_builder")
           OMNI_NODE_VERSION=$(get_version "polkadot_omni_node")
-          
           RUST_VERSION=$(get_version "rust")
+          
+          # Validate all versions were resolved
+          if [ -z "$CHAIN_SPEC_VERSION" ] || [ "$CHAIN_SPEC_VERSION" = "null" ]; then
+            echo "❌ chain-spec-builder version not resolved"
+            exit 1
+          fi
+          
+          if [ -z "$OMNI_NODE_VERSION" ] || [ "$OMNI_NODE_VERSION" = "null" ]; then
+            echo "❌ omni-node version not resolved"
+            exit 1
+          fi
+          
+          if [ -z "$RUST_VERSION" ] || [ "$RUST_VERSION" = "null" ]; then
+            echo "❌ rust version not resolved"
+            exit 1
+          fi
           
           echo "chain-spec-builder-version=$CHAIN_SPEC_VERSION" >> $GITHUB_OUTPUT
           echo "omni-node-version=$OMNI_NODE_VERSION" >> $GITHUB_OUTPUT
           echo "rust-version=$RUST_VERSION" >> $GITHUB_OUTPUT
           
-          echo "📋 Resolved versions:"
+          echo "$(date -Iseconds) 📋 Resolved versions:"
           echo "  - chain-spec-builder: $CHAIN_SPEC_VERSION"
           echo "  - omni-node: $OMNI_NODE_VERSION" 
           echo "  - rust: $RUST_VERSION"
@@ -66,6 +94,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: tools-${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}-${{ needs.setup-dependencies.outputs.omni-node-version }}
 
       - name: Setup chain-spec-builder
         id: chain-spec
@@ -92,25 +125,55 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-dependencies
     outputs:
-      parachain-path: ${{ steps.setup-template.outputs.parachain-path }}
-      runtime-path: ${{ steps.setup-template.outputs.runtime-path }}
+      parachain-path: ${{ steps.setup-parachain.outputs.parachain-path }}
+      runtime-path: ${{ steps.setup-parachain.outputs.runtime-path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: parachain-${{ env.PARACHAIN_BRANCH }}-${{ needs.setup-dependencies.outputs.rust-version }}
+
+      - name: Cache runtime WASM
+        id: cache-runtime
+        uses: actions/cache@v4
+        with:
+          path: |
+            target/release/wbuild/parachain-template-runtime/*.wasm
+          key: runtime-wasm-${{ env.PARACHAIN_BRANCH }}-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Setup Zero to Hero parachain
         id: setup-parachain
+        if: steps.cache-runtime.outputs.cache-hit != 'true'
         uses: ./.github/actions/setup-zero-to-hero-parachain
         with:
-          branch: main
+          branch: ${{ env.PARACHAIN_BRANCH }}
           rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
+
+      - name: Verify runtime artifacts
+        run: |
+          echo "$(date -Iseconds) 🔍 Verifying runtime artifacts..."
+          
+          # Find the runtime WASM file
+          RUNTIME_WASM=$(find . -name "*.compressed.wasm" -type f 2>/dev/null | head -1)
+          if [ -z "$RUNTIME_WASM" ]; then
+            echo "❌ Runtime WASM file not found"
+            echo "Available files:"
+            find . -name "*.wasm" -type f 2>/dev/null || echo "No WASM files found"
+            exit 1
+          fi
+          
+          echo "✅ Runtime WASM found: $RUNTIME_WASM"
+          echo "📄 File size: $(du -h "$RUNTIME_WASM" | cut -f1)"
 
       - name: Upload parachain artifacts
         uses: actions/upload-artifact@v4
         with:
           name: parachain-artifacts-${{ github.run_id }}
           path: |
-            ${{ steps.setup-parachain.outputs.runtime-path }}
+            target/release/wbuild/parachain-template-runtime/*.wasm
           retention-days: 1
 
   run-parachain:
@@ -136,15 +199,29 @@ jobs:
 
       - name: Setup paths and permissions
         run: |
+          echo "$(date -Iseconds) 🔧 Setting up paths and permissions..."
+          
           # Add tools to PATH
           echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
           
           # Make binaries executable
           find ./artifacts -name "*parachain*" -type f -exec chmod +x {} \;
           
-          # Verify tools are available
-          chain-spec-builder --version
-          polkadot-omni-node --version
+          # Verify tools are available with retry logic
+          for i in {1..3}; do
+            echo "$(date -Iseconds) 🔍 Verifying tools (attempt $i/3)..."
+            if chain-spec-builder --version && polkadot-omni-node --version; then
+              echo "✅ Tools verified successfully"
+              break
+            fi
+            if [ $i -eq 3 ]; then
+              echo "❌ Tools verification failed after 3 attempts"
+              echo "PATH: $PATH"
+              ls -la ~/.cargo/bin/
+              exit 1
+            fi
+            sleep 5
+          done
 
           # Find the runtime WASM file
           RUNTIME_WASM=$(find ./artifacts -name "*.compressed.wasm" -type f | head -1)
@@ -157,37 +234,45 @@ jobs:
           
           mkdir -p ./target/release/wbuild/parachain-template-runtime/
           cp $RUNTIME_WASM ./target/release/wbuild/parachain-template-runtime/
+          
+          echo "✅ Setup completed successfully"
 
       - name: Generate chain specification
         run: |
-          echo "🔧 Generating chain specification..."
-          echo "📋 Using repository: https://github.com/brunopgalvao/polkadot-sdk-docs-tests"
-          echo "📋 Using branch: main"
+          echo "$(date -Iseconds) 🔧 Generating chain specification..."
+          echo "📋 Using repository: ${{ env.PARACHAIN_REPO }}"
+          echo "📋 Using branch: ${{ env.PARACHAIN_BRANCH }}"
+          echo "🆔 Para ID: ${{ env.PARA_ID }}"
+          echo "🔗 Relay Chain: ${{ env.RELAY_CHAIN }}"
           
           # Generate chain spec
           chain-spec-builder create \
             -t development \
-            --relay-chain paseo \
-            --para-id 1000 \
+            --relay-chain ${{ env.RELAY_CHAIN }} \
+            --para-id ${{ env.PARA_ID }} \
             --runtime ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm \
             named-preset development
           
           # Verify chain spec was created
           if [ ! -f "chain_spec.json" ]; then
             echo "❌ Chain spec generation failed"
+            echo "Available files:"
+            ls -la
             exit 1
           fi
           
-          echo "✅ Chain specification generated successfully"
+          echo "$(date -Iseconds) ✅ Chain specification generated successfully"
           echo "📄 Chain spec size: $(du -h chain_spec.json | cut -f1)"
 
       - name: Validate chain specification
         run: |
-          echo "🔍 Validating chain specification..."
+          echo "$(date -Iseconds) 🔍 Validating chain specification..."
           
           # Check if it's valid JSON
           if ! jq empty chain_spec.json 2>/dev/null; then
             echo "❌ Invalid JSON in chain specification"
+            echo "First 100 lines of chain_spec.json:"
+            head -100 chain_spec.json
             exit 1
           fi
           
@@ -196,81 +281,149 @@ jobs:
           PARA_ID=$(jq -r '.para_id // "unknown"' chain_spec.json)
           RELAY_CHAIN=$(jq -r '.relay_chain // "unknown"' chain_spec.json)
           
-          echo "✅ Chain specification is valid"
+          echo "$(date -Iseconds) ✅ Chain specification is valid"
           echo "📋 Chain Name: $CHAIN_NAME"
           echo "🆔 Para ID: $PARA_ID"
           echo "🔗 Relay Chain: $RELAY_CHAIN"
-          echo "📦 Parachain Source: https://github.com/brunopgalvao/polkadot-sdk-docs-tests@main"
+          echo "📦 Parachain Source: ${{ env.PARACHAIN_REPO }}@${{ env.PARACHAIN_BRANCH }}"
 
       - name: Start Polkadot omni-node
-        timeout-minutes: 5
         run: |
-          echo "🚀 Starting Polkadot omni-node..."
-          echo "📦 Built from: https://github.com/brunopgalvao/polkadot-sdk-docs-tests@main"
+          echo "$(date -Iseconds) 🚀 Starting Polkadot omni-node..."
+          echo "📦 Built from: ${{ env.PARACHAIN_REPO }}@${{ env.PARACHAIN_BRANCH }}"
           
-          # Run for 120 seconds
-          echo "⏱️ Running for 120 seconds"
-          TIMEOUT_CMD="timeout 120s"
+          # Create log file with timestamp
+          LOG_FILE="node-$(date +%Y%m%d-%H%M%S).log"
+          echo "LOG_FILE=$LOG_FILE" >> $GITHUB_ENV
           
-          # Start node in background with logging
+          # Run for specified timeout
+          echo "⏱️ Running for ${{ env.NODE_TIMEOUT }}"
+          TIMEOUT_CMD="timeout ${{ env.NODE_TIMEOUT }}"
+          
+          # Start node in background with structured logging
           $TIMEOUT_CMD \
           polkadot-omni-node \
             --chain ./chain_spec.json \
             --dev \
-            > node.log 2>&1 &
+            --rpc-cors all \
+            --rpc-methods unsafe \
+            > $LOG_FILE 2>&1 &
           
           NODE_PID=$!
           echo "NODE_PID=$NODE_PID" >> $GITHUB_ENV
           
-          echo "✅ Node started with PID: $NODE_PID"
+          echo "$(date -Iseconds) ✅ Node started with PID: $NODE_PID"
           
           # Wait a moment for startup
-          sleep 10
+          sleep 15
           
-          # Check if node is still running
-          if ! kill -0 $NODE_PID 2>/dev/null; then
-            echo "❌ Node failed to start"
-            echo "📋 Last 50 lines of log:"
-            tail -50 node.log
-            exit 1
-          fi
+          # Check if node is still running with retry
+          for i in {1..5}; do
+            if kill -0 $NODE_PID 2>/dev/null; then
+              echo "$(date -Iseconds) ✅ Node startup check $i/5 - Node is running"
+              break
+            fi
+            if [ $i -eq 5 ]; then
+              echo "❌ Node failed to start"
+              echo "📋 Last 50 lines of log:"
+              tail -50 $LOG_FILE
+              exit 1
+            fi
+            sleep 3
+          done
           
-          echo "✅ Node is running successfully"
+          echo "$(date -Iseconds) ✅ Node is running successfully"
 
       - name: Health check and monitoring
-        timeout-minutes: 2
         run: |
-          echo "🏥 Performing health checks..."
+          echo "$(date -Iseconds) 🏥 Performing health checks..."
+          
+          # Wait for RPC to be ready
+          echo "$(date -Iseconds) 🔍 Waiting for RPC endpoint..."
+          for i in {1..30}; do
+            if curl -s -X POST -H "Content-Type: application/json" \
+               -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' \
+               http://localhost:9944 >/dev/null 2>&1; then
+              echo "$(date -Iseconds) ✅ RPC endpoint is healthy"
+              
+              # Get system info
+              HEALTH=$(curl -s -X POST -H "Content-Type: application/json" \
+                -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' \
+                http://localhost:9944 | jq -r '.result')
+              
+              CHAIN=$(curl -s -X POST -H "Content-Type: application/json" \
+                -d '{"jsonrpc":"2.0","method":"system_chain","params":[],"id":1}' \
+                http://localhost:9944 | jq -r '.result')
+              
+              echo "📋 Chain: $CHAIN"
+              echo "🏥 Health: $HEALTH"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ RPC endpoint not responding after 60 seconds"
+              echo "📋 Last 100 lines of log:"
+              tail -100 $LOG_FILE
+              exit 1
+            fi
+            sleep 2
+          done
           
           # Monitor node for a short period
           for i in {1..12}; do
             if ! kill -0 $NODE_PID 2>/dev/null; then
               echo "❌ Node stopped unexpectedly"
               echo "📋 Final log output:"
-              tail -100 node.log
+              tail -100 $LOG_FILE
               exit 1
             fi
             
-            echo "✅ Health check $i/12 - Node is running"
+            # Periodic RPC health check
+            if ! curl -s -X POST -H "Content-Type: application/json" \
+               -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' \
+               http://localhost:9944 >/dev/null 2>&1; then
+              echo "⚠️ RPC endpoint not responding at check $i/12"
+            fi
+            
+            echo "$(date -Iseconds) ✅ Health check $i/12 - Node is running"
             sleep 5
           done
           
-          echo "✅ All health checks passed"
+          echo "$(date -Iseconds) ✅ All health checks passed"
+
+      - name: Collect metrics
+        if: always()
+        run: |
+          echo "$(date -Iseconds) 📊 Collecting basic metrics..."
+          
+          if [ -n "${NODE_PID:-}" ] && kill -0 $NODE_PID 2>/dev/null; then
+            # Get basic system info
+            echo "💾 Memory usage:"
+            ps -o pid,ppid,user,cpu,mem,etime,cmd -p $NODE_PID || true
+            
+            echo "🔌 Network connections:"
+            ss -tulpn | grep :9944 || echo "No connections on port 9944"
+            
+            # Try to get node info via RPC
+            echo "🔍 Node information:"
+            curl -s -X POST -H "Content-Type: application/json" \
+              -d '{"jsonrpc":"2.0","method":"system_version","params":[],"id":1}' \
+              http://localhost:9944 | jq -r '.result' 2>/dev/null || echo "RPC not available"
+          fi
 
       - name: Cleanup
         if: always()
         run: |
-          echo "🧹 Cleaning up..."
+          echo "$(date -Iseconds) 🧹 Cleaning up..."
           
           # Stop the node gracefully
           if [ -n "${NODE_PID:-}" ] && kill -0 $NODE_PID 2>/dev/null; then
-            echo "🛑 Stopping node (PID: $NODE_PID)..."
+            echo "$(date -Iseconds) 🛑 Stopping node (PID: $NODE_PID)..."
             kill -TERM $NODE_PID
             
             # Wait for graceful shutdown
             for i in {1..10}; do
               if ! kill -0 $NODE_PID 2>/dev/null; then
-                echo "✅ Node stopped gracefully"
+                echo "$(date -Iseconds) ✅ Node stopped gracefully"
                 break
               fi
               sleep 1
@@ -278,19 +431,25 @@ jobs:
             
             # Force kill if still running
             if kill -0 $NODE_PID 2>/dev/null; then
-              echo "⚡ Force stopping node..."
+              echo "$(date -Iseconds) ⚡ Force stopping node..."
               kill -KILL $NODE_PID
             fi
           fi
           
-          echo "✅ Cleanup completed"
+          # Log final statistics
+          if [ -f "${LOG_FILE:-node.log}" ]; then
+            echo "📈 Final log statistics:"
+            wc -l ${LOG_FILE:-node.log} || true
+          fi
+          
+          echo "$(date -Iseconds) ✅ Cleanup completed"
 
-      - name: Upload logs
+      - name: Upload logs and artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: node-logs-${{ github.run_id }}
           path: |
-            node.log
+            node*.log
             chain_spec.json
           retention-days: 7
