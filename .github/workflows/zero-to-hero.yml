@@ -173,7 +173,7 @@ jobs:
         with:
           name: parachain-artifacts-${{ github.run_id }}
           path: |
-            target/release/wbuild/parachain-template-runtime/*.wasm
+            ${{ steps.setup-parachain.outputs.runtime-path }}
           retention-days: 1
 
   run-parachain:

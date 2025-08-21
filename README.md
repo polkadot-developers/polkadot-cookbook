@@ -1,5 +1,4 @@
 # Polkadot Docs - Polkadot SDK-related Tutorials
-A test suite for Polkadot SDK-related tutorials found in [docs.polkadot.com](https://docs.polkadot.com)
 
 [![Zero to Hero](https://github.com/polkadot-developers/polkadot-sdk-docs-tests/actions/workflows/zero-to-hero.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-sdk-docs-tests/actions/workflows/zero-to-hero.yml)
 
