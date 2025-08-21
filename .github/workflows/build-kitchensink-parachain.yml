@@ -1,5 +1,5 @@
-name: Zero to Hero
-description: "Zero to Hero"
+name: Build Kitchensink Parachain
+description: "Kitchensink Parachain"
 
 env:
   PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-docs-tests/"
@@ -13,7 +13,7 @@ on:
 
 jobs:
   setup-dependencies:
-    name: Setup Dependencies
+    name: Read Versions
     runs-on: ubuntu-latest
     outputs:
       chain-spec-builder-version: ${{ steps.resolve.outputs.chain-spec-builder-version }}
@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read versions
+      - name: Read versions.yml
         id: resolve
         run: |
           # Install yq for YAML parsing
