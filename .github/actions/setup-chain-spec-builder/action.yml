@@ -5,9 +5,6 @@ inputs:
   chain-spec-builder-version:
     description: "Polkadot chain-spec-builder version"
     required: true
-  rust-version:
-    description: "Rust version for installation"
-    required: true
 
 outputs:
   version:
@@ -31,11 +28,6 @@ runs:
           echo "Expected format: X.Y.Z (e.g., 10.0.0)"
           exit 1
         fi
-
-    - name: Setup Rust
-      uses: ./.github/actions/setup-rust
-      with:
-        rust-version: ${{ inputs.rust-version }}
 
     - name: Cache chain-spec-builder binary
       id: cache
