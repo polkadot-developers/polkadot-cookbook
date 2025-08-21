@@ -100,11 +100,6 @@ jobs:
         with:
           rust-version: ${{ needs.setup-dependencies.outputs.rust-version }}
 
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          key: tools-${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}-${{ needs.setup-dependencies.outputs.omni-node-version }}
-
       - name: Setup chain-spec-builder
         id: chain-spec
         uses: ./.github/actions/setup-chain-spec-builder
