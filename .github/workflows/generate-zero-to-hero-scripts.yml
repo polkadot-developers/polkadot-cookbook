@@ -1,0 +1,1014 @@
+name: Generate Zero to Hero Scripts
+description: "Generate Zero to Hero scripts after successful parachain build"
+
+env:
+  PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-docs-tests/"
+  PARACHAIN_BRANCH: ${{ github.ref_name }}
+  PARA_ID: "1000"
+  RELAY_CHAIN: "paseo"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '.github/versions.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '.github/versions.yml'
+
+jobs:
+  # Check if zero_to_hero versions have changed
+  check-version-changes:
+    name: Check Zero to Hero Version Changes
+    runs-on: ubuntu-latest
+    outputs:
+      has-changes: ${{ steps.check-changes.outputs.has-changes }}
+      changed-versions: ${{ steps.check-changes.outputs.changed-versions }}
+    steps:
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install yq for YAML parsing
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Check for zero_to_hero version changes
+        id: check-changes
+        run: |
+          echo "$(date -Iseconds) 🔍 Checking for zero_to_hero version changes..."
+          
+          DEPS_FILE=".github/versions.yml"
+          TUTORIAL="zero_to_hero"
+          HAS_CHANGES="false"
+          CHANGED_VERSIONS=""
+          
+          # Validate that config file exists
+          if [ ! -f "$DEPS_FILE" ]; then
+            echo "❌ Dependencies file not found: $DEPS_FILE"
+            exit 1
+          fi
+          
+          # Function to get version (tutorial-specific first, then global)
+          get_version() {
+            local dep="$1"
+            local version
+            
+            # Try tutorial-specific version first
+            version=$(yq eval ".${TUTORIAL}.${dep}" "$DEPS_FILE" 2>/dev/null)
+            if [ "$version" = "null" ] || [ -z "$version" ]; then
+              # Fallback to global version
+              version=$(yq eval ".versions.${dep}" "$DEPS_FILE" 2>/dev/null)
+            fi
+            
+            echo "$version"
+          }
+          
+          # Get current versions
+          CURRENT_RUST=$(get_version "rust")
+          CURRENT_CHAIN_SPEC=$(get_version "chain_spec_builder") 
+          CURRENT_OMNI_NODE=$(get_version "polkadot_omni_node")
+          
+          echo "📋 Current versions:"
+          echo "  - rust: $CURRENT_RUST"
+          echo "  - chain_spec_builder: $CURRENT_CHAIN_SPEC"
+          echo "  - polkadot_omni_node: $CURRENT_OMNI_NODE"
+          
+          # For workflow_dispatch, always proceed
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "🔄 Manual trigger detected - proceeding with script generation"
+            HAS_CHANGES="true"
+            CHANGED_VERSIONS="manual trigger"
+          else
+            # For push/PR events, check what changed
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            else
+              # For push events, compare with previous commit
+              BASE_SHA="${{ github.event.before }}"
+            fi
+            
+            echo "🔍 Comparing with base commit: $BASE_SHA"
+            
+            # Check if we have a valid base SHA and it exists
+            if [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE_SHA" 2>/dev/null; then
+              # Get previous versions if the file existed
+              if git cat-file -e "$BASE_SHA:$DEPS_FILE" 2>/dev/null; then
+                echo "📋 Getting previous versions from $BASE_SHA..."
+                
+                # Create temporary file with previous versions
+                git show "$BASE_SHA:$DEPS_FILE" > previous_versions.yml
+                
+                # Function to get version from previous file
+                get_previous_version() {
+                  local dep="$1"
+                  local version
+                  
+                  # Try tutorial-specific version first
+                  version=$(yq eval ".${TUTORIAL}.${dep}" previous_versions.yml 2>/dev/null)
+                  if [ "$version" = "null" ] || [ -z "$version" ]; then
+                    # Fallback to global version
+                    version=$(yq eval ".versions.${dep}" previous_versions.yml 2>/dev/null)
+                  fi
+                  
+                  echo "$version"
+                }
+                
+                PREVIOUS_RUST=$(get_previous_version "rust")
+                PREVIOUS_CHAIN_SPEC=$(get_previous_version "chain_spec_builder")
+                PREVIOUS_OMNI_NODE=$(get_previous_version "polkadot_omni_node")
+                
+                echo "📋 Previous versions:"
+                echo "  - rust: $PREVIOUS_RUST"
+                echo "  - chain_spec_builder: $PREVIOUS_CHAIN_SPEC"  
+                echo "  - polkadot_omni_node: $PREVIOUS_OMNI_NODE"
+                
+                # Compare versions
+                CHANGES_FOUND=""
+                
+                if [ "$CURRENT_RUST" != "$PREVIOUS_RUST" ]; then
+                  echo "🔄 Rust version changed: $PREVIOUS_RUST → $CURRENT_RUST"
+                  CHANGES_FOUND="$CHANGES_FOUND rust($PREVIOUS_RUST→$CURRENT_RUST)"
+                fi
+                
+                if [ "$CURRENT_CHAIN_SPEC" != "$PREVIOUS_CHAIN_SPEC" ]; then
+                  echo "🔄 Chain spec builder version changed: $PREVIOUS_CHAIN_SPEC → $CURRENT_CHAIN_SPEC"
+                  CHANGES_FOUND="$CHANGES_FOUND chain_spec_builder($PREVIOUS_CHAIN_SPEC→$CURRENT_CHAIN_SPEC)"
+                fi
+                
+                if [ "$CURRENT_OMNI_NODE" != "$PREVIOUS_OMNI_NODE" ]; then
+                  echo "🔄 Omni node version changed: $PREVIOUS_OMNI_NODE → $CURRENT_OMNI_NODE"
+                  CHANGES_FOUND="$CHANGES_FOUND polkadot_omni_node($PREVIOUS_OMNI_NODE→$CURRENT_OMNI_NODE)"
+                fi
+                
+                if [ -n "$CHANGES_FOUND" ]; then
+                  HAS_CHANGES="true"
+                  CHANGED_VERSIONS="$CHANGES_FOUND"
+                  echo "✅ Zero to Hero version changes detected!"
+                else
+                  echo "ℹ️ No zero_to_hero version changes detected"
+                fi
+                
+                # Cleanup
+                rm -f previous_versions.yml
+              else
+                echo "📝 Previous versions.yml not found - treating as new file"
+                HAS_CHANGES="true"
+                CHANGED_VERSIONS="new versions file"
+              fi
+            else
+              echo "⚠️ Cannot compare versions (invalid or missing base commit) - proceeding with generation"
+              HAS_CHANGES="true"
+              CHANGED_VERSIONS="unable to compare"
+            fi
+          fi
+          
+          echo "has-changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+          echo "changed-versions=$CHANGED_VERSIONS" >> $GITHUB_OUTPUT
+          
+          if [ "$HAS_CHANGES" = "true" ]; then
+            echo "$(date -Iseconds) ✅ Proceeding with script generation"
+            echo "📋 Changes detected: $CHANGED_VERSIONS"
+          else
+            echo "$(date -Iseconds) ⏭️ Skipping script generation (no version changes)"
+          fi
+
+  # First, run the existing parachain build workflow
+  build-parachain:
+    name: Build Parachain
+    needs: check-version-changes
+    if: needs.check-version-changes.outputs.has-changes == 'true'
+    uses: ./.github/workflows/build-kitchensink-parachain.yml
+    secrets: inherit
+
+  # Generate setup scripts after successful build
+  generate-scripts:
+    name: Generate Setup Scripts
+    runs-on: ubuntu-latest
+    needs: [check-version-changes, build-parachain]
+    if: needs.check-version-changes.outputs.has-changes == 'true'
+    outputs:
+      rust-version: ${{ steps.resolve-versions.outputs.rust-version }}
+      chain-spec-builder-version: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}
+      omni-node-version: ${{ steps.resolve-versions.outputs.omni-node-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read versions from config
+        id: resolve-versions
+        run: |
+          # Install yq for YAML parsing
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          
+          DEPS_FILE=".github/versions.yml"
+          TUTORIAL="zero_to_hero"
+          
+          # Validate that config file exists
+          if [ ! -f "$DEPS_FILE" ]; then
+            echo "❌ Dependencies file not found: $DEPS_FILE"
+            exit 1
+          fi
+          
+          # Function to get version (tutorial-specific first, then global)
+          get_version() {
+            local dep="$1"
+            local version
+            
+            # Try tutorial-specific version first
+            version=$(yq eval ".${TUTORIAL}.${dep}" "$DEPS_FILE" 2>/dev/null)
+            if [ "$version" = "null" ] || [ -z "$version" ]; then
+              # Fallback to global version
+              version=$(yq eval ".versions.${dep}" "$DEPS_FILE" 2>/dev/null)
+            fi
+            
+            echo "$version"
+          }
+          
+          # Get versions from config file
+          CHAIN_SPEC_VERSION=$(get_version "chain_spec_builder")
+          OMNI_NODE_VERSION=$(get_version "polkadot_omni_node")
+          RUST_VERSION=$(get_version "rust")
+          
+          # Validate all versions were resolved
+          if [ -z "$CHAIN_SPEC_VERSION" ] || [ "$CHAIN_SPEC_VERSION" = "null" ]; then
+            echo "❌ chain-spec-builder version not resolved"
+            exit 1
+          fi
+          
+          if [ -z "$OMNI_NODE_VERSION" ] || [ "$OMNI_NODE_VERSION" = "null" ]; then
+            echo "❌ omni-node version not resolved"
+            exit 1
+          fi
+          
+          if [ -z "$RUST_VERSION" ] || [ "$RUST_VERSION" = "null" ]; then
+            echo "❌ rust version not resolved"
+            exit 1
+          fi
+          
+          echo "chain-spec-builder-version=$CHAIN_SPEC_VERSION" >> $GITHUB_OUTPUT
+          echo "omni-node-version=$OMNI_NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "rust-version=$RUST_VERSION" >> $GITHUB_OUTPUT
+          
+          echo "$(date -Iseconds) 📋 Resolved versions for scripts:"
+          echo "  - chain-spec-builder: $CHAIN_SPEC_VERSION"
+          echo "  - omni-node: $OMNI_NODE_VERSION" 
+          echo "  - rust: $RUST_VERSION"
+          echo "🔄 Triggered by: ${{ needs.check-version-changes.outputs.changed-versions }}"
+
+      - name: Create scripts directory
+        run: |
+          echo "$(date -Iseconds) 📁 Creating scripts directory..."
+          mkdir -p scripts/zero-to-hero
+          echo "✅ Scripts directory created"
+
+      - name: Generate Rust setup script
+        run: |
+          echo "$(date -Iseconds) 🦀 Generating Rust setup script..."
+          cat > scripts/zero-to-hero/setup-rust.sh << 'EOF'
+          #!/bin/bash
+          # Rust Setup Script
+          # This script sets up Rust with the required version and components
+          
+          set -e
+          
+          RUST_VERSION="${{ steps.resolve-versions.outputs.rust-version }}"
+          
+          echo "🦀 Setting up Rust $RUST_VERSION..."
+          echo "📦 Installing Rust toolchain and components..."
+          
+          # Set default Rust version
+          rustup default $RUST_VERSION
+          
+          # Add WASM target for the current platform
+          rustup target add wasm32-unknown-unknown --toolchain $RUST_VERSION
+          
+          # Add rust source for the current platform  
+          rustup component add rust-src --toolchain $RUST_VERSION
+          
+          echo "✅ Rust setup completed successfully!"
+          echo "📋 Installed components:"
+          echo "  - Rust toolchain: $RUST_VERSION"
+          echo "  - WASM target: wasm32-unknown-unknown"
+          echo "  - Rust source component"
+          
+          # Verify installation
+          echo "🔍 Verifying installation..."
+          rustup show
+          EOF
+          
+          chmod +x scripts/zero-to-hero/setup-rust.sh
+          echo "✅ Rust setup script created: scripts/zero-to-hero/setup-rust.sh"
+
+      - name: Generate chain-spec-builder setup script
+        run: |
+          echo "$(date -Iseconds) 🔧 Generating chain-spec-builder setup script..."
+          cat > scripts/zero-to-hero/install-chain-spec-builder.sh << 'EOF'
+          #!/bin/bash
+          # Chain Spec Builder Installation Script
+          # This script installs the staging-chain-spec-builder tool
+          
+          set -e
+          
+          CHAIN_SPEC_VERSION="${{ steps.resolve-versions.outputs.chain-spec-builder-version }}"
+          
+          echo "🔧 Installing staging-chain-spec-builder $CHAIN_SPEC_VERSION..."
+          
+          # Install chain-spec-builder with locked dependencies
+          cargo install --locked staging-chain-spec-builder@$CHAIN_SPEC_VERSION
+          
+          echo "✅ Chain spec builder installation completed!"
+          echo "📋 Installed version: $CHAIN_SPEC_VERSION"
+          
+          # Verify installation
+          echo "🔍 Verifying installation..."
+          chain-spec-builder --version
+          EOF
+          
+          chmod +x scripts/zero-to-hero/install-chain-spec-builder.sh
+          echo "✅ Chain spec builder script created: scripts/zero-to-hero/install-chain-spec-builder.sh"
+
+      - name: Generate omni-node setup script
+        run: |
+          echo "$(date -Iseconds) 🚀 Generating omni-node setup script..."
+          cat > scripts/zero-to-hero/install-omni-node.sh << 'EOF'
+          #!/bin/bash
+          # Omni Node Installation Script  
+          # This script installs the polkadot-omni-node
+          
+          set -e
+          
+          OMNI_NODE_VERSION="${{ steps.resolve-versions.outputs.omni-node-version }}"
+          
+          echo "🚀 Installing polkadot-omni-node $OMNI_NODE_VERSION..."
+          
+          # Install omni-node with locked dependencies
+          cargo install --locked polkadot-omni-node@$OMNI_NODE_VERSION
+          
+          echo "✅ Omni node installation completed!"
+          echo "📋 Installed version: $OMNI_NODE_VERSION"
+          
+          # Verify installation
+          echo "🔍 Verifying installation..."
+          polkadot-omni-node --version
+          EOF
+          
+          chmod +x scripts/zero-to-hero/install-omni-node.sh  
+          echo "✅ Omni node script created: scripts/zero-to-hero/install-omni-node.sh"
+
+      - name: Generate chain spec creation script
+        run: |
+          echo "$(date -Iseconds) ⛓️ Generating chain spec creation script..."
+          cat > scripts/zero-to-hero/generate-chain-spec.sh << 'EOF'
+          #!/bin/bash
+          # Chain Specification Generation Script
+          # This script generates a development chain specification for the parachain
+          
+          set -e
+          
+          PARA_ID="${{ env.PARA_ID }}"
+          RELAY_CHAIN="${{ env.RELAY_CHAIN }}"
+          RUNTIME_PATH="./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
+          
+          echo "⛓️ Generating chain specification..."
+          echo "📋 Configuration:"
+          echo "  - Para ID: $PARA_ID"
+          echo "  - Relay Chain: $RELAY_CHAIN"
+          echo "  - Runtime: $RUNTIME_PATH"
+          
+          # Check if runtime exists
+          if [ ! -f "$RUNTIME_PATH" ]; then
+            echo "❌ Runtime WASM file not found: $RUNTIME_PATH"
+            echo "💡 Make sure you have built the parachain runtime first"
+            echo "💡 Try running: cargo build --release"
+            exit 1
+          fi
+          
+          # Generate chain specification
+          chain-spec-builder create \
+            -t development \
+            --relay-chain $RELAY_CHAIN \
+            --para-id $PARA_ID \
+            --runtime $RUNTIME_PATH \
+            named-preset development
+          
+          # Verify chain spec was created
+          if [ ! -f "chain_spec.json" ]; then
+            echo "❌ Chain specification generation failed"
+            exit 1
+          fi
+          
+          echo "✅ Chain specification generated successfully!"
+          echo "📄 Output file: chain_spec.json"
+          echo "📊 File size: $(du -h chain_spec.json | cut -f1)"
+          
+          # Validate JSON
+          if command -v jq >/dev/null 2>&1; then
+            echo "🔍 Validating JSON structure..."
+            if jq empty chain_spec.json; then
+              echo "✅ Chain specification is valid JSON"
+              
+              # Extract key information
+              CHAIN_NAME=$(jq -r '.name // "unknown"' chain_spec.json)
+              echo "📋 Chain Name: $CHAIN_NAME"
+            else
+              echo "⚠️ Chain specification may have JSON formatting issues"
+            fi
+          fi
+          EOF
+          
+          chmod +x scripts/zero-to-hero/generate-chain-spec.sh
+          echo "✅ Chain spec generation script created: scripts/zero-to-hero/generate-chain-spec.sh"
+
+      - name: Generate node startup script
+        run: |
+          echo "$(date -Iseconds) 🖥️ Generating node startup script..."
+          cat > scripts/zero-to-hero/start-node.sh << 'EOF'
+          #!/bin/bash
+          # Parachain Node Startup Script
+          # This script starts the parachain node in development mode
+          
+          set -e
+          
+          CHAIN_SPEC="./chain_spec.json"
+          
+          echo "🖥️ Starting parachain node..."
+          echo "📋 Configuration:"
+          echo "  - Chain spec: $CHAIN_SPEC"
+          echo "  - Mode: Development"
+          echo "  - RPC: All CORS enabled, unsafe methods allowed"
+          
+          # Check if chain spec exists
+          if [ ! -f "$CHAIN_SPEC" ]; then
+            echo "❌ Chain specification not found: $CHAIN_SPEC"
+            echo "💡 Generate it first by running: ./scripts/zero-to-hero/generate-chain-spec.sh"
+            exit 1
+          fi
+          
+          echo "🚀 Starting polkadot-omni-node..."
+          echo "📡 RPC will be available at: http://localhost:9944"
+          echo "🔍 Press Ctrl+C to stop the node"
+          echo ""
+          
+          # Start the node
+          polkadot-omni-node \
+            --chain $CHAIN_SPEC \
+            --dev \
+            --rpc-cors all \
+            --rpc-methods unsafe
+          EOF
+          
+          chmod +x scripts/zero-to-hero/start-node.sh
+          echo "✅ Node startup script created: scripts/zero-to-hero/start-node.sh"
+
+      - name: Generate setup instructions
+        run: |
+          echo "$(date -Iseconds) 📖 Generating setup instructions..."
+          cat > scripts/zero-to-hero/README.md << 'EOF'
+          # Parachain Development Scripts
+          
+          This directory contains scripts to set up and run a local parachain development environment.
+          
+          ## Generated Configuration
+          
+          These scripts were generated automatically with the following versions:
+          - **Rust**: `${{ steps.resolve-versions.outputs.rust-version }}`
+          - **Chain Spec Builder**: `${{ steps.resolve-versions.outputs.chain-spec-builder-version }}`
+          - **Omni Node**: `${{ steps.resolve-versions.outputs.omni-node-version }}`
+          - **Para ID**: `${{ env.PARA_ID }}`
+          - **Relay Chain**: `${{ env.RELAY_CHAIN }}`
+          
+          **Version Changes**: ${{ needs.check-version-changes.outputs.changed-versions }}
+          
+          ## Quick Start
+          
+          1. **Setup Rust toolchain:**
+             ```bash
+             ./scripts/zero-to-hero/setup-rust.sh
+             ```
+          
+          2. **Install chain-spec-builder:**
+             ```bash
+             ./scripts/zero-to-hero/install-chain-spec-builder.sh
+             ```
+          
+          3. **Install omni-node:**
+             ```bash
+             ./scripts/zero-to-hero/install-omni-node.sh
+             ```
+          
+          4. **Build your parachain runtime** (if not already done):
+             ```bash
+             cargo build --release
+             ```
+          
+          5. **Generate chain specification:**
+             ```bash
+             ./scripts/zero-to-hero/generate-chain-spec.sh
+             ```
+          
+          6. **Start the parachain node:**
+             ```bash
+             ./scripts/zero-to-hero/start-node.sh
+             ```
+          
+          ## Script Details
+          
+          ### `setup-rust.sh`
+          Sets up the Rust toolchain with the required version and adds WASM compilation support.
+          
+          ### `install-chain-spec-builder.sh`
+          Installs the staging-chain-spec-builder tool for generating chain specifications.
+          
+          ### `install-omni-node.sh`
+          Installs the polkadot-omni-node for running the parachain.
+          
+          ### `generate-chain-spec.sh`
+          Creates a development chain specification file (`chain_spec.json`) for your parachain.
+          
+          ### `start-node.sh`
+          Starts the parachain node in development mode with RPC endpoints enabled.
+          
+          ## RPC Endpoints
+          
+          Once the node is running, you can access:
+          - **HTTP RPC**: `http://localhost:9944`
+          - **WebSocket RPC**: `ws://localhost:9944`
+          
+          ## Troubleshooting
+          
+          - **Runtime not found**: Make sure to build your parachain with `cargo build --release` before generating the chain spec
+          - **Chain spec not found**: Run `./scripts/zero-to-hero/generate-chain-spec.sh` before starting the node
+          - **Port already in use**: Stop any existing nodes or change the port using `--port` and `--rpc-port` flags
+          
+          ## Repository Information
+          
+          - **Source**: `${{ env.PARACHAIN_REPO }}`
+          - **Branch**: `${{ env.PARACHAIN_BRANCH }}`
+          - **Generated**: $(date -Iseconds)
+          EOF
+          
+          echo "✅ Setup instructions created: scripts/zero-to-hero/README.md"
+
+      - name: Validate generated scripts
+        run: |
+          echo "$(date -Iseconds) 🔍 Validating generated scripts..."
+          
+          # Check that all scripts exist and are executable
+          SCRIPTS=(
+            "setup-rust.sh"
+            "install-chain-spec-builder.sh" 
+            "install-omni-node.sh"
+            "generate-chain-spec.sh"
+            "start-node.sh"
+          )
+          
+          for script in "${SCRIPTS[@]}"; do
+            SCRIPT_PATH="scripts/zero-to-hero/$script"
+            if [ -f "$SCRIPT_PATH" ] && [ -x "$SCRIPT_PATH" ]; then
+              echo "✅ $script - exists and executable"
+              echo "   📊 Size: $(du -h "$SCRIPT_PATH" | cut -f1)"
+            else
+              echo "❌ $script - missing or not executable"
+              exit 1
+            fi
+          done
+          
+          # Validate README exists
+          if [ -f "scripts/zero-to-hero/README.md" ]; then
+            echo "✅ README.md - exists"
+            echo "   📊 Size: $(du -h scripts/zero-to-hero/README.md | cut -f1)"
+          else
+            echo "❌ README.md - missing"
+            exit 1
+          fi
+          
+          echo "$(date -Iseconds) ✅ All scripts validated successfully"
+
+      - name: Show script summary
+        run: |
+          echo "$(date -Iseconds) 📋 Script Generation Summary:"
+          echo ""
+          echo "Generated scripts with versions:"
+          echo "  🦀 Rust: ${{ steps.resolve-versions.outputs.rust-version }}"
+          echo "  🔧 Chain Spec Builder: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}"
+          echo "  🚀 Omni Node: ${{ steps.resolve-versions.outputs.omni-node-version }}"
+          echo ""
+          echo "🔄 Triggered by version changes: ${{ needs.check-version-changes.outputs.changed-versions }}"
+          echo ""
+          echo "Scripts created:"
+          ls -la scripts/zero-to-hero/
+          echo ""
+          echo "📖 See scripts/zero-to-hero/README.md for usage instructions"
+
+      - name: Upload generated scripts
+        uses: actions/upload-artifact@v4
+        with:
+          name: parachain-setup-scripts-${{ github.run_id }}
+          path: scripts/zero-to-hero/
+          retention-days: 30
+
+      - name: Create scripts archive
+        run: |
+          echo "$(date -Iseconds) 📦 Creating scripts archive..."
+          tar -czf parachain-zero-to-hero-scripts.tar.gz scripts/zero-to-hero/
+          echo "✅ Archive created: parachain-zero-to-hero-scripts.tar.gz"
+
+      - name: Upload scripts archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: parachain-zero-to-hero-scripts-archive-${{ github.run_id }}
+          path: parachain-zero-to-hero-scripts.tar.gz
+          retention-days: 30
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [check-version-changes, build-parachain, generate-scripts]
+    if: needs.check-version-changes.outputs.has-changes == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      contents: write
+      pull-requests: read
+    outputs:
+      release-tag: ${{ steps.create-tag.outputs.tag }}
+      release-url: ${{ steps.create-release.outputs.html_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for changelog generation
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download generated scripts
+        uses: actions/download-artifact@v4
+        with:
+          name: parachain-setup-scripts-${{ github.run_id }}
+          path: scripts/zero-to-hero/
+
+      - name: Download scripts archive
+        uses: actions/download-artifact@v4
+        with:
+          name: parachain-zero-to-hero-scripts-archive-${{ github.run_id }}
+          path: ./
+
+      - name: Determine version bump
+        id: version-bump
+        run: |
+          echo "$(date -Iseconds) 🔍 Determining version bump..."
+          
+          # Get the latest tag, default to v0.0.0 if no tags exist
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "📋 Latest tag: $LATEST_TAG"
+          
+          # Extract version components (remove 'v' prefix)
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
+          MAJOR=${VERSION_PARTS[0]:-0}
+          MINOR=${VERSION_PARTS[1]:-0} 
+          PATCH=${VERSION_PARTS[2]:-0}
+          
+          echo "📋 Current version: $MAJOR.$MINOR.$PATCH"
+          
+          # Analyze commits since last tag to determine bump type
+          if [ "$LATEST_TAG" = "v0.0.0" ]; then
+            COMMITS_SINCE=""
+          else
+            COMMITS_SINCE=$(git log $LATEST_TAG..HEAD --oneline)
+          fi
+          
+          # Determine bump type based on commit messages and branch
+          BUMP_TYPE="patch"  # Default to patch
+          
+          # Check for breaking changes (major bump)
+          if echo "$COMMITS_SINCE" | grep -i -E "(breaking|major|BREAKING CHANGE)" > /dev/null; then
+            BUMP_TYPE="major"
+          # Check for new features (minor bump)
+          elif echo "$COMMITS_SINCE" | grep -i -E "(feat|feature|add|new)" > /dev/null; then
+            BUMP_TYPE="minor"
+          # Check if we're on develop branch (pre-release)
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            BUMP_TYPE="prerelease"
+          fi
+          
+          # Apply version bump
+          case $BUMP_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+            prerelease)
+              # For pre-release, increment patch and add pre-release identifier
+              PATCH=$((PATCH + 1))
+              PRE_RELEASE="dev.$(date +%Y%m%d%H%M%S)"
+              ;;
+          esac
+          
+          # Construct new version
+          if [ "$BUMP_TYPE" = "prerelease" ]; then
+            NEW_VERSION="$MAJOR.$MINOR.$PATCH-$PRE_RELEASE"
+          else
+            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+          
+          echo "bump-type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "previous-tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          
+          echo "$(date -Iseconds) ✅ Version bump determined:"
+          echo "  - Type: $BUMP_TYPE"
+          echo "  - Previous: $LATEST_TAG"
+          echo "  - New: v$NEW_VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "$(date -Iseconds) 📝 Generating changelog..."
+          
+          NEW_VERSION="${{ steps.version-bump.outputs.new-version }}"
+          PREVIOUS_TAG="${{ steps.version-bump.outputs.previous-tag }}"
+          RUST_VERSION="${{ needs.generate-scripts.outputs.rust-version }}"
+          CHAIN_SPEC_VERSION="${{ needs.generate-scripts.outputs.chain-spec-builder-version }}"
+          OMNI_NODE_VERSION="${{ needs.generate-scripts.outputs.omni-node-version }}"
+          CHANGED_VERSIONS="${{ needs.check-version-changes.outputs.changed-versions }}"
+          
+          # Create changelog file
+          CHANGELOG_FILE="RELEASE_CHANGELOG.md"
+          
+          cat > $CHANGELOG_FILE << EOF
+          # Release v$NEW_VERSION
+          
+          Released: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          ## 🎯 What's New
+          
+          This release includes automatically generated setup scripts for local parachain development with updated component versions.
+          
+          ### 🔄 Version Changes
+          **Triggered by**: $CHANGED_VERSIONS
+          
+          ### 📦 Component Versions
+          - **Rust Toolchain**: \`$RUST_VERSION\`
+          - **Chain Spec Builder**: \`staging-chain-spec-builder@$CHAIN_SPEC_VERSION\`
+          - **Omni Node**: \`polkadot-omni-node@$OMNI_NODE_VERSION\`
+          - **Para ID**: \`${{ env.PARA_ID }}\`
+          - **Relay Chain**: \`${{ env.RELAY_CHAIN }}\`
+          
+          ### 🛠️ Generated Scripts
+          - \`setup-rust.sh\` - Complete Rust toolchain setup with WASM support
+          - \`install-chain-spec-builder.sh\` - Chain specification builder installation
+          - \`install-omni-node.sh\` - Polkadot omni-node installation  
+          - \`generate-chain-spec.sh\` - Chain specification generation
+          - \`start-node.sh\` - Parachain node startup script
+          - \`README.md\` - Comprehensive setup and troubleshooting guide
+          
+          ### 🔧 Features
+          - ✅ Automated version resolution from \`versions.yml\`
+          - ✅ Intelligent change detection (only runs when zero_to_hero versions change)
+          - ✅ Cross-platform compatibility (detects current architecture)
+          - ✅ Comprehensive error handling and validation
+          - ✅ Step-by-step setup instructions
+          - ✅ Ready-to-use development environment
+          
+          EOF
+          
+          # Add commit history if available
+          if [ "$PREVIOUS_TAG" != "v0.0.0" ]; then
+            echo "### 📋 Changes Since $PREVIOUS_TAG" >> $CHANGELOG_FILE
+            echo "" >> $CHANGELOG_FILE
+            
+            # Get commits since last tag, format them nicely
+            git log $PREVIOUS_TAG..HEAD --oneline --no-merges | while read commit; do
+              echo "- $commit" >> $CHANGELOG_FILE
+            done
+            
+            echo "" >> $CHANGELOG_FILE
+          fi
+          
+          # Add technical details
+          cat >> $CHANGELOG_FILE << EOF
+          ### 🏗️ Build Information
+          - **Workflow**: Version Change Detection → Build Parachain → Generate Scripts
+          - **Branch**: \`${{ github.ref_name }}\`
+          - **Commit**: \`${{ github.sha }}\`
+          - **Parachain Source**: [\`${{ env.PARACHAIN_REPO }}\`](${{ env.PARACHAIN_REPO }})
+          - **Version Changes**: $CHANGED_VERSIONS
+          
+          ### 📥 Quick Start
+          
+          1. Download and extract the \`parachain-zero-to-hero-scripts.tar.gz\` from this release
+          2. Run the setup scripts in order:
+             \`\`\`bash
+             ./scripts/zero-to-hero/setup-rust.sh
+             ./scripts/zero-to-hero/install-chain-spec-builder.sh  
+             ./scripts/zero-to-hero/install-omni-node.sh
+             ./scripts/zero-to-hero/generate-chain-spec.sh
+             ./scripts/zero-to-hero/start-node.sh
+             \`\`\`
+          3. Your parachain node will be running at \`http://localhost:9944\`
+          
+          ### 🔗 Useful Links
+          - [Setup Scripts Documentation](scripts/zero-to-hero/README.md)
+          - [Parachain Source Repository](${{ env.PARACHAIN_REPO }})
+          - [Polkadot Documentation](https://docs.polkadot.network/)
+          
+          ---
+          
+          **Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/$PREVIOUS_TAG...v$NEW_VERSION
+          EOF
+          
+          echo "changelog-file=$CHANGELOG_FILE" >> $GITHUB_OUTPUT
+          
+          echo "$(date -Iseconds) ✅ Changelog generated:"
+          echo "📄 File: $CHANGELOG_FILE"
+          echo "📊 Size: $(du -h $CHANGELOG_FILE | cut -f1)"
+
+      - name: Create and push tag
+        id: create-tag
+        run: |
+          echo "$(date -Iseconds) 🏷️ Creating and pushing tag..."
+          
+          NEW_VERSION="${{ steps.version-bump.outputs.new-version }}"
+          TAG_NAME="v$NEW_VERSION"
+          CHANGED_VERSIONS="${{ needs.check-version-changes.outputs.changed-versions }}"
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create annotated tag with release info
+          git tag -a "$TAG_NAME" -m "Release $TAG_NAME
+
+          Automated release with parachain setup scripts.
+          
+          Version changes: $CHANGED_VERSIONS
+          
+          Component versions:
+          - Rust: ${{ needs.generate-scripts.outputs.rust-version }}
+          - Chain Spec Builder: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}  
+          - Omni Node: ${{ needs.generate-scripts.outputs.omni-node-version }}
+          
+          Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${{ github.sha }}
+          Branch: ${{ github.ref_name }}"
+          
+          # Push the tag
+          git push origin "$TAG_NAME"
+          
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+          
+          echo "$(date -Iseconds) ✅ Tag created and pushed:"
+          echo "🏷️ Tag: $TAG_NAME"
+          echo "🔄 Changes: $CHANGED_VERSIONS"
+
+      - name: Create GitHub Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.create-tag.outputs.tag }}
+          release_name: "Parachain Setup Scripts ${{ steps.create-tag.outputs.tag }}"
+          body_path: ${{ steps.changelog.outputs.changelog-file }}
+          draft: false
+          prerelease: ${{ contains(steps.version-bump.outputs.new-version, '-') }}
+
+      - name: Upload scripts archive to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: parachain-zero-to-hero-scripts.tar.gz
+          asset_name: parachain-zero-to-hero-scripts.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload individual scripts to release
+        run: |
+          echo "$(date -Iseconds) 📤 Uploading individual scripts to release..."
+          
+          UPLOAD_URL="${{ steps.create-release.outputs.upload_url }}"
+          
+          # List of scripts to upload
+          SCRIPTS=(
+            "setup-rust.sh"
+            "install-chain-spec-builder.sh"
+            "install-omni-node.sh" 
+            "generate-chain-spec.sh"
+            "start-node.sh"
+            "README.md"
+          )
+          
+          for script in "${SCRIPTS[@]}"; do
+            if [ -f "scripts/zero-to-hero/$script" ]; then
+              echo "📤 Uploading $script..."
+              
+              curl -X POST \
+                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Content-Type: application/octet-stream" \
+                --data-binary @"scripts/zero-to-hero/$script" \
+                "${UPLOAD_URL%\{*}?name=$script&label=$script"
+              
+              echo "✅ $script uploaded successfully"
+            else
+              echo "⚠️ $script not found, skipping"
+            fi
+          done
+
+      - name: Release summary
+        run: |
+          echo "$(date -Iseconds) 🎉 Release created successfully!"
+          echo ""
+          echo "📋 Release Details:"
+          echo "  🏷️ Tag: ${{ steps.create-tag.outputs.tag }}"
+          echo "  📝 Type: ${{ steps.version-bump.outputs.bump-type }}"
+          echo "  🔗 URL: ${{ steps.create-release.outputs.html_url }}"
+          echo "  📦 Archive: parachain-zero-to-hero-scripts.tar.gz"
+          echo "  🔄 Changes: ${{ needs.check-version-changes.outputs.changed-versions }}"
+          echo ""
+          echo "📦 Component Versions:"
+          echo "  🦀 Rust: ${{ needs.generate-scripts.outputs.rust-version }}"
+          echo "  🔧 Chain Spec Builder: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}"
+          echo "  🚀 Omni Node: ${{ needs.generate-scripts.outputs.omni-node-version }}"
+          echo ""
+          echo "🎯 Assets included:"
+          echo "  - parachain-zero-to-hero-scripts.tar.gz (all scripts)"
+          echo "  - Individual script files"
+          echo "  - Comprehensive README.md"
+          echo ""
+          echo "👥 Users can now download and use these scripts for local development!"
+
+      - name: Post-release cleanup
+        if: always()
+        run: |
+          echo "$(date -Iseconds) 🧹 Performing post-release cleanup..."
+          
+          # Clean up temporary files
+          rm -f RELEASE_CHANGELOG.md
+          
+          echo "✅ Cleanup completed"
+
+  # Summary job that runs regardless of whether scripts were generated
+  workflow-summary:
+    name: Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [check-version-changes]
+    if: always()
+    steps:
+      - name: Display workflow summary
+        run: |
+          echo "$(date -Iseconds) 📋 Zero to Hero Workflow Summary"
+          echo ""
+          echo "🔍 Version Change Check:"
+          
+          if [ "${{ needs.check-version-changes.outputs.has-changes }}" = "true" ]; then
+            echo "  ✅ Changes detected: ${{ needs.check-version-changes.outputs.changed-versions }}"
+            echo "  🚀 Scripts generation was triggered"
+            
+            if [ "${{ needs.generate-scripts.result }}" = "success" ]; then
+              echo "  ✅ Scripts generated successfully"
+            elif [ "${{ needs.generate-scripts.result }}" = "failure" ]; then
+              echo "  ❌ Scripts generation failed"
+            elif [ "${{ needs.generate-scripts.result }}" = "cancelled" ]; then
+              echo "  ⚠️ Scripts generation was cancelled"
+            else
+              echo "  ⏳ Scripts generation status: ${{ needs.generate-scripts.result }}"
+            fi
+            
+            # Check release status if applicable
+            if [ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/develop" ]); then
+              if [ "${{ needs.create-release.result }}" = "success" ]; then
+                echo "  ✅ Release created successfully"
+              elif [ "${{ needs.create-release.result }}" = "failure" ]; then
+                echo "  ❌ Release creation failed"
+              elif [ "${{ needs.create-release.result }}" = "cancelled" ]; then
+                echo "  ⚠️ Release creation was cancelled"
+              else
+                echo "  ⏳ Release status: ${{ needs.create-release.result }}"
+              fi
+            fi
+          else
+            echo "  ℹ️ No zero_to_hero version changes detected"
+            echo "  ⏭️ Scripts generation was skipped"
+            echo ""
+            echo "💡 To trigger script generation:"
+            echo "  - Modify versions in the zero_to_hero section of .github/versions.yml"
+            echo "  - Or run this workflow manually via workflow_dispatch"
+          fi
+          
+          echo ""
+          echo "🔧 Trigger: ${{ github.event_name }}"
+          echo "📂 Branch: ${{ github.ref_name }}"
+          echo "📝 Commit: ${{ github.sha }}"
