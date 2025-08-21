@@ -398,7 +398,7 @@ jobs:
           if [ -n "${NODE_PID:-}" ] && kill -0 $NODE_PID 2>/dev/null; then
             # Get basic system info
             echo "💾 Memory usage:"
-            ps -o pid,ppid,user,cpu,mem,etime,cmd -p $NODE_PID || true
+            ps -o pid,ppid,user,cpu,%mem,etime,cmd -p $NODE_PID || true
             
             echo "🔌 Network connections:"
             ss -tulpn | grep :9944 || echo "No connections on port 9944"
