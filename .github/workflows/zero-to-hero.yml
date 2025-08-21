@@ -112,11 +112,16 @@ jobs:
         with:
           omni-node-version: ${{ needs.setup-dependencies.outputs.omni-node-version }}
 
-      - name: Cache tools for main job
-        uses: actions/cache/save@v4
-        with:
-          path: ~/.cargo/bin
-          key: tools-${{ runner.os }}-${{ runner.arch }}-${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}-${{ needs.setup-dependencies.outputs.omni-node-version }}
+      - name: Verify tools are available
+        run: |
+          echo "🔍 Verifying installed tools..."
+          echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
+          
+          # Verify tools work
+          chain-spec-builder --version
+          polkadot-omni-node --version
+          
+          echo "✅ All tools verified and ready"
 
   build-parachain:
     name: Build Parachain
