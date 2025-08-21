@@ -30,22 +30,45 @@ runs:
       id: system-cache
       uses: actions/cache@v4
       with:
-        path: /var/cache/apt
+        path: |
+          ~/.cache/apt-packages
         key: ${{ runner.os }}-system-deps-${{ hashFiles('.github/actions/setup-rust/action.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-system-deps-
 
     - name: Install system dependencies
       shell: bash
       run: |
+        echo "📦 Installing system dependencies..."
+        
+        # Create cache directory
+        mkdir -p ~/.cache/apt-packages
+        
+        # Update package lists
         sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          curl \
-          git \
-          clang \
-          libssl-dev \
-          llvm \
-          libudev-dev \
-          protobuf-compiler
+        
+        # Check if dependencies are already installed to avoid reinstalling
+        PACKAGES="build-essential curl git clang libssl-dev llvm libudev-dev protobuf-compiler"
+        
+        echo "🔍 Checking which packages need installation..."
+        TO_INSTALL=""
+        for pkg in $PACKAGES; do
+          if ! dpkg -l | grep -q "^ii  $pkg "; then
+            TO_INSTALL="$TO_INSTALL $pkg"
+          else
+            echo "✅ $pkg already installed"
+          fi
+        done
+        
+        if [ -n "$TO_INSTALL" ]; then
+          echo "📥 Installing packages:$TO_INSTALL"
+          sudo apt-get install -y $TO_INSTALL
+          
+          # Save package list for cache validation
+          echo "$TO_INSTALL" > ~/.cache/apt-packages/installed-packages.txt
+        else
+          echo "✅ All required packages already installed"
+        fi
 
     - name: Setup Rust toolchain
       uses: dtolnay/rust-toolchain@stable
