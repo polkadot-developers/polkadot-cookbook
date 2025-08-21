@@ -21,7 +21,7 @@ on:
 jobs:
   # Check if zero_to_hero versions have changed
   check-version-changes:
-    name: Check Zero to Hero Version Changes
+    name: Check Version Changes
     runs-on: ubuntu-latest
     outputs:
       has-changes: ${{ steps.check-changes.outputs.has-changes }}
