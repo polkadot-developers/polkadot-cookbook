@@ -1,7 +1,7 @@
 name: Create Zero to Hero Release
 description: "Test Zero to Hero code, generate Zero to Hero scripts, and publish a release"
 
-run-name: "🚀 Zero to Hero"
+run-name: "Zero to Hero"
 
 env:
   PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-docs-tests/"
@@ -205,10 +205,10 @@ jobs:
 
   # Generate setup scripts after successful build
   generate-scripts:
-    name: Generate Setup Scripts
+    name: Generate Scripts for Zero to Hero tutorial
     runs-on: ubuntu-latest
     needs: [check-version-changes, build-parachain]
-    if: always() && needs.check-version-changes.outputs.has-changes == 'true' && (needs.build-parachain.result == 'success' || needs.build-parachain.result == 'skipped')
+    if: always() && needs.check-version-changes.outputs.has-changes == 'true' && needs.build-parachain.result == 'success'
     outputs:
       rust-version: ${{ steps.resolve-versions.outputs.rust-version }}
       chain-spec-builder-version: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}
@@ -224,7 +224,7 @@ jobs:
           # Use a token that can push to protected branches
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Read versions from config
+      - name: Read versions from versions.yml
         id: resolve-versions
         run: |
           # Install yq for YAML parsing
@@ -565,12 +565,6 @@ jobs:
           - **HTTP RPC**: `http://localhost:9944`
           - **WebSocket RPC**: `ws://localhost:9944`
           
-          ## Troubleshooting
-          
-          - **Runtime not found**: Make sure to build your parachain with `cargo build --release` before generating the chain spec
-          - **Chain spec not found**: Run `./scripts/zero-to-hero/generate-chain-spec.sh` before starting the node
-          - **Port already in use**: Stop any existing nodes or change the port using `--port` and `--rpc-port` flags
-          
           ## Repository Information
           
           - **Source**: `${{ env.PARACHAIN_REPO }}`
@@ -697,7 +691,6 @@ jobs:
           path: parachain-zero-to-hero-scripts.tar.gz
           retention-days: 30
 
-  # FIXED: Create release directly in the same job after committing scripts
   create-release:
     name: Create Release with Scripts
     runs-on: ubuntu-latest
@@ -724,7 +717,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          # FIXED: Checkout the specific commit that contains the scripts
           ref: ${{ needs.generate-scripts.outputs.commit-sha }}
 
       - name: Verify scripts are present
