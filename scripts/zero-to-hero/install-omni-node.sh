@@ -4,7 +4,7 @@
 
 set -e
 
-OMNI_NODE_VERSION="0.5.0"
+OMNI_NODE_VERSION="0.4.0"
 
 echo "🚀 Installing polkadot-omni-node $OMNI_NODE_VERSION..."
 
