@@ -1,5 +1,5 @@
-name: Build Kitchensink Parachain
-description: "Kitchensink Parachain"
+name: Kitchensink Parachain
+description: "Build and run kitchensink parachain"
 
 env:
   PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-docs-tests/"
