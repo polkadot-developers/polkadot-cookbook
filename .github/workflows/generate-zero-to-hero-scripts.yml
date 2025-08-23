@@ -674,26 +674,6 @@ jobs:
             echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
           fi
 
-      - name: Show script summary
-        run: |
-          echo "$(date -Iseconds) 📋 Script Generation Summary:"
-          echo ""
-          echo "Generated scripts with versions:"
-          echo "  🦀 Rust: ${{ steps.resolve-versions.outputs.rust-version }}"
-          echo "  🔧 Chain Spec Builder: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}"
-          echo "  🚀 Omni Node: ${{ steps.resolve-versions.outputs.omni-node-version }}"
-          echo ""
-          echo "🔄 Triggered by version changes: ${{ needs.check-version-changes.outputs.changed-versions }}"
-          echo "💾 Scripts committed to repository: ${{ steps.commit-scripts.outputs.scripts-committed }}"
-          if [ "${{ steps.commit-scripts.outputs.scripts-committed }}" = "true" ]; then
-            echo "📝 Commit SHA: ${{ steps.commit-scripts.outputs.commit-sha }}"
-          fi
-          echo ""
-          echo "Scripts created:"
-          ls -la scripts/zero-to-hero/
-          echo ""
-          echo "📖 See scripts/zero-to-hero/README.md for usage instructions"
-
       - name: Upload generated scripts as artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -715,38 +695,16 @@ jobs:
           path: parachain-zero-to-hero-scripts.tar.gz
           retention-days: 30
 
-  # Debug job to understand release conditions
-  debug-release-conditions:
-    name: Debug Release Conditions
-    runs-on: ubuntu-latest
-    needs: [check-version-changes, build-parachain, generate-scripts]
-    if: always() && needs.check-version-changes.outputs.has-changes == 'true'
-    steps:
-      - name: Show release conditions
-        run: |
-          echo "🔍 Release condition check:"
-          echo "  - has-changes: ${{ needs.check-version-changes.outputs.has-changes }}"
-          echo "  - build-parachain result: ${{ needs.build-parachain.result }}"
-          echo "  - generate-scripts result: ${{ needs.generate-scripts.result }}"
-          echo "  - scripts-committed: ${{ needs.generate-scripts.outputs.scripts-committed }}"
-          echo "  - event name: ${{ github.event_name }}"
-          echo "  - ref: ${{ github.ref }}"
-          echo "  - ref name: ${{ github.ref_name }}"
-          echo "  - manual release input: ${{ github.event.inputs.create_release }}"
-          echo ""
-          echo "Release conditions evaluation:"
-          echo "  - Auto release (push to main/develop): $([ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/develop" ]) && echo "YES" || echo "NO")"
-          echo "  - Manual release requested: $([ "${{ github.event.inputs.create_release }}" = "true" ] && echo "YES" || echo "NO")"
-          echo "  - Scripts generation successful: $([ "${{ needs.generate-scripts.result }}" = "success" ] && echo "YES" || echo "NO")"
-
-  create-release:
-    name: Create Release
+  # NEW: Fresh checkout job that runs after scripts are committed
+  prepare-release:
+    name: Prepare Release
     runs-on: ubuntu-latest
     needs: [check-version-changes, build-parachain, generate-scripts]
     if: |
       always() && 
       needs.check-version-changes.outputs.has-changes == 'true' && 
       needs.generate-scripts.result == 'success' &&
+      needs.generate-scripts.outputs.scripts-committed == 'true' &&
       (
         (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) ||
         github.event.inputs.create_release == 'true'
@@ -758,24 +716,64 @@ jobs:
     outputs:
       release-tag: ${{ steps.create-tag.outputs.tag }}
       release-url: ${{ steps.create-release.outputs.html_url }}
+      scripts-commit-sha: ${{ steps.get-latest-commit.outputs.commit-sha }}
     steps:
-      - name: Checkout
+      - name: Wait for commit to propagate
+        run: |
+          echo "$(date -Iseconds) ⏳ Waiting for commit to propagate..."
+          echo "📋 Scripts commit SHA: ${{ needs.generate-scripts.outputs.commit-sha }}"
+          
+          # Wait a moment for GitHub to fully propagate the commit
+          sleep 10
+          
+          echo "✅ Proceeding with fresh checkout"
+
+      - name: Fresh checkout from latest commit
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for changelog generation
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Don't specify ref - let it get the latest from the branch
 
-      - name: Download generated scripts
-        uses: actions/download-artifact@v4
-        with:
-          name: parachain-setup-scripts-${{ github.run_id }}
-          path: scripts/zero-to-hero/
-
-      - name: Download scripts archive
-        uses: actions/download-artifact@v4
-        with:
-          name: parachain-zero-to-hero-scripts-archive-${{ github.run_id }}
-          path: ./
+      - name: Verify we have the latest commit with scripts
+        id: get-latest-commit
+        run: |
+          echo "$(date -Iseconds) 🔍 Verifying fresh checkout..."
+          
+          CURRENT_SHA=$(git rev-parse HEAD)
+          EXPECTED_SHA="${{ needs.generate-scripts.outputs.commit-sha }}"
+          
+          echo "📋 Current HEAD: $CURRENT_SHA"
+          echo "📋 Expected SHA: $EXPECTED_SHA"
+          
+          # Check if we have the scripts
+          if [ -d "scripts/zero-to-hero" ]; then
+            echo "✅ Scripts directory exists"
+            echo "📋 Scripts found:"
+            ls -la scripts/zero-to-hero/
+          else
+            echo "❌ Scripts directory not found!"
+            echo "🔍 Repository contents:"
+            ls -la
+            echo ""
+            echo "🔍 Fetching latest changes..."
+            git fetch origin ${{ github.ref_name }}
+            git reset --hard origin/${{ github.ref_name }}
+            
+            CURRENT_SHA=$(git rev-parse HEAD)
+            echo "📋 After fetch - Current HEAD: $CURRENT_SHA"
+            
+            if [ -d "scripts/zero-to-hero" ]; then
+              echo "✅ Scripts found after fetch"
+            else
+              echo "❌ Scripts still not found after fetch"
+              exit 1
+            fi
+          fi
+          
+          echo "commit-sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
+          
+          echo "$(date -Iseconds) ✅ Fresh checkout verified with scripts"
 
       - name: Determine version bump
         id: version-bump
@@ -864,8 +862,7 @@ jobs:
           CHAIN_SPEC_VERSION="${{ needs.generate-scripts.outputs.chain-spec-builder-version }}"
           OMNI_NODE_VERSION="${{ needs.generate-scripts.outputs.omni-node-version }}"
           CHANGED_VERSIONS="${{ needs.check-version-changes.outputs.changed-versions }}"
-          SCRIPTS_COMMITTED="${{ needs.generate-scripts.outputs.scripts-committed }}"
-          COMMIT_SHA="${{ needs.generate-scripts.outputs.commit-sha }}"
+          SCRIPTS_COMMIT_SHA="${{ steps.get-latest-commit.outputs.commit-sha }}"
           
           # Create changelog file
           CHANGELOG_FILE="RELEASE_CHANGELOG.md"
@@ -906,17 +903,11 @@ jobs:
           - ✅ Ready-to-use development environment
           - ✅ Scripts automatically committed to repository
           
-          EOF
-          
-          # Add commit information if scripts were committed
-          if [ "$SCRIPTS_COMMITTED" = "true" ]; then
-            cat >> $CHANGELOG_FILE << EOF
           ### 💾 Repository Updates
-          - Scripts automatically committed to repository
-          - Commit: [\`${COMMIT_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/$COMMIT_SHA)
+          - Scripts automatically committed and included in this release
+          - Scripts Commit: [\`${SCRIPTS_COMMIT_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/$SCRIPTS_COMMIT_SHA)
           
           EOF
-          fi
           
           # Add commit history if available
           if [ "$PREVIOUS_TAG" != "v0.0.0" ]; then
@@ -934,17 +925,20 @@ jobs:
           # Add technical details
           cat >> $CHANGELOG_FILE << EOF
           ### 🏗️ Build Information
-          - **Workflow**: Version Change Detection → Build Parachain → Generate Scripts → Commit to Repo
+          - **Workflow**: Version Change Detection → Build Parachain → Generate Scripts → Commit to Repo → Create Release
           - **Branch**: \`${{ github.ref_name }}\`
-          - **Commit**: \`${{ github.sha }}\`
+          - **Release Commit**: \`$SCRIPTS_COMMIT_SHA\`
           - **Parachain Source**: [\`${{ env.PARACHAIN_REPO }}\`](${{ env.PARACHAIN_REPO }})
           - **Version Changes**: $CHANGED_VERSIONS
-          - **Scripts Committed**: $SCRIPTS_COMMITTED
           
           ### 📥 Quick Start
           
-          #### Option 1: Use scripts from repository
-          1. Clone or update your repository to get the latest scripts
+          #### Option 1: Use scripts from repository (Recommended)
+          1. Clone or update your repository to get the latest scripts:
+             \`\`\`bash
+             git clone ${{ github.server_url }}/${{ github.repository }}.git
+             cd $(basename ${{ github.repository }})
+             \`\`\`
           2. Navigate to the scripts directory: \`cd scripts/zero-to-hero\`
           3. Run the setup scripts in order:
              \`\`\`bash
@@ -962,19 +956,11 @@ jobs:
           Your parachain node will be running at \`http://localhost:9944\`
           
           ### 🔗 Useful Links
-          - [Setup Scripts Documentation](scripts/zero-to-hero/README.md)
+          - [Setup Scripts Documentation](https://github.com/${{ github.repository }}/tree/$SCRIPTS_COMMIT_SHA/scripts/zero-to-hero/README.md)
+          - [Scripts Directory](https://github.com/${{ github.repository }}/tree/$SCRIPTS_COMMIT_SHA/scripts/zero-to-hero)
           - [Parachain Source Repository](${{ env.PARACHAIN_REPO }})
           - [Polkadot Documentation](https://docs.polkadot.network/)
-          EOF
-          
-          # Add scripts commit link if available
-          if [ "$SCRIPTS_COMMITTED" = "true" ]; then
-            cat >> $CHANGELOG_FILE << EOF
-          - [Scripts Commit](${{ github.server_url }}/${{ github.repository }}/commit/$COMMIT_SHA)
-          EOF
-          fi
-          
-          cat >> $CHANGELOG_FILE << EOF
+          - [Scripts Commit](${{ github.server_url }}/${{ github.repository }}/commit/$SCRIPTS_COMMIT_SHA)
           
           ---
           
@@ -995,13 +981,14 @@ jobs:
           NEW_VERSION="${{ steps.version-bump.outputs.new-version }}"
           TAG_NAME="v$NEW_VERSION"
           CHANGED_VERSIONS="${{ needs.check-version-changes.outputs.changed-versions }}"
+          SCRIPTS_COMMIT_SHA="${{ steps.get-latest-commit.outputs.commit-sha }}"
           
           # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Create annotated tag with release info
-          git tag -a "$TAG_NAME" -m "Release $TAG_NAME
+          # Create annotated tag with release info - tag the commit that includes the scripts
+          git tag -a "$TAG_NAME" "$SCRIPTS_COMMIT_SHA" -m "Release $TAG_NAME
 
           Automated release with parachain setup scripts.
           
@@ -1012,10 +999,17 @@ jobs:
           - Chain Spec Builder: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}  
           - Omni Node: ${{ needs.generate-scripts.outputs.omni-node-version }}
           
+          Scripts included in release:
+          - setup-rust.sh
+          - install-chain-spec-builder.sh
+          - install-omni-node.sh
+          - generate-chain-spec.sh
+          - start-node.sh
+          - README.md
+          
           Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          Commit: ${{ github.sha }}
-          Branch: ${{ github.ref_name }}
-          Scripts committed: ${{ needs.generate-scripts.outputs.scripts-committed }}"
+          Scripts Commit: $SCRIPTS_COMMIT_SHA
+          Branch: ${{ github.ref_name }}"
           
           # Push the tag
           git push origin "$TAG_NAME"
@@ -1024,7 +1018,28 @@ jobs:
           
           echo "$(date -Iseconds) ✅ Tag created and pushed:"
           echo "🏷️ Tag: $TAG_NAME"
+          echo "📝 Tagged commit: $SCRIPTS_COMMIT_SHA (includes scripts)"
           echo "🔄 Changes: $CHANGED_VERSIONS"
+
+      - name: Create scripts archive for release
+        run: |
+          echo "$(date -Iseconds) 📦 Creating scripts archive for release..."
+          
+          # Verify scripts exist
+          if [ ! -d "scripts/zero-to-hero" ]; then
+            echo "❌ Scripts directory not found!"
+            exit 1
+          fi
+          
+          # Create the archive
+          tar -czf parachain-zero-to-hero-scripts.tar.gz scripts/zero-to-hero/
+          
+          echo "✅ Archive created: parachain-zero-to-hero-scripts.tar.gz"
+          echo "📊 Archive size: $(du -h parachain-zero-to-hero-scripts.tar.gz | cut -f1)"
+          
+          # Verify archive contents
+          echo "📋 Archive contents:"
+          tar -tzf parachain-zero-to-hero-scripts.tar.gz
 
       - name: Create GitHub Release
         id: create-release
@@ -1090,38 +1105,56 @@ jobs:
           echo "  🔗 URL: ${{ steps.create-release.outputs.html_url }}"
           echo "  📦 Archive: parachain-zero-to-hero-scripts.tar.gz"
           echo "  🔄 Changes: ${{ needs.check-version-changes.outputs.changed-versions }}"
-          echo "  💾 Scripts committed to repo: ${{ needs.generate-scripts.outputs.scripts-committed }}"
+          echo "  📝 Tagged Commit: ${{ steps.get-latest-commit.outputs.commit-sha }}"
           echo ""
           echo "📦 Component Versions:"
           echo "  🦀 Rust: ${{ needs.generate-scripts.outputs.rust-version }}"
           echo "  🔧 Chain Spec Builder: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}"
           echo "  🚀 Omni Node: ${{ needs.generate-scripts.outputs.omni-node-version }}"
           echo ""
-          echo "🎯 Assets included:"
-          echo "  - parachain-zero-to-hero-scripts.tar.gz (all scripts)"
+          echo "🎯 Release includes:"
+          echo "  - All setup scripts committed to repository"
+          echo "  - Downloadable scripts archive (tar.gz)"
           echo "  - Individual script files"
-          echo "  - Comprehensive README.md"
+          echo "  - Comprehensive documentation"
           echo ""
-          echo "👥 Users can now:"
-          echo "  - Use scripts directly from the repository (scripts/zero-to-hero/)"
-          echo "  - Download scripts from this release"
-          echo "  - Follow the README.md for step-by-step setup"
+          echo "✅ Scripts are available:"
+          echo "  - In repository: scripts/zero-to-hero/"
+          echo "  - In release: ${{ steps.create-release.outputs.html_url }}"
+          echo "  - Tagged at commit: ${{ steps.get-latest-commit.outputs.commit-sha }}"
 
-      - name: Post-release cleanup
-        if: always()
+  # Debug job to understand release conditions
+  debug-release-conditions:
+    name: Debug Release Conditions
+    runs-on: ubuntu-latest
+    needs: [check-version-changes, build-parachain, generate-scripts]
+    if: always() && needs.check-version-changes.outputs.has-changes == 'true'
+    steps:
+      - name: Show release conditions
         run: |
-          echo "$(date -Iseconds) 🧹 Performing post-release cleanup..."
-          
-          # Clean up temporary files
-          rm -f RELEASE_CHANGELOG.md
-          
-          echo "✅ Cleanup completed"
+          echo "🔍 Release condition check:"
+          echo "  - has-changes: ${{ needs.check-version-changes.outputs.has-changes }}"
+          echo "  - build-parachain result: ${{ needs.build-parachain.result }}"
+          echo "  - generate-scripts result: ${{ needs.generate-scripts.result }}"
+          echo "  - scripts-committed: ${{ needs.generate-scripts.outputs.scripts-committed }}"
+          echo "  - event name: ${{ github.event_name }}"
+          echo "  - ref: ${{ github.ref }}"
+          echo "  - ref name: ${{ github.ref_name }}"
+          echo "  - manual release input: ${{ github.event.inputs.create_release }}"
+          echo ""
+          echo "Release conditions evaluation:"
+          echo "  - Auto release (push to main/develop): $([ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/develop" ]) && echo "YES" || echo "NO")"
+          echo "  - Manual release requested: $([ "${{ github.event.inputs.create_release }}" = "true" ] && echo "YES" || echo "NO")"
+          echo "  - Scripts generation successful: $([ "${{ needs.generate-scripts.result }}" = "success" ] && echo "YES" || echo "NO")"
+          echo "  - Scripts committed: $([ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ] && echo "YES" || echo "NO")"
+          echo ""
+          echo "🔄 Will run prepare-release job: $([ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ] && ([ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/develop" ]) || [ "${{ github.event.inputs.create_release }}" = "true" ]) && echo "YES" || echo "NO")"
 
   # Summary job that runs regardless of whether scripts were generated
   workflow-summary:
     name: Workflow Summary
     runs-on: ubuntu-latest
-    needs: [check-version-changes, build-parachain, generate-scripts, create-release]
+    needs: [check-version-changes, build-parachain, generate-scripts, prepare-release]
     if: always()
     steps:
       - name: Display workflow summary
@@ -1164,17 +1197,21 @@ jobs:
             
             # Release status
             echo "🚀 Release Creation:"
-            case "${{ needs.create-release.result }}" in
+            case "${{ needs.prepare-release.result }}" in
               "success") 
                 echo "  ✅ Release created successfully"
-                echo "  🏷️ Tag: ${{ needs.create-release.outputs.release-tag }}"
-                echo "  🔗 URL: ${{ needs.create-release.outputs.release-url }}"
+                echo "  🏷️ Tag: ${{ needs.prepare-release.outputs.release-tag }}"
+                echo "  🔗 URL: ${{ needs.prepare-release.outputs.release-url }}"
+                echo "  📝 Scripts included from commit: ${{ needs.prepare-release.outputs.scripts-commit-sha }}"
                 ;;
               "failure") echo "  ❌ Release creation failed" ;;
               "cancelled") echo "  ⚠️ Release creation was cancelled" ;;
               "skipped") 
                 echo "  ⏭️ Release creation was skipped"
                 echo "  💡 Reasons for skipping:"
+                if [ "${{ needs.generate-scripts.outputs.scripts-committed }}" != "true" ]; then
+                  echo "    - Scripts were not committed to repository"
+                fi
                 if [ "${{ github.event_name }}" != "push" ] && [ "${{ github.event.inputs.create_release }}" != "true" ]; then
                   echo "    - Not a push event and manual release not requested"
                 fi
@@ -1182,7 +1219,7 @@ jobs:
                   echo "    - Not on main/develop branch and manual release not requested"
                 fi
                 ;;
-              *) echo "  ⏳ Release status: ${{ needs.create-release.result }}" ;;
+              *) echo "  ⏳ Release status: ${{ needs.prepare-release.result }}" ;;
             esac
             echo ""
             
@@ -1220,10 +1257,12 @@ jobs:
           if [ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ]; then
             echo "  ✅ Scripts are available in the repository at scripts/zero-to-hero/"
             echo "  📖 See scripts/zero-to-hero/README.md for usage instructions"
+            echo "  🔗 Scripts commit: ${{ needs.generate-scripts.outputs.commit-sha }}"
           fi
-          if [ "${{ needs.create-release.result }}" = "success" ]; then
+          if [ "${{ needs.prepare-release.result }}" = "success" ]; then
             echo "  ✅ Scripts are also available as release assets"
-            echo "  📥 Download from: ${{ needs.create-release.outputs.release-url }}"
+            echo "  📥 Download from: ${{ needs.prepare-release.outputs.release-url }}"
+            echo "  🏷️ Release tag: ${{ needs.prepare-release.outputs.release-tag }}"
           fi
           if [ "${{ needs.check-version-changes.outputs.has-changes }}" != "true" ]; then
             echo "  💡 No action needed - versions are up to date"
