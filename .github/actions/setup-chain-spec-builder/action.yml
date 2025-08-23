@@ -40,8 +40,19 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        echo "🔧 Installing staging-chain-spec-builder@${{ inputs.chain-spec-builder-version }}..."
-        cargo install --locked staging-chain-spec-builder@${{ inputs.chain-spec-builder-version }}
+        echo "🔧 Installing chain-spec-builder@${{ inputs.chain-spec-builder-version }}..."
+        
+        if command -v chain-spec-builder >/dev/null 2>&1; then
+          INSTALLED_VERSION=$(chain-spec-builder --version | awk '{print $2}')
+          if [ "$INSTALLED_VERSION" = "${{ inputs.chain-spec-builder-version }}" ]; then
+            echo "✅ chain-spec-builder $INSTALLED_VERSION already installed, skipping"
+            exit 0
+          else
+            echo "⚠️ Different version found ($INSTALLED_VERSION), installing requested version..."
+          fi
+        fi
+
+        cargo install staging-chain-spec-builder --version ${{ inputs.chain-spec-builder-version }} --locked --force
         echo "✅ Installation completed"
 
     - name: Add Cargo bin to PATH
@@ -54,24 +65,20 @@ runs:
       run: |
         echo "🔍 Verifying chain-spec-builder installation..."
         
-        # Check if binary exists and is executable
         if ! command -v chain-spec-builder &> /dev/null; then
           echo "❌ chain-spec-builder not found in PATH"
           exit 1
         fi
         
-        # Get version and path
-        VERSION_OUTPUT=$(chain-spec-builder --version 2>&1)
+        VERSION_OUTPUT=$(chain-spec-builder --version | awk '{print $2}')
         BINARY_PATH=$(which chain-spec-builder)
         
         echo "✅ chain-spec-builder found at: $BINARY_PATH"
         echo "✅ Version: $VERSION_OUTPUT"
         
-        # Set outputs
         echo "version=$VERSION_OUTPUT" >> $GITHUB_OUTPUT
         echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
         
-        # Test basic functionality
         echo "🧪 Testing basic functionality..."
         if chain-spec-builder --help > /dev/null 2>&1; then
           echo "✅ chain-spec-builder is working correctly"

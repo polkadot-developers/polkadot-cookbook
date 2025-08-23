@@ -41,7 +41,18 @@ runs:
       shell: bash
       run: |
         echo "🔧 Installing polkadot-omni-node@${{ inputs.omni-node-version }}..."
-        cargo install --locked polkadot-omni-node@${{ inputs.omni-node-version }}
+        
+        if command -v polkadot-omni-node >/dev/null 2>&1; then
+          INSTALLED_VERSION=$(polkadot-omni-node --version | awk '{print $2}')
+          if [ "$INSTALLED_VERSION" = "${{ inputs.omni-node-version }}" ]; then
+            echo "✅ polkadot-omni-node $INSTALLED_VERSION already installed, skipping"
+            exit 0
+          else
+            echo "⚠️ Different version found ($INSTALLED_VERSION), installing requested version..."
+          fi
+        fi
+        
+        cargo install polkadot-omni-node --version ${{ inputs.omni-node-version }} --locked --force
         echo "✅ Installation completed"
 
     - name: Add Cargo bin to PATH
@@ -54,24 +65,20 @@ runs:
       run: |
         echo "🔍 Verifying polkadot-omni-node installation..."
         
-        # Check if binary exists and is executable
         if ! command -v polkadot-omni-node &> /dev/null; then
           echo "❌ polkadot-omni-node not found in PATH"
           exit 1
         fi
         
-        # Get version and path
-        VERSION_OUTPUT=$(polkadot-omni-node --version 2>&1)
+        VERSION_OUTPUT=$(polkadot-omni-node --version | awk '{print $2}')
         BINARY_PATH=$(which polkadot-omni-node)
         
         echo "✅ polkadot-omni-node found at: $BINARY_PATH"
         echo "✅ Version: $VERSION_OUTPUT"
         
-        # Set outputs
         echo "version=$VERSION_OUTPUT" >> $GITHUB_OUTPUT
         echo "path=$BINARY_PATH" >> $GITHUB_OUTPUT
         
-        # Test basic functionality
         echo "🧪 Testing basic functionality..."
         if polkadot-omni-node --help > /dev/null 2>&1; then
           echo "✅ polkadot-omni-node is working correctly"
