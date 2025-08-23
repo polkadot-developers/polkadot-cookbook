@@ -1090,7 +1090,6 @@ jobs:
           echo ""
           echo "🔄 Will run create-release job: $([ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ] && ([ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/master" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]) || [ "${{ github.event.inputs.create_release }}" = "true" ]) && echo "YES" || echo "NO")"
 
-  # Summary job that runs regardless of whether scripts were generated
   workflow-summary:
     name: Workflow Summary
     runs-on: ubuntu-latest
