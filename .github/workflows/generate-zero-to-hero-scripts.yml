@@ -25,11 +25,7 @@ on:
   push:
     branches: [ master, dev ]
     paths:
-      - '.github/versions.yml'
-  pull_request:
-    branches: [ master, dev ]
-    paths:
-      - '.github/versions.yml'
+      - 'versions.yml'
 
 jobs:
   # Check if zero_to_hero versions have changed
@@ -55,7 +51,7 @@ jobs:
         run: |
           echo "$(date -Iseconds) 🔍 Checking for zero_to_hero version changes..."
           
-          DEPS_FILE=".github/versions.yml"
+          DEPS_FILE="versions.yml"
           TUTORIAL="zero_to_hero"
           HAS_CHANGES="false"
           CHANGED_VERSIONS=""
@@ -231,7 +227,7 @@ jobs:
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
           
-          DEPS_FILE=".github/versions.yml"
+          DEPS_FILE="versions.yml"
           TUTORIAL="zero_to_hero"
           
           # Validate that config file exists
@@ -1176,7 +1172,7 @@ jobs:
             echo "  ⏭️ Scripts generation was skipped"
             echo ""
             echo "💡 To trigger script generation:"
-            echo "  - Modify versions in the zero_to_hero section of .github/versions.yml"
+            echo "  - Modify versions in the zero_to_hero section of versions.yml"
             echo "  - Or run this workflow manually via workflow_dispatch"
             echo "  - Or use the 'force_generation' input when running manually"
           fi
