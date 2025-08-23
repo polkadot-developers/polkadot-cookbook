@@ -11,7 +11,7 @@ These scripts were generated automatically with the following versions:
 - **Para ID**: `1000`
 - **Relay Chain**: `paseo`
 
-**Version Changes**: forced generation
+**Version Changes**:  polkadot_omni_node(0.4.0→0.5.0)
 
 ## Quick Start
 
@@ -79,5 +79,5 @@ Once the node is running, you can access:
 - **Source**: `https://github.com/polkadot-developers/polkadot-docs-tests/`
 - **Branch**: `master`
 - **Generated**: $(date -Iseconds)
-- **Workflow**: https://github.com/polkadot-developers/polkadot-docs-tests/actions/runs/17157594237
-- **Commit**: 0abea5b0928319869a9342310791753d65f54e95
+- **Workflow**: https://github.com/polkadot-developers/polkadot-docs-tests/actions/runs/17175701069
+- **Commit**: 4b873493cf8994781c1e09b08f4b108cbb7e407a
