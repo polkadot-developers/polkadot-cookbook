@@ -197,7 +197,7 @@ jobs:
         with:
           path: ~/.cargo/bin
           key: tools-${{ runner.os }}-${{ runner.arch }}-${{ needs.setup-dependencies.outputs.chain-spec-builder-version }}-${{ needs.setup-dependencies.outputs.omni-node-version }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
 
       - name: Download parachain artifacts
         uses: actions/download-artifact@v4
