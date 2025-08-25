@@ -300,21 +300,21 @@ jobs:
           
           RUST_VERSION="${{ steps.resolve-versions.outputs.rust-version }}"
           
-          echo "🦀 Setting up Rust $RUST_VERSION..."
+          echo "🦀 Setting up Rust ${{ steps.resolve-versions.outputs.rust-version }}..."
           echo "📦 Installing Rust toolchain and components..."
           
           # Set default Rust version
-          rustup default $RUST_VERSION
+          rustup default ${{ steps.resolve-versions.outputs.rust-version }}
           
           # Add WASM target for the current platform
-          rustup target add wasm32-unknown-unknown --toolchain $RUST_VERSION
+          rustup target add wasm32-unknown-unknown --toolchain ${{ steps.resolve-versions.outputs.rust-version }}
           
           # Add rust source for the current platform  
-          rustup component add rust-src --toolchain $RUST_VERSION
+          rustup component add rust-src --toolchain ${{ steps.resolve-versions.outputs.rust-version }}
           
           echo "✅ Rust setup completed successfully!"
           echo "📋 Installed components:"
-          echo "  - Rust toolchain: $RUST_VERSION"
+          echo "  - Rust toolchain: ${{ steps.resolve-versions.outputs.rust-version }}"
           echo "  - WASM target: wasm32-unknown-unknown"
           echo "  - Rust source component"
           
@@ -338,13 +338,13 @@ jobs:
           
           CHAIN_SPEC_VERSION="${{ steps.resolve-versions.outputs.chain-spec-builder-version }}"
           
-          echo "🔧 Installing staging-chain-spec-builder $CHAIN_SPEC_VERSION..."
+          echo "🔧 Installing staging-chain-spec-builder ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}..."
           
           # Install chain-spec-builder with locked dependencies
-          cargo install --locked staging-chain-spec-builder@$CHAIN_SPEC_VERSION
+          cargo install --locked staging-chain-spec-builder@${{ steps.resolve-versions.outputs.chain-spec-builder-version }}
           
           echo "✅ Chain spec builder installation completed!"
-          echo "📋 Installed version: $CHAIN_SPEC_VERSION"
+          echo "📋 Installed version: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}"
           
           # Verify installation
           echo "🔍 Verifying installation..."
@@ -366,13 +366,13 @@ jobs:
           
           OMNI_NODE_VERSION="${{ steps.resolve-versions.outputs.omni-node-version }}"
           
-          echo "🚀 Installing polkadot-omni-node $OMNI_NODE_VERSION..."
+          echo "🚀 Installing polkadot-omni-node ${{ steps.resolve-versions.outputs.omni-node-version }}..."
           
           # Install omni-node with locked dependencies
-          cargo install --locked polkadot-omni-node@$OMNI_NODE_VERSION
+          cargo install --locked polkadot-omni-node@${{ steps.resolve-versions.outputs.omni-node-version }}
           
           echo "✅ Omni node installation completed!"
-          echo "📋 Installed version: $OMNI_NODE_VERSION"
+          echo "📋 Installed version: ${{ steps.resolve-versions.outputs.omni-node-version }}"
           
           # Verify installation
           echo "🔍 Verifying installation..."
@@ -398,13 +398,13 @@ jobs:
           
           echo "⛓️ Generating chain specification..."
           echo "📋 Configuration:"
-          echo "  - Para ID: $PARA_ID"
-          echo "  - Relay Chain: $RELAY_CHAIN"
-          echo "  - Runtime: $RUNTIME_PATH"
+          echo "  - Para ID: ${{ env.PARA_ID }}"
+          echo "  - Relay Chain: ${{ env.RELAY_CHAIN }}"
+          echo "  - Runtime: ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
           
           # Check if runtime exists
-          if [ ! -f "$RUNTIME_PATH" ]; then
-            echo "❌ Runtime WASM file not found: $RUNTIME_PATH"
+          if [ ! -f "./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm" ]; then
+            echo "❌ Runtime WASM file not found: ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
             echo "💡 Make sure you have built the parachain runtime first"
             echo "💡 Try running: cargo build --release"
             exit 1
@@ -413,9 +413,9 @@ jobs:
           # Generate chain specification
           chain-spec-builder create \
             -t development \
-            --relay-chain $RELAY_CHAIN \
-            --para-id $PARA_ID \
-            --runtime $RUNTIME_PATH \
+            --relay-chain ${{ env.RELAY_CHAIN }} \
+            --para-id ${{ env.PARA_ID }} \
+            --runtime ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm \
             named-preset development
           
           # Verify chain spec was created
@@ -491,7 +491,7 @@ jobs:
         run: |
           echo "$(date -Iseconds) 📖 Generating setup instructions..."
           cat > scripts/zero-to-hero/README.md << 'EOF'
-          # Parachain Development Scripts
+          # Zero to Hero Scripts
           
           This directory contains scripts to set up and run a local parachain development environment.
           
@@ -504,68 +504,10 @@ jobs:
           - **Para ID**: `${{ env.PARA_ID }}`
           - **Relay Chain**: `${{ env.RELAY_CHAIN }}`
           
-          **Version Changes**: ${{ needs.check-version-changes.outputs.changed-versions }}
-          
-          ## Quick Start
-          
-          1. **Setup Rust toolchain:**
-             ```bash
-             ./scripts/zero-to-hero/setup-rust.sh
-             ```
-          
-          2. **Install chain-spec-builder:**
-             ```bash
-             ./scripts/zero-to-hero/install-chain-spec-builder.sh
-             ```
-          
-          3. **Install omni-node:**
-             ```bash
-             ./scripts/zero-to-hero/install-omni-node.sh
-             ```
-          
-          4. **Build your parachain runtime** (if not already done):
-             ```bash
-             cargo build --release
-             ```
-          
-          5. **Generate chain specification:**
-             ```bash
-             ./scripts/zero-to-hero/generate-chain-spec.sh
-             ```
-          
-          6. **Start the parachain node:**
-             ```bash
-             ./scripts/zero-to-hero/start-node.sh
-             ```
-          
-          ## Script Details
-          
-          ### `setup-rust.sh`
-          Sets up the Rust toolchain with the required version and adds WASM compilation support.
-          
-          ### `install-chain-spec-builder.sh`
-          Installs the staging-chain-spec-builder tool for generating chain specifications.
-          
-          ### `install-omni-node.sh`
-          Installs the polkadot-omni-node for running the parachain.
-          
-          ### `generate-chain-spec.sh`
-          Creates a development chain specification file (`chain_spec.json`) for your parachain.
-          
-          ### `start-node.sh`
-          Starts the parachain node in development mode with RPC endpoints enabled.
-          
-          ## RPC Endpoints
-          
-          Once the node is running, you can access:
-          - **HTTP RPC**: `http://localhost:9944`
-          - **WebSocket RPC**: `ws://localhost:9944`
-          
           ## Repository Information
           
           - **Source**: `${{ env.PARACHAIN_REPO }}`
           - **Branch**: `${{ env.PARACHAIN_BRANCH }}`
-          - **Generated**: $(date -Iseconds)
           - **Workflow**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           - **Commit**: ${{ github.sha }}
           EOF
@@ -635,14 +577,6 @@ jobs:
           - Chain Spec Builder: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}
           - Omni Node: ${{ steps.resolve-versions.outputs.omni-node-version }}
           
-          Scripts updated:
-          - setup-rust.sh
-          - install-chain-spec-builder.sh
-          - install-omni-node.sh
-          - generate-chain-spec.sh
-          - start-node.sh
-          - README.md
-          
           Generated: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
           Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           
@@ -665,27 +599,6 @@ jobs:
             echo "scripts-committed=true" >> $GITHUB_OUTPUT
             echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
           fi
-
-      - name: Upload generated scripts as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: parachain-setup-scripts-${{ github.run_id }}
-          path: scripts/zero-to-hero/
-          retention-days: 30
-
-      - name: Create scripts archive
-        run: |
-          echo "$(date -Iseconds) 📦 Creating scripts archive..."
-          tar -czf parachain-zero-to-hero-scripts.tar.gz scripts/zero-to-hero/
-          echo "✅ Archive created: parachain-zero-to-hero-scripts.tar.gz"
-          echo "📊 Archive size: $(du -h parachain-zero-to-hero-scripts.tar.gz | cut -f1)"
-
-      - name: Upload scripts archive as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: parachain-zero-to-hero-scripts-archive-${{ github.run_id }}
-          path: parachain-zero-to-hero-scripts.tar.gz
-          retention-days: 30
 
   create-release:
     name: Create Release with Scripts
@@ -842,13 +755,6 @@ jobs:
           
           Released: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           
-          ## 🎯 What's New
-          
-          This release includes automatically generated setup scripts for local parachain development with updated component versions.
-          
-          ### 🔄 Version Changes
-          **Triggered by**: $CHANGED_VERSIONS
-          
           ### 📦 Component Versions
           - **Rust Toolchain**: \`$RUST_VERSION\`
           - **Chain Spec Builder**: \`staging-chain-spec-builder@$CHAIN_SPEC_VERSION\`
@@ -856,25 +762,8 @@ jobs:
           - **Para ID**: \`${{ env.PARA_ID }}\`
           - **Relay Chain**: \`${{ env.RELAY_CHAIN }}\`
           
-          ### 🛠️ Generated Scripts
-          - \`setup-rust.sh\` - Complete Rust toolchain setup with WASM support
-          - \`install-chain-spec-builder.sh\` - Chain specification builder installation
-          - \`install-omni-node.sh\` - Polkadot omni-node installation  
-          - \`generate-chain-spec.sh\` - Chain specification generation
-          - \`start-node.sh\` - Parachain node startup script
-          - \`README.md\` - Comprehensive setup and troubleshooting guide
-          
-          ### 🔧 Features
-          - ✅ Automated version resolution from \`versions.yml\`
-          - ✅ Intelligent change detection (only runs when zero_to_hero versions change)
-          - ✅ Cross-platform compatibility (detects current architecture)
-          - ✅ Comprehensive error handling and validation
-          - ✅ Step-by-step setup instructions
-          - ✅ Ready-to-use development environment
-          - ✅ Scripts automatically committed to repository
-          
           ### 💾 Repository Updates
-          - Scripts automatically committed and included in this release
+          - Scripts automatically committed
           - Scripts Commit: [\`${SCRIPTS_COMMIT_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/$SCRIPTS_COMMIT_SHA)
           
           EOF
@@ -900,38 +789,7 @@ jobs:
           - **Release Commit**: \`$SCRIPTS_COMMIT_SHA\`
           - **Parachain Source**: [\`${{ env.PARACHAIN_REPO }}\`](${{ env.PARACHAIN_REPO }})
           - **Version Changes**: $CHANGED_VERSIONS
-          
-          ### 📥 Quick Start
-          
-          #### Option 1: Use scripts from repository (Recommended)
-          1. Clone or update your repository to get the latest scripts:
-             \`\`\`bash
-             git clone ${{ github.server_url }}/${{ github.repository }}.git
-             cd $(basename ${{ github.repository }})
-             \`\`\`
-          2. Navigate to the scripts directory: \`cd scripts/zero-to-hero\`
-          3. Run the setup scripts in order:
-             \`\`\`bash
-             ./setup-rust.sh
-             ./install-chain-spec-builder.sh  
-             ./install-omni-node.sh
-             ./generate-chain-spec.sh
-             ./start-node.sh
-             \`\`\`
-          
-          #### Option 2: Download from release
-          1. Download and extract \`parachain-zero-to-hero-scripts.tar.gz\` from this release
-          2. Run the setup scripts in order (same commands as above)
-          
-          Your parachain node will be running at \`http://localhost:9944\`
-          
-          ### 🔗 Useful Links
-          - [Setup Scripts Documentation](https://github.com/${{ github.repository }}/tree/$SCRIPTS_COMMIT_SHA/scripts/zero-to-hero/README.md)
-          - [Scripts Directory](https://github.com/${{ github.repository }}/tree/$SCRIPTS_COMMIT_SHA/scripts/zero-to-hero)
-          - [Parachain Source Repository](${{ env.PARACHAIN_REPO }})
-          - [Polkadot Documentation](https://docs.polkadot.network/)
-          - [Scripts Commit](${{ github.server_url }}/${{ github.repository }}/commit/$SCRIPTS_COMMIT_SHA)
-          
+
           ---
           
           **Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/$PREVIOUS_TAG...v$NEW_VERSION
@@ -957,7 +815,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # FIXED: Create annotated tag on current HEAD (which is the scripts commit)
           git tag -a "$TAG_NAME" -m "Release $TAG_NAME
 
           Automated release with parachain setup scripts.
@@ -968,14 +825,6 @@ jobs:
           - Rust: ${{ needs.generate-scripts.outputs.rust-version }}
           - Chain Spec Builder: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}  
           - Omni Node: ${{ needs.generate-scripts.outputs.omni-node-version }}
-          
-          Scripts included in release:
-          - setup-rust.sh
-          - install-chain-spec-builder.sh
-          - install-omni-node.sh
-          - generate-chain-spec.sh
-          - start-node.sh
-          - README.md
           
           Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           Scripts Commit: $SCRIPTS_COMMIT_SHA
@@ -991,26 +840,6 @@ jobs:
           echo "📝 Tagged commit: $(git rev-parse HEAD) (includes scripts)"
           echo "🔄 Changes: $CHANGED_VERSIONS"
 
-      - name: Create scripts archive for release
-        run: |
-          echo "$(date -Iseconds) 📦 Creating scripts archive for release..."
-          
-          # Verify scripts exist
-          if [ ! -d "scripts/zero-to-hero" ]; then
-            echo "❌ Scripts directory not found!"
-            exit 1
-          fi
-          
-          # Create the archive
-          tar -czf parachain-zero-to-hero-scripts.tar.gz scripts/zero-to-hero/
-          
-          echo "✅ Archive created: parachain-zero-to-hero-scripts.tar.gz"
-          echo "📊 Archive size: $(du -h parachain-zero-to-hero-scripts.tar.gz | cut -f1)"
-          
-          # Verify archive contents
-          echo "📋 Archive contents:"
-          tar -tzf parachain-zero-to-hero-scripts.tar.gz
-
       - name: Create GitHub Release
         id: create-release
         uses: softprops/action-gh-release@v1
@@ -1018,18 +847,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.create-tag.outputs.tag }}
-          name: "Parachain Setup Scripts ${{ steps.create-tag.outputs.tag }}"
+          name: "Zero to Hero ${{ steps.create-tag.outputs.tag }}"
           body_path: ${{ steps.changelog.outputs.changelog-file }}
           draft: false
           prerelease: ${{ contains(steps.version-bump.outputs.new-version, '-') }}
-          files: |
-            parachain-zero-to-hero-scripts.tar.gz
-            scripts/zero-to-hero/setup-rust.sh
-            scripts/zero-to-hero/install-chain-spec-builder.sh
-            scripts/zero-to-hero/install-omni-node.sh
-            scripts/zero-to-hero/generate-chain-spec.sh
-            scripts/zero-to-hero/start-node.sh
-            scripts/zero-to-hero/README.md
 
       - name: Release summary
         run: |
@@ -1039,7 +860,6 @@ jobs:
           echo "  🏷️ Tag: ${{ steps.create-tag.outputs.tag }}"
           echo "  📝 Type: ${{ steps.version-bump.outputs.bump-type }}"
           echo "  🔗 URL: ${{ steps.create-release.outputs.html_url }}"
-          echo "  📦 Archive: parachain-zero-to-hero-scripts.tar.gz"
           echo "  🔄 Changes: ${{ needs.check-version-changes.outputs.changed-versions }}"
           echo "  📝 Tagged Commit: ${{ needs.generate-scripts.outputs.commit-sha }}"
           echo ""
@@ -1049,42 +869,12 @@ jobs:
           echo "  🚀 Omni Node: ${{ needs.generate-scripts.outputs.omni-node-version }}"
           echo ""
           echo "🎯 Release includes:"
-          echo "  - All setup scripts committed to repository"
-          echo "  - Downloadable scripts archive (tar.gz)"
-          echo "  - Individual script files"
-          echo "  - Comprehensive documentation"
+          echo "  - All scripts committed to repository"
           echo ""
           echo "✅ Scripts are available:"
           echo "  - In repository: scripts/zero-to-hero/"
           echo "  - In release: ${{ steps.create-release.outputs.html_url }}"
           echo "  - Tagged at commit: ${{ needs.generate-scripts.outputs.commit-sha }}"
-
-  # Debug job to understand release conditions
-  debug-release-conditions:
-    name: Debug Release Conditions
-    runs-on: ubuntu-latest
-    needs: [check-version-changes, build-parachain, generate-scripts]
-    if: always() && needs.check-version-changes.outputs.has-changes == 'true'
-    steps:
-      - name: Show release conditions
-        run: |
-          echo "🔍 Release condition check:"
-          echo "  - has-changes: ${{ needs.check-version-changes.outputs.has-changes }}"
-          echo "  - build-parachain result: ${{ needs.build-parachain.result }}"
-          echo "  - generate-scripts result: ${{ needs.generate-scripts.result }}"
-          echo "  - scripts-committed: ${{ needs.generate-scripts.outputs.scripts-committed }}"
-          echo "  - event name: ${{ github.event_name }}"
-          echo "  - ref: ${{ github.ref }}"
-          echo "  - ref name: ${{ github.ref_name }}"
-          echo "  - manual release input: ${{ github.event.inputs.create_release }}"
-          echo ""
-          echo "Release conditions evaluation:"
-          echo "  - Auto release (push to master/dev): $([ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/master" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]) && echo "YES" || echo "NO")"
-          echo "  - Manual release requested: $([ "${{ github.event.inputs.create_release }}" = "true" ] && echo "YES" || echo "NO")"
-          echo "  - Scripts generation successful: $([ "${{ needs.generate-scripts.result }}" = "success" ] && echo "YES" || echo "NO")"
-          echo "  - Scripts committed: $([ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ] && echo "YES" || echo "NO")"
-          echo ""
-          echo "🔄 Will run create-release job: $([ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ] && ([ "${{ github.event_name }}" = "push" ] && ([ "${{ github.ref }}" = "refs/heads/master" ] || [ "${{ github.ref }}" = "refs/heads/dev" ]) || [ "${{ github.event.inputs.create_release }}" = "true" ]) && echo "YES" || echo "NO")"
 
   workflow-summary:
     name: Workflow Summary
@@ -1193,11 +983,6 @@ jobs:
             echo "  ✅ Scripts are available in the repository at scripts/zero-to-hero/"
             echo "  📖 See scripts/zero-to-hero/README.md for usage instructions"
             echo "  🔗 Scripts commit: ${{ needs.generate-scripts.outputs.commit-sha }}"
-          fi
-          if [ "${{ needs.create-release.result }}" = "success" ]; then
-            echo "  ✅ Scripts are also available as release assets"
-            echo "  📥 Download from: ${{ needs.create-release.outputs.release-url }}"
-            echo "  🏷️ Release tag: ${{ needs.create-release.outputs.release-tag }}"
           fi
           if [ "${{ needs.check-version-changes.outputs.has-changes }}" != "true" ]; then
             echo "  💡 No action needed - versions are up to date"
