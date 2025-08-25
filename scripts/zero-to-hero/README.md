@@ -7,11 +7,11 @@ This directory contains scripts to set up and run a local parachain development 
 These scripts were generated automatically with the following versions:
 - **Rust**: `1.86`
 - **Chain Spec Builder**: `10.0.0`
-- **Omni Node**: `0.5.0`
+- **Omni Node**: `0.4.0`
 - **Para ID**: `1000`
 - **Relay Chain**: `paseo`
 
-**Version Changes**:  polkadot_omni_node(0.4.0→0.5.0)
+**Version Changes**: new versions file
 
 ## Quick Start
 
@@ -68,16 +68,10 @@ Once the node is running, you can access:
 - **HTTP RPC**: `http://localhost:9944`
 - **WebSocket RPC**: `ws://localhost:9944`
 
-## Troubleshooting
-
-- **Runtime not found**: Make sure to build your parachain with `cargo build --release` before generating the chain spec
-- **Chain spec not found**: Run `./scripts/zero-to-hero/generate-chain-spec.sh` before starting the node
-- **Port already in use**: Stop any existing nodes or change the port using `--port` and `--rpc-port` flags
-
 ## Repository Information
 
 - **Source**: `https://github.com/polkadot-developers/polkadot-docs-tests/`
 - **Branch**: `master`
 - **Generated**: $(date -Iseconds)
-- **Workflow**: https://github.com/polkadot-developers/polkadot-docs-tests/actions/runs/17175701069
-- **Commit**: 4b873493cf8994781c1e09b08f4b108cbb7e407a
+- **Workflow**: https://github.com/polkadot-developers/polkadot-docs-tests/actions/runs/17179682758
+- **Commit**: 98373140fe28d1c26ad1a6898989669c0ea113b8
