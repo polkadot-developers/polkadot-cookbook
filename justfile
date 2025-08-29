@@ -12,6 +12,11 @@ help:
 	printf "  start-dev           Start omni-node in --dev using generated chain spec\n" && \
 	printf "  spawn-omni          Spawn Zombienet using omni-node TOML\n" && \
 	printf "  spawn-node          Spawn Zombienet using template node TOML\n" && \
+	printf "\n  z2h:build           Build runtime for Zero-to-Hero tutorial\n" && \
+	printf "  z2h:chain-spec     Generate chain spec for Zero-to-Hero tutorial\n" && \
+	printf "  z2h:start-dev      Start dev node for Zero-to-Hero tutorial\n" && \
+	printf "  z2h:spawn-omni     Spawn Zombienet for Zero-to-Hero tutorial\n" && \
+	printf "  z2h:test           Run Zero-to-Hero e2e tests\n" && \
 	printf "\n  fmt                 Run cargo fmt across workspace\n" && \
 	printf "  clippy              Run cargo clippy with -D warnings\n" && \
 	printf "  clean               Clean kitchensink workspace targets\n" && \
@@ -50,6 +55,22 @@ spawn-omni:
 # Spawn Zombienet network using template node config
 spawn-node:
 	cd kitchensink-parachain && zombienet --provider native spawn zombienet.toml | cat
+
+# Zero-to-Hero tutorial helpers
+z2h:build:
+	just build
+
+z2h:chain-spec:
+	just chain-spec
+
+z2h:start-dev:
+	just start-dev
+
+z2h:spawn-omni:
+	cd tutorials/zero-to-hero && zombienet --provider native spawn zombienet/zombienet-omni-node.toml | cat
+
+z2h:test:
+	@echo "Running Zero-to-Hero tests..." && pnpm test --filter @tests/zero-to-hero || echo "Define tests in tutorials/zero-to-hero/tests first."
 
 # Linting and hygiene
 fmt:
