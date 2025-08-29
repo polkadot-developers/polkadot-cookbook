@@ -1,0 +1,32 @@
+default: help
+
+# Show available commands (Zero-to-Hero only)
+help:
+	@echo "Zero-to-Hero Just commands:" && \
+	printf "\n  build            Build kitchensink runtime & workspace (production)\n" && \
+	printf "  chain-spec       Generate chain_spec.json for kitchensink-parachain\n" && \
+	printf "  start-dev        Start omni-node in --dev using generated chain spec\n" && \
+	printf "  spawn-omni       Spawn Zombienet using this tutorial's TOML\n" && \
+	printf "  test             Run Zero-to-Hero e2e tests (placeholder)\n"
+
+# Build the kitchensink workspace with production profile
+build:
+	cd ../../kitchensink-parachain && cargo build --profile production --workspace
+
+# Generate chain_spec.json for kitchensink-parachain
+chain-spec:
+	cd ../../kitchensink-parachain && ../scripts/zero-to-hero/generate-chain-spec.sh
+
+# Start omni-node in --dev using generated chain_spec.json
+start-dev:
+	cd ../../kitchensink-parachain && ../scripts/zero-to-hero/start-node.sh
+
+# Spawn Zombienet network using this tutorial's omni-node config
+spawn-omni:
+	zombienet --provider native spawn zombienet/zombienet-omni-node.toml | cat
+
+# Tests
+test:
+	@echo "Running Zero-to-Hero tests..." && pnpm test --filter @tests/zero-to-hero || echo "Define tests in tutorials/zero-to-hero/tests first."
+
+

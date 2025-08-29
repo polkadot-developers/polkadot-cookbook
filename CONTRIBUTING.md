@@ -21,6 +21,7 @@ git checkout -b feat/tutorial-<slug>
 ```
 tutorials/<slug>/
   tutorial.yml            # manifest: build/runtime, chain spec, network, tests
+  justfile                # tutorial-local Just recipes
   zombienet/
     zombienet-omni-node.toml
     zombienet.toml        # optional alternative using template node
@@ -84,13 +85,13 @@ test('produces blocks', async () => {
 - Fast dev mode (no relay):
 
 ```bash
-just start-dev
+cd tutorials/<slug> && just start-dev
 ```
 
 - Local relay via Zombienet (realistic):
 
 ```bash
-just spawn-omni
+cd tutorials/<slug> && just spawn-omni
 ```
 
 Then run your tests using the command from `tutorial.yml`.
