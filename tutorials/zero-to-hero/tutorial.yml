@@ -1,0 +1,29 @@
+name: zero-to-hero
+stages:
+  - pallet_unit_tests
+  - build_runtime
+  - dev_smoke
+  - local_relay_smoke
+rust_toolchain: "1.86.0"
+relay_chain: "rococo-local"
+para_id: 1000
+runtime_wasm: ./kitchensink-parachain/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.wasm
+chain_spec:
+  output: ./kitchensink-parachain/chain_spec.json
+  builder: chain-spec-builder
+  preset: development
+providers:
+  dev_omni:
+    enabled: true
+    dev_block_time_ms: 1000
+  zombienet:
+    enabled: true
+    provider: native
+    network_toml: ./tutorials/zero-to-hero/zombienet/zombienet-omni-node.toml
+tests:
+  nodejs:
+    command: pnpm test --filter @tests/zero-to-hero
+timeouts:
+  spawn: 180000
+  test: 900000
+
