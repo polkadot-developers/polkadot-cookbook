@@ -4,7 +4,7 @@ default: help
 help:
 	@echo "Add NFT Pallet Just commands:" && \
 	printf "\n  build            Build kitchensink runtime & workspace (production)\n" && \
-	printf "  chain-spec       Generate chain_spec.json for kitchensink-parachain\n" && \
+	printf "  chain-spec       Generate chain_spec.json (tutorial-specific script)\n" && \
 	printf "  start-dev        Start omni-node in --dev using generated chain spec\n" && \
 	printf "  spawn-omni       Spawn Zombienet using this tutorial's TOML\n" && \
 	printf "  test             Run Add NFT Pallet e2e tests (placeholder)\n"
@@ -13,9 +13,9 @@ help:
 build:
 	cd ../../kitchensink-parachain && cargo build --profile production --workspace
 
-# Generate chain_spec.json for kitchensink-parachain
+# Generate chain_spec.json with tutorial-specific flavor
 chain-spec:
-	cd ../../kitchensink-parachain && ../scripts/zero-to-hero/generate-chain-spec.sh
+	bash scripts/generate-nft-chain-spec.sh
 
 # Start omni-node in --dev using generated chain_spec.json
 start-dev:
