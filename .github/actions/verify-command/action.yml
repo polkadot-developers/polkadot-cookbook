@@ -1,0 +1,116 @@
+name: Verify command and outputs
+description: Run a command and assert on stdout, stderr, files, and JSON paths
+inputs:
+  run:
+    description: Shell command to run
+    required: true
+  working-directory:
+    description: Working directory to run the command in
+    required: false
+    default: .
+  assert-stdout-contains:
+    description: Newline-separated substrings that must appear in stdout
+    required: false
+    default: ""
+  assert-stderr-contains:
+    description: Newline-separated substrings that must appear in stderr
+    required: false
+    default: ""
+  assert-files-exist:
+    description: Newline-separated file paths that must exist (relative to working-directory)
+    required: false
+    default: ""
+  assert-json:
+    description: Newline-separated assertions in the form 'file.json:jq_expression' which must evaluate truthy
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Ensure jq is installed
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v jq >/dev/null 2>&1; then
+          sudo apt-get update -y && sudo apt-get install -y jq
+        fi
+
+    - name: Run command and capture output
+      id: run_cmd
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "> Running: ${{ inputs.run }}"
+        stdout_file="$(mktemp)"
+        stderr_file="$(mktemp)"
+        # Run command, capture stdout/stderr
+        bash -lc "${{ inputs.run }}" >"$stdout_file" 2>"$stderr_file"
+        echo "stdout_path=$stdout_file" >> "$GITHUB_OUTPUT"
+        echo "stderr_path=$stderr_file" >> "$GITHUB_OUTPUT"
+        echo "Command completed. Stdout bytes: $(wc -c < "$stdout_file") Stderr bytes: $(wc -c < "$stderr_file")"
+
+    - name: Assert stdout contains
+      if: inputs.assert-stdout-contains != ''
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        mapfile -t lines < <(printf "%s" "${{ inputs.assert-stdout-contains }}" | sed '/^$/d')
+        for needle in "${lines[@]}"; do
+          echo "> expecting stdout to contain: $needle"
+          if ! grep -Fq -- "$needle" "${{ steps.run_cmd.outputs.stdout_path }}"; then
+            echo "Actual stdout:" && sed -n '1,200p' "${{ steps.run_cmd.outputs.stdout_path }}"
+            echo "Assertion failed: stdout missing: $needle" >&2
+            exit 1
+          fi
+        done
+
+    - name: Assert stderr contains
+      if: inputs.assert-stderr-contains != ''
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        mapfile -t lines < <(printf "%s" "${{ inputs.assert-stderr-contains }}" | sed '/^$/d')
+        for needle in "${lines[@]}"; do
+          echo "> expecting stderr to contain: $needle"
+          if ! grep -Fq -- "$needle" "${{ steps.run_cmd.outputs.stderr_path }}"; then
+            echo "Actual stderr:" && sed -n '1,200p' "${{ steps.run_cmd.outputs.stderr_path }}"
+            echo "Assertion failed: stderr missing: $needle" >&2
+            exit 1
+          fi
+        done
+
+    - name: Assert files exist
+      if: inputs.assert-files-exist != ''
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        mapfile -t files < <(printf "%s" "${{ inputs.assert-files-exist }}" | sed '/^$/d')
+        for f in "${files[@]}"; do
+          echo "> expecting file exists: $f"
+          test -f "$f" || { echo "Missing file: $f" >&2; exit 1; }
+        done
+
+    - name: Assert JSON queries
+      if: inputs.assert-json != ''
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        while IFS= read -r line; do
+          [ -z "$line" ] && continue
+          file="${line%%:*}"
+          expr="${line#*:}"
+          echo "> jq assertion: $file :: $expr"
+          test -f "$file" || { echo "Missing JSON file: $file" >&2; exit 1; }
+          if ! jq -e "$expr" "$file" >/dev/null; then
+            echo "Assertion failed: $file does not satisfy: $expr" >&2
+            echo "File head:" && head -n 50 "$file" || true
+            exit 1
+          fi
+        done < <(printf "%s" "${{ inputs.assert-json }}")
+
+

@@ -1,0 +1,65 @@
+name: Tutorial Sample - Kitchensink
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'kitchensink-parachain/**'
+      - 'scripts/zero-to-hero/**'
+      - '.github/actions/verify-command/**'
+      - '.github/workflows/tutorial-sample.yml'
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain (Rust 1.86)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.86.0
+          targets: wasm32-unknown-unknown
+          components: rust-src
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            kitchensink-parachain/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('kitchensink-parachain/Cargo.lock') }}
+
+      - name: Install just
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y just
+
+      - name: Build runtime (production)
+        run: just build
+
+      - name: Verify runtime artifact exists
+        uses: ./.github/actions/verify-command
+        with:
+          working-directory: kitchensink-parachain
+          run: echo ok
+          assert-files-exist: |
+            target/release/wbuild/parachain-template-runtime/parachain_template_runtime.wasm
+
+      - name: Install chain-spec-builder via Just
+        run: just install-chain-spec
+
+      - name: Generate chain spec
+        uses: ./.github/actions/verify-command
+        with:
+          run: just chain-spec
+          assert-files-exist: |
+            kitchensink-parachain/chain_spec.json
+          assert-stdout-contains: |
+            ✅ Chain specification generated successfully!
+          assert-json: |
+            kitchensink-parachain/chain_spec.json:.name != null
+
+
