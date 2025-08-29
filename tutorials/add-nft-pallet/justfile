@@ -1,0 +1,32 @@
+default: help
+
+# Show available commands (Add NFT Pallet only)
+help:
+	@echo "Add NFT Pallet Just commands:" && \
+	printf "\n  build            Build kitchensink runtime & workspace (production)\n" && \
+	printf "  chain-spec       Generate chain_spec.json for kitchensink-parachain\n" && \
+	printf "  start-dev        Start omni-node in --dev using generated chain spec\n" && \
+	printf "  spawn-omni       Spawn Zombienet using this tutorial's TOML\n" && \
+	printf "  test             Run Add NFT Pallet e2e tests (placeholder)\n"
+
+# Build the kitchensink workspace with production profile
+build:
+	cd ../../kitchensink-parachain && cargo build --profile production --workspace
+
+# Generate chain_spec.json for kitchensink-parachain
+chain-spec:
+	cd ../../kitchensink-parachain && ../scripts/zero-to-hero/generate-chain-spec.sh
+
+# Start omni-node in --dev using generated chain_spec.json
+start-dev:
+	cd ../../kitchensink-parachain && ../scripts/zero-to-hero/start-node.sh
+
+# Spawn Zombienet network using this tutorial's omni-node config
+spawn-omni:
+	zombienet --provider native spawn zombienet/zombienet-omni-node.toml | cat
+
+# Tests
+test:
+	@echo "Running Add NFT Pallet tests..." && pnpm test --filter @tests/add-nft-pallet || echo "Define tests in tutorials/add-nft-pallet/tests first."
+
+
