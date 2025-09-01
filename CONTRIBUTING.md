@@ -37,7 +37,7 @@ Minimal example:
 ```yaml
 name: kitchensink-parachain
 rust_toolchain: "1.86.0"
-relay_chain: "rococo-local"
+relay_chain: "paseo-local"
 para_id: 1000
 runtime_wasm: ./kitchensink-parachain/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.wasm
 chain_spec:
@@ -114,7 +114,7 @@ Then run your tests using the command from `tutorial.yml`.
 
 - Keep versions in `versions.yml` only; do not hardcode versions in scripts.
 - Prefer `rust-toolchain.toml` to pin toolchains over changing global rustup defaults.
-- Align relay chain names and filenames consistently (e.g., `rococo-local`, `chain_spec.json`).
+- Align relay chain names and filenames consistently (e.g., `paseo-local`, `chain_spec.json`).
 - Run `just fmt` and `just clippy` locally before pushing.
 
 

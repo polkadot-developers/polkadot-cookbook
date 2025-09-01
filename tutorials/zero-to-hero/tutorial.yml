@@ -1,6 +1,6 @@
 name: zero-to-hero
 rust_toolchain: "1.86.0"
-relay_chain: "rococo-local"
+relay_chain: "paseo-local"
 para_id: 1000
 runtime_wasm: ./kitchensink-parachain/target/release/wbuild/parachain-template-runtime/parachain_template_runtime.wasm
 chain_spec:
