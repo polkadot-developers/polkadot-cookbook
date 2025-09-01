@@ -1,9 +1,4 @@
 name: zero-to-hero
-stages:
-  - pallet_unit_tests
-  - build_runtime
-  - dev_smoke
-  - local_relay_smoke
 rust_toolchain: "1.86.0"
 relay_chain: "rococo-local"
 para_id: 1000

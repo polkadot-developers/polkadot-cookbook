@@ -56,22 +56,6 @@ spawn-omni:
 spawn-node:
 	cd kitchensink-parachain && zombienet --provider native spawn zombienet.toml | cat
 
-# Zero-to-Hero tutorial helpers
-z2h:build:
-	just build
-
-z2h:chain-spec:
-	just chain-spec
-
-z2h:start-dev:
-	just start-dev
-
-z2h:spawn-omni:
-	cd tutorials/zero-to-hero && zombienet --provider native spawn zombienet/zombienet-omni-node.toml | cat
-
-z2h:test:
-	@echo "Running Zero-to-Hero tests..." && pnpm test --filter @tests/zero-to-hero || echo "Define tests in tutorials/zero-to-hero/tests first."
-
 # Linting and hygiene
 fmt:
 	cargo fmt --all --manifest-path kitchensink-parachain/Cargo.toml
