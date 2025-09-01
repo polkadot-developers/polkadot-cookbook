@@ -63,7 +63,7 @@ just chain-spec
 
 This produces `kitchensink-parachain/chain_spec.json` and the runtime WASM in `kitchensink-parachain/target/release/wbuild/...`.
 
-5) Write a minimal e2e test
+5) Write a minimal e2e test (optional)
 
 Example: assert that the node produces blocks over WS at `ws://localhost:9988`.
 
@@ -110,7 +110,7 @@ Then run your tests using the command from `tutorial.yml`.
 - Include a short description and the tutorial slug.
 - Ensure CI passes.
 
-### Style and hygiene
+### Style and Hygiene
 
 - Keep versions in `versions.yml` only; do not hardcode versions in scripts.
 - Prefer `rust-toolchain.toml` to pin toolchains over changing global rustup defaults.
