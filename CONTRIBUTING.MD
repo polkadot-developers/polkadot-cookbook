@@ -40,7 +40,7 @@ git checkout -b feat/tutorial-<slug>
 tutorials/<slug>/
   tutorial.yml            # manifest: build/runtime, chain spec, network, tests
   justfile                # tutorial-local Just recipes
-  <slug>-code/             # project directory with the smart contract code. For example, nft-code, erc20-code, etc.
+  <slug>-code/             # project directory with the smart contract project code. For example, nft-code, erc20-code, etc.
   tests/
     <your-tests>.test.ts  # polkadot.js based e2e tests (recommended)
   scripts/                # optional; prefer using repo-level Just recipes
@@ -84,7 +84,7 @@ git checkout -b feat/tutorial-<slug>
 tutorials/<slug>/
   tutorial.yml            # manifest: build/runtime, chain spec, network, tests
   justfile                # tutorial-local Just recipes
-  <slug>-code/             # project directory with the smart contract code. For example, nft-code, erc20-code, etc.
+  <slug>-code/             # project directory with the project code. For example, add-nft-pallet, customize-your-pallet, etc.
   zombienet/
     zombienet-omni-node.toml
     zombienet.toml        # optional alternative using template node
