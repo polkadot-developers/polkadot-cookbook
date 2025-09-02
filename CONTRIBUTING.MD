@@ -1,0 +1,108 @@
+## Contributing
+
+Thank you for helping validate and improve the Polkadot Cookbooks tutorials. This repository contains two types of cookbooks:
+
+- **Polkadot Smart Contract Cookbooks**: Tutorials focused on smart contract development
+- **Polkadot SDK Cookbooks**: Tutorials for Polkadot SDK development and runtime building
+
+## Contribution Workflow
+
+1. Propose a new tutorial by opening an issue with the idea
+2. Wait for approval
+3. Once approved, create a branch for the new tutorial
+4. Create a draft PR with the markdown content of the tutorial, once approved, go ahead and push the changes to the PR and mark it as ready for review
+5. Once the PR is merged, you can choose to create a new PR in the polkadot-docs repo to include the tutorial in the official documentation, or wait for the team to do that for you.
+
+- If you are proposing a new tutorial for the Polkadot Smart Contract Cookbooks, please follow the instructions in the [Polkadot Smart Contract Cookbooks](#polkadot-smart-contract-cookbooks) section.
+
+- If you are proposing a new tutorial for the Polkadot SDK Cookbooks, please follow the instructions in the [Polkadot SDK Cookbooks](#polkadot-sdk-cookbooks) section.
+
+## Polkadot Smart Contract Cookbooks
+
+To contribute to the Polkadot Smart Contract Cookbooks, please follow these instructions:
+
+1. Create an issue with the idea. The issue should include:
+    - Clear learning objectives
+    - Target audience (beginner/intermediate/advanced)
+    - Prerequisites needed
+    - List of tools, versions, and technologies used (eg. Polkadot-API, ParaSpell, etc.)
+
+2. Wait for approval
+3. Once approved, create a new branch for the new tutorial:
+
+```bash
+git checkout -b feat/tutorial-<slug>
+```
+
+4. Create the tutorial structure
+
+```bash
+tutorials/<slug>/
+  tutorial.yml            # manifest: build/runtime, chain spec, network, tests
+  justfile                # tutorial-local Just recipes
+  <slug>-code/             # project directory with the smart contract code. For example, nft-code, erc20-code, etc.
+  tests/
+    <your-tests>.test.ts  # polkadot.js based e2e tests (recommended)
+  scripts/                # optional; prefer using repo-level Just recipes
+```
+
+5. Push the changes to the branch and create a PR:
+
+```bash
+git push origin feat/tutorial-<slug>
+```
+
+6. After the PR is approved and merged, you will have to decide the following:
+
+- Do you want to include the tutorial in the official documentation?
+  - If no, you can still use the tutorial as a standalone tutorial in the cookbook
+  - If yes, do you want to do it by yourself or do you want the team to do it for you?
+    - If you want to do it by yourself, you will have to create a new PR in the polkadot-docs repo to include the tutorial in the official documentation
+    - If you want the team to do it for you, you will have to wait for the team to do it for you
+
+
+## Polkadot SDK Cookbooks
+
+To contribute to the Polkadot SDK Cookbooks, please follow these instructions:
+
+1. Create an issue with the idea. The issue should include:
+    - Clear learning objectives
+    - Target audience (beginner/intermediate/advanced)
+    - Prerequisites needed
+    - List of tools, versions, and technologies used (eg. Polkadot-API@1.110.0, ParaSpell@0.4.0, etc.)
+
+2. Wait for approval
+3. Once approved, create a new branch for the new tutorial:
+
+```bash
+git checkout -b feat/tutorial-<slug>
+```
+
+4. Create the tutorial structure
+
+```bash
+tutorials/<slug>/
+  tutorial.yml            # manifest: build/runtime, chain spec, network, tests
+  justfile                # tutorial-local Just recipes
+  <slug>-code/             # project directory with the smart contract code. For example, nft-code, erc20-code, etc.
+  zombienet/
+    zombienet-omni-node.toml
+    zombienet.toml        # optional alternative using template node
+  tests/
+    <your-tests>.test.ts  # polkadot.js based e2e tests (recommended)
+  scripts/                # optional; prefer using repo-level Just recipes
+```
+
+5. Push the changes to the branch and create a PR:
+
+```bash
+git push origin feat/tutorial-<slug>
+```
+
+6. After the PR is approved and merged, you will have to decide the following:
+
+- Do you want to include the tutorial in the official documentation?
+  - If no, you can still use the tutorial as a standalone tutorial in the cookbook
+  - If yes, do you want to do it by yourself or do you want the team to do it for you?
+    - If you want to do it by yourself, you will have to create a new PR in the polkadot-docs repo to include the tutorial in the official documentation
+    - If you want the team to do it for you, you will have to wait for the team to do it for you
