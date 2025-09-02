@@ -2,24 +2,24 @@
 
 Thank you for helping validate and improve the Polkadot Cookbooks tutorials. This repository contains two types of cookbooks:
 
-- **Polkadot Smart Contract Cookbooks**: Tutorials focused on smart contract development
-- **Polkadot SDK Cookbooks**: Tutorials for Polkadot SDK development and runtime building
+- **Polkadot Smart Contract Cookbook**: Tutorials focused on smart contract development
+- **Polkadot SDK Cookbook**: Tutorials for Polkadot SDK development and runtime building
 
 ## Contribution Workflow
 
-1. Propose a new tutorial by opening an issue with the idea
+1. Propose a new tutorial by opening a GitHub Issue with the idea
 2. Wait for approval
 3. Once approved, create a branch for the new tutorial
 4. Create a draft PR with the markdown content of the tutorial, once approved, go ahead and push the changes to the PR and mark it as ready for review
 5. Once the PR is merged, you can choose to create a new PR in the polkadot-docs repo to include the tutorial in the official documentation, or wait for the team to do that for you.
 
-- If you are proposing a new tutorial for the Polkadot Smart Contract Cookbooks, please follow the instructions in the [Polkadot Smart Contract Cookbooks](#polkadot-smart-contract-cookbooks) section.
+- If you are proposing a new tutorial for the Polkadot Smart Contract Cookbook, please follow the instructions in the [Polkadot Smart Contract Cookbook](#polkadot-smart-contract-cookbook) section.
 
-- If you are proposing a new tutorial for the Polkadot SDK Cookbooks, please follow the instructions in the [Polkadot SDK Cookbooks](#polkadot-sdk-cookbooks) section.
+- If you are proposing a new tutorial for the Polkadot SDK Cookbook, please follow the instructions in the [Polkadot SDK Cookbook](#polkadot-sdk-cookbook) section.
 
-## Polkadot Smart Contract Cookbooks
+## Polkadot Smart Contract Cookbook
 
-To contribute to the Polkadot Smart Contract Cookbooks, please follow these instructions:
+To contribute to the Polkadot Smart Contract Cookbook, please follow these instructions:
 
 1. Create an issue with the idea. The issue should include:
     - Clear learning objectives
@@ -28,7 +28,7 @@ To contribute to the Polkadot Smart Contract Cookbooks, please follow these inst
     - List of tools, versions, and technologies used (eg. Polkadot-API, ParaSpell, etc.)
 
 2. Wait for approval
-3. Once approved, create a new branch for the new tutorial:
+3. Once approved, fork the polkadot-cookbook and create a new branch for your new tutorial:
 
 ```bash
 git checkout -b feat/tutorial-<slug>
@@ -61,9 +61,9 @@ git push origin feat/tutorial-<slug>
     - If you want the team to do it for you, you will have to wait for the team to do it for you
 
 
-## Polkadot SDK Cookbooks
+## Polkadot SDK Cookbook
 
-To contribute to the Polkadot SDK Cookbooks, please follow these instructions:
+To contribute to the Polkadot SDK Cookbook, please follow these instructions:
 
 1. Create an issue with the idea. The issue should include:
     - Clear learning objectives
