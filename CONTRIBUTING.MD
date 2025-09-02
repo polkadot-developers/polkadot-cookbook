@@ -93,6 +93,10 @@ tutorials/<slug>/
   scripts/                # optional; prefer using repo-level Just recipes
 ```
 
+When possible, this tutorials should take advantage of the existing `parachain-kitchensink` project.
+
+- Note: The `zombienet` folder is optional, you can use it if you want to test the tutorial locally using zombienet.
+
 5. Push the changes to the branch and create a PR:
 
 ```bash
