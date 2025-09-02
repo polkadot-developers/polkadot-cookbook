@@ -1,6 +1,6 @@
 ## Contributing
 
-Thank you for helping validate and improve the Polkadot Cookbooks tutorials. This repository contains two types of cookbooks:
+Steps for contributing to the Polkadot Cookbook. The Polkadot Cookbook contains two main sections:
 
 - **Polkadot Smart Contract Cookbook**: Tutorials focused on smart contract development
 - **Polkadot SDK Cookbook**: Tutorials for Polkadot SDK development and runtime building
