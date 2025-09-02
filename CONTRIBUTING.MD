@@ -74,7 +74,7 @@ To contribute to the Polkadot SDK Cookbook, please follow these instructions:
     - List of tools, versions, and technologies used (eg. Polkadot-API@1.110.0, ParaSpell@0.4.0, etc.)
 
 2. Wait for approval
-3. Once approved, create a new branch for the new tutorial:
+3. Once approved, fork the polkadot-cookbook and create a new branch for your new tutorial:
 
 ```bash
 git checkout -b feat/tutorial-<slug>
