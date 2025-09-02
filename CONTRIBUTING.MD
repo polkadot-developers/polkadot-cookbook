@@ -11,7 +11,9 @@ Steps for contributing to the Polkadot Cookbook. The Polkadot Cookbook contains 
 2. Wait for approval
 3. Once approved, create a branch for the new tutorial
 4. Create a draft PR with the markdown content of the tutorial, once approved, go ahead and push the changes to the PR and mark it as ready for review
-5. Once the PR is merged, you can choose to create a new PR in the polkadot-docs repo to include the tutorial in the official documentation, or wait for the team to do that for you.
+5. After your PR is merged, you’re done 🎉.
+
+  - (Optional) If you would also like your tutorial to be considered for the official Polkadot Docs, create a PR in the polkadot-docs repo that links to your merged PR in this repo. Otherwise, the team may handle this step for you.
 
 - If you are proposing a new tutorial for the Polkadot Smart Contract Cookbook, please follow the instructions in the [Polkadot Smart Contract Cookbook](#polkadot-smart-contract-cookbook) section.
 
