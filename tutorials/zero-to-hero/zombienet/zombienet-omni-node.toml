@@ -1,0 +1,14 @@
+## Zombienet config using polkadot-omni-node (placeholder)
+[settings]
+relay_chain = "paseo"
+para_id = 1000
+
+[nodes.relay]
+name = "relay"
+command = "polkadot-omni-node"
+
+[nodes.parachain]
+name = "para"
+command = "polkadot-omni-node"
+args = ["--dev"]
+

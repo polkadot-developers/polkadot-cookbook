@@ -1,0 +1,22 @@
+name: Zero to Hero
+slug: zero-to-hero
+category: polkadot-sdk-cookbook
+
+manifest:
+  build:
+    project_dir: zero-to-hero-code
+    commands:
+      - cargo build --release
+  runtime:
+    wasm_path: ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm
+  network:
+    relay_chain: paseo
+    para_id: 1000
+  tests:
+    framework: polkadot-js
+    files:
+      - tests/example.test.ts
+
+scripts_dir: scripts
+zombienet_dir: zombienet
+

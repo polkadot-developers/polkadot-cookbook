@@ -282,16 +282,16 @@ jobs:
           echo "  - rust: $RUST_VERSION"
           echo "🔄 Triggered by: ${{ needs.check-version-changes.outputs.changed-versions }}"
 
-      - name: Create scripts directory
+      - name: Create tutorial scripts directory
         run: |
           echo "$(date -Iseconds) 📁 Creating scripts directory..."
-          mkdir -p scripts/zero-to-hero
-          echo "✅ Scripts directory created"
+          mkdir -p tutorials/zero-to-hero/scripts
+          echo "✅ Tutorial scripts directory created at tutorials/zero-to-hero/scripts"
 
       - name: Generate Rust setup script
         run: |
           echo "$(date -Iseconds) 🦀 Generating Rust setup script..."
-          cat > scripts/zero-to-hero/setup-rust.sh << 'EOF'
+          cat > tutorials/zero-to-hero/scripts/setup-rust.sh << 'EOF'
           #!/bin/bash
           # Rust Setup Script
           # This script sets up Rust with the required version and components
@@ -323,13 +323,13 @@ jobs:
           rustup show
           EOF
           
-          chmod +x scripts/zero-to-hero/setup-rust.sh
-          echo "✅ Rust setup script created: scripts/zero-to-hero/setup-rust.sh"
+          chmod +x tutorials/zero-to-hero/scripts/setup-rust.sh
+          echo "✅ Rust setup script created: tutorials/zero-to-hero/scripts/setup-rust.sh"
 
       - name: Generate chain-spec-builder setup script
         run: |
           echo "$(date -Iseconds) 🔧 Generating chain-spec-builder setup script..."
-          cat > scripts/zero-to-hero/install-chain-spec-builder.sh << 'EOF'
+          cat > tutorials/zero-to-hero/scripts/install-chain-spec-builder.sh << 'EOF'
           #!/bin/bash
           # Chain Spec Builder Installation Script
           # This script installs the staging-chain-spec-builder tool
@@ -351,13 +351,13 @@ jobs:
           chain-spec-builder --version
           EOF
           
-          chmod +x scripts/zero-to-hero/install-chain-spec-builder.sh
-          echo "✅ Chain spec builder script created: scripts/zero-to-hero/install-chain-spec-builder.sh"
+          chmod +x tutorials/zero-to-hero/scripts/install-chain-spec-builder.sh
+          echo "✅ Chain spec builder script created: tutorials/zero-to-hero/scripts/install-chain-spec-builder.sh"
 
       - name: Generate omni-node setup script
         run: |
           echo "$(date -Iseconds) 🚀 Generating omni-node setup script..."
-          cat > scripts/zero-to-hero/install-omni-node.sh << 'EOF'
+          cat > tutorials/zero-to-hero/scripts/install-omni-node.sh << 'EOF'
           #!/bin/bash
           # Omni Node Installation Script  
           # This script installs the polkadot-omni-node
@@ -379,13 +379,13 @@ jobs:
           polkadot-omni-node --version
           EOF
           
-          chmod +x scripts/zero-to-hero/install-omni-node.sh  
-          echo "✅ Omni node script created: scripts/zero-to-hero/install-omni-node.sh"
+          chmod +x tutorials/zero-to-hero/scripts/install-omni-node.sh  
+          echo "✅ Omni node script created: tutorials/zero-to-hero/scripts/install-omni-node.sh"
 
       - name: Generate chain spec creation script
         run: |
           echo "$(date -Iseconds) ⛓️ Generating chain spec creation script..."
-          cat > scripts/zero-to-hero/generate-chain-spec.sh << 'EOF'
+          cat > tutorials/zero-to-hero/scripts/generate-chain-spec.sh << 'EOF'
           #!/bin/bash
           # Chain Specification Generation Script
           # This script generates a development chain specification for the parachain
@@ -443,13 +443,13 @@ jobs:
           fi
           EOF
           
-          chmod +x scripts/zero-to-hero/generate-chain-spec.sh
-          echo "✅ Chain spec generation script created: scripts/zero-to-hero/generate-chain-spec.sh"
+          chmod +x tutorials/zero-to-hero/scripts/generate-chain-spec.sh
+          echo "✅ Chain spec generation script created: tutorials/zero-to-hero/scripts/generate-chain-spec.sh"
 
       - name: Generate node startup script
         run: |
           echo "$(date -Iseconds) 🖥️ Generating node startup script..."
-          cat > scripts/zero-to-hero/start-node.sh << 'EOF'
+          cat > tutorials/zero-to-hero/scripts/start-node.sh << 'EOF'
           #!/bin/bash
           # Parachain Node Startup Script
           # This script starts the parachain node in development mode
@@ -467,7 +467,7 @@ jobs:
           # Check if chain spec exists
           if [ ! -f "$CHAIN_SPEC" ]; then
             echo "❌ Chain specification not found: $CHAIN_SPEC"
-            echo "💡 Generate it first by running: ./scripts/zero-to-hero/generate-chain-spec.sh"
+            echo "💡 Generate it first by running: ./tutorials/zero-to-hero/scripts/generate-chain-spec.sh"
             exit 1
           fi
           
@@ -484,13 +484,13 @@ jobs:
             --rpc-methods unsafe
           EOF
           
-          chmod +x scripts/zero-to-hero/start-node.sh
-          echo "✅ Node startup script created: scripts/zero-to-hero/start-node.sh"
+          chmod +x tutorials/zero-to-hero/scripts/start-node.sh
+          echo "✅ Node startup script created: tutorials/zero-to-hero/scripts/start-node.sh"
 
       - name: Generate setup instructions
         run: |
           echo "$(date -Iseconds) 📖 Generating setup instructions..."
-          cat > scripts/zero-to-hero/README.md << 'EOF'
+          cat > tutorials/zero-to-hero/scripts/README.md << 'EOF'
           # Zero to Hero Scripts
           
           This directory contains scripts to set up and run a local parachain development environment.
@@ -512,7 +512,7 @@ jobs:
           - **Commit**: ${{ github.sha }}
           EOF
           
-          echo "✅ Setup instructions created: scripts/zero-to-hero/README.md"
+          echo "✅ Setup instructions created: tutorials/zero-to-hero/scripts/README.md"
 
       - name: Validate generated scripts
         run: |
@@ -528,7 +528,7 @@ jobs:
           )
           
           for script in "${SCRIPTS[@]}"; do
-            SCRIPT_PATH="scripts/zero-to-hero/$script"
+            SCRIPT_PATH="tutorials/zero-to-hero/scripts/$script"
             if [ -f "$SCRIPT_PATH" ] && [ -x "$SCRIPT_PATH" ]; then
               echo "✅ $script - exists and executable"
               echo "   📊 Size: $(du -h "$SCRIPT_PATH" | cut -f1)"
@@ -539,9 +539,9 @@ jobs:
           done
           
           # Validate README exists
-          if [ -f "scripts/zero-to-hero/README.md" ]; then
+          if [ -f "tutorials/zero-to-hero/scripts/README.md" ]; then
             echo "✅ README.md - exists"
-            echo "   📊 Size: $(du -h scripts/zero-to-hero/README.md | cut -f1)"
+            echo "   📊 Size: $(du -h tutorials/zero-to-hero/scripts/README.md | cut -f1)"
           else
             echo "❌ README.md - missing"
             exit 1
@@ -558,8 +558,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Add the scripts directory
-          git add scripts/zero-to-hero/
+          # Add the tutorial scripts directory
+          git add tutorials/zero-to-hero/scripts/
           
           # Check if there are changes to commit
           if git diff --cached --quiet; then
@@ -646,11 +646,11 @@ jobs:
             echo "📋 Updated to: $CURRENT_SHA"
           fi
           
-          # Verify scripts directory exists
-          if [ -d "scripts/zero-to-hero" ]; then
+          # Verify tutorial scripts directory exists
+          if [ -d "tutorials/zero-to-hero/scripts" ]; then
             echo "✅ Scripts directory found"
             echo "📋 Scripts available:"
-            ls -la scripts/zero-to-hero/
+            ls -la tutorials/zero-to-hero/scripts/
           else
             echo "❌ Scripts directory not found at commit $CURRENT_SHA!"
             echo "🔍 Repository contents:"
@@ -872,7 +872,7 @@ jobs:
           echo "  - All scripts committed to repository"
           echo ""
           echo "✅ Scripts are available:"
-          echo "  - In repository: scripts/zero-to-hero/"
+          echo "  - In repository: tutorials/zero-to-hero/scripts/"
           echo "  - In release: ${{ steps.create-release.outputs.html_url }}"
           echo "  - Tagged at commit: ${{ needs.generate-scripts.outputs.commit-sha }}"
 
@@ -980,8 +980,8 @@ jobs:
           echo ""
           echo "📍 Next Steps:"
           if [ "${{ needs.generate-scripts.outputs.scripts-committed }}" = "true" ]; then
-            echo "  ✅ Scripts are available in the repository at scripts/zero-to-hero/"
-            echo "  📖 See scripts/zero-to-hero/README.md for usage instructions"
+            echo "  ✅ Scripts are available in the repository at tutorials/zero-to-hero/scripts/"
+            echo "  📖 See tutorials/zero-to-hero/scripts/README.md for usage instructions"
             echo "  🔗 Scripts commit: ${{ needs.generate-scripts.outputs.commit-sha }}"
           fi
           if [ "${{ needs.check-version-changes.outputs.has-changes }}" != "true" ]; then
