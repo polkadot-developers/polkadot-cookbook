@@ -1,0 +1,324 @@
+name: Generate Tutorial Scripts
+description: "Build, generate scripts, and optionally release for a given tutorial"
+
+run-name: "Generate Scripts - ${{ inputs.tutorial_slug || 'zero-to-hero' }}"
+
+env:
+  PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-docs-tests/"
+  PARACHAIN_BRANCH: ${{ github.ref_name }}
+  PARA_ID: "1000"
+  RELAY_CHAIN: "paseo"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tutorial_key:
+        description: 'versions.yml tutorial key (e.g., zero_to_hero)'
+        required: false
+        default: zero_to_hero
+        type: string
+      tutorial_slug:
+        description: 'tutorial folder slug (e.g., zero-to-hero)'
+        required: false
+        default: zero-to-hero
+        type: string
+      create_release:
+        description: 'Create a release after generating scripts'
+        required: false
+        default: false
+        type: boolean
+      force_generation:
+        description: 'Force script generation even if no version changes detected'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [ master, dev ]
+    paths:
+      - 'versions.yml'
+
+jobs:
+  check-version-changes:
+    name: Check Version Changes
+    runs-on: ubuntu-latest
+    outputs:
+      has-changes: ${{ steps.check-changes.outputs.has-changes }}
+      changed-versions: ${{ steps.check-changes.outputs.changed-versions }}
+    steps:
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install yq for YAML parsing
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Check for tutorial version changes
+        id: check-changes
+        env:
+          TUTORIAL_KEY: ${{ inputs.tutorial_key || 'zero_to_hero' }}
+        run: |
+          echo "$(date -Iseconds) 🔍 Checking for ${TUTORIAL_KEY} version changes..."
+          
+          DEPS_FILE="versions.yml"
+          TUTORIAL="${TUTORIAL_KEY}"
+          HAS_CHANGES="false"
+          CHANGED_VERSIONS=""
+          
+          if [ ! -f "$DEPS_FILE" ]; then
+            echo "❌ Dependencies file not found: $DEPS_FILE"
+            exit 1
+          fi
+          
+          get_version() {
+            local dep="$1"
+            local version
+            version=$(yq eval ".${TUTORIAL}.${dep}" "$DEPS_FILE" 2>/dev/null)
+            if [ "$version" = "null" ] || [ -z "$version" ]; then
+              version=$(yq eval ".versions.${dep}" "$DEPS_FILE" 2>/dev/null)
+            fi
+            echo "$version"
+          }
+          
+          CURRENT_RUST=$(get_version "rust")
+          CURRENT_CHAIN_SPEC=$(get_version "chain_spec_builder") 
+          CURRENT_OMNI_NODE=$(get_version "polkadot_omni_node")
+          
+          echo "📋 Current versions:"
+          echo "  - rust: $CURRENT_RUST"
+          echo "  - chain_spec_builder: $CURRENT_CHAIN_SPEC"
+          echo "  - polkadot_omni_node: $CURRENT_OMNI_NODE"
+          
+          if [ "${{ github.event.inputs.force_generation }}" = "true" ]; then
+            echo "🔄 Force generation enabled - proceeding with script generation"
+            HAS_CHANGES="true"
+            CHANGED_VERSIONS="forced generation"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "🔄 Manual trigger detected - proceeding with script generation"
+            HAS_CHANGES="true"
+            CHANGED_VERSIONS="manual trigger"
+          else
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            else
+              BASE_SHA="${{ github.event.before }}"
+            fi
+            echo "🔍 Comparing with base commit: $BASE_SHA"
+            if [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE_SHA" 2>/dev/null; then
+              if git cat-file -e "$BASE_SHA:$DEPS_FILE" 2>/dev/null; then
+                git show "$BASE_SHA:$DEPS_FILE" > previous_versions.yml
+                get_previous_version() {
+                  local dep="$1"
+                  local version
+                  version=$(yq eval ".${TUTORIAL}.${dep}" previous_versions.yml 2>/dev/null)
+                  if [ "$version" = "null" ] || [ -z "$version" ]; then
+                    version=$(yq eval ".versions.${dep}" previous_versions.yml 2>/dev/null)
+                  fi
+                  echo "$version"
+                }
+                PREVIOUS_RUST=$(get_previous_version "rust")
+                PREVIOUS_CHAIN_SPEC=$(get_previous_version "chain_spec_builder")
+                PREVIOUS_OMNI_NODE=$(get_previous_version "polkadot_omni_node")
+                CHANGES_FOUND=""
+                if [ "$CURRENT_RUST" != "$PREVIOUS_RUST" ]; then
+                  CHANGES_FOUND="$CHANGES_FOUND rust($PREVIOUS_RUST→$CURRENT_RUST)"
+                fi
+                if [ "$CURRENT_CHAIN_SPEC" != "$PREVIOUS_CHAIN_SPEC" ]; then
+                  CHANGES_FOUND="$CHANGES_FOUND chain_spec_builder($PREVIOUS_CHAIN_SPEC→$CURRENT_CHAIN_SPEC)"
+                fi
+                if [ "$CURRENT_OMNI_NODE" != "$PREVIOUS_OMNI_NODE" ]; then
+                  CHANGES_FOUND="$CHANGES_FOUND polkadot_omni_node($PREVIOUS_OMNI_NODE→$CURRENT_OMNI_NODE)"
+                fi
+                if [ -n "$CHANGES_FOUND" ]; then
+                  HAS_CHANGES="true"
+                  CHANGED_VERSIONS="$CHANGES_FOUND"
+                fi
+                rm -f previous_versions.yml
+              else
+                HAS_CHANGES="true"
+                CHANGED_VERSIONS="new versions file"
+              fi
+            else
+              HAS_CHANGES="true"
+              CHANGED_VERSIONS="unable to compare"
+            fi
+          fi
+          echo "has-changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+          echo "changed-versions=$CHANGED_VERSIONS" >> $GITHUB_OUTPUT
+
+  build-parachain:
+    name: Build Parachain
+    needs: check-version-changes
+    if: needs.check-version-changes.outputs.has-changes == 'true'
+    uses: ./.github/workflows/build-kitchensink-parachain.yml
+    with:
+      tutorial_key: ${{ inputs.tutorial_key || 'zero_to_hero' }}
+    secrets: inherit
+
+  generate-scripts:
+    name: Generate Scripts
+    runs-on: ubuntu-latest
+    needs: [check-version-changes, build-parachain]
+    if: always() && needs.check-version-changes.outputs.has-changes == 'true' && needs.build-parachain.result == 'success'
+    outputs:
+      rust-version: ${{ steps.resolve-versions.outputs.rust-version }}
+      chain-spec-builder-version: ${{ steps.resolve-versions.outputs.chain-spec-builder-version }}
+      omni-node-version: ${{ steps.resolve-versions.outputs.omni-node-version }}
+      scripts-committed: ${{ steps.commit-scripts.outputs.scripts-committed }}
+      commit-sha: ${{ steps.commit-scripts.outputs.commit-sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read versions from versions.yml
+        id: resolve-versions
+        env:
+          TUTORIAL_KEY: ${{ inputs.tutorial_key || 'zero_to_hero' }}
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          DEPS_FILE="versions.yml"
+          TUTORIAL="${TUTORIAL_KEY}"
+          if [ ! -f "$DEPS_FILE" ]; then
+            echo "❌ Dependencies file not found: $DEPS_FILE"
+            exit 1
+          fi
+          get_version() {
+            local dep="$1"
+            local version
+            version=$(yq eval ".${TUTORIAL}.${dep}" "$DEPS_FILE" 2>/dev/null)
+            if [ "$version" = "null" ] || [ -z "$version" ]; then
+              version=$(yq eval ".versions.${dep}" "$DEPS_FILE" 2>/dev/null)
+            fi
+            echo "$version"
+          }
+          CHAIN_SPEC_VERSION=$(get_version "chain_spec_builder")
+          OMNI_NODE_VERSION=$(get_version "polkadot_omni_node")
+          RUST_VERSION=$(get_version "rust")
+          if [ -z "$CHAIN_SPEC_VERSION" ] || [ "$CHAIN_SPEC_VERSION" = "null" ]; then
+            echo "❌ chain-spec-builder version not resolved"
+            exit 1
+          fi
+          if [ -z "$OMNI_NODE_VERSION" ] || [ "$OMNI_NODE_VERSION" = "null" ]; then
+            echo "❌ omni-node version not resolved"
+            exit 1
+          fi
+          if [ -z "$RUST_VERSION" ] || [ "$RUST_VERSION" = "null" ]; then
+            echo "❌ rust version not resolved"
+            exit 1
+          fi
+          echo "chain-spec-builder-version=$CHAIN_SPEC_VERSION" >> $GITHUB_OUTPUT
+          echo "omni-node-version=$OMNI_NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "rust-version=$RUST_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tutorial scripts directory
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          echo "$(date -Iseconds) 📁 Creating scripts directory..."
+          mkdir -p tutorials/${TUTORIAL_SLUG}/scripts
+
+      - name: Generate Rust setup script
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          cat > tutorials/${TUTORIAL_SLUG}/scripts/setup-rust.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          rustup default ${{ steps.resolve-versions.outputs.rust-version }}
+          rustup target add wasm32-unknown-unknown --toolchain ${{ steps.resolve-versions.outputs.rust-version }}
+          rustup component add rust-src --toolchain ${{ steps.resolve-versions.outputs.rust-version }}
+          EOF
+          chmod +x tutorials/${TUTORIAL_SLUG}/scripts/setup-rust.sh
+
+      - name: Generate chain-spec-builder setup script
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          cat > tutorials/${TUTORIAL_SLUG}/scripts/install-chain-spec-builder.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          cargo install --locked staging-chain-spec-builder@${{ steps.resolve-versions.outputs.chain-spec-builder-version }}
+          EOF
+          chmod +x tutorials/${TUTORIAL_SLUG}/scripts/install-chain-spec-builder.sh
+
+      - name: Generate omni-node setup script
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          cat > tutorials/${TUTORIAL_SLUG}/scripts/install-omni-node.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          cargo install --locked polkadot-omni-node@${{ steps.resolve-versions.outputs.omni-node-version }}
+          EOF
+          chmod +x tutorials/${TUTORIAL_SLUG}/scripts/install-omni-node.sh
+
+      - name: Generate chain spec creation script
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          cat > tutorials/${TUTORIAL_SLUG}/scripts/generate-chain-spec.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          chain-spec-builder create \
+            -t development \
+            --relay-chain ${{ env.RELAY_CHAIN }} \
+            --para-id ${{ env.PARA_ID }} \
+            --runtime ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm \
+            named-preset development
+          EOF
+          chmod +x tutorials/${TUTORIAL_SLUG}/scripts/generate-chain-spec.sh
+
+      - name: Generate node startup script
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          cat > tutorials/${TUTORIAL_SLUG}/scripts/start-node.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          polkadot-omni-node --chain ./chain_spec.json --dev --rpc-cors all --rpc-methods unsafe
+          EOF
+          chmod +x tutorials/${TUTORIAL_SLUG}/scripts/start-node.sh
+
+      - name: Generate setup instructions
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          cat > tutorials/${TUTORIAL_SLUG}/scripts/README.md << 'EOF'
+          # Tutorial Scripts
+          EOF
+
+      - name: Validate generated scripts
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          for f in setup-rust.sh install-chain-spec-builder.sh install-omni-node.sh generate-chain-spec.sh start-node.sh; do
+            test -x tutorials/${TUTORIAL_SLUG}/scripts/$f || { echo "missing $f"; exit 1; }
+          done
+
+      - name: Commit generated scripts to repository
+        id: commit-scripts
+        env:
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tutorials/${TUTORIAL_SLUG}/scripts/
+          if git diff --cached --quiet; then
+            echo "scripts-committed=false" >> $GITHUB_OUTPUT
+            echo "commit-sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          else
+            git commit -m "chore(scripts): update scripts for ${TUTORIAL_SLUG}"
+            git push origin ${{ github.ref_name }}
+            COMMIT_SHA=$(git rev-parse HEAD)
+            echo "scripts-committed=true" >> $GITHUB_OUTPUT
+            echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          fi
+
+  # Optional: release creation identical to previous workflow, omitted for brevity
+

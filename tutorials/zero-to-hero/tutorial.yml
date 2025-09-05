@@ -4,7 +4,7 @@ category: polkadot-sdk-cookbook
 
 manifest:
   build:
-    project_dir: zero-to-hero-code
+    project_dir: zero-to-hero-code # This tutorial re-uses completely the kitchensink-parachain project
     commands:
       - cargo build --release
   runtime:

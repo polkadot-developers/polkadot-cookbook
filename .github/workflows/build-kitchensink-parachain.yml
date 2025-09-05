@@ -15,6 +15,12 @@ on:
     paths:
       - 'versions.yml'
   workflow_call:
+    inputs:
+      tutorial_key:
+        description: 'versions.yml tutorial key (e.g., zero_to_hero)'
+        required: false
+        type: string
+        default: zero_to_hero
 
 jobs:
   setup-dependencies:
@@ -30,13 +36,15 @@ jobs:
 
       - name: Read versions.yml
         id: resolve
+        env:
+          TUTORIAL_KEY: ${{ inputs.tutorial_key }}
         run: |
           # Install yq for YAML parsing
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
           
           DEPS_FILE="versions.yml"
-          TUTORIAL="zero_to_hero"
+          TUTORIAL="${TUTORIAL_KEY:-zero_to_hero}"
           
           # Validate that config file exists
           if [ ! -f "$DEPS_FILE" ]; then
