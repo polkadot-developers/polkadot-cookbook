@@ -319,6 +319,3 @@ jobs:
             echo "scripts-committed=true" >> $GITHUB_OUTPUT
             echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
           fi
-
-  # Optional: release creation identical to previous workflow, omitted for brevity
-
