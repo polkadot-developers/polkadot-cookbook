@@ -8,3 +8,6 @@ target/
 
 # VS Code
 .vscode
+
+# Node
+node_modules/
