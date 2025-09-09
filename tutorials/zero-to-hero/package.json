@@ -1,0 +1,31 @@
+{
+  "name": "zero-to-hero",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "vitest run --reporter=default --reporter=junit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@polkadot/api": "^16.4.6",
+    "ws": "^8.18.3"
+  },
+  "vitest": {
+    "reporters": [
+      "default",
+      "junit"
+    ]
+  }
+}

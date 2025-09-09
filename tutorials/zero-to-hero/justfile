@@ -16,3 +16,8 @@ generate-chain-spec:
 start-node:
   ./scripts/start-node.sh
 
+run-zombienet:
+  cd ../../kitchensink-parachain && zombienet --provider native spawn zombienet-omni-node.toml
+
+run-tests:
+  npm run test
