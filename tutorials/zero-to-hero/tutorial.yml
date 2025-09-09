@@ -10,12 +10,12 @@ manifest:
   runtime:
     wasm_path: ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm
   network:
-    relay_chain: paseo
+    relay_chain: rococo-local
     para_id: 1000
   tests:
-    framework: polkadot-js
+    framework: vitest
     files:
-      - tests/example.test.ts
+      - tests/zero-to-hero-e2e.test.ts
 
 scripts_dir: scripts
 zombienet_dir: zombienet
