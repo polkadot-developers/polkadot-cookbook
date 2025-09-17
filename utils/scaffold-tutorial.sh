@@ -15,20 +15,8 @@ cat > "$DIR/justfile" << 'EOF'
 default:
   @just --list
 
-setup-rust:
-  ./scripts/setup-rust.sh
-
-install-chain-spec-builder:
-  ./scripts/install-chain-spec-builder.sh
-
-install-omni-node:
-  ./scripts/install-omni-node.sh
-
-generate-chain-spec:
-  ./scripts/generate-chain-spec.sh
-
-start-node:
-  ./scripts/start-node.sh
+say-hello:
+  echo "Hello, world!"
 EOF
 
 cat > "$DIR/tests/example.test.ts" << 'EOF'
