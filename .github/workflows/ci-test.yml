@@ -1,0 +1,56 @@
+name: PR Tutorial Tests
+
+on:
+  pull_request:
+    paths:
+      - 'tutorials/**'
+      - '!tutorials/**/scripts/**'
+
+jobs:
+  find-changed-tutorials:
+    runs-on: ubuntu-latest
+    outputs:
+      tutorials: ${{ steps.changed.outputs.tutorials }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changed
+        run: |
+          set -e
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.sha }}
+          echo "Base: $BASE_SHA"
+          echo "Head: $HEAD_SHA"
+          # List changed tutorial slugs
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
+          if [ -z "$CHANGED" ]; then
+            echo 'tutorials=[]' >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Turn into JSON array
+          ARR=$(printf '%s\n' $CHANGED | jq -R . | jq -s .)
+          echo "tutorials=$ARR" >> $GITHUB_OUTPUT
+          echo "Changed tutorials: $ARR"
+
+  test:
+    needs: find-changed-tutorials
+    if: needs.find-changed-tutorials.outputs.tutorials != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJson(needs.find-changed-tutorials.outputs.tutorials) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install deps
+        working-directory: tutorials/${{ matrix.slug }}
+        run: npm ci || npm i
+      - name: Run tests
+        working-directory: tutorials/${{ matrix.slug }}
+        run: npm run test --silent
+
+
