@@ -1,8 +1,7 @@
 ---
-name: Z - Freeform issue
+name: Custom Blank Issue
 about: Open a general issue if other templates don't fit
 title: ""
-labels: needs-triage
 assignees: ""
 ---
 
@@ -17,5 +16,3 @@ Links, logs, screenshots, or references.
 ## Suggested next steps
 
 What outcomes would resolve this?
-
-
