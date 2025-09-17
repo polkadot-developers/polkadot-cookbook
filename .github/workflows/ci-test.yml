@@ -5,6 +5,12 @@ on:
     paths:
       - 'tutorials/**'
       - '!tutorials/**/scripts/**'
+  workflow_dispatch:
+    inputs:
+      tutorial_slug:
+        description: 'Tutorial slug to test (e.g., zero-to-hero)'
+        required: true
+        type: string
 
 jobs:
   find-changed-tutorials:
@@ -16,12 +22,23 @@ jobs:
         with:
           fetch-depth: 0
       - id: changed
+        env:
+          GH_EVENT: ${{ github.event_name }}
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug }}
         run: |
           set -e
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.sha }}
           echo "Base: $BASE_SHA"
           echo "Head: $HEAD_SHA"
+
+          # Manual trigger: honor provided tutorial_slug
+          if [ "$GH_EVENT" = "workflow_dispatch" ] && [ -n "$TUTORIAL_SLUG" ]; then
+            ARR=$(printf '%s\n' "$TUTORIAL_SLUG" | jq -R . | jq -s .)
+            echo "tutorials=$ARR" >> $GITHUB_OUTPUT
+            echo "Manual run for tutorial: $ARR"
+            exit 0
+          fi
           # List added tutorial slugs
           ADDED=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" | awk '/^A\t/ {print $2}' | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
           if [ -n "$ADDED" ]; then
@@ -30,16 +47,9 @@ jobs:
             echo "Added tutorials: $ARR"
             exit 0
           fi
-
-          # List changed tutorial slugs
-          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
-          if [ -z "$CHANGED" ]; then
-            echo 'tutorials=[]' >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          ARR=$(printf '%s\n' $CHANGED | jq -R . | jq -s .)
-          echo "tutorials=$ARR" >> $GITHUB_OUTPUT
-          echo "Changed tutorials: $ARR"
+          # No newly added tutorials: skip tests
+          echo 'tutorials=[]' >> $GITHUB_OUTPUT
+          echo "No newly added tutorials detected; skipping tests."
 
   test:
     needs: find-changed-tutorials
