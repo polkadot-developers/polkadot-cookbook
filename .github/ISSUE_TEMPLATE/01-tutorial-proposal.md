@@ -32,5 +32,3 @@ What will users learn? One or two sentences.
 ## Notes
 
 Anything else reviewers should know.
-
-
