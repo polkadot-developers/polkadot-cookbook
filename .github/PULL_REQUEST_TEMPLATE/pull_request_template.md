@@ -1,6 +1,6 @@
 ## Summary
 
-Describe what this tutorial adds/changes.
+Describe what this tutorial adds/changes. This should be a short summary of the changes.
 
 ## Checklist
 
