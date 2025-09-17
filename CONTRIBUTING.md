@@ -19,8 +19,8 @@ git checkout -b feat/tutorial-my-tutorial
 Use the helpers to create the structure and testing setup.
 
 ```bash
-./utils/scaffold-tutorial.sh my-tutorial
-./utils/bootstrap-tests.sh my-tutorial
+chmod +x ./utils/scaffold-tutorial.sh && ./utils/scaffold-tutorial.sh my-tutorial
+chmod +x ./utils/bootstrap-tests.sh && ./utils/bootstrap-tests.sh my-tutorial
 ```
 
 This creates:
@@ -60,8 +60,10 @@ Open the PR. The PR template will guide your checklist.
 ### 7) What CI runs on your PR (automatic)
 
 - PR Tutorial Tests: `.github/workflows/ci-test.yml`
-  - Runs for changes under `tutorials/**` (except `tutorials/**/scripts/**`).
-  - Installs deps and runs `vitest` in each changed tutorial.
+  - If your PR ADDS a new tutorial folder under `tutorials/<slug>/`, CI runs tests only for that new tutorial.
+  - Otherwise, CI runs tests for any tutorials that changed.
+  - It ignores generated files under `tutorials/**/scripts/**`.
+  - It installs deps and runs `vitest` for the selected tutorials.
   - Tests that require a node should "skip fast" if no endpoint is available.
 
 ### 8) After merge (maintainers do this)
