@@ -22,7 +22,7 @@ jobs:
           HEAD_SHA=${{ github.sha }}
           echo "Base: $BASE_SHA"
           echo "Head: $HEAD_SHA"
-          # Prefer newly ADDED tutorial(s) (new folders) when present
+          # List added tutorial slugs
           ADDED=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" | awk '/^A\t/ {print $2}' | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
           if [ -n "$ADDED" ]; then
             ARR=$(printf '%s\n' $ADDED | jq -R . | jq -s .)
@@ -31,7 +31,7 @@ jobs:
             exit 0
           fi
 
-          # Otherwise, list changed tutorial slugs
+          # List changed tutorial slugs
           CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
           if [ -z "$CHANGED" ]; then
             echo 'tutorials=[]' >> $GITHUB_OUTPUT
