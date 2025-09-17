@@ -1,5 +1,5 @@
 ---
-name: Tutorial proposal
+name: Tutorial Proposal
 about: Propose a new tutorial for the Cookbook
 title: "Tutorial: <concise-title>"
 labels: tutorial, proposal
