@@ -55,6 +55,24 @@ description: Replace with a short description.
 type: sdk # or contracts
 EOF
 
+cat > "$DIR/README.md" << EOF
+# $SLUG
+
+Describe the goal, prerequisites, and step-by-step instructions for this tutorial.
+
+## Steps
+- What users will build
+- Commands to run (use the just recipes and scripts)
+
+## Testing
+Explain how to run tests:
+
+```bash
+cd tutorials/$SLUG
+npm run test
+```
+EOF
+
 echo "Scaffolded tutorial at $DIR"
 
 
