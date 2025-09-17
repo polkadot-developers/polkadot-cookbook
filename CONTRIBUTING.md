@@ -61,8 +61,6 @@ Open the PR. The PR template will guide your checklist.
 
 - PR Tutorial Tests: `.github/workflows/ci-test.yml`
   - If your PR ADDS a new tutorial folder under `tutorials/<slug>/`, CI runs tests only for that new tutorial.
-  - Otherwise, CI runs tests for any tutorials that changed.
-  - It ignores generated files under `tutorials/**/scripts/**`.
   - It installs deps and runs `vitest` for the selected tutorials.
   - Tests that require a node should "skip fast" if no endpoint is available.
 
