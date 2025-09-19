@@ -1,0 +1,133 @@
+name: PR Slash Command - Generate Scripts
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  dispatch-generate-scripts:
+    if: |
+      github.event.issue.pull_request && (
+        startsWith(github.event.comment.body, '/generate-scripts') ||
+        startsWith(github.event.comment.body, '/generate-release')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('headRef', pr.data.head.ref);
+            core.setOutput('headSha', pr.data.head.sha);
+
+      - name: Determine command and inputs
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.comment.body.trim();
+            const isRelease = body.startsWith('/generate-release');
+            const isScripts = body.startsWith('/generate-scripts');
+            const argsStr = body.replace(/^\/(generate-release|generate-scripts)\s*/, '');
+            // parse args of the form: slug=add-nft-pallet key=zero_to_hero force=1
+            const args = Object.fromEntries(Array.from(argsStr.matchAll(/(\w+)=([^\s]+)/g)).map(m => [m[1], m[2]]));
+
+            // Defaults
+            let tutorial_slug = args.slug || '';
+            const tutorial_key = args.key || 'zero_to_hero';
+            const create_release = isRelease ? 'true' : (args.release === '1' ? 'true' : 'false');
+            const force_generation = args.force === '1' ? 'true' : 'false';
+
+            core.setOutput('tutorial_slug', tutorial_slug);
+            core.setOutput('tutorial_key', tutorial_key);
+            core.setOutput('create_release', create_release);
+            core.setOutput('force_generation', force_generation);
+            core.setOutput('cmd', isRelease ? 'generate-release' : 'generate-scripts');
+
+      - name: Derive slug from PR changes if missing
+        id: derive
+        if: steps.parse.outputs.tutorial_slug == ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 300
+            });
+            const slugs = new Set();
+            for (const f of files.data) {
+              const m = f.filename.match(/^tutorials\/([^\/]+)\//);
+              if (m) slugs.add(m[1]);
+            }
+            const arr = Array.from(slugs);
+            core.setOutput('count', String(arr.length));
+            if (arr.length === 1) {
+              core.setOutput('slug', arr[0]);
+            } else {
+              core.setOutput('slug', '');
+            }
+
+      - name: Fail if slug ambiguous
+        if: steps.parse.outputs.tutorial_slug == '' && steps.derive.outputs.count != '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '❌ Could not determine a unique tutorial slug from changes. Please run `/generate-scripts slug=<your-slug>`.'
+            });
+            core.setFailed('Missing or ambiguous tutorial slug');
+
+      - name: Set final inputs
+        id: inputs
+        run: |
+          SLUG=${{ steps.parse.outputs.tutorial_slug }}
+          if [ -z "$SLUG" ]; then SLUG=${{ steps.derive.outputs.slug }}; fi
+          echo "slug=$SLUG" >> $GITHUB_OUTPUT
+          echo "key=${{ steps.parse.outputs.tutorial_key }}" >> $GITHUB_OUTPUT
+          echo "release=${{ steps.parse.outputs.create_release }}" >> $GITHUB_OUTPUT
+          echo "force=${{ steps.parse.outputs.force_generation }}" >> $GITHUB_OUTPUT
+
+      - name: Dispatch generate-scripts workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'generate-scripts.yml',
+              ref: '${{ steps.pr.outputs.headRef }}',
+              inputs: {
+                tutorial_slug: '${{ steps.inputs.outputs.slug }}',
+                tutorial_key: '${{ steps.inputs.outputs.key }}',
+                create_release: '${{ steps.inputs.outputs.release }}',
+                force_generation: '${{ steps.inputs.outputs.force }}',
+              },
+            });
+
+      - name: Acknowledge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ Dispatched generate-scripts for slug=\`${{ steps.inputs.outputs.slug }}\` (key=\`${{ steps.inputs.outputs.key }}\`, release=${{ steps.inputs.outputs.release }}, force=${{ steps.inputs.outputs.force }}).`
+            });
+
+
