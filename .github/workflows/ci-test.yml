@@ -34,7 +34,7 @@ jobs:
 
           # Manual trigger: honor provided tutorial_slug
           if [ "$GH_EVENT" = "workflow_dispatch" ] && [ -n "$TUTORIAL_SLUG" ]; then
-            ARR=$(printf '%s\n' "$TUTORIAL_SLUG" | jq -R . | jq -s .)
+            ARR=$(printf '%s\n' "$TUTORIAL_SLUG" | jq -R . | jq -s -c .)
             echo "tutorials=$ARR" >> $GITHUB_OUTPUT
             echo "Manual run for tutorial: $ARR"
             exit 0
@@ -42,7 +42,7 @@ jobs:
           # List added tutorial slugs
           ADDED=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" | awk '/^A\t/ {print $2}' | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
           if [ -n "$ADDED" ]; then
-            ARR=$(printf '%s\n' $ADDED | jq -R . | jq -s .)
+            ARR=$(printf '%s\n' $ADDED | jq -R . | jq -s -c .)
             echo "tutorials=$ARR" >> $GITHUB_OUTPUT
             echo "Added tutorials: $ARR"
             exit 0
