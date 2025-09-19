@@ -350,6 +350,8 @@ jobs:
           CHAIN_SPEC_VERSION: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}
           OMNI_NODE_VERSION: ${{ needs.generate-scripts.outputs.omni-node-version }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           set -e
           if [ -z "$SLUG" ]; then
             SLUG="zero-to-hero"
@@ -367,7 +369,7 @@ jobs:
           git tag -a "$TAG_NAME" "$COMMIT_SHA" -m "Tutorial $SLUG scripts update. Versions: rust=$RUST_VERSION, chain_spec_builder=$CHAIN_SPEC_VERSION, polkadot_omni_node=$OMNI_NODE_VERSION"
           git push origin "$TAG_NAME"
 
-      - name: Create GitHub release (optional)
+      - name: Create GitHub release 
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_release == true }}
         uses: softprops/action-gh-release@v1
         with:
