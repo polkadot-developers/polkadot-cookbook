@@ -51,6 +51,7 @@ jobs:
             });
             core.setOutput('headRef', pr.data.head.ref);
             core.setOutput('headSha', pr.data.head.sha);
+            core.setOutput('defaultBranch', context.payload.repository.default_branch);
 
       - name: Determine command and inputs
         id: parse
@@ -131,21 +132,40 @@ jobs:
           echo "force=${{ steps.parse.outputs.force_generation }}" >> $GITHUB_OUTPUT
 
       - name: Dispatch generate-scripts workflow
+        id: dispatch
         uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'generate-scripts.yml',
-              ref: '${{ steps.pr.outputs.headRef }}',
-              inputs: {
-                tutorial_slug: '${{ steps.inputs.outputs.slug }}',
-                tutorial_key: '${{ steps.inputs.outputs.key }}',
-                create_release: '${{ steps.inputs.outputs.release }}',
-                force_generation: '${{ steps.inputs.outputs.force }}',
-              },
-            });
+            const path = '.github/workflows/generate-scripts.yml';
+            let targetRef = core.getInput('ref') || `${{ steps.pr.outputs.headRef }}`;
+            // Check if workflow file exists on headRef; if not, fall back to default branch
+            try {
+              await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path,
+                ref: targetRef,
+              });
+            } catch (e) {
+              targetRef = `${{ steps.pr.outputs.defaultBranch }}`;
+            }
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'generate-scripts.yml',
+                ref: targetRef,
+                inputs: {
+                  tutorial_slug: '${{ steps.inputs.outputs.slug }}',
+                  tutorial_key: '${{ steps.inputs.outputs.key }}',
+                  create_release: '${{ steps.inputs.outputs.release }}',
+                  force_generation: '${{ steps.inputs.outputs.force }}',
+                },
+              });
+              core.setOutput('ref', targetRef);
+            } catch (err) {
+              core.setFailed(`Dispatch failed: ${err.message}`);
+            }
 
       - name: Acknowledge
         uses: actions/github-script@v7
@@ -155,7 +175,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `✅ Dispatched generate-scripts for slug=\`${{ steps.inputs.outputs.slug }}\` (key=\`${{ steps.inputs.outputs.key }}\`, release=${{ steps.inputs.outputs.release }}, force=${{ steps.inputs.outputs.force }}).`
+              body: `✅ Dispatched generate-scripts for slug=\`${{ steps.inputs.outputs.slug }}\` (key=\`${{ steps.inputs.outputs.key }}\`, release=${{ steps.inputs.outputs.release }}, force=${{ steps.inputs.outputs.force }}). Using ref: \`${{ steps.dispatch.outputs.ref || steps.pr.outputs.headRef }}\``
             });
 
 
