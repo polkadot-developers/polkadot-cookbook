@@ -3,7 +3,7 @@ description: "Build and run kitchensink parachain"
 
 env:
   PARACHAIN_REPO: "https://github.com/polkadot-developers/polkadot-docs-tests/"
-  PARACHAIN_BRANCH: ${{ github.ref_name }}
+  PARACHAIN_BRANCH: master
   NODE_TIMEOUT: "120s"
   PARA_ID: "1000"
   RELAY_CHAIN: "paseo"
@@ -21,6 +21,11 @@ on:
         required: false
         type: string
         default: zero_to_hero
+      use_local:
+        description: 'Build from local kitchensink-parachain in this repo'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   setup-dependencies:
@@ -141,8 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-dependencies
     outputs:
-      parachain-path: ${{ steps.setup-parachain.outputs.parachain-path }}
-      runtime-path: ${{ steps.setup-parachain.outputs.runtime-path }}
+      runtime-path: ${{ steps.set-runtime.outputs.runtime-path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -165,9 +169,15 @@ jobs:
             target/release/wbuild/parachain-template-runtime/*.wasm
           key: runtime-wasm-${{ env.PARACHAIN_BRANCH }}-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Setup kitchensink parachain
+      - name: Build local kitchensink (PR modified)
+        if: steps.cache-runtime.outputs.cache-hit != 'true' && inputs.use_local == true
+        working-directory: kitchensink-parachain
+        run: |
+          echo "🔨 Building local kitchensink-parachain (PR branch)"
+          cargo build --release --locked
+      - name: Setup kitchensink parachain (external repo)
         id: setup-parachain
-        if: steps.cache-runtime.outputs.cache-hit != 'true'
+        if: steps.cache-runtime.outputs.cache-hit != 'true' && inputs.use_local != true
         uses: ./.github/actions/setup-kitchensink-parachain
         with:
           branch: ${{ env.PARACHAIN_BRANCH }}
@@ -184,16 +194,20 @@ jobs:
             find . -name "*.wasm" -type f 2>/dev/null || echo "No WASM files found"
             exit 1
           fi
-          
+          echo "RUNTIME_WASM=$RUNTIME_WASM" >> $GITHUB_ENV
           echo "✅ Runtime WASM found: $RUNTIME_WASM"
           echo "📄 File size: $(du -h "$RUNTIME_WASM" | cut -f1)"
+
+      - name: Set runtime path output
+        id: set-runtime
+        run: |
+          echo "runtime-path=${RUNTIME_WASM}" >> $GITHUB_OUTPUT
 
       - name: Upload parachain artifacts
         uses: actions/upload-artifact@v4
         with:
           name: parachain-artifacts-${{ github.run_id }}
-          path: |
-            ${{ steps.setup-parachain.outputs.runtime-path }}
+          path: ${{ env.RUNTIME_WASM }}
           retention-days: 1
 
   run-parachain:
