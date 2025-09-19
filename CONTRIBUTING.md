@@ -69,7 +69,13 @@ Open the PR. The PR template will guide your checklist.
 - Generate finalized scripts (with concrete versions) for your tutorial:
   - Workflow: `.github/workflows/generate-scripts.yml` (manual trigger or on `versions.yml` changes)
   - Output: `tutorials/<slug>/scripts/` (committed to the repo for docs consumption)
-- Optional release: same workflow may tag and create a release when scripts changed on `master`/`dev`.
+- Tag and Release: the workflow will create a tutorial-specific tag `tutorial/<slug>/vYYYYMMDD-HHMMSS[-<shortsha>]`. If `create_release` is true on manual runs, it also creates a GitHub Release with resolved versions.
+
+Docs publishing and snippet stability:
+
+- This repo is the code source for `polkadot-developers/polkadot-docs` powering `docs.polkadot.com`.
+- The per-tutorial tags let the docs fetch stable snippets without cross-tutorial conflicts. Keep your tutorial self-contained under `tutorials/<slug>/`.
+- If your tutorial needs specific anchors/regions for snippet extraction, add clear comment anchors in code (ask maintainers for the current convention) and reference those in your README.
 
 ### Notes and tips
 

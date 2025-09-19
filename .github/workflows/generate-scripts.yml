@@ -168,12 +168,22 @@ jobs:
       omni-node-version: ${{ steps.resolve-versions.outputs.omni-node-version }}
       scripts-committed: ${{ steps.commit-scripts.outputs.scripts-committed }}
       commit-sha: ${{ steps.commit-scripts.outputs.commit-sha }}
+      tutorial-slug: ${{ steps.resolve-slug.outputs.slug }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve tutorial slug
+        id: resolve-slug
+        run: |
+          SLUG="${{ inputs.tutorial_slug }}"
+          if [ -z "$SLUG" ]; then
+            SLUG="zero-to-hero"
+          fi
+          echo "slug=$SLUG" >> $GITHUB_OUTPUT
 
       - name: Read versions from versions.yml
         id: resolve-versions
@@ -218,14 +228,14 @@ jobs:
 
       - name: Create tutorial scripts directory
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           echo "$(date -Iseconds) 📁 Creating scripts directory..."
           mkdir -p tutorials/${TUTORIAL_SLUG}/scripts
 
       - name: Generate Rust setup script
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           cat > tutorials/${TUTORIAL_SLUG}/scripts/setup-rust.sh << 'EOF'
           #!/bin/bash
@@ -238,7 +248,7 @@ jobs:
 
       - name: Generate chain-spec-builder setup script
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           cat > tutorials/${TUTORIAL_SLUG}/scripts/install-chain-spec-builder.sh << 'EOF'
           #!/bin/bash
@@ -249,7 +259,7 @@ jobs:
 
       - name: Generate omni-node setup script
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           cat > tutorials/${TUTORIAL_SLUG}/scripts/install-omni-node.sh << 'EOF'
           #!/bin/bash
@@ -260,7 +270,7 @@ jobs:
 
       - name: Generate chain spec creation script
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           cat > tutorials/${TUTORIAL_SLUG}/scripts/generate-chain-spec.sh << 'EOF'
           #!/bin/bash
@@ -276,7 +286,7 @@ jobs:
 
       - name: Generate node startup script
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           cat > tutorials/${TUTORIAL_SLUG}/scripts/start-node.sh << 'EOF'
           #!/bin/bash
@@ -287,7 +297,7 @@ jobs:
 
       - name: Generate setup instructions
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           cat > tutorials/${TUTORIAL_SLUG}/scripts/README.md << 'EOF'
           # Tutorial Scripts
@@ -295,7 +305,7 @@ jobs:
 
       - name: Validate generated scripts
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           for f in setup-rust.sh install-chain-spec-builder.sh install-omni-node.sh generate-chain-spec.sh start-node.sh; do
             test -x tutorials/${TUTORIAL_SLUG}/scripts/$f || { echo "missing $f"; exit 1; }
@@ -304,7 +314,7 @@ jobs:
       - name: Commit generated scripts to repository
         id: commit-scripts
         env:
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug || 'zero-to-hero' }}
+          TUTORIAL_SLUG: ${{ steps.resolve-slug.outputs.slug }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -319,3 +329,56 @@ jobs:
             echo "scripts-committed=true" >> $GITHUB_OUTPUT
             echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
           fi
+
+  tag-and-release:
+    name: Tag and (optional) Release
+    runs-on: ubuntu-latest
+    needs: [generate-scripts]
+    if: ${{ needs.generate-scripts.outputs.scripts-committed == 'true' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create tutorial tag
+        id: create-tag
+        env:
+          SLUG: ${{ needs.generate-scripts.outputs.tutorial-slug }}
+          COMMIT_SHA: ${{ needs.generate-scripts.outputs.commit-sha }}
+          RUST_VERSION: ${{ needs.generate-scripts.outputs.rust-version }}
+          CHAIN_SPEC_VERSION: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}
+          OMNI_NODE_VERSION: ${{ needs.generate-scripts.outputs.omni-node-version }}
+        run: |
+          set -e
+          if [ -z "$SLUG" ]; then
+            SLUG="zero-to-hero"
+          fi
+          TAG_BASE="tutorial/$SLUG"
+          TS=$(date -u +%Y%m%d-%H%M%S)
+          TAG_NAME="$TAG_BASE/v$TS"
+          # Ensure unique tag; append short SHA if exists
+          if git rev-parse -q --verify "refs/tags/$TAG_NAME" >/dev/null; then
+            SHORTSHA="${COMMIT_SHA:0:7}"
+            TAG_NAME="$TAG_BASE/v$TS-$SHORTSHA"
+          fi
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "Creating tag $TAG_NAME at $COMMIT_SHA"
+          git tag -a "$TAG_NAME" "$COMMIT_SHA" -m "Tutorial $SLUG scripts update. Versions: rust=$RUST_VERSION, chain_spec_builder=$CHAIN_SPEC_VERSION, polkadot_omni_node=$OMNI_NODE_VERSION"
+          git push origin "$TAG_NAME"
+
+      - name: Create GitHub release (optional)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.create_release == true }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Tutorial ${{ needs.generate-scripts.outputs.tutorial-slug }} - ${{ env.TAG_NAME }}
+          body: |
+            Tutorial: ${{ needs.generate-scripts.outputs.tutorial-slug }}
+            Commit: ${{ needs.generate-scripts.outputs.commit-sha }}
+            Versions:
+            - rust: ${{ needs.generate-scripts.outputs.rust-version }}
+            - chain-spec-builder: ${{ needs.generate-scripts.outputs.chain-spec-builder-version }}
+            - polkadot-omni-node: ${{ needs.generate-scripts.outputs.omni-node-version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
