@@ -72,6 +72,51 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Resolve tool versions
+        id: resolve
+        if: matrix.slug == 'add-nft-pallet'
+        run: |
+          RUST=$(grep -m1 '^[[:space:]]*rust:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          CSB=$(grep -m1 '^[[:space:]]*chain_spec_builder:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          OMNI=$(grep -m1 '^[[:space:]]*polkadot_omni_node:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "rust=$RUST" >> $GITHUB_OUTPUT
+          echo "chain-spec-builder=$CSB" >> $GITHUB_OUTPUT
+          echo "omni-node=$OMNI" >> $GITHUB_OUTPUT
+      - name: Setup Rust toolchain
+        if: matrix.slug == 'add-nft-pallet'
+        uses: ./.github/actions/setup-rust
+        with:
+          rust-version: ${{ steps.resolve.outputs.rust }}
+      - name: Setup chain-spec-builder
+        if: matrix.slug == 'add-nft-pallet'
+        uses: ./.github/actions/setup-chain-spec-builder
+        with:
+          chain-spec-builder-version: ${{ steps.resolve.outputs.chain-spec-builder }}
+      - name: Setup polkadot-omni-node
+        if: matrix.slug == 'add-nft-pallet'
+        uses: ./.github/actions/setup-omni-node
+        with:
+          omni-node-version: ${{ steps.resolve.outputs.omni-node }}
+      - name: Build kitchensink runtime
+        if: matrix.slug == 'add-nft-pallet'
+        working-directory: kitchensink-parachain
+        run: |
+          cargo build --release
+      - name: Generate chain spec
+        if: matrix.slug == 'add-nft-pallet'
+        working-directory: kitchensink-parachain
+        run: |
+          chain-spec-builder create -t development --relay-chain paseo --para-id 1000 \
+            --runtime ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm \
+            named-preset development
+      - name: Start polkadot-omni-node
+        if: matrix.slug == 'add-nft-pallet'
+        working-directory: kitchensink-parachain
+        run: |
+          nohup polkadot-omni-node --chain ./chain_spec.json --dev --rpc-cors all --rpc-methods unsafe >/dev/null 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' http://127.0.0.1:9944 >/dev/null 2>&1; then
+              echo "RPC is up"; break; fi; sleep 1; done
       - name: Install deps
         working-directory: tutorials/${{ matrix.slug }}
         run: npm ci || npm i
