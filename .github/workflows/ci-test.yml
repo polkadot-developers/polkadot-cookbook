@@ -1,0 +1,152 @@
+name: PR Tutorial Tests
+
+on:
+  pull_request:
+    paths:
+      - 'tutorials/**'
+      - '!tutorials/**/scripts/**'
+  workflow_dispatch:
+    inputs:
+      tutorial_slug:
+        description: 'Tutorial slug to test (e.g., zero-to-hero)'
+        required: true
+        type: string
+
+jobs:
+  find-changed-tutorials:
+    runs-on: ubuntu-latest
+    outputs:
+      tutorials: ${{ steps.changed.outputs.tutorials }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changed
+        env:
+          GH_EVENT: ${{ github.event_name }}
+          TUTORIAL_SLUG: ${{ inputs.tutorial_slug }}
+        run: |
+          set -e
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.sha }}
+          echo "Base: $BASE_SHA"
+          echo "Head: $HEAD_SHA"
+
+          # Manual trigger: honor provided tutorial_slug
+          if [ "$GH_EVENT" = "workflow_dispatch" ] && [ -n "$TUTORIAL_SLUG" ]; then
+            ARR=$(printf '%s\n' "$TUTORIAL_SLUG" | jq -R . | jq -s .)
+            {
+              echo "tutorials<<__JSON__"
+              echo "$ARR"
+              echo "__JSON__"
+            } >> "$GITHUB_OUTPUT"
+            echo "Manual run for tutorial: $ARR" | tr -d '\n' || true
+            exit 0
+          fi
+          # List added tutorial slugs
+          ADDED=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" | awk '/^A\t/ {print $2}' | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
+          if [ -n "$ADDED" ]; then
+            ARR=$(printf '%s\n' $ADDED | jq -R . | jq -s .)
+            {
+              echo "tutorials<<__JSON__"
+              echo "$ARR"
+              echo "__JSON__"
+            } >> "$GITHUB_OUTPUT"
+            echo "Added tutorials: $ARR" | tr -d '\n' || true
+            exit 0
+          fi
+          # No newly added tutorials: skip tests
+          echo 'tutorials=[]' >> $GITHUB_OUTPUT
+          echo "No newly added tutorials detected; skipping tests."
+
+  test:
+    needs: find-changed-tutorials
+    if: needs.find-changed-tutorials.outputs.tutorials != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJson(needs.find-changed-tutorials.outputs.tutorials) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: tutorials/${{ matrix.slug }}/package-lock.json
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+      - name: Read tutorial requirements
+        id: needs
+        run: |
+          NEEDS_NODE=$(yq -r '.needs_node // false' tutorials/${{ matrix.slug }}/tutorial.yml)
+          echo "needs-node=$NEEDS_NODE" >> $GITHUB_OUTPUT
+      - name: Resolve tool versions
+        id: resolve
+        if: steps.needs.outputs.needs-node == 'true'
+        run: |
+          RUST=$(grep -m1 '^[[:space:]]*rust:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          CSB=$(grep -m1 '^[[:space:]]*chain_spec_builder:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          OMNI=$(grep -m1 '^[[:space:]]*polkadot_omni_node:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "rust=$RUST" >> $GITHUB_OUTPUT
+          echo "chain-spec-builder=$CSB" >> $GITHUB_OUTPUT
+          echo "omni-node=$OMNI" >> $GITHUB_OUTPUT
+      - name: Cache rustup toolchains
+        if: steps.needs.outputs.needs-node == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.rustup/toolchains
+            ~/.rustup/update-hashes
+          key: ${{ runner.os }}-rustup-${{ steps.resolve.outputs.rust }}
+      - name: Setup Rust toolchain
+        if: steps.needs.outputs.needs-node == 'true'
+        uses: ./.github/actions/setup-rust
+        with:
+          rust-version: ${{ steps.resolve.outputs.rust }}
+      - name: Setup chain-spec-builder
+        if: steps.needs.outputs.needs-node == 'true'
+        uses: ./.github/actions/setup-chain-spec-builder
+        with:
+          chain-spec-builder-version: ${{ steps.resolve.outputs.chain-spec-builder }}
+      - name: Setup polkadot-omni-node
+        if: steps.needs.outputs.needs-node == 'true'
+        uses: ./.github/actions/setup-omni-node
+        with:
+          omni-node-version: ${{ steps.resolve.outputs.omni-node }}
+      - name: Cache Rust build (kitchensink-parachain)
+        if: steps.needs.outputs.needs-node == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            kitchensink-parachain -> target
+      - name: Build kitchensink runtime
+        if: steps.needs.outputs.needs-node == 'true'
+        working-directory: kitchensink-parachain
+        run: |
+          cargo build --release
+      - name: Generate chain spec
+        if: steps.needs.outputs.needs-node == 'true'
+        working-directory: kitchensink-parachain
+        run: |
+          chain-spec-builder create -t development --relay-chain paseo --para-id 1000 \
+            --runtime ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm \
+            named-preset development
+      - name: Start polkadot-omni-node
+        if: steps.needs.outputs.needs-node == 'true'
+        working-directory: kitchensink-parachain
+        run: |
+          nohup polkadot-omni-node --chain ./chain_spec.json --dev --rpc-cors all --rpc-methods unsafe >/dev/null 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' http://127.0.0.1:9944 >/dev/null 2>&1; then
+              echo "RPC is up"; break; fi; sleep 1; done
+      - name: Install deps
+        working-directory: tutorials/${{ matrix.slug }}
+        run: npm ci || npm i
+      - name: Run tests
+        working-directory: tutorials/${{ matrix.slug }}
+        run: npm run test --silent
+
+

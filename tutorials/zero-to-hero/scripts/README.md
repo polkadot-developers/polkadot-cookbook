@@ -15,5 +15,5 @@ These scripts were generated automatically with the following versions:
 
 - **Source**: `https://github.com/polkadot-developers/polkadot-docs-tests/`
 - **Branch**: `master`
-- **Workflow**: https://github.com/polkadot-developers/polkadot-docs-tests/actions/runs/17222901681
-- **Commit**: 301ed86ceee181a65e7f620aecbd677d3d92d95d
+- **Workflow**: https://github.com/nhussein11/polkadot-cookbook/actions/runs/17613514634
+- **Commit**: 55e93a41d1fca03bb498b6e52b01664a6a5a435c

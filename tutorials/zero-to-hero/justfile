@@ -1,0 +1,23 @@
+default:
+  @just --list
+
+setup-rust:
+  ./scripts/setup-rust.sh
+
+install-chain-spec-builder:
+  ./scripts/install-chain-spec-builder.sh
+
+install-omni-node:
+  ./scripts/install-omni-node.sh
+
+generate-chain-spec:
+  ./scripts/generate-chain-spec.sh
+
+start-node:
+  ./scripts/start-node.sh
+
+run-zombienet:
+  cd ../../kitchensink-parachain && zombienet --provider native spawn zombienet-omni-node.toml
+
+run-tests:
+  npm run test

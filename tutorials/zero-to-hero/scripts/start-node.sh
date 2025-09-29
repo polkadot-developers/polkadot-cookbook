@@ -15,7 +15,7 @@ echo "  - RPC: All CORS enabled, unsafe methods allowed"
 # Check if chain spec exists
 if [ ! -f "$CHAIN_SPEC" ]; then
   echo "❌ Chain specification not found: $CHAIN_SPEC"
-  echo "💡 Generate it first by running: ./scripts/zero-to-hero/generate-chain-spec.sh"
+  echo "💡 Generate it first by running: ./tutorials/zero-to-hero/scripts/generate-chain-spec.sh"
   exit 1
 fi
 

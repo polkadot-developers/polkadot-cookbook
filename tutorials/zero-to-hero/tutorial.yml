@@ -1,0 +1,23 @@
+name: Zero to Hero
+slug: zero-to-hero
+category: polkadot-sdk-cookbook
+needs_node: true
+
+manifest:
+  build:
+    project_dir: zero-to-hero-code # This tutorial re-uses completely the kitchensink-parachain project
+    commands:
+      - cargo build --release
+  runtime:
+    wasm_path: ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm
+  network:
+    relay_chain: rococo-local
+    para_id: 1000
+  tests:
+    framework: vitest
+    files:
+      - tests/zero-to-hero-e2e.test.ts
+
+scripts_dir: scripts
+zombienet_dir: zombienet
+
