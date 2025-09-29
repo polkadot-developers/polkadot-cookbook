@@ -1,6 +1,7 @@
 name: Zero to Hero
 slug: zero-to-hero
 category: polkadot-sdk-cookbook
+needs_node: true
 
 manifest:
   build:
