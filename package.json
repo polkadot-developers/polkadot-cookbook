@@ -1,0 +1,21 @@
+{
+  "name": "polkadot-cookbook",
+  "version": "1.0.0",
+  "description": "A place for Polkadot tutorials and guides",
+  "type": "module",
+  "scripts": {
+    "create-tutorial": "node utils/create-tutorial.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/polkadot-developers/polkadot-cookbook.git"
+  },
+  "keywords": [
+    "polkadot",
+    "substrate",
+    "blockchain",
+    "tutorials"
+  ],
+  "author": "Polkadot Developers",
+  "license": "MIT"
+}
