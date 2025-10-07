@@ -2,42 +2,6 @@
 
 This guide is for external contributors.
 
-## 1) Propose your tutorial (required)
-
-- Open an issue using the template: `Tutorial Proposal`.
-- Include: learning objectives, audience, prerequisites, tools/versions.
-- Wait for approval and a tutorial slug (e.g. `my-tutorial`).
-
-## 2) Create your tutorial using the CLI tool
-
-Run the unified tutorial creator from the repository root:
-
-```bash
-npm run create-tutorial my-tutorial
-```
-
-This single command will:
-
-- ✅ Create a git branch (`feat/tutorial-my-tutorial`)
-- ✅ Scaffold the complete folder structure
-- ✅ Bootstrap the test environment
-- ✅ Install all necessary dependencies
-- ✅ Show you clear next steps
-
-The created structure:
-
-```text
-tutorials/my-tutorial/
-  tutorial.yml           # metadata and configuration
-  justfile               # optional just commands
-  README.md              # your written tutorial (required)
-  my-tutorial-code/      # your project code (contracts or SDK)
-  tests/                 # vitest e2e tests
-  package.json           # npm dependencies
-  vitest.config.ts       # test configuration
-  tsconfig.json          # TypeScript configuration
-```
-
 ### Tutorial Creation Workflow
 
 ```mermaid
@@ -80,6 +44,44 @@ graph TD
     style V fill:#d4edda
     style X fill:#d1ecf1
 ```
+
+## 1) Propose your tutorial (required)
+
+- Open an issue using the template: `Tutorial Proposal`.
+- Include: learning objectives, audience, prerequisites, tools/versions.
+- Wait for approval and a tutorial slug (e.g. `my-tutorial`).
+
+## 2) Create your tutorial using the CLI tool
+
+Run the unified tutorial creator from the repository root:
+
+```bash
+npm run create-tutorial my-tutorial
+```
+
+This single command will:
+
+- ✅ Create a git branch (`feat/tutorial-my-tutorial`)
+- ✅ Scaffold the complete folder structure
+- ✅ Bootstrap the test environment
+- ✅ Install all necessary dependencies
+- ✅ Show you clear next steps
+
+The created structure:
+
+```text
+tutorials/my-tutorial/
+  tutorial.yml           # metadata and configuration
+  justfile               # optional just commands
+  README.md              # your written tutorial (required)
+  my-tutorial-code/      # your project code (contracts or SDK)
+  tests/                 # vitest e2e tests
+  package.json           # npm dependencies
+  vitest.config.ts       # test configuration
+  tsconfig.json          # TypeScript configuration
+```
+
+
 
 **Alternative (manual setup):**
 
