@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-// ANSI colors (bez dodatnih dependencies)
+// ANSI colors (no additional dependencies)
 const colors = {
   reset: '\x1b[0m',
   red: '\x1b[31m',
@@ -39,41 +39,41 @@ function warning(message) {
   log(`⚠️  ${message}`, 'yellow');
 }
 
-// Validacija slug formata
+// Validate slug format
 function isValidSlug(slug) {
-  // Mora biti lowercase, samo slova, brojevi, i crtice
+  // Must be lowercase, letters, numbers, and dashes only
   const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
   return slugRegex.test(slug);
 }
 
-// Provera da li je script pozvan iz root-a
+// Validate that script is run from repository root
 function validateWorkingDirectory() {
   const cwd = process.cwd();
 
-  // Proveri da li postoji tutorials/ folder
+  // Check if tutorials/ folder exists
   if (!fs.existsSync(path.join(cwd, 'tutorials'))) {
     error('This script must be run from the repository root!');
     info('Expected directory structure: ./tutorials/, ./utils/, etc.');
     process.exit(1);
   }
 
-  // Proveri da li postoji versions.yml
+  // Check if versions.yml exists
   if (!fs.existsSync(path.join(cwd, 'versions.yml'))) {
     error('versions.yml not found. Are you in the correct repository?');
     process.exit(1);
   }
 }
 
-// Scaffold tutorial strukture (iz scaffold-tutorial.sh)
+// Scaffold tutorial structure (from scaffold-tutorial.sh)
 function scaffoldStructure(slug) {
   const tutorialDir = path.join(ROOT, 'tutorials', slug);
 
-  // Kreiraj direktorijume
+  // Create directories
   fs.mkdirSync(path.join(tutorialDir, 'tests'), { recursive: true });
   fs.mkdirSync(path.join(tutorialDir, 'scripts'), { recursive: true });
   fs.mkdirSync(path.join(tutorialDir, `${slug}-code`), { recursive: true });
 
-  // Kreiraj justfile
+  // Create justfile
   const justfileContent = `default:
   @just --list
 
@@ -82,7 +82,7 @@ say-hello:
 `;
   fs.writeFileSync(path.join(tutorialDir, 'justfile'), justfileContent);
 
-  // Kreiraj example test
+  // Create example test
   const testContent = `import { describe, it, expect } from 'vitest';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import net from 'node:net';
@@ -116,7 +116,7 @@ describe('${slug} e2e', () => {
 `;
   fs.writeFileSync(path.join(tutorialDir, 'tests', `${slug}-e2e.test.ts`), testContent);
 
-  // Kreiraj tutorial.yml
+  // Create tutorial.yml
   const tutorialYmlContent = `name: ${slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
 slug: ${slug}
 category: polkadot-sdk-cookbook
@@ -126,7 +126,7 @@ type: sdk # or contracts
 `;
   fs.writeFileSync(path.join(tutorialDir, 'tutorial.yml'), tutorialYmlContent);
 
-  // Kreiraj README.md
+  // Create README.md
   const readmeContent = `# ${slug}
 
 Describe the goal, prerequisites, and step-by-step instructions for this tutorial.
@@ -172,39 +172,39 @@ npm run test
 `;
   fs.writeFileSync(path.join(tutorialDir, 'README.md'), readmeContent);
 
-  // Kreiraj .gitkeep u scripts/ da se folder commituje
+  // Create .gitkeep in scripts/ so folder is committed
   fs.writeFileSync(path.join(tutorialDir, 'scripts', '.gitkeep'), '');
 }
 
-// Bootstrap test setup (iz bootstrap-tests.sh)
+// Bootstrap test setup (from bootstrap-tests.sh)
 function bootstrapTests(slug) {
   const tutorialDir = path.join(ROOT, 'tutorials', slug);
 
-  // Proveri da li tutorial folder postoji
+  // Check if tutorial folder exists
   if (!fs.existsSync(tutorialDir)) {
     error(`Tutorial directory not found: ${tutorialDir}`);
     process.exit(1);
   }
 
-  // Kreiraj package.json ako ne postoji
+  // Create package.json if it doesn't exist
   const packageJsonPath = path.join(tutorialDir, 'package.json');
   if (!fs.existsSync(packageJsonPath)) {
     execSync(`cd ${tutorialDir} && npm init -y`, { stdio: 'ignore' });
     execSync(`cd ${tutorialDir} && npm pkg set name=${slug} type=module`, { stdio: 'ignore' });
   }
 
-  // Instaliraj dev dependencies
+  // Install dev dependencies
   info('Installing dev dependencies (vitest, typescript, ts-node, @types/node)...');
   execSync(`cd ${tutorialDir} && npm i -D vitest typescript ts-node @types/node`, { stdio: 'inherit' });
 
-  // Instaliraj dependencies
+  // Install dependencies
   info('Installing dependencies (@polkadot/api, ws)...');
   execSync(`cd ${tutorialDir} && npm i @polkadot/api ws`, { stdio: 'inherit' });
 
   // Set npm scripts
-  execSync(`cd ${tutorialDir} && npm pkg set scripts.test="vitest run" scripts.test:watch="vitest"`, { stdio: 'ignore' });
+  execSync(`cd ${tutorialDir} && npm pkg set scripts.test="vitest run" scripts.test:watch="vitest" scripts.preview="node ../../common-preview-server/server.js ."`, { stdio: 'ignore' });
 
-  // Kreiraj vitest.config.ts
+  // Create vitest.config.ts
   const vitestConfig = `import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
@@ -216,7 +216,7 @@ export default defineConfig({
 `;
   fs.writeFileSync(path.join(tutorialDir, 'vitest.config.ts'), vitestConfig);
 
-  // Kreiraj tsconfig.json
+  // Create tsconfig.json
   const tsconfigContent = `{
   "compilerOptions": {
     "target": "ES2020",
@@ -233,14 +233,14 @@ export default defineConfig({
   fs.writeFileSync(path.join(tutorialDir, 'tsconfig.json'), tsconfigContent);
 }
 
-// Glavna funkcija
+// Main function
 async function createTutorial(slug) {
   log('\n🚀 Polkadot Cookbook - Tutorial Creator\n', 'blue');
 
-  // Validacija working directory
+  // Validate working directory
   validateWorkingDirectory();
 
-  // Validacija slug formata
+  // Validate slug format
   if (!isValidSlug(slug)) {
     error('Invalid tutorial slug format!');
     info('Slug must be lowercase, with words separated by dashes.');
@@ -248,7 +248,7 @@ async function createTutorial(slug) {
     process.exit(1);
   }
 
-  // Proveri da li tutorial već postoji
+  // Check if tutorial already exists
   const tutorialDir = path.join(ROOT, 'tutorials', slug);
   if (fs.existsSync(tutorialDir)) {
     error(`Tutorial "${slug}" already exists!`);
@@ -258,7 +258,7 @@ async function createTutorial(slug) {
 
   log(`Creating tutorial: ${slug}\n`, 'cyan');
 
-  // Korak 1: Kreiraj git branch
+  // Step 1: Create git branch
   try {
     info('Step 1/4: Creating git branch...');
     const branchName = `feat/tutorial-${slug}`;
@@ -269,7 +269,7 @@ async function createTutorial(slug) {
     warning('You may already be on a feature branch. Continue anyway.');
   }
 
-  // Korak 2: Scaffold strukturu
+  // Step 2: Scaffold structure
   try {
     info('\nStep 2/4: Scaffolding tutorial structure...');
     scaffoldStructure(slug);
@@ -284,7 +284,7 @@ async function createTutorial(slug) {
     process.exit(1);
   }
 
-  // Korak 3: Bootstrap test environment
+  // Step 3: Bootstrap test environment
   try {
     info('\nStep 3/4: Bootstrapping test environment...');
     bootstrapTests(slug);
@@ -298,7 +298,7 @@ async function createTutorial(slug) {
     process.exit(1);
   }
 
-  // Korak 4: Verify setup
+  // Step 4: Verify setup
   try {
     info('\nStep 4/4: Verifying setup...');
     const packageJsonPath = path.join(tutorialDir, 'package.json');
@@ -313,29 +313,32 @@ async function createTutorial(slug) {
     warning('Verification step encountered issues');
   }
 
-  // Success message sa next steps
+  // Success message with next steps
   log('\n' + '='.repeat(60), 'green');
   log('🎉 Tutorial created successfully!', 'green');
   log('='.repeat(60) + '\n', 'green');
 
   log('📝 Next Steps:', 'yellow');
   console.log('');
-  log(`  1. Write your tutorial content:`, 'cyan');
+  log(`  1. Preview your tutorial live (recommended):`, 'cyan');
+  console.log(`     ${colors.reset}cd tutorials/${slug} && npm run preview`);
+  console.log('');
+  log(`  2. Write your tutorial content:`, 'cyan');
   console.log(`     ${colors.reset}tutorials/${slug}/README.md`);
   console.log('');
-  log(`  2. Add your code implementation:`, 'cyan');
+  log(`  3. Add your code implementation:`, 'cyan');
   console.log(`     ${colors.reset}tutorials/${slug}/${slug}-code/`);
   console.log('');
-  log(`  3. Write comprehensive tests:`, 'cyan');
+  log(`  4. Write comprehensive tests:`, 'cyan');
   console.log(`     ${colors.reset}tutorials/${slug}/tests/`);
   console.log('');
-  log(`  4. Run tests to verify:`, 'cyan');
+  log(`  5. Run tests to verify:`, 'cyan');
   console.log(`     ${colors.reset}cd tutorials/${slug} && npm test`);
   console.log('');
-  log(`  5. Update tutorial.yml metadata:`, 'cyan');
+  log(`  6. Update tutorial.yml metadata:`, 'cyan');
   console.log(`     ${colors.reset}tutorials/${slug}/tutorial.yml`);
   console.log('');
-  log(`  6. When ready, open a Pull Request:`, 'cyan');
+  log(`  7. When ready, open a Pull Request:`, 'cyan');
   console.log(`     ${colors.reset}git add -A`);
   console.log(`     ${colors.reset}git commit -m "feat(tutorial): add ${slug}"`);
   console.log(`     ${colors.reset}git push origin feat/tutorial-${slug}`);
