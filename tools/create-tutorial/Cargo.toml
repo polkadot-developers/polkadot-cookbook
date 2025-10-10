@@ -16,3 +16,10 @@ regex = "1.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 anyhow = "1.0"
+
+[dev-dependencies]
+tempfile = "3.8"
+
+[lib]
+name = "create_tutorial"
+path = "src/lib.rs"
