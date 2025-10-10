@@ -6,10 +6,12 @@ This guide is for external contributors.
 
 ## Quick Start
 
-1. Propose your tutorial via GitHub issue
-2. Run `npm run create-tutorial my-tutorial`
-3. Write content, add code, write tests
-4. Open a Pull Request
+1. Propose your tutorial via [GitHub issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-tutorial-proposal.md)
+2. Wait for approval and a tutorial slug (e.g. `my-tutorial`)
+3. Fork and clone the repo and `cd polkadot-cookbook`
+4. Run `npm run create-tutorial my-tutorial`
+5. Write content, add code, write tests
+6. Open a Pull Request
 
 ## 1) Propose your tutorial (required)
 
