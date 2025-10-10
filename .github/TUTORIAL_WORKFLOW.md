@@ -9,8 +9,8 @@ graph TD
     B -->|No| Z[❌ Revise Proposal]
 
     C --> TT{Tutorial Type?}
-    TT -->|SDK/Runtime| SDK[📦 Polkadot SDK Tutorial<br/>Build pallets, runtime logic]
-    TT -->|Smart Contract| SC[📜 ink! Smart Contract<br/>Build contracts with ink!]
+    TT -->|SDK/Runtime| SDK[ Polkadot SDK Tutorial<br/>Build pallets, runtime logic]
+    TT -->|Smart Contract| SC[Polkadot Smart Contract<br/>Build contracts!]
 
     SDK --> H[✍️ Write README.md]
     SC --> H
@@ -40,8 +40,6 @@ graph TD
 
     style A fill:#e1f5ff
     style C fill:#d4edda
-    style SDK fill:#fff3e0
-    style SC fill:#e8f5e9
     style K fill:#fff3cd
     style O fill:#cce5ff
     style V fill:#d4edda
