@@ -21,7 +21,14 @@ This guide is for external contributors.
 
 ## 2) Create your tutorial using the CLI tool
 
-Run the unified tutorial creator from the repository root:
+First, fork and clone this repository:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
+cd polkadot-cookbook
+```
+
+Then run the unified tutorial creator from the repository root:
 
 ```bash
 npm run create-tutorial my-tutorial

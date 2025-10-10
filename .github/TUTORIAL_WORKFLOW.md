@@ -8,7 +8,12 @@ graph TD
     B -->|Yes| C["🚀 Run npm run create-tutorial my-tutorial<br/>✅ Git Branch Created<br/>✅ Folder Structure Scaffolded<br/>✅ Test Environment Bootstrapped<br/>✅ Dependencies Installed"]
     B -->|No| Z[❌ Revise Proposal]
 
-    C --> H[✍️ Write README.md]
+    C --> TT{Tutorial Type?}
+    TT -->|SDK/Runtime| SDK[📦 Polkadot SDK Tutorial<br/>Build pallets, runtime logic]
+    TT -->|Smart Contract| SC[📜 ink! Smart Contract<br/>Build contracts with ink!]
+
+    SDK --> H[✍️ Write README.md]
+    SC --> H
     H --> I[💻 Add Code to my-tutorial-code/]
     I --> J[🧪 Write Tests in tests/]
 
@@ -35,6 +40,8 @@ graph TD
 
     style A fill:#e1f5ff
     style C fill:#d4edda
+    style SDK fill:#fff3e0
+    style SC fill:#e8f5e9
     style K fill:#fff3cd
     style O fill:#cce5ff
     style V fill:#d4edda
