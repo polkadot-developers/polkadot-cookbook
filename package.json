@@ -4,7 +4,7 @@
   "description": "A place for Polkadot tutorials and guides",
   "type": "module",
   "scripts": {
-    "create-tutorial": "node utils/create-tutorial.js"
+    "create-tutorial": "./tools/create-tutorial/target/release/create-tutorial"
   },
   "repository": {
     "type": "git",

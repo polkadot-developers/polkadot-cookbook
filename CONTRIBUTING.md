@@ -9,9 +9,10 @@ This guide is for external contributors.
 1. Propose your tutorial via [GitHub issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-tutorial-proposal.md)
 2. Wait for approval and a tutorial slug (e.g. `my-tutorial`)
 3. Fork and clone the repo and `cd polkadot-cookbook`
-4. Run `npm run create-tutorial my-tutorial`
-5. Write content, add code, write tests
-6. Open a Pull Request
+4. **First time only:** Build the Rust CLI tool: `cd tools/create-tutorial && cargo build --release && cd ../..`
+5. Run `npm run create-tutorial my-tutorial`
+6. Write content, add code, write tests
+7. Open a Pull Request
 
 ## 1) Propose your tutorial (required)
 
@@ -28,7 +29,24 @@ git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
 cd polkadot-cookbook
 ```
 
-Then run the unified tutorial creator from the repository root:
+### Build the CLI tool (first time only)
+
+The tutorial creator is a Rust CLI tool. Before first use, build it:
+
+```bash
+cd tools/create-tutorial
+cargo build --release
+cd ../..
+```
+
+**Prerequisites:**
+
+- Rust `1.86+` ([install via rustup](https://rustup.rs))
+- Cargo (comes with Rust)
+
+### Create your tutorial
+
+Run the unified tutorial creator from the repository root:
 
 ```bash
 npm run create-tutorial my-tutorial
@@ -55,8 +73,6 @@ tutorials/my-tutorial/
   vitest.config.ts       # test configuration
   tsconfig.json          # TypeScript configuration
 ```
-
-
 
 ## 3) Build the tutorial content
 
