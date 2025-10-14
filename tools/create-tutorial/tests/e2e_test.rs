@@ -157,7 +157,7 @@ fn test_prevents_duplicate_tutorial_creation() -> Result<()> {
     // Try to create again
     let output = run_create_tutorial(&temp_path.to_path_buf(), slug)?;
 
-    // Should fail because tutorial already exists
+    // Should fail because a tutorial with the same slug already exists
     assert!(!output.status.success(), "Should reject duplicate tutorial");
 
     let stderr = String::from_utf8_lossy(&output.stderr);
