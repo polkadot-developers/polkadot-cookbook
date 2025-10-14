@@ -15,7 +15,6 @@ pub fn scaffold_structure(slug: &str) -> Result<()> {
     // Create directories
     create_directories(&tutorial_dir, slug)?;
 
-    // Create files
     create_files(&tutorial_dir, slug)?;
 
     print_success(slug);
