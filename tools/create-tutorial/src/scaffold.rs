@@ -12,7 +12,6 @@ pub fn scaffold_structure(slug: &str) -> Result<()> {
 
     let tutorial_dir = PathBuf::from("tutorials").join(slug);
 
-    // Create directories
     create_directories(&tutorial_dir, slug)?;
 
     create_files(&tutorial_dir, slug)?;
