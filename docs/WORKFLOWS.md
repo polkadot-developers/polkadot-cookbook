@@ -313,31 +313,3 @@ Workflows resolve versions with this priority:
 2. **Update versions.yml carefully** - Changes trigger script regeneration
 3. **Create releases for major updates** - Use `/generate-release` for significant changes
 4. **Monitor workflow runs** - Check Actions tab for failures
-
-## Troubleshooting
-
-### Script generation workflow fails
-
-**Check**:
-- Do all referenced versions exist in cargo registry / GitHub releases?
-- Is `versions.yml` valid YAML?
-- Does the tutorial slug exist in `tutorials/`?
-
-### Tests fail in CI but pass locally
-
-**Check**:
-- Does tutorial use the fast-skip pattern?
-- Are dependencies correctly specified in `package.json`?
-- Is `tutorial.config.yml` `needs_node` field accurate?
-
-### Permission denied on /generate-scripts
-
-**Check**:
-- Does the comment author have write access to the repository?
-- Are you commenting on a pull request (not an issue)?
-
-## Additional Resources
-
-- [Tutorial Creation Workflow](TUTORIAL_WORKFLOW.md) - Visual guide for creating tutorials
-- [CONTRIBUTING.md](../CONTRIBUTING.md) - Full contributor guide
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
