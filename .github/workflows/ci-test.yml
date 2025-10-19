@@ -81,7 +81,7 @@ jobs:
       - name: Read tutorial requirements
         id: needs
         run: |
-          NEEDS_NODE=$(yq -r '.needs_node // false' tutorials/${{ matrix.slug }}/tutorial.yml)
+          NEEDS_NODE=$(yq -r '.needs_node // false' tutorials/${{ matrix.slug }}/tutorial.config.yml)
           echo "needs-node=$NEEDS_NODE" >> $GITHUB_OUTPUT
       - name: Resolve tool versions
         id: resolve
