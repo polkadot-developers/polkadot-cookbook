@@ -14,7 +14,7 @@ graph TD
 
     SDK --> H[✍️ Write README.md]
     SC --> H
-    H --> I[💻 Add Code to my-tutorial-code/]
+    H --> I[💻 Add Code to src/]
     I --> J[🧪 Write Tests in tests/]
 
     J --> K[▶️ Run npm test locally]

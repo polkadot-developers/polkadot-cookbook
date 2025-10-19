@@ -1,4 +1,4 @@
-/// Generates the tutorial.yml metadata file
+/// Generates the tutorial.config.yml metadata file
 pub fn generate_tutorial_yml(slug: &str, title: &str) -> String {
     format!(r#"name: {}
 slug: {}

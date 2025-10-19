@@ -24,7 +24,7 @@ pub fn scaffold_structure(slug: &str) -> Result<()> {
 fn create_directories(tutorial_dir: &PathBuf, slug: &str) -> Result<()> {
     fs::create_dir_all(tutorial_dir.join("tests"))?;
     fs::create_dir_all(tutorial_dir.join("scripts"))?;
-    fs::create_dir_all(tutorial_dir.join(format!("{}-code", slug)))?;
+    fs::create_dir_all(tutorial_dir.join("src"))?;
     Ok(())
 }
 
@@ -39,10 +39,10 @@ fn create_files(tutorial_dir: &PathBuf, slug: &str) -> Result<()> {
         test_content,
     )?;
 
-    // Create tutorial.yml
+    // Create tutorial.config.yml
     let title = slug_to_title(slug);
     let tutorial_yml_content = templates::generate_tutorial_yml(slug, &title);
-    fs::write(tutorial_dir.join("tutorial.yml"), tutorial_yml_content)?;
+    fs::write(tutorial_dir.join("tutorial.config.yml"), tutorial_yml_content)?;
 
     // Create README.md
     let readme_content = templates::generate_readme(slug);
@@ -66,9 +66,9 @@ coverage/
 fn print_success(slug: &str) {
     println!("{}", "✅ Scaffolded folder structure".green());
     println!("{}", format!("  - tutorials/{}/README.md", slug).cyan());
-    println!("{}", format!("  - tutorials/{}/tutorial.yml", slug).cyan());
+    println!("{}", format!("  - tutorials/{}/tutorial.config.yml", slug).cyan());
     println!("{}", format!("  - tutorials/{}/tests/{}-e2e.test.ts", slug, slug).cyan());
-    println!("{}", format!("  - tutorials/{}/{}-code/", slug, slug).cyan());
+    println!("{}", format!("  - tutorials/{}/src/", slug).cyan());
 }
 
 /// Verifies that all required files were created successfully
@@ -100,7 +100,7 @@ pub fn print_success_message(slug: &str) {
     println!("     tutorials/{}/README.md", slug);
     println!();
     println!("{}", "  2. Add your code implementation:".cyan());
-    println!("     tutorials/{}/{}-code/", slug, slug);
+    println!("     tutorials/{}/src/", slug);
     println!();
     println!("{}", "  3. Write comprehensive tests:".cyan());
     println!("     tutorials/{}/tests/", slug);
@@ -108,8 +108,8 @@ pub fn print_success_message(slug: &str) {
     println!("{}", "  4. Run tests to verify:".cyan());
     println!("     cd tutorials/{} && npm test", slug);
     println!();
-    println!("{}", "  5. Update tutorial.yml metadata:".cyan());
-    println!("     tutorials/{}/tutorial.yml", slug);
+    println!("{}", "  5. Update tutorial.config.yml metadata:".cyan());
+    println!("     tutorials/{}/tutorial.config.yml", slug);
     println!();
     println!("{}", "  6. When ready, open a Pull Request:".cyan());
     println!("     git add -A");

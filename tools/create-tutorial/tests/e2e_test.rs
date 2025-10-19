@@ -62,7 +62,7 @@ fn test_creates_tutorial_directory_structure() -> Result<()> {
     assert!(tutorial_dir.exists(), "Tutorial directory should exist");
     assert!(tutorial_dir.join("tests").exists(), "tests/ should exist");
     assert!(tutorial_dir.join("scripts").exists(), "scripts/ should exist");
-    assert!(tutorial_dir.join(format!("{}-code", slug)).exists(), "{}-code/ should exist", slug);
+    assert!(tutorial_dir.join("src").exists(), "src/ should exist");
 
     Ok(())
 }
@@ -79,7 +79,7 @@ fn test_creates_required_files() -> Result<()> {
 
     // Verify required files exist
     assert!(tutorial_dir.join("README.md").exists(), "README.md should exist");
-    assert!(tutorial_dir.join("tutorial.yml").exists(), "tutorial.yml should exist");
+    assert!(tutorial_dir.join("tutorial.config.yml").exists(), "tutorial.config.yml should exist");
     assert!(tutorial_dir.join("justfile").exists(), "justfile should exist");
     assert!(tutorial_dir.join(".gitignore").exists(), ".gitignore should exist");
     assert!(tutorial_dir.join("tests").join(format!("{}-e2e.test.ts", slug)).exists(),
@@ -114,7 +114,7 @@ fn test_tutorial_yml_has_correct_metadata() -> Result<()> {
     run_create_tutorial(&temp_path.to_path_buf(), slug)?;
 
     let tutorial_dir = temp_path.join("tutorials").join(slug);
-    let yml_content = fs::read_to_string(tutorial_dir.join("tutorial.yml"))?;
+    let yml_content = fs::read_to_string(tutorial_dir.join("tutorial.config.yml"))?;
 
     assert!(yml_content.contains("name: Add Nft Pallet"), "Should have correct title");
     assert!(yml_content.contains("slug: add-nft-pallet"), "Should have correct slug");
