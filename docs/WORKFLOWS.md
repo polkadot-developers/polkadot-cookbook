@@ -8,7 +8,7 @@ The repository uses four main GitHub Actions workflows:
 
 1. **command-generate-scripts.yml** - PR comment command handler
 2. **generate-scripts.yml** - Script generation and release workflow
-3. **ci-test.yml** - PR tutorial testing
+3. **test-tutorials.yml** - PR tutorial testing
 4. **build-kitchensink-parachain.yml** - Parachain build workflow
 
 ## Workflow Diagrams
@@ -204,7 +204,7 @@ graph TD
 - `commit-sha` - Commit SHA of the script commit
 - `tutorial-slug` - Tutorial slug processed
 
-### 3. ci-test.yml
+### 3. test-tutorials.yml
 
 **Trigger**: Pull request with changes to `tutorials/**` (excluding `scripts/`)
 
@@ -267,7 +267,7 @@ graph LR
     B --> C[generate-scripts.yml]
     C --> D[build-kitchensink-parachain.yml]
 
-    E[PR with tutorial changes] --> F[ci-test.yml]
+    E[PR with tutorial changes] --> F[test-tutorials.yml]
     F --> G[Uses kitchensink build steps]
 
     H[Push to master<br/>versions.yml changes] --> C

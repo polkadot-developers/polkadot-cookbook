@@ -1,340 +1,340 @@
-# Contributing to the Polkadot Cookbook
+# Contributing to Polkadot Cookbook
 
-This guide is for external contributors.
+Thank you for your interest in contributing to the Polkadot Cookbook! This project aims to provide high-quality, practical tutorials for developers building on Polkadot.
 
- **Visual Guide**: See the [Tutorial Creation Workflow](docs/TUTORIAL_WORKFLOW.md) diagram for a complete overview of the process.
+## Table of Contents
 
-## Quick Start
+- [How Can I Contribute?](#how-can-i-contribute)
+  - [Reporting Bugs](#reporting-bugs)
+  - [Suggesting Enhancements](#suggesting-enhancements)
+  - [Contributing Tutorials](#contributing-tutorials)
+  - [Improving Documentation](#improving-documentation)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Setting Up Your Development Environment](#setting-up-your-development-environment)
+- [Tutorial Contribution Workflow](#tutorial-contribution-workflow)
+  - [Step 1: Propose Your Tutorial](#step-1-propose-your-tutorial)
+  - [Step 2: Setup Your Environment](#step-2-setup-your-environment)
+  - [Step 3: Create Tutorial Structure](#step-3-create-tutorial-structure)
+  - [Step 4: Write Your Tutorial](#step-4-write-your-tutorial)
+  - [Step 5: Test Your Tutorial](#step-5-test-your-tutorial)
+  - [Step 6: Submit a Pull Request](#step-6-submit-a-pull-request)
+- [Development Guidelines](#development-guidelines)
+  - [Tutorial Structure](#tutorial-structure)
+  - [Testing Requirements](#testing-requirements)
+  - [Code Style](#code-style)
+  - [Documentation Standards](#documentation-standards)
+- [Advanced Topics](#advanced-topics)
+  - [Tutorial Configuration](#tutorial-configuration)
+  - [Justfiles and Scripts](#justfiles-and-scripts)
+  - [CI/CD Pipeline](#cicd-pipeline)
+- [Getting Help](#getting-help)
 
-1. Propose your tutorial via [GitHub issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-tutorial-proposal.md)
-2. Wait for approval and a tutorial slug (e.g. `my-tutorial`)
-3. Fork and clone the repo and `cd polkadot-cookbook`
-4. **First time only:** Build the Rust CLI tool: `cd tools/create-tutorial && cargo build --release && cd ../..`
-5. Run `npm run create-tutorial my-tutorial`
-6. Write content, add code, write tests
-7. Open a Pull Request
+## How Can I Contribute?
 
-## 1) Propose your tutorial (required)
+### Reporting Bugs
 
-- Open an issue using the template: `Tutorial Proposal`.
-- Include: learning objectives, audience, prerequisites, tools/versions.
-- Wait for approval and a tutorial slug (e.g. `my-tutorial`).
+If you find a bug in a tutorial or the infrastructure:
 
-## 2) Create your tutorial using the CLI tool
+1. **Check existing issues** to avoid duplicates
+2. **Use the bug report template** when creating a new issue
+3. **Provide detailed information**:
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Environment details (OS, Node version, Rust version)
+   - Error messages or logs
 
-First, fork and clone this repository:
+### Suggesting Enhancements
 
-```bash
-git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
-cd polkadot-cookbook
-```
+We welcome suggestions for improvements:
 
-### Build the CLI tool (first time only)
+1. **Open an issue** using the enhancement template
+2. **Describe the enhancement** clearly
+3. **Explain the use case** and benefits
+4. **Provide examples** if applicable
 
-The tutorial creator is a Rust CLI tool. Before first use, build it:
+### Contributing Tutorials
 
-```bash
-cd tools/create-tutorial
-cargo build --release
-cd ../..
-```
+The primary way to contribute is by creating new tutorials. See the [Tutorial Contribution Workflow](#tutorial-contribution-workflow) section below.
 
-**Prerequisites:**
+### Improving Documentation
 
-- Rust `1.86+` ([install via rustup](https://rustup.rs))
-- Cargo (comes with Rust)
+Documentation improvements are always welcome:
 
-### Create your tutorial
+- Fix typos or unclear explanations
+- Add missing documentation
+- Improve code examples
+- Update outdated information
 
-Run the unified tutorial creator from the repository root:
+Submit documentation changes via pull request following the same process as code contributions.
+
+## Getting Started
+
+### Prerequisites
+
+Before contributing, ensure you have the following installed:
+
+- **Node.js** `20+` - [Download](https://nodejs.org/)
+- **npm** `10+` (comes with Node.js)
+- **Rust** `1.86+` - [Install via rustup](https://rustup.rs)
+- **Git** - [Install](https://git-scm.com/downloads)
+- **just** (optional, for running justfiles) - [Install](https://github.com/casey/just)
+
+### Setting Up Your Development Environment
+
+1. **Fork the repository** on GitHub
+
+2. **Clone your fork**:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
+   cd polkadot-cookbook
+   ```
+
+3. **Add upstream remote**:
+   ```bash
+   git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
+   ```
+
+4. **Build the tutorial creation tool** (first time only):
+   ```bash
+   cd tools/create-tutorial
+   cargo build --release
+   cd ../..
+   ```
+
+5. **Verify your setup**:
+   ```bash
+   npm run create-tutorial --help
+   ```
+
+## Tutorial Contribution Workflow
+
+### Step 1: Propose Your Tutorial
+
+**All tutorials must be proposed and approved before starting work.**
+
+1. Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-tutorial-proposal.md) using the "Tutorial Proposal" template
+
+2. Provide the following information:
+   - **Title**: Clear, descriptive title
+   - **Learning Objectives**: What will readers learn?
+   - **Target Audience**: Beginner, intermediate, or advanced?
+   - **Prerequisites**: Required knowledge or setup
+   - **Estimated Length**: How long will the tutorial take?
+   - **Tools/Versions**: Specific tools or dependencies needed
+   - **Outline**: High-level structure of the tutorial
+
+3. **Wait for approval** and assignment of a tutorial slug (e.g., `my-tutorial`)
+
+### Step 2: Setup Your Environment
+
+1. **Sync with upstream**:
+   ```bash
+   git fetch upstream
+   git checkout master
+   git merge upstream/master
+   ```
+
+2. **Create a new branch**:
+   ```bash
+   git checkout -b feat/tutorial-my-tutorial
+   ```
+
+### Step 3: Create Tutorial Structure
+
+Run the tutorial creation tool with your approved slug:
 
 ```bash
 npm run create-tutorial my-tutorial
 ```
 
-This single command will:
+This command will:
+- Create a feature branch
+- Scaffold the tutorial directory structure
+- Set up testing infrastructure
+- Install dependencies
+- Generate boilerplate files
 
-- ✅ Create a git branch (`feat/tutorial-my-tutorial`)
-- ✅ Scaffold the complete folder structure
-- ✅ Bootstrap the test environment
-- ✅ Install all necessary dependencies
-- ✅ Show you clear next steps
-
-The created structure:
-
-```text
+**Generated structure**:
+```
 tutorials/my-tutorial/
-  tutorial.config.yml    # metadata and configuration
-  justfile               # optional just commands
-  README.md              # your written tutorial (required)
-  src/                   # your project code (contracts or SDK)
-  tests/                 # vitest e2e tests
-  package.json           # npm dependencies
-  vitest.config.ts       # test configuration
-  tsconfig.json          # TypeScript configuration
+├── tutorial.config.yml    # Tutorial metadata and configuration
+├── README.md              # Tutorial content (Markdown)
+├── package.json           # npm dependencies
+├── tsconfig.json          # TypeScript configuration
+├── vitest.config.ts       # Test configuration
+├── justfile               # Development commands (optional)
+├── src/                   # Tutorial code
+└── tests/                 # End-to-end tests
 ```
 
-## 3) Build the tutorial content
+### Step 4: Write Your Tutorial
 
-- Write the tutorial in `tutorials/my-tutorial/README.md` (required).
-- Add code under `tutorials/my-tutorial/src/`.
-- Add at least one e2e test under `tutorials/my-tutorial/tests/` using `@polkadot/api`.
-  - Tests must skip fast when no local node is running.
+1. **Write the tutorial content** in `tutorials/my-tutorial/README.md`
+   - Use clear, concise language
+   - Include code examples with explanations
+   - Add screenshots or diagrams where helpful
+   - Provide step-by-step instructions
 
-## 4) Run tests locally
+2. **Add implementation code** under `tutorials/my-tutorial/src/`
+   - Follow Polkadot SDK best practices
+   - Include inline comments for complex logic
+   - Use meaningful variable and function names
 
-```bash
-cd tutorials/my-tutorial
-npm run test
+3. **Configure your tutorial** in `tutorial.config.yml`
+   - Set accurate metadata (name, description, category)
+   - Specify if a node is required (`needs_node`)
+   - Configure build and runtime settings if applicable
+
+See [Tutorial Structure](#tutorial-structure) for detailed requirements.
+
+### Step 5: Test Your Tutorial
+
+1. **Write end-to-end tests** in `tutorials/my-tutorial/tests/`
+   - Use Vitest + @polkadot/api
+   - Implement the [fast-skip pattern](#fast-skip-pattern) (required)
+   - Test actual functionality, not just API connectivity
+
+2. **Run tests locally**:
+   ```bash
+   cd tutorials/my-tutorial
+   npm test
+   ```
+
+3. **Verify test behavior**:
+   - Tests pass when node is running
+   - Tests skip gracefully when no node is available
+
+See [Testing Requirements](#testing-requirements) for details.
+
+### Step 6: Submit a Pull Request
+
+1. **Commit your changes**:
+   ```bash
+   git add .
+   git commit -m "feat(tutorial): add my-tutorial"
+   ```
+
+   Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
+   - `feat(tutorial)`: New tutorial
+   - `fix(tutorial)`: Tutorial bug fix
+   - `docs`: Documentation updates
+   - `test`: Test updates
+
+2. **Push to your fork**:
+   ```bash
+   git push origin feat/tutorial-my-tutorial
+   ```
+
+3. **Create a Pull Request**:
+   - Go to the [repository](https://github.com/polkadot-developers/polkadot-cookbook)
+   - Click "New Pull Request"
+   - Select your branch
+   - Fill out the PR template completely
+   - Link the related proposal issue
+
+4. **Respond to review feedback**:
+   - Address all reviewer comments
+   - Push additional commits as needed
+   - Request re-review when ready
+
+5. **CI Checks**:
+   - Wait for automated tests to pass (`.github/workflows/test-tutorials.yml`)
+   - Fix any failing tests or linting issues
+
+## Development Guidelines
+
+### Tutorial Structure
+
+Each tutorial must follow this structure:
+
+#### README.md (Required)
+
+The tutorial content in Markdown format:
+
+```markdown
+# Tutorial Title
+
+Brief description of what this tutorial teaches.
+
+## Prerequisites
+
+- Required knowledge
+- Tools needed
+- Environment setup
+
+## Learning Objectives
+
+By the end of this tutorial, you will:
+- Objective 1
+- Objective 2
+- Objective 3
+
+## Step 1: Title
+
+Detailed instructions...
+
+## Step 2: Title
+
+Detailed instructions...
+
+## Conclusion
+
+Summary of what was learned.
+
+## Next Steps
+
+- Suggested follow-up tutorials
+- Additional resources
 ```
 
-## 5) Open a Pull Request
+#### src/ (Required)
 
-```bash
-git add -A && git commit -m "feat(tutorial): add my-tutorial"
-git push origin feat/tutorial-my-tutorial
-```
+Tutorial implementation code:
+- Include inline comments
+- Follow language-specific conventions
 
-Open the PR. The PR template will guide your checklist.
+#### tests/ (Required)
 
-## 6) What CI runs on your PR (automatic)
+End-to-end tests using Vitest + @polkadot/api:
+- At least one test file
+- Implement fast-skip pattern
+- Test actual functionality
 
-- PR Tutorial Tests: `.github/workflows/ci-test.yml`
-  - If your PR ADDS a new tutorial folder under `tutorials/<slug>/`, CI runs tests only for that new tutorial.
-  - It installs deps and runs `vitest` for the selected tutorials.
-  - Tests that require a node should "skip fast" if no endpoint is available.
+#### tutorial.config.yml (Required)
 
-## 7) After merge (maintainers do this)
-
-- Generate finalized scripts (with concrete versions) for your tutorial:
-  - Workflow: `.github/workflows/generate-scripts.yml` (manual trigger or on `versions.yml` changes)
-  - Output: `tutorials/<slug>/scripts/` (committed to the repo for docs consumption)
-- Tag and Release: the workflow will create a tutorial-specific tag `tutorial/<slug>/vYYYYMMDD-HHMMSS[-<shortsha>]`. If `create_release` is true on manual runs, it also creates a GitHub Release with resolved versions.
-
-Docs publishing and snippet stability:
-
-- This repo is the code source for `polkadot-developers/polkadot-docs` powering `docs.polkadot.com`.
-- The per-tutorial tags let the docs fetch stable snippets without cross-tutorial conflicts. Keep your tutorial self-contained under `tutorials/<slug>/`.
-- If your tutorial needs specific anchors/regions for snippet extraction, add clear comment anchors in code (ask maintainers for the current convention) and reference those in your README.
-
-## Notes and tips
-
-- Keep PRs focused: one tutorial per PR.
-- If your SDK tutorial needs runtime changes, describe them in `README.md`. We can help you apply an overlay-based approach later to avoid clashes.
-- If anything is unclear, open an issue using `Custom Blank Issue`.
-
-## Understanding the Justfile
-
-### What is a justfile?
-
-A `justfile` is a command runner configuration file (similar to `Makefile`) that simplifies running common development tasks. Each tutorial has its own `justfile` located at `tutorials/<slug>/justfile`.
-
-### How to use justfile commands
-
-```bash
-cd tutorials/my-tutorial
-
-# List all available commands
-just
-
-# Run a specific command
-just setup-rust
-just run-zombienet
-just run-tests
-```
-
-### Common justfile commands
-
-The scaffolded justfile typically includes:
-- `setup-rust` - Install and configure the required Rust toolchain
-- `install-chain-spec-builder` - Install the chain spec builder tool
-- `install-omni-node` - Install polkadot-omni-node
-- `generate-chain-spec` - Generate the chain specification
-- `start-node` - Start the local development node
-- `run-zombienet` - Launch a zombienet test network
-- `run-tests` - Execute the tutorial's test suite
-
-### When to add new commands
-
-Add new commands to your tutorial's `justfile` when you have:
-- Multi-step setup procedures that you run frequently
-- Complex commands with many flags or options
-- Tasks that other tutorials might benefit from (consider moving to global `scripts/` instead)
-- Build or test commands specific to your tutorial
-
-### Reusable commands
-
-If you identify a command pattern that multiple tutorials could benefit from:
-1. First implement it in your tutorial's `justfile`
-2. Test it thoroughly
-3. Propose moving it to the global `scripts/` directory in your PR or a follow-up issue
-4. Include documentation on why it's broadly useful
-
-## Tutorial Configuration (tutorial.config.yml)
-
-### Purpose
-
-The `tutorial.config.yml` file defines metadata and runtime configuration for your tutorial. It's used by:
-- CI/CD workflows to determine build and test requirements
-- The documentation system to categorize and present tutorials
-- Automated script generation workflows
-
-### Configuration Options
-
+Tutorial metadata:
 ```yaml
-name: My Tutorial Title           # Display name
-slug: my-tutorial                # URL-friendly identifier (must match folder name)
-category: polkadot-sdk-cookbook  # Category: polkadot-sdk-cookbook or contracts-cookbook
-needs_node: true                 # Whether tutorial requires a running node for tests
-description: Short description   # Brief description of what the tutorial teaches
-type: sdk                        # Type: sdk or contracts
-
-# Optional: manifest for tutorials with runtime/parachain code
-manifest:
-  build:
-    project_dir: src             # Directory containing Cargo.toml
-    commands:
-      - cargo build --release
-  runtime:
-    wasm_path: ./target/release/wbuild/...  # Path to compiled WASM runtime
-  network:
-    relay_chain: paseo           # Relay chain to use
-    para_id: 1000               # Parachain ID
-  tests:
-    framework: vitest           # Test framework (vitest)
-    files:
-      - tests/my-tutorial-e2e.test.ts
-
-scripts_dir: scripts            # Optional: custom scripts directory
-zombienet_dir: zombienet        # Optional: zombienet config directory
+name: My Tutorial Title
+slug: my-tutorial
+category: polkadot-sdk-cookbook  # or contracts-cookbook
+needs_node: true                  # or false
+description: Brief description
+type: sdk                         # or contracts
 ```
 
-### When to modify tutorial.config.yml
+### Testing Requirements
 
-Update your `tutorial.config.yml` when:
-- Changing the tutorial's build process
-- Adding or modifying runtime WASM output paths
-- Updating network configuration (relay chain, para ID)
-- Changing test file locations
-- Modifying whether a node is required for tests
+#### Framework
 
-### Validation
+All tutorials **must** use:
+- **Vitest** for test framework
+- **@polkadot/api** for blockchain interaction
 
-The workflow system validates that:
-- `slug` matches the directory name
-- Required fields (`name`, `slug`, `category`) are present
-- Referenced paths (like `project_dir`, `wasm_path`) exist after build
-- Test files specified in `manifest.tests.files` exist
+#### Fast Skip Pattern
 
-## Scripts Organization
-
-The repository uses a two-tier script system to balance reusability and tutorial-specific needs:
-
-### Global scripts (`scripts/`)
-
-**Location**: `/scripts/` (at repository root)
-
-**Purpose**: Reusable scripts that multiple tutorials can use
-
-**Examples**:
-- Common setup procedures (Rust installation, tool setup)
-- Shared build utilities
-- Network management scripts used across tutorials
-
-**When to add scripts here**:
-- The script solves a problem common to multiple tutorials
-- It encapsulates standard setup/configuration procedures
-- It reduces duplication across tutorial-specific scripts
-
-**How to use from tutorials**:
-```bash
-# From a tutorial's justfile
-setup-common:
-  ../../scripts/setup-rust.sh
-```
-
-### Tutorial-specific scripts (`tutorials/<slug>/scripts/`)
-
-**Location**: `/tutorials/<slug>/scripts/`
-
-**Purpose**: Scripts unique to a specific tutorial's workflow
-
-**Generated by workflows**: After merging, the `generate-scripts.yml` workflow creates versioned scripts here:
-- `setup-rust.sh` - Pinned Rust version for this tutorial
-- `install-chain-spec-builder.sh` - Pinned chain-spec-builder version
-- `install-omni-node.sh` - Pinned omni-node version
-- `generate-chain-spec.sh` - Chain spec generation
-- `start-node.sh` - Node startup
-
-**When to add scripts here**:
-- Tutorial-specific build or deployment procedures
-- Custom test setup unique to this tutorial
-- Integration scripts that combine multiple steps in a tutorial-specific way
-
-### Script migration workflow
-
-If you find yourself duplicating a tutorial script across multiple tutorials:
-
-1. **Identify the pattern**: Note which tutorials need the same script
-2. **Generalize the script**: Remove tutorial-specific hardcoded values, add parameters
-3. **Propose the migration**: In your PR or a follow-up issue, suggest moving it to `/scripts/`
-4. **Document parameters**: Ensure the global script is well-documented
-5. **Update tutorials**: Update affected tutorials to use the global version
-
-## Testing Guidelines
-
-### Test Framework: Vitest + Polkadot API
-
-All tutorials must use **Vitest** with **@polkadot/api** for end-to-end tests.
-
-**Why this stack?**
-- **Vitest**: Fast, modern test framework with excellent TypeScript support
-- **@polkadot/api**: Official JavaScript API for interacting with Polkadot nodes
-- **Consistency**: Uniform testing approach across all tutorials
-
-### Test Structure
-
-```typescript
-// tests/my-tutorial-e2e.test.ts
-import { describe, it, expect, beforeAll } from 'vitest';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-
-describe('My Tutorial E2E Tests', () => {
-  let api: ApiPromise;
-
-  beforeAll(async () => {
-    const provider = new WsProvider('ws://127.0.0.1:9944');
-    api = await ApiPromise.create({ provider });
-  }, 30000); // 30s timeout for node connection
-
-  it('should connect to the node', async () => {
-    expect(api.isConnected).toBe(true);
-  });
-
-  it('should verify runtime version', async () => {
-    const version = await api.rpc.state.getRuntimeVersion();
-    expect(version.specName.toString()).toBeDefined();
-  });
-
-  // Add your tutorial-specific tests here
-});
-```
-
-### Fast Skip Pattern (REQUIRED)
-
-**All tests must skip gracefully when no node is running**. This ensures CI can run tests for tutorials without building/starting nodes for every tutorial.
+**Required for all tests.** Tests must gracefully skip when no node is available:
 
 ```typescript
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
-describe('My Tutorial E2E Tests', () => {
+describe('My Tutorial Tests', () => {
   let api: ApiPromise | null = null;
 
   beforeAll(async () => {
     try {
       const provider = new WsProvider('ws://127.0.0.1:9944');
-      // Short timeout for fast skip
       const promise = ApiPromise.create({ provider });
       api = await Promise.race([
         promise,
@@ -356,36 +356,256 @@ describe('My Tutorial E2E Tests', () => {
   it('should perform tutorial operation', async () => {
     if (!api) return; // Fast skip
 
-    // Your test logic here
+    // Your test logic
     const result = await api.query.system.account('...');
     expect(result).toBeDefined();
   });
 });
 ```
 
-### Testing Best Practices
+#### Test Best Practices
 
-1. **Fast skip for missing nodes**: Always check for node availability and skip gracefully
-2. **Meaningful assertions**: Test actual tutorial outcomes, not just API connectivity
-3. **Clean up resources**: Disconnect APIs, close connections in `afterAll`
-4. **Descriptive test names**: Use clear `describe` and `it` descriptions
-5. **Timeouts**: Set appropriate timeouts for blockchain operations (usually 10-30s)
-6. **Idempotent tests**: Tests should be runnable multiple times without side effects
+1. **Fast skip for missing nodes** - Always check node availability
+2. **Meaningful assertions** - Test actual outcomes, not just connectivity
+3. **Clean up resources** - Disconnect APIs in `afterAll`
+4. **Descriptive test names** - Use clear `describe` and `it` descriptions
+5. **Appropriate timeouts** - 10-30s for blockchain operations
+6. **Idempotent tests** - Runnable multiple times without side effects
 
-### Running Tests
+### Code Style
 
-```bash
-# Local development (with node running)
-cd tutorials/my-tutorial
-npm run test
+#### TypeScript
 
-# CI (may skip if node not started)
-npm run test --silent
+- Use TypeScript strict mode
+- Follow [TypeScript style guide](https://google.github.io/styleguide/tsguide.html)
+- Use ESLint and Prettier (configuration provided)
+- Prefer `async/await` over callbacks
+- Use explicit types for function parameters and return values
+
+#### Rust
+
+- Follow [Rust API guidelines](https://rust-lang.github.io/api-guidelines/)
+- Run `cargo fmt` before committing
+- Run `cargo clippy` and fix warnings
+- Add documentation comments (`///`) for public APIs
+- Use meaningful error types
+
+### Documentation Standards
+
+#### Code Comments
+
+- Explain **why**, not **what**
+- Document complex algorithms or business logic
+
+#### Tutorial Writing
+
+- Adhere to the [PaperMoon Style Guide](https://github.com/papermoonio/documentation-style-guide/blob/main/style-guide.md)
+- Use clear, concise language
+- Define technical terms on first use
+- Include code examples with context
+- Add visual aids (diagrams, screenshots) where helpful
+- Test all commands and code snippets
+
+#### Commit Messages
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
 ```
 
-### Test Examples
+**Types**:
+- `feat`: New feature or tutorial
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `test`: Tests only
+- `refactor`: Code refactoring
+- `chore`: Maintenance tasks
 
-See existing tutorials for reference:
-- `tutorials/zero-to-hero/tests/zero-to-hero-e2e.test.ts`
+**Examples**:
+```
+feat(tutorial): add zero-to-hero tutorial
+fix(tutorial): correct chain spec generation in my-tutorial
+docs: update CONTRIBUTING.md with testing guidelines
+test(zero-to-hero): add integration tests for pallets
+```
 
-Thank you for contributing! 🎉
+## Advanced Topics
+
+### Tutorial Configuration
+
+The `tutorial.config.yml` file controls how your tutorial is built and tested.
+
+#### Basic Configuration
+
+```yaml
+name: My Tutorial Title
+slug: my-tutorial
+category: polkadot-sdk-cookbook
+needs_node: true
+description: Learn how to build a custom pallet
+type: sdk
+```
+
+#### Advanced Configuration with Manifest
+
+For tutorials with runtime/parachain code:
+
+```yaml
+name: My Tutorial Title
+slug: my-tutorial
+category: polkadot-sdk-cookbook
+needs_node: true
+description: Build a custom parachain
+type: sdk
+
+manifest:
+  build:
+    project_dir: src
+    commands:
+      - cargo build --release
+
+  runtime:
+    wasm_path: ./target/release/wbuild/my-runtime/my_runtime.compact.compressed.wasm
+
+  network:
+    relay_chain: paseo
+    para_id: 1000
+
+  tests:
+    framework: vitest
+    files:
+      - tests/my-tutorial-e2e.test.ts
+
+scripts_dir: scripts
+zombienet_dir: zombienet
+```
+
+#### When to Update
+
+Update `tutorial.config.yml` when:
+- Changing build process or commands
+- Modifying runtime WASM output paths
+- Updating network configuration
+- Changing test file locations
+- Toggling `needs_node` flag
+
+### Justfiles and Scripts
+
+#### Tutorial Justfiles
+
+Each tutorial can have a `justfile` for common development tasks:
+
+```justfile
+# List available commands
+default:
+  @just --list
+
+# Setup Rust toolchain
+setup-rust:
+  rustup install 1.86.0
+  rustup default 1.86.0
+
+# Build the runtime
+build:
+  cd src && cargo build --release
+
+# Run tests
+test:
+  npm test
+
+# Start local node
+start-node:
+  ./scripts/start-node.sh
+```
+
+**Usage**:
+```bash
+cd tutorials/my-tutorial
+just          # List commands
+just build    # Run build
+just test     # Run tests
+```
+
+#### Global vs Tutorial Scripts
+
+**Global scripts** (`/scripts/`):
+- Shared across multiple tutorials
+- Common setup procedures
+- Reusable utilities
+
+**Tutorial scripts** (`/tutorials/<slug>/scripts/`):
+- Tutorial-specific workflows
+- Auto-generated versioned scripts (post-merge)
+- Custom setup unique to this tutorial
+
+**When to use which**:
+- Use global scripts for common patterns
+- Use tutorial scripts for unique workflows
+- Propose migration to global if script is reused 3+ times
+
+### CI/CD Pipeline
+
+#### Automated Checks on PR
+
+When you submit a PR, the following checks run automatically:
+
+1. **Tutorial Tests** (`.github/workflows/test-tutorials.yml`)
+   - Runs if new tutorial folder is added
+   - Installs dependencies
+   - Runs `npm test` for affected tutorials
+   - Tests must pass or skip gracefully
+
+2. **Build Verification**
+   - Validates `tutorial.config.yml` syntax
+   - Checks for required files
+   - Verifies test files exist
+
+#### Post-Merge Workflow
+
+After your PR is merged, maintainers will:
+
+1. **Generate versioned scripts** via `/generate-scripts` command
+   - Creates pinned setup scripts in `tutorials/<slug>/scripts/`
+   - Commits scripts to repository
+
+2. **Create tutorial tag** in format `tutorial/<slug>/vYYYYMMDD-HHMMSS`
+   - Enables stable snippet extraction for documentation
+
+3. **Optionally create GitHub release** for major tutorials
+
+#### Version Management
+
+Tutorial versions are managed in `versions.yml`:
+
+```yaml
+versions:
+  rust: "1.86.0"
+  chain_spec_builder: "0.20.0"
+  polkadot_omni_node: "0.4.1"
+
+# Tutorial-specific overrides (optional)
+my_tutorial:
+  rust: "1.85.0"
+```
+
+Maintainers handle version updates. If your tutorial requires specific versions, note this in your proposal.
+
+## Getting Help
+
+### Resources
+
+- **Visual Guide**: [Tutorial Creation Workflow](docs/TUTORIAL_WORKFLOW.md)
+- **Workflow Documentation**: [docs/WORKFLOWS.md](docs/WORKFLOWS.md)
+- **Example Tutorial**: `tutorials/zero-to-hero/`
+- **Polkadot Documentation**: [docs.polkadot.com](https://docs.polkadot.com)
+
+### Communication
+
+- **Questions**: Open an [issue](https://github.com/polkadot-developers/polkadot-cookbook/issues)
+
+Thank you for contributing to Polkadot Cookbook!
