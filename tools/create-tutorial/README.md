@@ -6,7 +6,7 @@ Rust CLI tool for creating new Polkadot Cookbook tutorials.
 
 - **One-command setup** – Generates the entire tutorial structure automatically
 - **Creates a new Git branch** – Starts a clean branch for your tutorial (e.g. `feat/tutorial-my-guide`)
-- **Scaffolds folder layout** – Adds `tutorial.yml`, `README.md`, `tests/`, `scripts/`, and sample code folders
+- **Scaffolds folder layout** – Adds `tutorial.config.yml`, `README.md`, `tests/`, `scripts/`, and `src/` folder
 - **Bootstraps test environment** – Installs and configures Vitest, TypeScript, and @polkadot/api
 - **Validates tutorial slug** – Prevents naming conflicts or invalid slugs
 - **Guides you through next steps** – Prints what to do next once setup is done

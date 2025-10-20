@@ -39,10 +39,10 @@ npm run test
 
 ## Next Steps
 
-- Add your implementation code to `{}-code/`
+- Add your implementation code to `src/`
 - Write comprehensive tests in `tests/`
 - Update this README with detailed instructions
-"#, slug, slug, slug, slug)
+"#, slug, slug, slug)
 }
 
 #[cfg(test)]
