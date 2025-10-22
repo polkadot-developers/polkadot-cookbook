@@ -1,19 +1,19 @@
 #!/bin/bash
-# Omni Node Installation Script  
-# This script installs the polkadot-omni-node
-
+# Omni Node Installation Script
 set -e
 
-OMNI_NODE_VERSION="0.5.0"
+# Load versions
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR"/../../.. && pwd)
+TUTORIAL_DIR=$(cd "$SCRIPT_DIR"/.. && pwd)
+source "$REPO_ROOT/scripts/load-versions.sh"
 
-echo "🚀 Installing polkadot-omni-node 0.5.0..."
+echo "🚀 Installing polkadot-omni-node ${OMNI_NODE_VERSION}..."
 
-# Install omni-node with locked dependencies
-cargo install --locked polkadot-omni-node@0.5.0
+cargo install --locked polkadot-omni-node@"${OMNI_NODE_VERSION}"
 
 echo "✅ Omni node installation completed!"
-echo "📋 Installed version: 0.5.0"
+echo "📋 Installed version: ${OMNI_NODE_VERSION}"
 
-# Verify installation
 echo "🔍 Verifying installation..."
 polkadot-omni-node --version

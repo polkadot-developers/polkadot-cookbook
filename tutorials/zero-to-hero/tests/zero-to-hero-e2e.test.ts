@@ -28,6 +28,18 @@ async function commandExists(cmd: string): Promise<boolean> {
   });
 }
 
+async function ensureOmniVersion(repoRoot: string): Promise<boolean> {
+  // Leverage setup script that reads tutorial versions.yml
+  return new Promise((resolve) => {
+    const proc = spawn('bash', [
+      path.join(repoRoot, 'scripts', 'setup-tutorial-env.sh'),
+      'zero-to-hero',
+    ], { stdio: 'ignore' });
+    proc.on('error', () => resolve(false));
+    proc.on('exit', (code) => resolve(code === 0));
+  });
+}
+
 async function startOmniNode(repoRoot: string, chainSpecPath: string, host: string, port: number): Promise<ReturnType<typeof spawn> | null> {
   if (!fs.existsSync(chainSpecPath)) return null;
   let nodeProc: ReturnType<typeof spawn> | null = null;
@@ -61,7 +73,22 @@ async function ensureNodeAvailable(endpoint: string) {
 
   const repoRoot = path.resolve(__dirname, '../../../');
   const chainSpec = path.join(repoRoot, 'kitchensink-parachain', 'chain_spec.json');
-  const hasOmni = await commandExists('polkadot-omni-node');
+  let hasOmni = await commandExists('polkadot-omni-node');
+  if (!hasOmni) {
+    await ensureOmniVersion(repoRoot);
+    hasOmni = await commandExists('polkadot-omni-node');
+  }
+  if (!fs.existsSync(chainSpec)) {
+    // Build runtime and generate chain spec using tutorial versions
+    await new Promise<void>((resolve) => {
+      const proc = spawn('bash', [
+        path.join(repoRoot, 'scripts', 'prepare-node-for-tutorial.sh'),
+        'zero-to-hero',
+      ], { stdio: 'ignore' });
+      proc.on('exit', () => resolve());
+      proc.on('error', () => resolve());
+    });
+  }
 
   if (hasOmni) {
     const nodeProc = await startOmniNode(repoRoot, chainSpec, hostname, targetPort);

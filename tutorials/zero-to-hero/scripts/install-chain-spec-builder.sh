@@ -1,19 +1,19 @@
 #!/bin/bash
 # Chain Spec Builder Installation Script
-# This script installs the staging-chain-spec-builder tool
-
 set -e
 
-CHAIN_SPEC_VERSION="10.0.0"
+# Load versions
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR"/../../.. && pwd)
+TUTORIAL_DIR=$(cd "$SCRIPT_DIR"/.. && pwd)
+source "$REPO_ROOT/scripts/load-versions.sh"
 
-echo "🔧 Installing staging-chain-spec-builder 10.0.0..."
+echo "🔧 Installing staging-chain-spec-builder ${CHAIN_SPEC_BUILDER_VERSION}..."
 
-# Install chain-spec-builder with locked dependencies
-cargo install --locked staging-chain-spec-builder@10.0.0
+cargo install --locked staging-chain-spec-builder@"${CHAIN_SPEC_BUILDER_VERSION}"
 
 echo "✅ Chain spec builder installation completed!"
-echo "📋 Installed version: 10.0.0"
+echo "📋 Installed version: ${CHAIN_SPEC_BUILDER_VERSION}"
 
-# Verify installation
 echo "🔍 Verifying installation..."
 chain-spec-builder --version

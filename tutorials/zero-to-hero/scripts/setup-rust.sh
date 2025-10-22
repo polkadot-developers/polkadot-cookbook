@@ -1,29 +1,25 @@
 #!/bin/bash
 # Rust Setup Script
-# This script sets up Rust with the required version and components
-
 set -e
 
-RUST_VERSION="1.86"
+# Load versions from tutorial-local or root config
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR"/../../.. && pwd)
+TUTORIAL_DIR=$(cd "$SCRIPT_DIR"/.. && pwd)
+source "$REPO_ROOT/scripts/load-versions.sh"
 
-echo "🦀 Setting up Rust 1.86..."
+echo "🦀 Setting up Rust ${RUST_VERSION}..."
 echo "📦 Installing Rust toolchain and components..."
 
-# Set default Rust version
-rustup default 1.86
-
-# Add WASM target for the current platform
-rustup target add wasm32-unknown-unknown --toolchain 1.86
-
-# Add rust source for the current platform  
-rustup component add rust-src --toolchain 1.86
+rustup default "${RUST_VERSION}"
+rustup target add wasm32-unknown-unknown --toolchain "${RUST_VERSION}"
+rustup component add rust-src --toolchain "${RUST_VERSION}"
 
 echo "✅ Rust setup completed successfully!"
 echo "📋 Installed components:"
-echo "  - Rust toolchain: 1.86"
+echo "  - Rust toolchain: ${RUST_VERSION}"
 echo "  - WASM target: wasm32-unknown-unknown"
 echo "  - Rust source component"
 
-# Verify installation
 echo "🔍 Verifying installation..."
 rustup show
