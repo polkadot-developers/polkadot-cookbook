@@ -13,6 +13,12 @@ categories = ["development-tools"]
 name = "polkadot_cookbook_core"
 path = "src/lib.rs"
 
+[features]
+default = []
+fs = []
+test_runner = []
+query = []
+
 [dependencies]
 # Async runtime
 tokio.workspace = true

@@ -14,9 +14,9 @@ impl GitOperations {
     /// ```no_run
     /// use polkadot_cookbook_core::git::GitOperations;
     ///
-    /// # tokio_test::block_on(async {
+    /// # async fn example() {
     /// let result = GitOperations::create_branch("my-tutorial").await;
-    /// # });
+    /// # }
     /// ```
     pub async fn create_branch(slug: &str) -> Result<String> {
         let branch_name = format!("feat/tutorial-{}", slug);
