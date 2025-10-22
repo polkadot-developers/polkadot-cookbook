@@ -6,7 +6,7 @@
 use crate::config::{ProjectConfig, ProjectInfo};
 use crate::error::{CookbookError, Result};
 use crate::templates::{JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tracing::{debug, info, warn};
 
 pub mod bootstrap;
