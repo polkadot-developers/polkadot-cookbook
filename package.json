@@ -4,7 +4,8 @@
   "description": "A place for Polkadot tutorials and guides",
   "type": "module",
   "scripts": {
-    "create-tutorial": "./tools/create-tutorial/target/release/create-tutorial"
+    "create-tutorial": "./tools/create-tutorial/target/release/create-tutorial",
+    "release": "semantic-release"
   },
   "repository": {
     "type": "git",
@@ -17,5 +18,13 @@
     "tutorials"
   ],
   "author": "Polkadot Developers",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^10.3.5",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "semantic-release": "^24.2.0"
+  }
 }

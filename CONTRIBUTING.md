@@ -28,6 +28,7 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
   - [Tutorial Configuration](#tutorial-configuration)
   - [Justfiles and Scripts](#justfiles-and-scripts)
   - [CI/CD Pipeline](#cicd-pipeline)
+- [Releases and Versioning](#releases-and-versioning)
 - [Getting Help](#getting-help)
 
 ## How Can I Contribute?
@@ -594,6 +595,62 @@ my_tutorial:
 ```
 
 Maintainers handle version updates. If your tutorial requires specific versions, note this in your proposal.
+
+## Releases and Versioning
+
+This repository uses Semantic Versioning and automated releases powered by semantic-release.
+
+### Semantic Versioning (X.Y.Z)
+
+- **X (MAJOR)**: Breaking changes to repository structure, workflows, or interfaces that consumers rely on
+- **Y (MINOR)**: Backward-compatible enhancements (new tutorials, features, improvements)
+- **Z (PATCH)**: Backward-compatible bug fixes and documentation fixes that require a release note
+
+### Conventional Commits → Release Rules
+
+semantic-release determines the next version from commit messages on `master`:
+
+- `feat(scope): ...` → MINOR
+- `fix(scope): ...` → PATCH
+- `feat!(scope): ...` or commit body with `BREAKING CHANGE: ...` → MAJOR
+- `docs:`, `chore:`, `test:`, `refactor:` → no release by default
+
+Examples:
+
+```
+feat(tutorial): add zero-to-hero tutorial
+fix(kitchensink): correct chain spec path
+
+feat!(runtime): migrate to SDK X.Y
+
+docs: clarify testing requirements
+```
+
+### What happens on merge to master
+
+On every push to `master`:
+
+1. semantic-release analyzes commits since the last release
+2. Determines the next version (X.Y.Z)
+3. Generates release notes and updates `CHANGELOG.md`
+4. Creates a GitHub Release with the notes
+
+The workflow is defined in `.github/workflows/release.yml`. The configuration lives in `.releaserc.json`.
+
+### Authoring Breaking Changes
+
+Use one of the following to signal a major release:
+
+- `feat!(scope): ...`
+- Add a footer in the commit body:
+
+```
+BREAKING CHANGE: describe what changed and migration steps
+```
+
+### Changelog
+
+`CHANGELOG.md` is automatically maintained. Do not edit it manually.
 
 ## Getting Help
 
