@@ -112,7 +112,13 @@ jobs:
 
       - name: Test CLI - Invalid slug
         run: |
-          ! cargo run --package polkadot-cookbook-cli -- Invalid-Slug 2>&1 | grep "Invalid tutorial slug"
+          if cargo run --package polkadot-cookbook-cli -- Invalid-Slug 2>&1 | grep -q "Invalid tutorial slug"; then
+            echo "✓ Invalid slug error message found"
+            exit 0
+          else
+            echo "✗ Expected error message not found"
+            exit 1
+          fi
 
       - name: Test CLI - Help
         run: cargo run --package polkadot-cookbook-cli -- --help
