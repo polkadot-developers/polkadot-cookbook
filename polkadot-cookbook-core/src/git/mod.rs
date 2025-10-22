@@ -35,21 +35,20 @@ impl GitOperations {
                 })?;
 
                 // Get the current HEAD commit
-                let head = repo.head().map_err(|e| {
-                    CookbookError::GitError(format!("Failed to get HEAD: {e}"))
-                })?;
+                let head = repo
+                    .head()
+                    .map_err(|e| CookbookError::GitError(format!("Failed to get HEAD: {e}")))?;
 
                 let commit = head.peel_to_commit().map_err(|e| {
                     CookbookError::GitError(format!("Failed to get HEAD commit: {e}"))
                 })?;
 
                 // Create the new branch
-                repo.branch(&branch_name, &commit, false)
-                    .map_err(|e| {
-                        CookbookError::GitError(format!(
-                            "Failed to create branch '{branch_name}': {e}. Branch may already exist."
-                        ))
-                    })?;
+                repo.branch(&branch_name, &commit, false).map_err(|e| {
+                    CookbookError::GitError(format!(
+                        "Failed to create branch '{branch_name}': {e}. Branch may already exist."
+                    ))
+                })?;
 
                 // Set the new branch as HEAD
                 repo.set_head(&format!("refs/heads/{branch_name}"))
@@ -83,9 +82,9 @@ impl GitOperations {
                 ))
             })?;
 
-            let head = repo.head().map_err(|e| {
-                CookbookError::GitError(format!("Failed to get HEAD: {e}"))
-            })?;
+            let head = repo
+                .head()
+                .map_err(|e| CookbookError::GitError(format!("Failed to get HEAD: {e}")))?;
 
             if head.is_branch() {
                 let branch_name = head
