@@ -6,7 +6,10 @@ pub mod tutorial;
 pub mod validation;
 
 pub use tutorial::{TutorialConfig, TutorialType};
-pub use validation::{validate_slug, slug_to_title, validate_project_config, is_valid_slug, validate_working_directory};
+pub use validation::{
+    is_valid_slug, slug_to_title, validate_project_config, validate_slug,
+    validate_working_directory,
+};
 
 /// Configuration for creating a new project
 #[derive(Debug, Clone, Serialize, Deserialize)]
