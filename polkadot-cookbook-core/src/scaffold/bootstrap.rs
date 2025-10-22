@@ -82,7 +82,7 @@ impl Bootstrap {
         self.run_command("npm", &["init", "-y"]).await?;
 
         // Set name and type
-        self.run_command("npm", &["pkg", "set", &format!("name={}", slug)])
+        self.run_command("npm", &["pkg", "set", &format!("name={slug}")])
             .await?;
         self.run_command("npm", &["pkg", "set", "type=module"])
             .await?;
@@ -158,7 +158,7 @@ export default defineConfig({
         tokio::fs::write(self.project_path.join("vitest.config.ts"), vitest_config)
             .await
             .map_err(|e| {
-                CookbookError::BootstrapError(format!("Failed to write vitest.config.ts: {}", e))
+                CookbookError::BootstrapError(format!("Failed to write vitest.config.ts: {e}"))
             })?;
 
         // Create tsconfig.json
@@ -178,7 +178,7 @@ export default defineConfig({
         tokio::fs::write(self.project_path.join("tsconfig.json"), tsconfig_content)
             .await
             .map_err(|e| {
-                CookbookError::BootstrapError(format!("Failed to write tsconfig.json: {}", e))
+                CookbookError::BootstrapError(format!("Failed to write tsconfig.json: {e}"))
             })?;
 
         info!("Configuration files created");

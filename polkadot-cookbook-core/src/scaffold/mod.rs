@@ -131,7 +131,7 @@ impl Scaffold {
             } else {
                 tokio::fs::create_dir_all(&dir).await.map_err(|e| {
                     CookbookError::FileSystemError {
-                        message: format!("Failed to create directory: {}", e),
+                        message: format!("Failed to create directory: {e}"),
                         path: Some(dir.clone()),
                     }
                 })?;
@@ -194,7 +194,7 @@ impl Scaffold {
             tokio::fs::write(path, content)
                 .await
                 .map_err(|e| CookbookError::FileSystemError {
-                    message: format!("Failed to write file: {}", e),
+                    message: format!("Failed to write file: {e}"),
                     path: Some(path.to_path_buf()),
                 })?;
             debug!("Wrote file: {}", path.display());

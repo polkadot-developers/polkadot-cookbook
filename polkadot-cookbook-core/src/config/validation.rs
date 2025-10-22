@@ -21,8 +21,7 @@ pub fn validate_slug(slug: &str) -> Result<()> {
 
     if !slug_regex.is_match(slug) {
         return Err(CookbookError::ValidationError(format!(
-            "Invalid slug format: '{}'. Slug must be lowercase, with words separated by dashes.",
-            slug
+            "Invalid slug format: '{slug}'. Slug must be lowercase, with words separated by dashes."
         )));
     }
 

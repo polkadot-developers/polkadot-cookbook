@@ -19,7 +19,7 @@ impl GitOperations {
     /// # }
     /// ```
     pub async fn create_branch(slug: &str) -> Result<String> {
-        let branch_name = format!("feat/tutorial-{}", slug);
+        let branch_name = format!("feat/tutorial-{slug}");
 
         debug!("Creating git branch: {}", branch_name);
 
@@ -27,13 +27,13 @@ impl GitOperations {
             let branch_name = branch_name.clone();
             move || {
                 Command::new("git")
-                    .args(&["checkout", "-b", &branch_name])
+                    .args(["checkout", "-b", &branch_name])
                     .output()
             }
         })
         .await
-        .map_err(|e| CookbookError::GitError(format!("Task join error: {}", e)))?
-        .map_err(|e| CookbookError::GitError(format!("Failed to execute git: {}", e)))?;
+        .map_err(|e| CookbookError::GitError(format!("Task join error: {e}")))?
+        .map_err(|e| CookbookError::GitError(format!("Failed to execute git: {e}")))?;
 
         if output.status.success() {
             info!("Created git branch: {}", branch_name);
@@ -42,8 +42,7 @@ impl GitOperations {
             let stderr = String::from_utf8_lossy(&output.stderr);
             warn!("Failed to create git branch: {}", stderr);
             Err(CookbookError::GitError(format!(
-                "Failed to create branch '{}': {}",
-                branch_name, stderr
+                "Failed to create branch '{branch_name}': {stderr}"
             )))
         }
     }
@@ -52,7 +51,7 @@ impl GitOperations {
     pub async fn is_git_repo() -> bool {
         let result = tokio::task::spawn_blocking(|| {
             Command::new("git")
-                .args(&["rev-parse", "--is-inside-work-tree"])
+                .args(["rev-parse", "--is-inside-work-tree"])
                 .output()
         })
         .await;
@@ -67,12 +66,12 @@ impl GitOperations {
     pub async fn current_branch() -> Result<String> {
         let output = tokio::task::spawn_blocking(|| {
             Command::new("git")
-                .args(&["rev-parse", "--abbrev-ref", "HEAD"])
+                .args(["rev-parse", "--abbrev-ref", "HEAD"])
                 .output()
         })
         .await
-        .map_err(|e| CookbookError::GitError(format!("Task join error: {}", e)))?
-        .map_err(|e| CookbookError::GitError(format!("Failed to execute git: {}", e)))?;
+        .map_err(|e| CookbookError::GitError(format!("Task join error: {e}")))?
+        .map_err(|e| CookbookError::GitError(format!("Failed to execute git: {e}")))?;
 
         if output.status.success() {
             let branch = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -92,14 +91,14 @@ impl GitOperations {
             let path = path.to_owned();
             move || {
                 Command::new("git")
-                    .args(&["init"])
+                    .args(["init"])
                     .current_dir(path)
                     .output()
             }
         })
         .await
-        .map_err(|e| CookbookError::GitError(format!("Task join error: {}", e)))?
-        .map_err(|e| CookbookError::GitError(format!("Failed to execute git: {}", e)))?;
+        .map_err(|e| CookbookError::GitError(format!("Task join error: {e}")))?
+        .map_err(|e| CookbookError::GitError(format!("Failed to execute git: {e}")))?;
 
         if output.status.success() {
             info!("Initialized git repository in: {}", path.display());
@@ -107,8 +106,7 @@ impl GitOperations {
         } else {
             let stderr = String::from_utf8_lossy(&output.stderr);
             Err(CookbookError::GitError(format!(
-                "Failed to initialize git repo: {}",
-                stderr
+                "Failed to initialize git repo: {stderr}"
             )))
         }
     }
