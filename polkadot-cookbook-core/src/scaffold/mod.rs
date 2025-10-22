@@ -5,7 +5,9 @@
 
 use crate::config::{ProjectConfig, ProjectInfo};
 use crate::error::{CookbookError, Result};
-use crate::templates::{JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate};
+use crate::templates::{
+    JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate,
+};
 use std::path::Path;
 use tracing::{debug, info, warn};
 
@@ -111,7 +113,10 @@ impl Scaffold {
 
     /// Create the directory structure for a project
     async fn create_directories(&self, project_path: &Path) -> Result<()> {
-        debug!("Creating directory structure at: {}", project_path.display());
+        debug!(
+            "Creating directory structure at: {}",
+            project_path.display()
+        );
 
         let directories = vec![
             project_path.to_path_buf(),
@@ -149,8 +154,11 @@ impl Scaffold {
         // Generate example test
         let test_content = TestTemplate::new(&config.slug).generate();
         let test_filename = format!("{}-e2e.test.ts", config.slug);
-        self.write_file(&project_path.join("tests").join(test_filename), &test_content)
-            .await?;
+        self.write_file(
+            &project_path.join("tests").join(test_filename),
+            &test_content,
+        )
+        .await?;
 
         // Generate tutorial.config.yml
         let tutorial_yml_content = TutorialYmlTemplate::new(&config.slug, &config.title).generate();
@@ -183,12 +191,12 @@ impl Scaffold {
             info!("Would write file: {}", path.display());
             Ok(())
         } else {
-            tokio::fs::write(path, content).await.map_err(|e| {
-                CookbookError::FileSystemError {
+            tokio::fs::write(path, content)
+                .await
+                .map_err(|e| CookbookError::FileSystemError {
                     message: format!("Failed to write file: {}", e),
                     path: Some(path.to_path_buf()),
-                }
-            })?;
+                })?;
             debug!("Wrote file: {}", path.display());
             Ok(())
         }
@@ -279,7 +287,9 @@ mod tests {
         assert!(project_path.join("README.md").exists());
         assert!(project_path.join("tutorial.config.yml").exists());
         assert!(project_path.join(".gitignore").exists());
-        assert!(project_path.join("tests/test-tutorial-e2e.test.ts").exists());
+        assert!(project_path
+            .join("tests/test-tutorial-e2e.test.ts")
+            .exists());
     }
 
     #[test]

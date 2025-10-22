@@ -20,12 +20,10 @@ pub fn validate_slug(slug: &str) -> Result<()> {
     let slug_regex = Regex::new(r"^[a-z0-9]+(-[a-z0-9]+)*$")?;
 
     if !slug_regex.is_match(slug) {
-        return Err(CookbookError::ValidationError(
-            format!(
-                "Invalid slug format: '{}'. Slug must be lowercase, with words separated by dashes.",
-                slug
-            )
-        ));
+        return Err(CookbookError::ValidationError(format!(
+            "Invalid slug format: '{}'. Slug must be lowercase, with words separated by dashes.",
+            slug
+        )));
     }
 
     Ok(())
@@ -76,7 +74,7 @@ pub fn validate_working_directory() -> Result<()> {
 
     if !Path::new("versions.yml").exists() {
         return Err(CookbookError::WorkingDirectoryError(
-            "versions.yml not found. Are you in the correct repository?".to_string()
+            "versions.yml not found. Are you in the correct repository?".to_string(),
         ));
     }
 

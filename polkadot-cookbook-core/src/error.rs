@@ -109,7 +109,10 @@ mod tests {
     #[test]
     fn test_error_display() {
         let error = CookbookError::ConfigError("missing field".to_string());
-        assert_eq!(error.to_string(), "Invalid project configuration: missing field");
+        assert_eq!(
+            error.to_string(),
+            "Invalid project configuration: missing field"
+        );
     }
 
     #[test]

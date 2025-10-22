@@ -97,7 +97,14 @@ impl Bootstrap {
 
         self.run_command(
             "npm",
-            &["install", "-D", "vitest", "typescript", "ts-node", "@types/node"],
+            &[
+                "install",
+                "-D",
+                "vitest",
+                "typescript",
+                "ts-node",
+                "@types/node",
+            ],
         )
         .await?;
 
@@ -150,7 +157,9 @@ export default defineConfig({
 "#;
         tokio::fs::write(self.project_path.join("vitest.config.ts"), vitest_config)
             .await
-            .map_err(|e| CookbookError::BootstrapError(format!("Failed to write vitest.config.ts: {}", e)))?;
+            .map_err(|e| {
+                CookbookError::BootstrapError(format!("Failed to write vitest.config.ts: {}", e))
+            })?;
 
         // Create tsconfig.json
         let tsconfig_content = r#"{
@@ -168,7 +177,9 @@ export default defineConfig({
 "#;
         tokio::fs::write(self.project_path.join("tsconfig.json"), tsconfig_content)
             .await
-            .map_err(|e| CookbookError::BootstrapError(format!("Failed to write tsconfig.json: {}", e)))?;
+            .map_err(|e| {
+                CookbookError::BootstrapError(format!("Failed to write tsconfig.json: {}", e))
+            })?;
 
         info!("Configuration files created");
         Ok(())
@@ -185,11 +196,9 @@ export default defineConfig({
             .stderr(Stdio::piped())
             .output()
             .await
-            .map_err(|e| {
-                CookbookError::CommandError {
-                    command: format!("{} {}", program, args.join(" ")),
-                    message: e.to_string(),
-                }
+            .map_err(|e| CookbookError::CommandError {
+                command: format!("{} {}", program, args.join(" ")),
+                message: e.to_string(),
             })?;
 
         if !output.status.success() {

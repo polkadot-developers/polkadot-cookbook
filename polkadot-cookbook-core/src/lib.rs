@@ -66,9 +66,9 @@
 //! ```
 
 // Re-export commonly used types
-pub use error::{CookbookError, Result};
 pub use config::{ProjectConfig, ProjectInfo, TutorialConfig, TutorialType};
-pub use scaffold::{Scaffold, Bootstrap};
+pub use error::{CookbookError, Result};
+pub use scaffold::{Bootstrap, Scaffold};
 
 /// Error types and result aliases
 pub mod error;
@@ -98,7 +98,4 @@ pub mod test_runner;
 pub mod query;
 
 // Internal prelude for convenience
-pub(crate) mod prelude {
-    
-    
-}
+pub(crate) mod prelude {}

@@ -25,7 +25,10 @@ async fn test_create_project_end_to_end() {
     // Verify project info
     assert_eq!(project_info.slug, "integration-test");
     assert_eq!(project_info.title, "Integration Test");
-    assert_eq!(project_info.project_path, destination.join("integration-test"));
+    assert_eq!(
+        project_info.project_path,
+        destination.join("integration-test")
+    );
     assert!(project_info.git_branch.is_none());
 
     // Verify directories were created
@@ -40,7 +43,9 @@ async fn test_create_project_end_to_end() {
     assert!(project_path.join("tutorial.config.yml").exists());
     assert!(project_path.join("justfile").exists());
     assert!(project_path.join(".gitignore").exists());
-    assert!(project_path.join("tests/integration-test-e2e.test.ts").exists());
+    assert!(project_path
+        .join("tests/integration-test-e2e.test.ts")
+        .exists());
 
     // Verify file contents
     let readme = tokio::fs::read_to_string(project_path.join("README.md"))
