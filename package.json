@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "A place for Polkadot tutorials and guides",
   "type": "module",
-  "scripts": {
-    "create-tutorial": "./tools/create-tutorial/target/release/create-tutorial"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/polkadot-developers/polkadot-cookbook.git"
@@ -14,7 +11,9 @@
     "polkadot",
     "substrate",
     "blockchain",
-    "tutorials"
+    "tutorials",
+    "sdk",
+    "parachain"
   ],
   "author": "Polkadot Developers",
   "license": "MIT"
