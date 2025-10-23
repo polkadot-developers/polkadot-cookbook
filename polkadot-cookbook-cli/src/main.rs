@@ -5,7 +5,7 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use colored::*;
+use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, spinner};
 use polkadot_cookbook_core::{
     config::ProjectConfig,
     version::{load_global_versions, resolve_tutorial_versions, VersionSource},
@@ -14,29 +14,38 @@ use polkadot_cookbook_core::{
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
-#[command(name = "polkadot-cookbook")]
-#[command(about = "Polkadot Cookbook CLI - Create and manage tutorials", long_about = None)]
+#[command(name = "create-tutorial")]
+#[command(about = "Create and manage Polkadot Cookbook tutorials", long_about = None)]
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
+
+    /// Tutorial slug (e.g., "my-tutorial"). If not provided, will prompt interactively.
+    /// Only used when no subcommand is provided (defaults to 'create')
+    #[arg(value_name = "SLUG", global = true)]
+    slug: Option<String>,
+
+    /// Skip npm install
+    #[arg(long, default_value = "false", global = true)]
+    skip_install: bool,
+
+    /// Skip git branch creation
+    #[arg(long, default_value = "false", global = true)]
+    no_git: bool,
+
+    /// Non-interactive mode (use defaults, require slug argument)
+    #[arg(long, default_value = "false", global = true)]
+    non_interactive: bool,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new tutorial
+    /// Create a new tutorial (default command if none specified)
     Create {
         /// Tutorial slug (e.g., "my-tutorial")
         #[arg(value_name = "SLUG")]
-        slug: String,
-
-        /// Skip npm install
-        #[arg(long, default_value = "false")]
-        skip_install: bool,
-
-        /// Skip git branch creation
-        #[arg(long, default_value = "false")]
-        no_git: bool,
+        slug: Option<String>,
     },
     /// Manage and view dependency versions
     Versions {
@@ -70,19 +79,17 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Create {
-            slug,
-            skip_install,
-            no_git,
-        } => {
-            handle_create(slug, skip_install, no_git).await?;
+        Some(Commands::Create { slug }) | None => {
+            // Use subcommand slug or global slug
+            let slug = slug.or(cli.slug);
+            handle_create(slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
         }
-        Commands::Versions {
+        Some(Commands::Versions {
             tutorial_slug,
             ci,
             show_source,
             validate,
-        } => {
+        }) => {
             handle_versions(tutorial_slug, ci, show_source, validate).await?;
         }
     }
@@ -90,111 +97,187 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn handle_create(slug: String, skip_install: bool, no_git: bool) -> Result<()> {
-    println!(
-        "\n{}\n",
-        "🚀 Polkadot Cookbook - Tutorial Creator".blue().bold()
-    );
+async fn handle_create(
+    slug: Option<String>,
+    skip_install: bool,
+    no_git: bool,
+    non_interactive: bool,
+) -> Result<()> {
+    // Non-interactive mode: require slug argument
+    if non_interactive {
+        let slug = slug.ok_or_else(|| anyhow::anyhow!("Slug argument is required in non-interactive mode"))?;
+        return run_non_interactive(&slug, skip_install, no_git).await;
+    }
 
-    // Validate slug using core library
-    if let Err(e) = polkadot_cookbook_core::config::validate_slug(&slug) {
-        eprintln!("{}", "❌ Invalid tutorial slug format!".red());
-        eprintln!("{}", format!("Error: {}", e).red());
-        eprintln!(
-            "{}",
-            "ℹ️  Slug must be lowercase, with words separated by dashes.".cyan()
-        );
-        eprintln!(
-            "{}",
-            "ℹ️  Examples: \"my-tutorial\", \"add-nft-pallet\", \"zero-to-hero\"".cyan()
-        );
+    // Interactive mode with cliclack
+    clear_screen()?;
+    intro("🚀 Polkadot Cookbook - Tutorial Creator")?;
+
+    // Validate working directory first
+    if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
+        outro_cancel(format!(
+            "❌ Invalid working directory: {e}\n\nPlease run this command from the repository root."
+        ))?;
+        std::process::exit(1);
+    }
+
+    note(
+        "Tutorial Setup",
+        "Let's create your new tutorial. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
+    )?;
+
+    // Get or prompt for slug
+    let slug = if let Some(s) = slug {
+        // Validate provided slug
+        if let Err(e) = polkadot_cookbook_core::config::validate_slug(&s) {
+            outro_cancel(format!(
+                "❌ Invalid tutorial slug format: {e}\n\nSlug must be lowercase, with words separated by dashes.\nExamples: \"my-tutorial\", \"add-nft-pallet\", \"zero-to-hero\""
+            ))?;
+            std::process::exit(1);
+        }
+        s
+    } else {
+        // Prompt for slug
+        let slug: String = input("What is your tutorial slug?")
+            .placeholder("my-tutorial")
+            .validate(|input: &String| {
+                if input.is_empty() {
+                    Err("Slug cannot be empty")
+                } else if let Err(e) = polkadot_cookbook_core::config::validate_slug(input) {
+                    Err(Box::leak(e.to_string().into_boxed_str()) as &str)
+                } else {
+                    Ok(())
+                }
+            })
+            .interact()?;
+        slug
+    };
+
+    // Prompt for git branch creation (only if not specified via flag)
+    let create_git_branch = if no_git {
+        false
+    } else {
+        confirm("Create a git branch for this tutorial?")
+            .initial_value(true)
+            .interact()?
+    };
+
+    // Prompt for npm install (only if not specified via flag)
+    let skip_install = if skip_install {
+        true
+    } else {
+        !confirm("Install npm dependencies (vitest, @polkadot/api, etc.)?")
+            .initial_value(true)
+            .interact()?
+    };
+
+    // Create project configuration
+    let config = ProjectConfig::new(&slug)
+        .with_destination(PathBuf::from("tutorials"))
+        .with_git_init(create_git_branch)
+        .with_skip_install(skip_install);
+
+    // Create the project with spinner
+    let sp = spinner();
+    sp.start("Creating tutorial project...");
+
+    let scaffold = Scaffold::new();
+    match scaffold.create_project(config).await {
+        Ok(project_info) => {
+            sp.stop("✅ Tutorial scaffolding complete");
+
+            println!();
+            note(
+                "📦 Project Created",
+                format!(
+                    "Slug:       {}\nTitle:      {}\nLocation:   {}\nGit Branch: {}",
+                    project_info.slug,
+                    project_info.title,
+                    project_info.project_path.display(),
+                    project_info.git_branch.as_deref().unwrap_or("(none)")
+                ),
+            )?;
+
+            println!();
+            note(
+                "📝 Next Steps",
+                format!(
+                    "1. Write tutorial content\n   {}/README.md\n\n\
+                     2. Add implementation code\n   {}/src/\n\n\
+                     3. Write comprehensive tests\n   {}/tests/\n\n\
+                     4. Run tests locally\n   cd {} && npm test\n\n\
+                     5. Update metadata\n   {}/tutorial.config.yml",
+                    project_info.project_path.display(),
+                    project_info.project_path.display(),
+                    project_info.project_path.display(),
+                    project_info.project_path.display(),
+                    project_info.project_path.display()
+                ),
+            )?;
+
+            if let Some(branch) = project_info.git_branch {
+                println!();
+                note(
+                    "🔀 Ready to Contribute?",
+                    format!(
+                        "git add -A\n\
+                         git commit -m \"feat(tutorial): add {}\"\n\
+                         git push origin {}\n\n\
+                         Then open a Pull Request on GitHub!",
+                        project_info.slug, branch
+                    ),
+                )?;
+            }
+
+            outro("🎉 All set! Happy coding! Check CONTRIBUTING.md for guidelines.")?;
+        }
+        Err(e) => {
+            sp.stop(format!("❌ Failed to create tutorial: {e}"));
+            outro_cancel(format!("Error: {e}"))?;
+            std::process::exit(1);
+        }
+    }
+
+    Ok(())
+}
+
+/// Run in non-interactive mode (for CI/CD or scripting)
+async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Result<()> {
+    // Validate slug
+    if let Err(e) = polkadot_cookbook_core::config::validate_slug(slug) {
+        eprintln!("❌ Invalid tutorial slug format: {e}");
+        eprintln!("Slug must be lowercase, with words separated by dashes.");
+        eprintln!("Examples: \"my-tutorial\", \"add-nft-pallet\", \"zero-to-hero\"");
         std::process::exit(1);
     }
 
     // Validate working directory
     if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
-        eprintln!("{}", "❌ Invalid working directory!".red());
-        eprintln!("{}", format!("Error: {}", e).red());
-        eprintln!(
-            "{}",
-            "ℹ️  Please run this command from the repository root.".cyan()
-        );
+        eprintln!("❌ Invalid working directory: {e}");
+        eprintln!("Please run this command from the repository root.");
         std::process::exit(1);
     }
 
-    println!("{}\n", format!("Creating tutorial: {}", slug).cyan());
+    println!("Creating tutorial: {slug}");
 
     // Create project configuration
-    let config = ProjectConfig::new(&slug)
+    let config = ProjectConfig::new(slug)
         .with_destination(PathBuf::from("tutorials"))
         .with_git_init(!no_git)
         .with_skip_install(skip_install);
 
-    // Create the project using the core library
+    // Create the project
     let scaffold = Scaffold::new();
     match scaffold.create_project(config).await {
         Ok(project_info) => {
-            println!(
-                "\n{}",
-                "============================================================".green()
-            );
-            println!("{}", "🎉 Tutorial created successfully!".green());
-            println!(
-                "{}\n",
-                "============================================================".green()
-            );
-
-            println!("{}", "📝 Project Information:".yellow());
-            println!("   Slug: {}", project_info.slug);
-            println!("   Title: {}", project_info.title);
-            println!("   Path: {}", project_info.project_path.display());
+            println!("✅ Tutorial created successfully!");
+            println!("Path: {}", project_info.project_path.display());
             if let Some(ref branch) = project_info.git_branch {
-                println!("   Git Branch: {}", branch);
+                println!("Git Branch: {branch}");
             }
-            println!();
-
-            println!("{}", "📝 Next Steps:".yellow());
-            println!();
-            println!("{}", "  1. Write your tutorial content:".cyan());
-            println!("     {}/README.md", project_info.project_path.display());
-            println!();
-            println!("{}", "  2. Add your code implementation:".cyan());
-            println!("     {}/src/", project_info.project_path.display());
-            println!();
-            println!("{}", "  3. Write comprehensive tests:".cyan());
-            println!("     {}/tests/", project_info.project_path.display());
-            println!();
-            println!("{}", "  4. Run tests to verify:".cyan());
-            println!(
-                "     cd {} && npm test",
-                project_info.project_path.display()
-            );
-            println!();
-            println!("{}", "  5. Update tutorial.config.yml metadata:".cyan());
-            println!(
-                "     {}/tutorial.config.yml",
-                project_info.project_path.display()
-            );
-            println!();
-            println!("{}", "  6. When ready, open a Pull Request:".cyan());
-            println!("     git add -A");
-            println!(
-                "     git commit -m \"feat(tutorial): add {}\"",
-                project_info.slug
-            );
-            if let Some(branch) = project_info.git_branch {
-                println!("     git push origin {}", branch);
-            }
-            println!();
-
-            println!(
-                "{}",
-                "📚 Need help? Check CONTRIBUTING.md or open an issue!\n".blue()
-            );
         }
         Err(e) => {
-            eprintln!("{}", "❌ Failed to create tutorial!".red());
-            eprintln!("{}", format!("Error: {}", e).red());
+            eprintln!("❌ Failed to create tutorial: {e}");
             std::process::exit(1);
         }
     }
@@ -213,14 +296,10 @@ async fn handle_versions(
     // Validate working directory
     if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
         if !ci_format {
-            eprintln!("{}", "❌ Invalid working directory!".red());
-            eprintln!("{}", format!("Error: {}", e).red());
-            eprintln!(
-                "{}",
-                "ℹ️  Please run this command from the repository root.".cyan()
-            );
+            eprintln!("❌ Invalid working directory: {e}");
+            eprintln!("Please run this command from the repository root.");
         } else {
-            eprintln!("Error: {}", e);
+            eprintln!("Error: {e}");
         }
         std::process::exit(1);
     }
@@ -231,18 +310,17 @@ async fn handle_versions(
             Ok(v) => v,
             Err(e) => {
                 if !ci_format {
-                    eprintln!("{}", "❌ Failed to resolve versions!".red());
-                    eprintln!("{}", format!("Error: {}", e).red());
+                    eprintln!("❌ Failed to resolve versions: {e}");
                     eprintln!();
-                    eprintln!("{}", "Possible causes:".yellow());
+                    eprintln!("Possible causes:");
                     eprintln!("  • Tutorial directory doesn't exist");
                     eprintln!("  • versions.yml has invalid YAML syntax");
                     eprintln!("  • Global versions.yml is missing or invalid");
                     eprintln!();
-                    eprintln!("{}", "Tip: Validate YAML syntax:".cyan());
+                    eprintln!("Tip: Validate YAML syntax:");
                     eprintln!("  yq eval tutorials/{}/versions.yml", slug);
                 } else {
-                    eprintln!("Error resolving versions: {}", e);
+                    eprintln!("Error resolving versions: {e}");
                 }
                 std::process::exit(1);
             }
@@ -251,17 +329,16 @@ async fn handle_versions(
             Ok(v) => v,
             Err(e) => {
                 if !ci_format {
-                    eprintln!("{}", "❌ Failed to load global versions!".red());
-                    eprintln!("{}", format!("Error: {}", e).red());
+                    eprintln!("❌ Failed to load global versions: {e}");
                     eprintln!();
-                    eprintln!("{}", "Possible causes:".yellow());
+                    eprintln!("Possible causes:");
                     eprintln!("  • Global versions.yml is missing");
                     eprintln!("  • versions.yml has invalid YAML syntax");
                     eprintln!();
-                    eprintln!("{}", "Tip: Validate YAML syntax:".cyan());
+                    eprintln!("Tip: Validate YAML syntax:");
                     eprintln!("  yq eval versions.yml");
                 } else {
-                    eprintln!("Error loading global versions: {}", e);
+                    eprintln!("Error loading global versions: {e}");
                 }
                 std::process::exit(1);
             }
@@ -288,28 +365,25 @@ async fn handle_versions(
         }
 
         if !has_warnings {
-            println!("{}", "✅ All version keys are valid!".green());
+            println!("✅ All version keys are valid!");
             println!();
             println!("Found {} valid version keys:", resolved.versions.len());
             for key in resolved.versions.keys() {
-                println!("  • {}", key.green());
+                println!("  • {key}");
             }
         } else {
-            println!("{}", "⚠️  Validation warnings:".yellow());
+            println!("⚠️  Validation warnings:");
             println!();
             for key in &unknown_keys {
-                println!("{}", format!("  • Unknown key: '{}'", key).yellow());
+                println!("  • Unknown key: '{key}'");
             }
             println!();
-            println!("{}", "Known keys:".cyan());
+            println!("Known keys:");
             for key in &known_keys {
-                println!("  • {}", key);
+                println!("  • {key}");
             }
             println!();
-            println!(
-                "{}",
-                "Note: Unknown keys will be ignored by the workflow.".dimmed()
-            );
+            println!("Note: Unknown keys will be ignored by the workflow.");
         }
 
         return Ok(());
@@ -320,17 +394,16 @@ async fn handle_versions(
         for (name, version) in &resolved.versions {
             // Convert to SCREAMING_SNAKE_CASE for environment variables
             let env_name = name.to_uppercase();
-            println!("{}={}", env_name, version);
+            println!("{env_name}={version}");
         }
     } else {
         // Human-readable format
         if let Some(slug) = tutorial_slug {
-            println!(
-                "\n{}",
-                format!("📦 Versions for tutorial: {}", slug).cyan().bold()
-            );
+            println!();
+            println!("📦 Versions for tutorial: {slug}");
         } else {
-            println!("\n{}", "📦 Global versions".cyan().bold());
+            println!();
+            println!("📦 Global versions");
         }
         println!();
 
@@ -340,19 +413,13 @@ async fn handle_versions(
         for (name, version) in &resolved.versions {
             if show_source {
                 let source = match resolved.get_source(name) {
-                    Some(VersionSource::Global) => "global".dimmed(),
-                    Some(VersionSource::Tutorial) => "tutorial".yellow(),
-                    None => "unknown".red(),
+                    Some(VersionSource::Global) => "global",
+                    Some(VersionSource::Tutorial) => "tutorial",
+                    None => "unknown",
                 };
-                println!(
-                    "  {:<width$}  {}  ({})",
-                    name.green(),
-                    version,
-                    source,
-                    width = max_len
-                );
+                println!("  {name:<max_len$}  {version}  ({source})");
             } else {
-                println!("  {:<width$}  {}", name.green(), version, width = max_len);
+                println!("  {name:<max_len$}  {version}");
             }
         }
         println!();
