@@ -257,5 +257,5 @@ create-tutorial versions test-version-workflow --ci
 ## Further Reading
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Version Management Documentation](polkadot-cookbook-core/VERSION_MANAGEMENT.md)
-- [Workflow File](.github/workflows/test-tutorials.yml)
+- [Version Management Documentation](VERSION_MANAGEMENT.md)
+- [Workflow File](../.github/workflows/test-tutorials.yml)
