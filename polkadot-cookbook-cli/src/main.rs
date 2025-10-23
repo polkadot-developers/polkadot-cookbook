@@ -79,10 +79,14 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Create { slug }) | None => {
+        Some(Commands::Create { slug: cmd_slug }) => {
             // Use subcommand slug or global slug
-            let slug = slug.or(cli.slug);
+            let slug = cmd_slug.or(cli.slug);
             handle_create(slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
+        }
+        None => {
+            // No subcommand, default to create
+            handle_create(cli.slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
         }
         Some(Commands::Versions {
             tutorial_slug,
@@ -105,7 +109,8 @@ async fn handle_create(
 ) -> Result<()> {
     // Non-interactive mode: require slug argument
     if non_interactive {
-        let slug = slug.ok_or_else(|| anyhow::anyhow!("Slug argument is required in non-interactive mode"))?;
+        let slug = slug
+            .ok_or_else(|| anyhow::anyhow!("Slug argument is required in non-interactive mode"))?;
         return run_non_interactive(&slug, skip_install, no_git).await;
     }
 
