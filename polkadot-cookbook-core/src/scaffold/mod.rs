@@ -7,6 +7,7 @@ use crate::config::{ProjectConfig, ProjectInfo};
 use crate::error::{CookbookError, Result};
 use crate::templates::{
     JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate,
+    VersionsYmlTemplate,
 };
 use std::path::Path;
 use tracing::{debug, info, warn};
@@ -171,6 +172,11 @@ impl Scaffold {
         // Generate README.md
         let readme_content = ReadmeTemplate::new(&config.slug).generate();
         self.write_file(&project_path.join("README.md"), &readme_content)
+            .await?;
+
+        // Generate versions.yml
+        let versions_yml_content = VersionsYmlTemplate.generate();
+        self.write_file(&project_path.join("versions.yml"), &versions_yml_content)
             .await?;
 
         // Create .gitkeep in scripts/

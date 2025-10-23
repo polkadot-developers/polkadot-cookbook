@@ -1,0 +1,5 @@
+default:
+  @just --list
+
+say-hello:
+  echo "Hello, world!"

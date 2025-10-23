@@ -3,11 +3,13 @@ pub mod justfile;
 pub mod readme;
 pub mod test;
 pub mod tutorial_yml;
+pub mod versions_yml;
 
 pub use justfile::JustfileTemplate;
 pub use readme::ReadmeTemplate;
 pub use test::TestTemplate;
 pub use tutorial_yml::TutorialYmlTemplate;
+pub use versions_yml::VersionsYmlTemplate;
 
 /// Template trait for all template generators
 pub trait Template {
