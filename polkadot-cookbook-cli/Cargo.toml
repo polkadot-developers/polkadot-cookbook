@@ -1,0 +1,32 @@
+[package]
+name = "polkadot-cookbook-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI wrapper for Polkadot Cookbook Core library"
+keywords = ["polkadot", "substrate", "blockchain", "tutorial", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "create-tutorial"
+path = "src/main.rs"
+
+[dependencies]
+# Core library
+polkadot-cookbook-core = { path = "../polkadot-cookbook-core" }
+
+# Async runtime
+tokio.workspace = true
+
+# CLI
+clap.workspace = true
+colored.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Error handling
+anyhow.workspace = true
