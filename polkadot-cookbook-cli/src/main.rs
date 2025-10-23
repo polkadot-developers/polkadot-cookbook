@@ -23,7 +23,7 @@ struct Cli {
 
     /// Tutorial slug (e.g., "my-tutorial"). If not provided, will prompt interactively.
     /// Only used when no subcommand is provided (defaults to 'create')
-    #[arg(value_name = "SLUG", global = true)]
+    #[arg(value_name = "SLUG")]
     slug: Option<String>,
 
     /// Skip npm install
