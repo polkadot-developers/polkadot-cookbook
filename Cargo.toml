@@ -32,6 +32,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # CLI
 clap = { version = "4.5", features = ["derive"] }
 colored = "2.1"
+cliclack = "0.3"
 
 # Text processing
 regex = "1.11"
