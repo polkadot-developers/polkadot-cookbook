@@ -1,0 +1,27 @@
+{
+  "name": "test-version-workflow",
+  "version": "1.0.0",
+  "description": "Describe the goal, prerequisites, and step-by-step instructions for this tutorial.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.3"
+  },
+  "dependencies": {
+    "@polkadot/api": "^16.4.9",
+    "ws": "^8.18.3"
+  }
+}

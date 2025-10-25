@@ -8,6 +8,7 @@
 //! - **Async-first API**: All I/O operations are async using Tokio
 //! - **Structured Error Handling**: Comprehensive error types with serialization support
 //! - **Configuration Management**: Type-safe project and tutorial configuration
+//! - **Version Management**: Load and merge global and tutorial-specific version configurations
 //! - **Template Generation**: Reusable templates for project scaffolding
 //! - **Git Integration**: Automated git operations for project workflows
 //! - **Validation**: Input validation and project configuration checks
@@ -84,6 +85,9 @@ pub mod templates;
 
 /// Project scaffolding logic
 pub mod scaffold;
+
+/// Version management for dependencies
+pub mod version;
 
 /// File system operations (TODO: to be implemented)
 #[cfg(feature = "fs")]

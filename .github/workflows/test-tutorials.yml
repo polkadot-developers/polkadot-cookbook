@@ -1,10 +1,22 @@
 name: PR Tutorial Tests
 
+# This workflow tests tutorials on pull requests.
+# Version resolution uses the polkadot-cookbook SDK which merges:
+# - Global versions from /versions.yml (defaults)
+# - Tutorial-specific versions from tutorials/{slug}/versions.yml (overrides)
+#
+# Triggers:
+# - Changes to any file in tutorials/** (except scripts/)
+# - Changes to global versions.yml
+# - Changes to any tutorial's versions.yml file
+
 on:
   pull_request:
     paths:
       - 'tutorials/**'
       - '!tutorials/**/scripts/**'
+      - 'versions.yml'              # Trigger when global versions change
+      - '**/versions.yml'           # Trigger when any tutorial versions change
   workflow_dispatch:
     inputs:
       tutorial_slug:
@@ -74,6 +86,22 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: tutorials/${{ matrix.slug }}/package-lock.json
+      - name: Setup Rust toolchain for CLI
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache CLI Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-cli-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-cli-
+      - name: Build polkadot-cookbook CLI
+        run: cargo build --package polkadot-cookbook-cli --release
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -83,16 +111,16 @@ jobs:
         run: |
           NEEDS_NODE=$(yq -r '.needs_node // false' tutorials/${{ matrix.slug }}/tutorial.config.yml)
           echo "needs-node=$NEEDS_NODE" >> $GITHUB_OUTPUT
-      - name: Resolve tool versions
+      - name: Resolve tool versions using SDK
         id: resolve
         if: steps.needs.outputs.needs-node == 'true'
         run: |
-          RUST=$(grep -m1 '^[[:space:]]*rust:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
-          CSB=$(grep -m1 '^[[:space:]]*chain_spec_builder:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
-          OMNI=$(grep -m1 '^[[:space:]]*polkadot_omni_node:' versions.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          # Use the polkadot-cookbook CLI to resolve versions
+          # This uses the SDK's version management to merge global and tutorial-specific versions
+          eval $(./target/release/create-tutorial versions ${{ matrix.slug }} --ci)
           echo "rust=$RUST" >> $GITHUB_OUTPUT
-          echo "chain-spec-builder=$CSB" >> $GITHUB_OUTPUT
-          echo "omni-node=$OMNI" >> $GITHUB_OUTPUT
+          echo "chain-spec-builder=$CHAIN_SPEC_BUILDER" >> $GITHUB_OUTPUT
+          echo "omni-node=$POLKADOT_OMNI_NODE" >> $GITHUB_OUTPUT
       - name: Cache rustup toolchains
         if: steps.needs.outputs.needs-node == 'true'
         uses: actions/cache@v4

@@ -7,22 +7,11 @@
 [![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org/)
 [![Node](https://img.shields.io/badge/node-20%2B-green.svg)](https://nodejs.org/)
 
-[**Tutorials**](#-tutorials) • [**Getting Started**](#-getting-started) • [**Contributing**](CONTRIBUTING.md)
+**Practical, tested tutorials for Polkadot SDK development**
+
+[**Browse Tutorials**](#-tutorials) • [**Contribute a Tutorial**](CONTRIBUTING.md) • [**Documentation**](#-documentation)
 
 </div>
-
----
-
-## 🎯 What is Polkadot Cookbook?
-
-A curated collection of practical, battle-tested tutorials for developers building with the Polkadot SDK.
-
-Each recipe is crafted with care:
-
-- **Working code** - Real implementations you can use
-- **Tested daily** - Every tutorial is continuously verified
-- **Clear guidance** - Step-by-step instructions
-- **Best practices** - Patterns to help you succeed
 
 ---
 
@@ -32,64 +21,82 @@ Each recipe is crafted with care:
 |----------|-------------|------------|
 | [**Zero to Hero**](tutorials/zero-to-hero) | Build and deploy your first parachain | 🟢 Beginner |
 
-> 💡 More tutorials coming soon! Check [issues](https://github.com/polkadot-developers/polkadot-cookbook/issues) or [contribute your own](#-contributing).
+> 💡 **Want to share your knowledge?** See [Contributing a Tutorial](CONTRIBUTING.md)
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### Prerequisites
+### Run a Tutorial
 
-- **Rust** `1.86+` - [Install via rustup](https://rustup.rs)
-- **Node.js** `20+` - [Download](https://nodejs.org/)
-
-### Quick Start
+Each tutorial is self-contained with working code and tests:
 
 ```bash
-# Clone the repository
 git clone https://github.com/polkadot-developers/polkadot-cookbook.git
-cd polkadot-cookbook
-
-# Build the SDK
-cargo build --workspace --release
-
-# Run a tutorial
-cd tutorials/zero-to-hero
+cd polkadot-cookbook/tutorials/zero-to-hero
 npm install
 npm test
 ```
 
-### Create a Tutorial
+### Contribute a Tutorial
 
 ```bash
-# Interactive mode
-cargo run --package polkadot-cookbook-cli
+# Build the CLI tool
+cargo build --package polkadot-cookbook-cli --release
 
-# With slug
-cargo run --package polkadot-cookbook-cli -- my-tutorial
+# Create your tutorial
+./target/release/create-tutorial create my-awesome-tutorial
+
+# Write, test, and submit
+cd tutorials/my-awesome-tutorial
+# ... edit README.md, implement code, write tests ...
+npm test
+git push
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
+
+---
+
+## 📚 Documentation
+
+### For Tutorial Contributors
+- [Contributing Guide](CONTRIBUTING.md) - How to create and submit tutorials
+
+### For Tool Users
+- [CLI Tool](polkadot-cookbook-cli/) - Command-line tool for creating tutorials
+- [SDK Library](polkadot-cookbook-core/) - Programmatic API for tool developers
+
+### For Maintainers
+- [Architecture](docs/architecture.md) - System design and architecture
+- [Testing](docs/testing.md) - Testing guide
+- [Workflows](docs/workflows.md) - CI/CD and automation
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome all contributions:
 
-**Tutorial ideas we'd love to see:**
-- Building custom pallets and Polkadot SDK runtimes
-- Cross-chain messaging with XCM
-- Smart contracts leveraging Polkadot precompiles
+- **📖 Tutorial** - Share your Polkadot knowledge (most welcome!)
+- **🐛 Bug Report** - Help us improve
+- **💡 Feature** - Suggest tooling improvements
+- **📝 Documentation** - Make things clearer
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ---
 
 ## 📜 License
 
-Licensed under **MIT OR Apache-2.0**.
+MIT OR Apache-2.0
 
 ---
 
 <div align="center">
 
 Built by [Polkadot Developers](https://github.com/polkadot-developers)
+
+[Tutorials](#-tutorials) • [Contributing](CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
 
 </div>

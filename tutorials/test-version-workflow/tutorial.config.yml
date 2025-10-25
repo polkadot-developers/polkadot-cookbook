@@ -1,0 +1,6 @@
+name: Test Version Workflow
+slug: test-version-workflow
+category: polkadot-sdk-cookbook
+needs_node: true
+description: Replace with a short description.
+type: sdk # or contracts
