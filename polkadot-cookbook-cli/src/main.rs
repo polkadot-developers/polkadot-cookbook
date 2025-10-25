@@ -1,7 +1,7 @@
 //! CLI wrapper for Polkadot Cookbook Core library
 //!
 //! This is a thin wrapper around the polkadot-cookbook-core library that provides
-//! a command-line interface for creating and managing Polkadot Cookbook tutorials.
+//! a command-line interface for creating and managing Polkadot Cookbook recipes.
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -14,14 +14,14 @@ use polkadot_cookbook_core::{
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
-#[command(name = "create-tutorial")]
-#[command(about = "Create and manage Polkadot Cookbook tutorials", long_about = None)]
+#[command(name = "create-recipe")]
+#[command(about = "Create and manage Polkadot Cookbook recipes", long_about = None)]
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
 
-    /// Tutorial slug (e.g., "my-tutorial"). If not provided, will prompt interactively.
+    /// Recipe slug (e.g., "my-recipe"). If not provided, will prompt interactively.
     /// Only used when no subcommand is provided (defaults to 'create')
     #[arg(value_name = "SLUG")]
     slug: Option<String>,
@@ -41,23 +41,23 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new tutorial (default command if none specified)
+    /// Create a new recipe (default command if none specified)
     Create {
-        /// Tutorial slug (e.g., "my-tutorial")
+        /// Recipe slug (e.g., "my-recipe")
         #[arg(value_name = "SLUG")]
         slug: Option<String>,
     },
     /// Manage and view dependency versions
     Versions {
-        /// Tutorial slug to resolve versions for (omit for global versions only)
+        /// Recipe slug to resolve versions for (omit for global versions only)
         #[arg(value_name = "SLUG")]
-        tutorial_slug: Option<String>,
+        recipe_slug: Option<String>,
 
         /// Output format for CI/automation (key=value pairs)
         #[arg(long, default_value = "false")]
         ci: bool,
 
-        /// Show version sources (global vs tutorial override)
+        /// Show version sources (global vs recipe override)
         #[arg(long, default_value = "false")]
         show_source: bool,
 
@@ -89,12 +89,12 @@ async fn main() -> Result<()> {
             handle_create(cli.slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
         }
         Some(Commands::Versions {
-            tutorial_slug,
+            recipe_slug,
             ci,
             show_source,
             validate,
         }) => {
-            handle_versions(tutorial_slug, ci, show_source, validate).await?;
+            handle_versions(recipe_slug, ci, show_source, validate).await?;
         }
     }
 
@@ -116,7 +116,7 @@ async fn handle_create(
 
     // Interactive mode with cliclack
     clear_screen()?;
-    intro("🚀 Polkadot Cookbook - Tutorial Creator")?;
+    intro("🚀 Polkadot Cookbook - Recipe Creator")?;
 
     // Validate working directory first
     if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
@@ -127,8 +127,8 @@ async fn handle_create(
     }
 
     note(
-        "Tutorial Setup",
-        "Let's create your new tutorial. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
+        "Recipe Setup",
+        "Let's create your new recipe. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
     )?;
 
     // Get or prompt for slug
@@ -136,15 +136,15 @@ async fn handle_create(
         // Validate provided slug
         if let Err(e) = polkadot_cookbook_core::config::validate_slug(&s) {
             outro_cancel(format!(
-                "❌ Invalid tutorial slug format: {e}\n\nSlug must be lowercase, with words separated by dashes.\nExamples: \"my-tutorial\", \"add-nft-pallet\", \"zero-to-hero\""
+                "❌ Invalid recipe slug format: {e}\n\nSlug must be lowercase, with words separated by dashes.\nExamples: \"my-recipe\", \"add-nft-pallet\", \"zero-to-hero\""
             ))?;
             std::process::exit(1);
         }
         s
     } else {
         // Prompt for slug
-        let slug: String = input("What is your tutorial slug?")
-            .placeholder("my-tutorial")
+        let slug: String = input("What is your recipe slug?")
+            .placeholder("my-recipe")
             .validate(|input: &String| {
                 if input.is_empty() {
                     Err("Slug cannot be empty")
@@ -162,7 +162,7 @@ async fn handle_create(
     let create_git_branch = if no_git {
         false
     } else {
-        confirm("Create a git branch for this tutorial?")
+        confirm("Create a git branch for this recipe?")
             .initial_value(true)
             .interact()?
     };
@@ -178,18 +178,18 @@ async fn handle_create(
 
     // Create project configuration
     let config = ProjectConfig::new(&slug)
-        .with_destination(PathBuf::from("tutorials"))
+        .with_destination(PathBuf::from("recipes"))
         .with_git_init(create_git_branch)
         .with_skip_install(skip_install);
 
     // Create the project with spinner
     let sp = spinner();
-    sp.start("Creating tutorial project...");
+    sp.start("Creating recipe project...");
 
     let scaffold = Scaffold::new();
     match scaffold.create_project(config).await {
         Ok(project_info) => {
-            sp.stop("✅ Tutorial scaffolding complete");
+            sp.stop("✅ Recipe scaffolding complete");
 
             println!();
             note(
@@ -207,11 +207,11 @@ async fn handle_create(
             note(
                 "📝 Next Steps",
                 format!(
-                    "1. Write tutorial content\n   {}/README.md\n\n\
+                    "1. Write recipe content\n   {}/README.md\n\n\
                      2. Add implementation code\n   {}/src/\n\n\
                      3. Write comprehensive tests\n   {}/tests/\n\n\
                      4. Run tests locally\n   cd {} && npm test\n\n\
-                     5. Update metadata\n   {}/tutorial.config.yml",
+                     5. Update metadata\n   {}/recipe.config.yml",
                     project_info.project_path.display(),
                     project_info.project_path.display(),
                     project_info.project_path.display(),
@@ -226,7 +226,7 @@ async fn handle_create(
                     "🔀 Ready to Contribute?",
                     format!(
                         "git add -A\n\
-                         git commit -m \"feat(tutorial): add {}\"\n\
+                         git commit -m \"feat(recipe): add {}\"\n\
                          git push origin {}\n\n\
                          Then open a Pull Request on GitHub!",
                         project_info.slug, branch
@@ -237,7 +237,7 @@ async fn handle_create(
             outro("🎉 All set! Happy coding! Check CONTRIBUTING.md for guidelines.")?;
         }
         Err(e) => {
-            sp.stop(format!("❌ Failed to create tutorial: {e}"));
+            sp.stop(format!("❌ Failed to create recipe: {e}"));
             outro_cancel(format!("Error: {e}"))?;
             std::process::exit(1);
         }
@@ -250,9 +250,9 @@ async fn handle_create(
 async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Result<()> {
     // Validate slug
     if let Err(e) = polkadot_cookbook_core::config::validate_slug(slug) {
-        eprintln!("❌ Invalid tutorial slug format: {e}");
+        eprintln!("❌ Invalid recipe slug format: {e}");
         eprintln!("Slug must be lowercase, with words separated by dashes.");
-        eprintln!("Examples: \"my-tutorial\", \"add-nft-pallet\", \"zero-to-hero\"");
+        eprintln!("Examples: \"my-recipe\", \"add-nft-pallet\", \"zero-to-hero\"");
         std::process::exit(1);
     }
 
@@ -263,11 +263,11 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
         std::process::exit(1);
     }
 
-    println!("Creating tutorial: {slug}");
+    println!("Creating recipe: {slug}");
 
     // Create project configuration
     let config = ProjectConfig::new(slug)
-        .with_destination(PathBuf::from("tutorials"))
+        .with_destination(PathBuf::from("recipes"))
         .with_git_init(!no_git)
         .with_skip_install(skip_install);
 
@@ -275,14 +275,14 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
     let scaffold = Scaffold::new();
     match scaffold.create_project(config).await {
         Ok(project_info) => {
-            println!("✅ Tutorial created successfully!");
+            println!("✅ Recipe created successfully!");
             println!("Path: {}", project_info.project_path.display());
             if let Some(ref branch) = project_info.git_branch {
                 println!("Git Branch: {branch}");
             }
         }
         Err(e) => {
-            eprintln!("❌ Failed to create tutorial: {e}");
+            eprintln!("❌ Failed to create recipe: {e}");
             std::process::exit(1);
         }
     }
@@ -291,7 +291,7 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
 }
 
 async fn handle_versions(
-    tutorial_slug: Option<String>,
+    recipe_slug: Option<String>,
     ci_format: bool,
     show_source: bool,
     validate: bool,
@@ -310,7 +310,7 @@ async fn handle_versions(
     }
 
     // Resolve versions with better error handling
-    let resolved = match &tutorial_slug {
+    let resolved = match &recipe_slug {
         Some(slug) => match resolve_tutorial_versions(repo_root, slug).await {
             Ok(v) => v,
             Err(e) => {
@@ -318,12 +318,12 @@ async fn handle_versions(
                     eprintln!("❌ Failed to resolve versions: {e}");
                     eprintln!();
                     eprintln!("Possible causes:");
-                    eprintln!("  • Tutorial directory doesn't exist");
+                    eprintln!("  • Recipe directory doesn't exist");
                     eprintln!("  • versions.yml has invalid YAML syntax");
                     eprintln!("  • Global versions.yml is missing or invalid");
                     eprintln!();
                     eprintln!("Tip: Validate YAML syntax:");
-                    eprintln!("  yq eval tutorials/{}/versions.yml", slug);
+                    eprintln!("  yq eval recipes/{}/versions.yml", slug);
                 } else {
                     eprintln!("Error resolving versions: {e}");
                 }
@@ -403,9 +403,9 @@ async fn handle_versions(
         }
     } else {
         // Human-readable format
-        if let Some(slug) = tutorial_slug {
+        if let Some(slug) = recipe_slug {
             println!();
-            println!("📦 Versions for tutorial: {slug}");
+            println!("📦 Versions for recipe: {slug}");
         } else {
             println!();
             println!("📦 Global versions");
@@ -419,7 +419,7 @@ async fn handle_versions(
             if show_source {
                 let source = match resolved.get_source(name) {
                     Some(VersionSource::Global) => "global",
-                    Some(VersionSource::Tutorial) => "tutorial",
+                    Some(VersionSource::Tutorial) => "recipe",
                     None => "unknown",
                 };
                 println!("  {name:<max_len$}  {version}  ({source})");

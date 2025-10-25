@@ -1,16 +1,16 @@
 ## Summary
 
-Describe what this tutorial adds/changes.
+Describe what this recipe adds/changes.
 
 ## Checklist
 
-- [ ] Added folder `tutorials/<slug>/`
-- [ ] Included `tutorials/<slug>/tutorial.config.yml`
-- [ ] Included `tutorials/<slug>/justfile`
-- [ ] Included `tutorials/<slug>/README.md` (written tutorial)
-- [ ] Included `tutorials/<slug>/src/` (code implementation)
-- [ ] Included `tutorials/<slug>/tests/` with at least one e2e test
-- [ ] Tutorial builds locally (if code included)
+- [ ] Added folder `recipes/<slug>/`
+- [ ] Included `recipes/<slug>/recipe.config.yml`
+- [ ] Included `recipes/<slug>/justfile`
+- [ ] Included `recipes/<slug>/README.md` (written recipe)
+- [ ] Included `recipes/<slug>/src/` (code implementation)
+- [ ] Included `recipes/<slug>/tests/` with at least one e2e test
+- [ ] Recipe builds locally (if code included)
 - [ ] Tests pass or skip fast if no endpoint
 
 ## Notes

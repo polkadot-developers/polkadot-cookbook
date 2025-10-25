@@ -1,15 +1,15 @@
 # Version Management
 
-The Polkadot Cookbook SDK provides a comprehensive version management system that allows tutorials to specify dependency versions while inheriting defaults from a global configuration.
+The Polkadot Cookbook SDK provides a comprehensive version management system that allows recipes to specify dependency versions while inheriting defaults from a global configuration.
 
 ## Overview
 
 Version management is implemented in the `version` module of `polkadot-cookbook-core` and provides:
 
 - **Global Configuration**: Default versions defined in the repository root `versions.yml`
-- **Tutorial Overrides**: Tutorial-specific `versions.yml` files that override global settings
-- **Merge Logic**: Automatic merging where tutorial versions take precedence
-- **Source Tracking**: Track whether a version came from global or tutorial config
+- **Recipe Overrides**: Recipe-specific `versions.yml` files that override global settings
+- **Merge Logic**: Automatic merging where recipe versions take precedence
+- **Source Tracking**: Track whether a version came from global or recipe config
 
 ## Architecture
 
@@ -18,17 +18,17 @@ Version management is implemented in the `version` module of `polkadot-cookbook-
 1. **Types** (`version::types`): Core data structures
    - `VersionSet`: HashMap of dependency names to version strings
    - `GlobalVersionConfig`: Global version configuration
-   - `TutorialVersionConfig`: Tutorial-specific version configuration
+   - `RecipeVersionConfig`: Recipe-specific version configuration
    - `ResolvedVersions`: Merged versions with source tracking
-   - `VersionSource`: Enum indicating if version is from Global or Tutorial
+   - `VersionSource`: Enum indicating if version is from Global or Recipe
 
 2. **Loader** (`version::loader`): YAML file loading and parsing
    - `VersionLoader::load_global()`: Load global versions.yml
-   - `VersionLoader::load_tutorial()`: Load tutorial versions.yml
+   - `VersionLoader::load_recipe()`: Load recipe versions.yml
 
 3. **Resolver** (`version::resolver`): Version merging logic
-   - `VersionResolver::merge()`: Merge global and tutorial versions
-   - `VersionResolver::merge_optional()`: Handle optional tutorial config
+   - `VersionResolver::merge()`: Merge global and recipe versions
+   - `VersionResolver::merge_optional()`: Handle optional recipe config
 
 ### High-Level API
 
@@ -36,7 +36,7 @@ The easiest way to use version management is through the high-level functions:
 
 ```rust
 use polkadot_cookbook_core::version::{
-    resolve_tutorial_versions,
+    resolve_recipe_versions,
     load_global_versions,
 };
 use std::path::Path;
@@ -46,10 +46,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load global versions only
     let global = load_global_versions(Path::new(".")).await?;
 
-    // Load and merge versions for a specific tutorial
-    let resolved = resolve_tutorial_versions(
+    // Load and merge versions for a specific recipe
+    let resolved = resolve_recipe_versions(
         Path::new("."),
-        "my-tutorial"
+        "my-recipe"
     ).await?;
 
     // Access versions
@@ -76,10 +76,10 @@ metadata:
   schema_version: "1.0"
 ```
 
-### Tutorial versions.yml (Tutorial Directory)
+### Recipe versions.yml (Recipe Directory)
 
 ```yaml
-# Tutorial-specific version overrides
+# Recipe-specific version overrides
 versions:
   polkadot_omni_node: "0.6.0"
   chain_spec_builder: "11.0.0"
@@ -90,11 +90,11 @@ metadata:
 
 ### Merge Behavior
 
-With the above configurations, the resolved versions for the tutorial would be:
+With the above configurations, the resolved versions for the recipe would be:
 
 - `rust`: `"1.86"` (from global)
-- `polkadot_omni_node`: `"0.6.0"` (overridden by tutorial)
-- `chain_spec_builder`: `"11.0.0"` (overridden by tutorial)
+- `polkadot_omni_node`: `"0.6.0"` (overridden by recipe)
+- `chain_spec_builder`: `"11.0.0"` (overridden by recipe)
 - `frame_omni_bencher`: `"0.13.0"` (from global)
 
 ## Usage Examples
@@ -108,9 +108,9 @@ use std::path::Path;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let repo_root = Path::new(".");
-    let tutorial_path = Some(Path::new("tutorials/my-tutorial"));
+    let recipe_path = Some(Path::new("recipes/my-recipe"));
 
-    let resolved = resolve_versions(repo_root, tutorial_path).await?;
+    let resolved = resolve_versions(repo_root, recipe_path).await?;
 
     println!("Resolved versions:");
     for (name, version) in &resolved.versions {
@@ -124,20 +124,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 2: Source Tracking
 
 ```rust
-use polkadot_cookbook_core::version::{resolve_tutorial_versions, VersionSource};
+use polkadot_cookbook_core::version::{resolve_recipe_versions, VersionSource};
 use std::path::Path;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let resolved = resolve_tutorial_versions(
+    let resolved = resolve_recipe_versions(
         Path::new("."),
-        "my-tutorial"
+        "my-recipe"
     ).await?;
 
     for (name, version) in &resolved.versions {
         let source = match resolved.get_source(name) {
             Some(VersionSource::Global) => "global",
-            Some(VersionSource::Tutorial) => "tutorial override",
+            Some(VersionSource::Recipe) => "recipe override",
             None => "unknown",
         };
         println!("{}: {} ({})", name, version, source);
@@ -150,12 +150,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 3: Using in CLI Tools
 
 ```rust
-use polkadot_cookbook_core::version::resolve_tutorial_versions;
+use polkadot_cookbook_core::version::resolve_recipe_versions;
 use std::path::Path;
 
-async fn install_dependencies(tutorial_slug: &str) -> Result<(), Box<dyn std::error::Error>> {
-    // Resolve versions for the tutorial
-    let versions = resolve_tutorial_versions(Path::new("."), tutorial_slug).await?;
+async fn install_dependencies(recipe_slug: &str) -> Result<(), Box<dyn std::error::Error>> {
+    // Resolve versions for the recipe
+    let versions = resolve_recipe_versions(Path::new("."), recipe_slug).await?;
 
     // Use versions to install dependencies
     if let Some(rust_version) = versions.get("rust") {
@@ -175,11 +175,11 @@ async fn install_dependencies(tutorial_slug: &str) -> Result<(), Box<dyn std::er
 ### Example 4: Using in CI Workflows
 
 ```rust
-use polkadot_cookbook_core::version::resolve_tutorial_versions;
+use polkadot_cookbook_core::version::resolve_recipe_versions;
 use std::path::Path;
 
-async fn ci_setup(tutorial_slug: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let versions = resolve_tutorial_versions(Path::new("."), tutorial_slug).await?;
+async fn ci_setup(recipe_slug: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let versions = resolve_recipe_versions(Path::new("."), recipe_slug).await?;
 
     // Export versions as environment variables for CI
     for (name, version) in &versions.versions {
@@ -198,7 +198,7 @@ The Polkadot Cookbook CLI provides commands to manage and view versions:
 ### View Global Versions
 
 ```bash
-create-tutorial versions
+create-recipe versions
 ```
 
 Output:
@@ -211,26 +211,26 @@ Output:
   frame_omni_bencher  0.13.0
 ```
 
-### View Tutorial-Specific Versions
+### View Recipe-Specific Versions
 
 ```bash
-create-tutorial versions my-tutorial
+create-recipe versions my-recipe
 ```
 
 ### Show Version Sources
 
-Use `--show-source` to see whether versions come from global or tutorial config:
+Use `--show-source` to see whether versions come from global or recipe config:
 
 ```bash
-create-tutorial versions my-tutorial --show-source
+create-recipe versions my-recipe --show-source
 ```
 
 Output:
 ```
-📦 Versions for tutorial: my-tutorial
+📦 Versions for recipe: my-recipe
 
   rust                1.86   (global)
-  polkadot_omni_node  0.6.0  (tutorial)
+  polkadot_omni_node  0.6.0  (recipe)
   chain_spec_builder  10.0.0 (global)
 ```
 
@@ -239,7 +239,7 @@ Output:
 Use `--ci` flag to get output suitable for shell evaluation:
 
 ```bash
-create-tutorial versions my-tutorial --ci
+create-recipe versions my-recipe --ci
 ```
 
 Output:
@@ -252,7 +252,7 @@ FRAME_OMNI_BENCHER=0.13.0
 
 Use in scripts:
 ```bash
-eval $(create-tutorial versions my-tutorial --ci)
+eval $(create-recipe versions my-recipe --ci)
 echo "Using Rust version: $RUST"
 ```
 
@@ -261,7 +261,7 @@ echo "Using Rust version: $RUST"
 Use `--validate` flag to check for unknown version keys:
 
 ```bash
-create-tutorial versions my-tutorial --validate
+create-recipe versions my-recipe --validate
 ```
 
 **Output (valid):**
@@ -290,20 +290,20 @@ Known keys:
 Note: Unknown keys will be ignored by the workflow.
 ```
 
-## Tutorial Scaffolding
+## Recipe Scaffolding
 
-When creating a new tutorial using the CLI, a `versions.yml` template is automatically generated:
+When creating a new recipe using the CLI, a `versions.yml` template is automatically generated:
 
 ```bash
-create-tutorial create my-new-tutorial
+create-recipe create my-new-recipe
 ```
 
-This creates `tutorials/my-new-tutorial/versions.yml` with commented examples:
+This creates `recipes/my-new-recipe/versions.yml` with commented examples:
 
 ```yaml
-# Tutorial-specific version overrides
+# Recipe-specific version overrides
 # These versions will override the global versions.yml on a per-key basis.
-# Uncomment and modify the versions you need to override for this tutorial.
+# Uncomment and modify the versions you need to override for this recipe.
 
 versions:
   # rust: "1.86"
@@ -319,25 +319,25 @@ metadata:
 
 ### Main Functions
 
-#### `resolve_versions(repo_root, tutorial_path) -> Result<ResolvedVersions>`
+#### `resolve_versions(repo_root, recipe_path) -> Result<ResolvedVersions>`
 
-Resolve versions for a tutorial by merging global and tutorial-specific configurations.
+Resolve versions for a recipe by merging global and recipe-specific configurations.
 
 **Parameters:**
 - `repo_root: &Path` - Path to repository root (where global versions.yml exists)
-- `tutorial_path: Option<&Path>` - Optional path to tutorial directory
+- `recipe_path: Option<&Path>` - Optional path to recipe directory
 
 **Returns:** `Result<ResolvedVersions>` containing merged versions with source tracking
 
 ---
 
-#### `resolve_tutorial_versions(repo_root, tutorial_slug) -> Result<ResolvedVersions>`
+#### `resolve_recipe_versions(repo_root, recipe_slug) -> Result<ResolvedVersions>`
 
-Convenience function that constructs the tutorial path from a slug.
+Convenience function that constructs the recipe path from a slug.
 
 **Parameters:**
 - `repo_root: &Path` - Path to repository root
-- `tutorial_slug: &str` - Tutorial slug (e.g., "my-tutorial")
+- `recipe_slug: &str` - Recipe slug (e.g., "my-recipe")
 
 **Returns:** `Result<ResolvedVersions>` containing merged versions
 
@@ -345,7 +345,7 @@ Convenience function that constructs the tutorial path from a slug.
 
 #### `load_global_versions(repo_root) -> Result<ResolvedVersions>`
 
-Load only global versions without tutorial overrides.
+Load only global versions without recipe overrides.
 
 **Parameters:**
 - `repo_root: &Path` - Path to repository root
@@ -373,7 +373,7 @@ Contains merged version information with source tracking.
 Enum indicating the source of a version:
 
 - `VersionSource::Global` - Version from global versions.yml
-- `VersionSource::Tutorial` - Version from tutorial-specific versions.yml
+- `VersionSource::Recipe` - Version from recipe-specific versions.yml
 
 ## Testing
 
@@ -403,23 +403,23 @@ The CLI provides detailed error messages with troubleshooting hints:
 
 **Example: Malformed YAML**
 ```bash
-$ create-tutorial versions my-tutorial
+$ create-recipe versions my-recipe
 
 ❌ Failed to resolve versions!
-Error: Failed to parse tutorial versions YAML: found unexpected end of stream...
+Error: Failed to parse recipe versions YAML: found unexpected end of stream...
 
 Possible causes:
-  • Tutorial directory doesn't exist
+  • Recipe directory doesn't exist
   • versions.yml has invalid YAML syntax
   • Global versions.yml is missing or invalid
 
 Tip: Validate YAML syntax:
-  yq eval tutorials/my-tutorial/versions.yml
+  yq eval recipes/my-recipe/versions.yml
 ```
 
 **Example: Missing global versions.yml**
 ```bash
-$ create-tutorial versions
+$ create-recipe versions
 
 ❌ Failed to load global versions!
 Error: Global versions file not found: versions.yml
@@ -439,7 +439,7 @@ Example error handling in code:
 ```rust
 use polkadot_cookbook_core::error::CookbookError;
 
-match resolve_tutorial_versions(repo_root, tutorial_slug).await {
+match resolve_recipe_versions(repo_root, recipe_slug).await {
     Ok(versions) => {
         // Use versions
     }
@@ -482,8 +482,8 @@ The version management system is integrated into CI workflows using the CLI:
   id: resolve
   run: |
     # Use the polkadot-cookbook CLI to resolve versions
-    # This uses the SDK's version management to merge global and tutorial-specific versions
-    eval $(./target/release/create-tutorial versions ${{ matrix.slug }} --ci)
+    # This uses the SDK's version management to merge global and recipe-specific versions
+    eval $(./target/release/create-recipe versions ${{ matrix.slug }} --ci)
     echo "rust=$RUST" >> $GITHUB_OUTPUT
     echo "chain-spec-builder=$CHAIN_SPEC_BUILDER" >> $GITHUB_OUTPUT
     echo "omni-node=$POLKADOT_OMNI_NODE" >> $GITHUB_OUTPUT
@@ -494,14 +494,14 @@ The version management system is integrated into CI workflows using the CLI:
     # Install dependencies using resolved versions
 ```
 
-See `.github/workflows/test-tutorials.yml` for the complete implementation.
+See `.github/workflows/test-recipes.yml` for the complete implementation.
 
 ## Contributing
 
 When adding new version-managed dependencies:
 
 1. Add the dependency to the global `versions.yml`
-2. Update the tutorial template in `templates/versions_yml.rs`
+2. Update the recipe template in `templates/versions_yml.rs`
 3. Update this documentation
 4. Add tests for the new dependency in the version module
 

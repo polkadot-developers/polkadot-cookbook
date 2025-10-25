@@ -1,6 +1,6 @@
 # Polkadot Cookbook CLI
 
-Command-line tool for creating and managing Polkadot Cookbook tutorials.
+Command-line tool for creating and managing Polkadot Cookbook recipes.
 
 ## Installation
 
@@ -12,7 +12,7 @@ cd polkadot-cookbook
 cargo build --package polkadot-cookbook-cli --release
 ```
 
-The binary will be available at `target/release/create-tutorial`.
+The binary will be available at `target/release/create-recipe`.
 
 ### Add to PATH (Optional)
 
@@ -23,46 +23,46 @@ export PATH="$PATH:/path/to/polkadot-cookbook/target/release"
 
 ## Quick Start
 
-### Create a Tutorial (Interactive)
+### Create a Recipe (Interactive)
 
 ```bash
-create-tutorial create
+create-recipe create
 ```
 
-This launches an interactive prompt that guides you through tutorial creation.
+This launches an interactive prompt that guides you through recipe creation.
 
-### Create a Tutorial (Command Line)
+### Create a Recipe (Command Line)
 
 ```bash
-create-tutorial create my-awesome-tutorial
+create-recipe create my-awesome-recipe
 ```
 
 ### View Versions
 
 ```bash
 # View global dependency versions
-create-tutorial versions
+create-recipe versions
 
-# View tutorial-specific versions
-create-tutorial versions my-tutorial
+# View recipe-specific versions
+create-recipe versions my-recipe
 
 # Show where each version comes from
-create-tutorial versions my-tutorial --show-source
+create-recipe versions my-recipe --show-source
 ```
 
 ## Commands
 
 ### `create`
 
-Create a new tutorial with scaffolded structure.
+Create a new recipe with scaffolded structure.
 
 **Usage:**
 ```bash
-create-tutorial create [OPTIONS] [SLUG]
+create-recipe create [OPTIONS] [SLUG]
 ```
 
 **Arguments:**
-- `SLUG` - Tutorial slug (e.g., "my-tutorial"). Optional in interactive mode.
+- `SLUG` - Recipe slug (e.g., "my-recipe"). Optional in interactive mode.
 
 **Options:**
 - `--skip-install` - Skip npm dependency installation
@@ -72,23 +72,23 @@ create-tutorial create [OPTIONS] [SLUG]
 **Examples:**
 ```bash
 # Interactive mode (recommended)
-create-tutorial create
+create-recipe create
 
 # With slug
-create-tutorial create custom-pallet-tutorial
+create-recipe create custom-pallet-recipe
 
 # Skip installation for faster creation
-create-tutorial create my-tutorial --skip-install
+create-recipe create my-recipe --skip-install
 
 # CI/CD mode
-create-tutorial create my-tutorial --non-interactive --skip-install
+create-recipe create my-recipe --non-interactive --skip-install
 ```
 
 **What it creates:**
 ```
-tutorials/my-tutorial/
-├── README.md              # Tutorial content
-├── tutorial.config.yml    # Metadata
+recipes/my-recipe/
+├── README.md              # Recipe content
+├── recipe.config.yml    # Metadata
 ├── versions.yml           # Dependency versions
 ├── package.json           # npm dependencies
 ├── tsconfig.json          # TypeScript config
@@ -100,43 +100,43 @@ tutorials/my-tutorial/
 
 ### `versions`
 
-View and manage dependency versions for tutorials.
+View and manage dependency versions for recipes.
 
 **Usage:**
 ```bash
-create-tutorial versions [OPTIONS] [SLUG]
+create-recipe versions [OPTIONS] [SLUG]
 ```
 
 **Arguments:**
-- `SLUG` - Tutorial slug. Omit to show global versions.
+- `SLUG` - Recipe slug. Omit to show global versions.
 
 **Options:**
 - `--ci` - Output in CI format (KEY=VALUE pairs)
-- `--show-source` - Show version sources (global vs tutorial override)
+- `--show-source` - Show version sources (global vs recipe override)
 - `--validate` - Validate version keys
 
 **Examples:**
 ```bash
 # View global versions
-create-tutorial versions
+create-recipe versions
 
-# View tutorial versions
-create-tutorial versions zero-to-hero
+# View recipe versions
+create-recipe versions zero-to-hero
 
 # Debug version resolution
-create-tutorial versions my-tutorial --show-source
+create-recipe versions my-recipe --show-source
 
 # CI usage
-eval $(create-tutorial versions my-tutorial --ci)
+eval $(create-recipe versions my-recipe --ci)
 echo "Using Rust $RUST"
 
 # Validate configuration
-create-tutorial versions my-tutorial --validate
+create-recipe versions my-recipe --validate
 ```
 
 **Version Resolution:**
 
-The CLI merges global versions (`versions.yml` at repo root) with tutorial-specific versions (`tutorials/<slug>/versions.yml`). Tutorial versions override global versions on a per-key basis.
+The CLI merges global versions (`versions.yml` at repo root) with recipe-specific versions (`recipes/<slug>/versions.yml`). Recipe versions override global versions on a per-key basis.
 
 Example:
 ```yaml
@@ -145,7 +145,7 @@ versions:
   rust: "1.86"
   polkadot_omni_node: "0.5.0"
 
-# Tutorial versions.yml
+# Recipe versions.yml
 versions:
   polkadot_omni_node: "0.6.0"  # Override
 
@@ -154,39 +154,39 @@ versions:
 
 ## Common Workflows
 
-### Contributing a Tutorial
+### Contributing a Recipe
 
 ```bash
-# 1. Create tutorial structure
-create-tutorial create my-awesome-tutorial
+# 1. Create recipe structure
+create-recipe create my-awesome-recipe
 
 # 2. Write content
-cd tutorials/my-awesome-tutorial
+cd recipes/my-awesome-recipe
 code README.md
 
 # 3. Implement code
 code src/lib.rs
 
 # 4. Write tests
-code tests/tutorial.test.ts
+code tests/recipe.test.ts
 
 # 5. Test locally
 npm test
 
 # 6. Commit and push
 git add -A
-git commit -m "feat(tutorial): add my awesome tutorial"
-git push origin tutorial/my-awesome-tutorial
+git commit -m "feat(recipe): add my awesome recipe"
+git push origin recipe/my-awesome-recipe
 ```
 
 ### Testing with Custom Versions
 
 ```bash
-# Create tutorial
-create-tutorial create test-new-version
+# Create recipe
+create-recipe create test-new-version
 
 # Edit versions
-cd tutorials/test-new-version
+cd recipes/test-new-version
 cat > versions.yml <<EOF
 versions:
   polkadot_omni_node: "0.7.0"
@@ -195,7 +195,7 @@ metadata:
 EOF
 
 # Verify resolution
-create-tutorial versions test-new-version --show-source
+create-recipe versions test-new-version --show-source
 
 # Test
 npm test
@@ -205,16 +205,16 @@ npm test
 
 ### Global Versions
 
-Edit `versions.yml` at repository root to change default versions for all tutorials.
+Edit `versions.yml` at repository root to change default versions for all recipes.
 
-### Tutorial Versions
+### Recipe Versions
 
-Each tutorial can override versions by editing its `tutorials/<slug>/versions.yml` file.
+Each recipe can override versions by editing its `recipes/<slug>/versions.yml` file.
 
-### Tutorial Metadata
+### Recipe Metadata
 
-Edit `tutorials/<slug>/tutorial.config.yml` to configure:
-- Tutorial name and description
+Edit `recipes/<slug>/recipe.config.yml` to configure:
+- Recipe name and description
 - Category (polkadot-sdk-cookbook or contracts-cookbook)
 - Whether a node is required (`needs_node`)
 - Build and runtime settings
@@ -229,7 +229,7 @@ Edit `tutorials/<slug>/tutorial.config.yml` to configure:
 
 ```bash
 cd /path/to/polkadot-cookbook
-create-tutorial create my-tutorial
+create-recipe create my-recipe
 ```
 
 ### "Slug argument is required"
@@ -239,7 +239,7 @@ create-tutorial create my-tutorial
 **Solution:** Provide slug argument
 
 ```bash
-create-tutorial create my-tutorial --non-interactive
+create-recipe create my-recipe --non-interactive
 ```
 
 ### "Failed to resolve versions"
@@ -250,10 +250,10 @@ create-tutorial create my-tutorial --non-interactive
 
 ```bash
 # Check syntax
-yq eval tutorials/my-tutorial/versions.yml
+yq eval recipes/my-recipe/versions.yml
 
 # Use validation flag
-create-tutorial versions my-tutorial --validate
+create-recipe versions my-recipe --validate
 ```
 
 ## Development

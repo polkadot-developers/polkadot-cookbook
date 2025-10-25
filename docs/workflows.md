@@ -8,7 +8,7 @@ The repository uses four main GitHub Actions workflows:
 
 1. **command-generate-scripts.yml** - PR comment command handler
 2. **generate-scripts.yml** - Script generation and release workflow
-3. **test-tutorials.yml** - PR tutorial testing
+3. **test-recipes.yml** - PR recipe testing
 4. **build-kitchensink-parachain.yml** - Parachain build workflow
 
 ## Workflow Diagrams
@@ -21,9 +21,9 @@ graph TD
     B -->|No Write Access| C[❌ Comment: Insufficient permissions]
     B -->|Has Write Access| D[Extract PR Info]
 
-    D --> E{Tutorial Slug Provided?}
+    D --> E{Recipe Slug Provided?}
     E -->|No| F[Analyze PR Changed Files]
-    F --> G{Single Tutorial Changed?}
+    F --> G{Single Recipe Changed?}
     G -->|Yes| H[Use Detected Slug]
     G -->|No| I[❌ Comment: Ambiguous slug]
     E -->|Yes| H
@@ -36,7 +36,7 @@ graph TD
     M -->|No & Not Manual| N[⏭️ Skip - No changes detected]
     M -->|Yes or Manual| O[Build Parachain]
 
-    O --> P[Generate Tutorial Scripts]
+    O --> P[Generate Recipe Scripts]
     P --> Q[Create Versioned Scripts]
     Q --> R[setup-rust.sh<br/>install-chain-spec-builder.sh<br/>install-omni-node.sh<br/>generate-chain-spec.sh<br/>start-node.sh]
 
@@ -45,8 +45,8 @@ graph TD
     T -->|No| U[No Commit Needed]
     T -->|Yes| V[Create Git Commit]
 
-    V --> W[Create Tutorial Tag]
-    W --> X[Tag Format:<br/>tutorial/SLUG/vYYYYMMDD-HHMMSS]
+    V --> W[Create Recipe Tag]
+    W --> X[Tag Format:<br/>recipe/SLUG/vYYYYMMDD-HHMMSS]
 
     X --> Y{create_release=true?}
     Y -->|Yes| Z[Create GitHub Release]
@@ -64,15 +64,15 @@ graph TD
 
 ```mermaid
 graph TD
-    A[Pull Request Created/Updated] --> B{Changed Files in tutorials/?}
-    B -->|No| C[⏭️ Skip - No tutorial changes]
-    B -->|Yes| D[Detect New Tutorials]
+    A[Pull Request Created/Updated] --> B{Changed Files in recipes/?}
+    B -->|No| C[⏭️ Skip - No recipe changes]
+    B -->|Yes| D[Detect New Recipes]
 
-    D --> E{New Tutorial Folder Added?}
+    D --> E{New Recipe Folder Added?}
     E -->|No| F[⏭️ Skip - Only modifications]
-    E -->|Yes| G[Extract Tutorial Slug]
+    E -->|Yes| G[Extract Recipe Slug]
 
-    G --> H[Read tutorial.config.yml]
+    G --> H[Read recipe.config.yml]
     H --> I{needs_node: true?}
     I -->|No| J[Install npm deps only]
     I -->|Yes| K[Setup Rust Toolchain]
@@ -83,7 +83,7 @@ graph TD
     N --> O[Generate Chain Spec]
     O --> P[Start polkadot-omni-node]
 
-    J --> Q[Install Tutorial Dependencies]
+    J --> Q[Install Recipe Dependencies]
     P --> Q
 
     Q --> R[Run npm test]
@@ -104,36 +104,36 @@ graph TD
 
 **Trigger**: PR comment containing `/generate-scripts` or `/generate-release`
 
-**Purpose**: Allows maintainers to trigger script generation for a tutorial via PR comments
+**Purpose**: Allows maintainers to trigger script generation for a recipe via PR comments
 
 **How it works**:
 
 1. **Permission Check**: Verifies the comment author has write access to the repository
 2. **Command Parsing**: Extracts command and optional parameters:
-   - `slug=<tutorial-slug>` - Specify which tutorial
-   - `key=<tutorial-key>` - versions.yml key (default: zero_to_hero)
+   - `slug=<recipe-slug>` - Specify which recipe
+   - `key=<recipe-key>` - versions.yml key (default: zero_to_hero)
    - `force=1` - Force generation even if no version changes
-3. **Slug Detection**: If no slug provided, analyzes PR changed files to detect the tutorial
+3. **Slug Detection**: If no slug provided, analyzes PR changed files to detect the recipe
 4. **Workflow Dispatch**: Triggers `generate-scripts.yml` with the resolved parameters
 5. **Acknowledgment**: Posts a comment confirming the dispatch
 
 **Usage Examples**:
 
 ```bash
-# Auto-detect tutorial from PR changes
+# Auto-detect recipe from PR changes
 /generate-scripts
 
-# Specify tutorial explicitly
-/generate-scripts slug=my-tutorial
+# Specify recipe explicitly
+/generate-scripts slug=my-recipe
 
 # Force generation regardless of version changes
-/generate-scripts slug=my-tutorial force=1
+/generate-scripts slug=my-recipe force=1
 
 # Generate and create a GitHub release
-/generate-release slug=my-tutorial
+/generate-release slug=my-recipe
 
 # Override versions.yml key
-/generate-scripts slug=my-tutorial key=my_custom_key
+/generate-scripts slug=my-recipe key=my_custom_key
 ```
 
 **Key Differences**:
@@ -147,18 +147,18 @@ graph TD
 - Workflow dispatch (manual or from command-generate-scripts.yml)
 - Push to master/dev with changes to `versions.yml`
 
-**Purpose**: Generates tutorial-specific scripts with pinned versions and optionally creates releases
+**Purpose**: Generates recipe-specific scripts with pinned versions and optionally creates releases
 
 **Inputs**:
-- `tutorial_key` (default: zero_to_hero) - Key in versions.yml
-- `tutorial_slug` (default: zero-to-hero) - Tutorial folder name
+- `recipe_key` (default: zero_to_hero) - Key in versions.yml
+- `recipe_slug` (default: zero-to-hero) - Recipe folder name
 - `create_release` (default: false) - Whether to create GitHub release
 - `force_generation` (default: false) - Force generation without version check
 
 **How it works**:
 
 1. **Version Change Detection**:
-   - Reads `versions.yml` for the specified tutorial_key
+   - Reads `versions.yml` for the specified recipe_key
    - Compares with previous commit to detect changes in:
      - `rust` version
      - `chain_spec_builder` version
@@ -171,7 +171,7 @@ graph TD
    - Caches build artifacts
 
 3. **Script Generation**:
-   - Creates `tutorials/<slug>/scripts/` directory
+   - Creates `recipes/<slug>/scripts/` directory
    - Generates pinned setup scripts:
      ```bash
      setup-rust.sh                       # Rust version setup
@@ -188,8 +188,8 @@ graph TD
    - Uses `github-actions[bot]` as committer
 
 5. **Tagging**:
-   - Creates tutorial-specific tag: `tutorial/<slug>/vYYYYMMDD-HHMMSS`
-   - If tag exists, appends short commit SHA: `tutorial/<slug>/vYYYYMMDD-HHMMSS-abc1234`
+   - Creates recipe-specific tag: `recipe/<slug>/vYYYYMMDD-HHMMSS`
+   - If tag exists, appends short commit SHA: `recipe/<slug>/vYYYYMMDD-HHMMSS-abc1234`
    - Tag message includes all resolved versions
 
 6. **Release** (optional):
@@ -202,23 +202,23 @@ graph TD
 - `omni-node-version` - Resolved omni-node version
 - `scripts-committed` - Whether scripts were committed
 - `commit-sha` - Commit SHA of the script commit
-- `tutorial-slug` - Tutorial slug processed
+- `recipe-slug` - Recipe slug processed
 
-### 3. test-tutorials.yml
+### 3. test-recipes.yml
 
-**Trigger**: Pull request with changes to `tutorials/**` (excluding `scripts/`)
+**Trigger**: Pull request with changes to `recipes/**` (excluding `scripts/`)
 
-**Purpose**: Runs tests for newly added tutorials
+**Purpose**: Runs tests for newly added recipes
 
 **How it works**:
 
-1. **Find Changed Tutorials**:
+1. **Find Changed Recipes**:
    - Compares PR base and head commits
-   - Identifies NEWLY ADDED tutorial folders (not modifications)
-   - Returns list of tutorial slugs to test
+   - Identifies NEWLY ADDED recipe folders (not modifications)
+   - Returns list of recipe slugs to test
 
-2. **Read Tutorial Requirements**:
-   - Reads `tutorial.config.yml` for each tutorial
+2. **Read Recipe Requirements**:
+   - Reads `recipe.config.yml` for each recipe
    - Checks `needs_node` field to determine if node setup is required
 
 3. **Setup Environment** (if `needs_node: true`):
@@ -230,7 +230,7 @@ graph TD
    - Starts polkadot-omni-node in background
 
 4. **Run Tests**:
-   - Installs tutorial npm dependencies
+   - Installs recipe npm dependencies
    - Runs `npm run test --silent`
    - Tests should implement fast-skip pattern if no node available
 
@@ -238,7 +238,7 @@ graph TD
    - Tests pass
    - OR tests skip gracefully (fast-skip pattern)
 
-**Strategy**: Matrix strategy - runs tests for each detected tutorial in parallel
+**Strategy**: Matrix strategy - runs tests for each detected recipe in parallel
 
 ### 4. build-kitchensink-parachain.yml
 
@@ -247,11 +247,11 @@ graph TD
 **Purpose**: Build the kitchensink parachain runtime with specific Rust version
 
 **Inputs**:
-- `tutorial_key` - versions.yml key to read Rust version from
+- `recipe_key` - versions.yml key to read Rust version from
 
 **How it works**:
 
-1. Reads Rust version from `versions.yml` for the specified tutorial
+1. Reads Rust version from `versions.yml` for the specified recipe
 2. Sets up Rust toolchain with that version
 3. Adds wasm32-unknown-unknown target
 4. Builds kitchensink-parachain with `cargo build --release`
@@ -267,7 +267,7 @@ graph LR
     B --> C[generate-scripts.yml]
     C --> D[build-kitchensink-parachain.yml]
 
-    E[PR with tutorial changes] --> F[test-tutorials.yml]
+    E[PR with recipe changes] --> F[test-recipes.yml]
     F --> G[Uses kitchensink build steps]
 
     H[Push to master<br/>versions.yml changes] --> C
@@ -287,7 +287,7 @@ versions:
   chain_spec_builder: "0.20.0"
   polkadot_omni_node: "0.4.1"
 
-# Tutorial-specific overrides (optional)
+# Recipe-specific overrides (optional)
 zero_to_hero:
   rust: "1.86.0"
   chain_spec_builder: "0.20.0"
@@ -295,7 +295,7 @@ zero_to_hero:
 ```
 
 Workflows resolve versions with this priority:
-1. Tutorial-specific version (`<tutorial_key>.<tool>`)
+1. Recipe-specific version (`<recipe_key>.<tool>`)
 2. Global version (`versions.<tool>`)
 
 ## Best Practices
@@ -304,7 +304,7 @@ Workflows resolve versions with this priority:
 
 1. **Don't manually run workflows** - They're triggered automatically or via PR comments
 2. **Use fast-skip pattern in tests** - Always check for node availability
-3. **Keep tutorial.config.yml accurate** - CI relies on this metadata
+3. **Keep recipe.config.yml accurate** - CI relies on this metadata
 4. **Test locally first** - Use `npm test` before pushing
 
 ### For Maintainers

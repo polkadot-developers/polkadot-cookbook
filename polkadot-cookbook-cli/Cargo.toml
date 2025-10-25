@@ -6,11 +6,11 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "CLI wrapper for Polkadot Cookbook Core library"
-keywords = ["polkadot", "substrate", "blockchain", "tutorial", "cli"]
+keywords = ["polkadot", "substrate", "blockchain", "recipe", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
-name = "create-tutorial"
+name = "create-recipe"
 path = "src/main.rs"
 
 [dependencies]
