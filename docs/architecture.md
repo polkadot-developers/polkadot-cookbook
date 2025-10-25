@@ -23,6 +23,7 @@ The core library provides the business logic for tutorial creation and managemen
 - `templates` - Template generation for scaffolding
 - `scaffold` - Project creation and directory structure
 - `bootstrap` - Test environment setup (npm, dependencies, config files)
+- `version` - Version management for tutorial dependencies (see [VERSION_MANAGEMENT.md](../polkadot-cookbook-core/VERSION_MANAGEMENT.md))
 
 ### Features
 
@@ -61,32 +62,53 @@ For more information, see [`polkadot-cookbook-core/README.md`](../polkadot-cookb
 
 A thin CLI wrapper around the core library that provides a command-line interface with interactive prompts.
 
+### Commands
+
+- `create` - Create a new tutorial with interactive prompts
+- `versions` - View and manage dependency versions
+
 ### Features
 
-- Interactive prompts with validation
+- Interactive prompts with validation (using cliclack)
 - Beautiful colored output and spinners
 - Progress indicators
 - Error handling with helpful messages
 - Command-line flags for customization
 - Non-interactive mode for CI/CD
+- CI-friendly output formats
 
 ### Usage
 
 ```bash
-# Interactive mode (prompts for options)
-cargo run --package polkadot-cookbook-cli
+# Create tutorial - Interactive mode (prompts for options)
+create-tutorial create
 
 # Create with slug
-cargo run --package polkadot-cookbook-cli -- my-tutorial
+create-tutorial create my-tutorial
 
 # With options
-cargo run --package polkadot-cookbook-cli -- my-tutorial --skip-install --no-git
+create-tutorial create my-tutorial --skip-install --no-git
 
 # Non-interactive mode for CI/CD
-cargo run --package polkadot-cookbook-cli -- --non-interactive my-tutorial
+create-tutorial create --non-interactive my-tutorial
+
+# View global dependency versions
+create-tutorial versions
+
+# View tutorial-specific versions
+create-tutorial versions my-tutorial
+
+# Show version sources (global vs tutorial override)
+create-tutorial versions my-tutorial --show-source
+
+# CI-friendly output (KEY=VALUE format)
+create-tutorial versions my-tutorial --ci
+
+# Validate version keys
+create-tutorial versions --validate
 
 # Show help
-cargo run --package polkadot-cookbook-cli -- --help
+create-tutorial --help
 ```
 
 ## Why This Architecture?
