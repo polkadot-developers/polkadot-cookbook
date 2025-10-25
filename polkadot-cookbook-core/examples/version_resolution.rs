@@ -8,6 +8,7 @@
 //! cargo run --example version_resolution
 //! ```
 
+use cliclack::{intro, note, outro, spinner};
 use polkadot_cookbook_core::version::{
     load_global_versions, resolve_tutorial_versions, VersionSource,
 };
@@ -18,31 +19,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logging
     tracing_subscriber::fmt().with_env_filter("info").init();
 
-    println!("=== Polkadot Cookbook Version Resolution Example ===\n");
+    intro("📦 Polkadot Cookbook Version Resolution Example")?;
 
     // Example 1: Load global versions only
-    println!("1. Loading global versions...");
+    let sp = spinner();
+    sp.start("Loading global versions...");
     let repo_root = Path::new(".");
 
     match load_global_versions(repo_root).await {
         Ok(global) => {
-            println!("   ✓ Global versions loaded:");
+            sp.stop("✅ Global versions loaded");
+
+            let mut output = String::new();
             for (name, version) in &global.versions {
-                println!("     - {}: {}", name, version);
+                output.push_str(&format!("{}: {}\n", name, version));
             }
+            note("Global Versions", output.trim_end())?;
         }
         Err(e) => {
-            println!("   ✗ Failed to load global versions: {}", e);
-            println!("   (This is expected if not run from the repository root)");
+            sp.stop(format!("⚠️  Failed to load: {}", e));
+            note(
+                "Note",
+                "This is expected if not run from the repository root",
+            )?;
         }
     }
 
-    println!();
-
     // Example 2: Resolve versions for a specific tutorial
-    println!("2. Resolving versions for a tutorial...");
-
-    // Check if there are any tutorials
     let tutorials_dir = repo_root.join("tutorials");
     if tutorials_dir.exists() {
         if let Ok(mut entries) = tokio::fs::read_dir(&tutorials_dir).await {
@@ -50,36 +53,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let tutorial_name = entry.file_name();
                 let tutorial_slug = tutorial_name.to_string_lossy().to_string();
 
-                println!("   Checking tutorial: {}", tutorial_slug);
+                let sp = spinner();
+                sp.start(format!("Resolving versions for '{}'...", tutorial_slug));
 
                 match resolve_tutorial_versions(repo_root, &tutorial_slug).await {
                     Ok(resolved) => {
-                        println!("   ✓ Resolved versions:");
+                        sp.stop("✅ Versions resolved with overrides");
+
+                        let mut output = String::new();
                         for (name, version) in &resolved.versions {
                             let source = match resolved.get_source(name) {
                                 Some(VersionSource::Global) => "global",
-                                Some(VersionSource::Tutorial) => "tutorial",
+                                Some(VersionSource::Tutorial) => "tutorial override",
                                 None => "unknown",
                             };
-                            println!("     - {}: {} (from {})", name, version, source);
+                            output.push_str(&format!("{}: {} ({})\n", name, version, source));
                         }
+                        note(format!("Tutorial: {}", tutorial_slug), output.trim_end())?;
                     }
                     Err(e) => {
-                        println!("   ✗ Failed to resolve versions: {}", e);
+                        sp.stop(format!("⚠️  Failed: {}", e));
                     }
                 }
             } else {
-                println!("   No tutorials found in {}", tutorials_dir.display());
+                note(
+                    "Note",
+                    format!("No tutorials found in {}", tutorials_dir.display()),
+                )?;
             }
         }
     } else {
-        println!(
-            "   Tutorials directory not found: {}",
-            tutorials_dir.display()
-        );
+        note(
+            "Note",
+            format!("Tutorials directory not found: {}", tutorials_dir.display()),
+        )?;
     }
 
-    println!("\n=== Example Complete ===");
+    outro("🎉 Example complete! Check the CLI for more features.")?;
 
     Ok(())
 }
