@@ -1,0 +1,10 @@
+# Tutorial-specific version overrides for testing workflow
+# This tutorial overrides some versions to test the SDK version resolution
+
+versions:
+  rust: "1.86"
+  polkadot_omni_node: "0.6.0"
+  chain_spec_builder: "11.0.0"
+
+metadata:
+  schema_version: "1.0"

@@ -13,16 +13,17 @@ The Polkadot Cookbook uses a modular SDK architecture consisting of two main com
 
 **Package**: `polkadot-cookbook-core`
 
-The core library provides the business logic for tutorial creation and management. It can be used programmatically by other tools.
+The core library provides the business logic for recipe creation and management. It can be used programmatically by other tools.
 
 ### Key Modules
 
-- `config` - Type-safe project and tutorial configuration
+- `config` - Type-safe project and recipe configuration
 - `error` - Comprehensive error types with serialization support
 - `git` - Async git operations
 - `templates` - Template generation for scaffolding
 - `scaffold` - Project creation and directory structure
 - `bootstrap` - Test environment setup (npm, dependencies, config files)
+- `version` - Version management for recipe dependencies (see [VERSION_MANAGEMENT.md](../polkadot-cookbook-core/VERSION_MANAGEMENT.md))
 
 ### Features
 
@@ -40,8 +41,8 @@ use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = ProjectConfig::new("my-tutorial")
-        .with_destination(PathBuf::from("./tutorials"))
+    let config = ProjectConfig::new("my-recipe")
+        .with_destination(PathBuf::from("./recipes"))
         .with_git_init(true)
         .with_skip_install(false);
 
@@ -61,32 +62,53 @@ For more information, see [`polkadot-cookbook-core/README.md`](../polkadot-cookb
 
 A thin CLI wrapper around the core library that provides a command-line interface with interactive prompts.
 
+### Commands
+
+- `create` - Create a new recipe with interactive prompts
+- `versions` - View and manage dependency versions
+
 ### Features
 
-- Interactive prompts with validation
+- Interactive prompts with validation (using cliclack)
 - Beautiful colored output and spinners
 - Progress indicators
 - Error handling with helpful messages
 - Command-line flags for customization
 - Non-interactive mode for CI/CD
+- CI-friendly output formats
 
 ### Usage
 
 ```bash
-# Interactive mode (prompts for options)
-cargo run --package polkadot-cookbook-cli
+# Create recipe - Interactive mode (prompts for options)
+create-recipe create
 
 # Create with slug
-cargo run --package polkadot-cookbook-cli -- my-tutorial
+create-recipe create my-recipe
 
 # With options
-cargo run --package polkadot-cookbook-cli -- my-tutorial --skip-install --no-git
+create-recipe create my-recipe --skip-install --no-git
 
 # Non-interactive mode for CI/CD
-cargo run --package polkadot-cookbook-cli -- --non-interactive my-tutorial
+create-recipe create --non-interactive my-recipe
+
+# View global dependency versions
+create-recipe versions
+
+# View recipe-specific versions
+create-recipe versions my-recipe
+
+# Show version sources (global vs recipe override)
+create-recipe versions my-recipe --show-source
+
+# CI-friendly output (KEY=VALUE format)
+create-recipe versions my-recipe --ci
+
+# Validate version keys
+create-recipe versions --validate
 
 # Show help
-cargo run --package polkadot-cookbook-cli -- --help
+create-recipe --help
 ```
 
 ## Why This Architecture?
@@ -101,7 +123,7 @@ The SDK architecture provides several benefits:
 ### 2. Programmatic Access
 - Other tools can use the core library directly
 - IDE extensions can integrate the functionality
-- CI/CD pipelines can automate tutorial creation
+- CI/CD pipelines can automate recipe creation
 
 ### 3. Better Testing
 - Unit tests for business logic
@@ -115,7 +137,7 @@ The SDK architecture provides several benefits:
 
 ## Contributing to the SDK
 
-If you want to contribute to the SDK itself (not just tutorials):
+If you want to contribute to the SDK itself (not just recipes):
 
 ### Core Library Changes
 

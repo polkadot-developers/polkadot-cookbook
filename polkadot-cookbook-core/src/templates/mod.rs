@@ -1,13 +1,15 @@
-/// Template generation for project scaffolding
+/// Template generation for recipe scaffolding
 pub mod justfile;
 pub mod readme;
 pub mod test;
-pub mod tutorial_yml;
+pub mod recipe_yml;
+pub mod versions_yml;
 
 pub use justfile::JustfileTemplate;
 pub use readme::ReadmeTemplate;
 pub use test::TestTemplate;
-pub use tutorial_yml::TutorialYmlTemplate;
+pub use recipe_yml::RecipeYmlTemplate;
+pub use versions_yml::VersionsYmlTemplate;
 
 /// Template trait for all template generators
 pub trait Template {
@@ -31,13 +33,13 @@ pub fn list_available_templates() -> Vec<TemplateInfo> {
     vec![
         TemplateInfo {
             id: "sdk".to_string(),
-            name: "Polkadot SDK Tutorial".to_string(),
-            description: "Template for Polkadot SDK tutorials with test setup".to_string(),
+            name: "Polkadot SDK Recipe".to_string(),
+            description: "Template for Polkadot SDK recipes with test setup".to_string(),
         },
         TemplateInfo {
             id: "contracts".to_string(),
-            name: "Smart Contracts Tutorial".to_string(),
-            description: "Template for smart contracts tutorials".to_string(),
+            name: "Smart Contracts Recipe".to_string(),
+            description: "Template for smart contracts recipes".to_string(),
         },
     ]
 }

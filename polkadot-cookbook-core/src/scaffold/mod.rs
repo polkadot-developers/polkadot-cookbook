@@ -1,12 +1,13 @@
-//! Project scaffolding module
+//! Recipe scaffolding module
 //!
-//! This module provides functionality for creating new tutorial projects,
+//! This module provides functionality for creating new recipes,
 //! including directory structure, template files, and initial configuration.
 
 use crate::config::{ProjectConfig, ProjectInfo};
 use crate::error::{CookbookError, Result};
 use crate::templates::{
-    JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate,
+    JustfileTemplate, ReadmeTemplate, Template, TestTemplate, RecipeYmlTemplate,
+    VersionsYmlTemplate,
 };
 use std::path::Path;
 use tracing::{debug, info, warn};
@@ -160,17 +161,22 @@ impl Scaffold {
         )
         .await?;
 
-        // Generate tutorial.config.yml
-        let tutorial_yml_content = TutorialYmlTemplate::new(&config.slug, &config.title).generate();
+        // Generate recipe.config.yml
+        let recipe_yml_content = RecipeYmlTemplate::new(&config.slug, &config.title).generate();
         self.write_file(
-            &project_path.join("tutorial.config.yml"),
-            &tutorial_yml_content,
+            &project_path.join("recipe.config.yml"),
+            &recipe_yml_content,
         )
         .await?;
 
         // Generate README.md
         let readme_content = ReadmeTemplate::new(&config.slug).generate();
         self.write_file(&project_path.join("README.md"), &readme_content)
+            .await?;
+
+        // Generate versions.yml
+        let versions_yml_content = VersionsYmlTemplate.generate();
+        self.write_file(&project_path.join("versions.yml"), &versions_yml_content)
             .await?;
 
         // Create .gitkeep in scripts/
