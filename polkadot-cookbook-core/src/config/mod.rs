@@ -1,26 +1,26 @@
-/// Configuration management for Polkadot Cookbook projects
+/// Configuration management for Polkadot Cookbook recipes
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-pub mod tutorial;
+pub mod recipe;
 pub mod validation;
 
-pub use tutorial::{TutorialConfig, TutorialType};
+pub use recipe::{RecipeConfig, RecipeType};
 pub use validation::{
     is_valid_slug, slug_to_title, validate_project_config, validate_slug,
     validate_working_directory,
 };
 
-/// Configuration for creating a new project
+/// Configuration for creating a new recipe
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectConfig {
-    /// Project slug (lowercase, dash-separated)
+    /// Recipe slug (lowercase, dash-separated)
     pub slug: String,
 
-    /// Human-readable project title
+    /// Human-readable recipe title
     pub title: String,
 
-    /// Destination directory (usually "tutorials/")
+    /// Destination directory (usually "recipes/")
     pub destination: PathBuf,
 
     /// Whether to initialize git repository
@@ -29,26 +29,26 @@ pub struct ProjectConfig {
     /// Whether to skip npm install
     pub skip_install: bool,
 
-    /// Tutorial type
-    pub tutorial_type: TutorialType,
+    /// Recipe type
+    pub recipe_type: RecipeType,
 
-    /// Tutorial category
+    /// Recipe category
     pub category: String,
 
-    /// Whether the tutorial needs a running node
+    /// Whether the recipe needs a running node
     pub needs_node: bool,
 }
 
 impl ProjectConfig {
-    /// Create a new project configuration with defaults
+    /// Create a new recipe configuration with defaults
     ///
     /// # Example
     /// ```
     /// use polkadot_cookbook_core::config::ProjectConfig;
     ///
-    /// let config = ProjectConfig::new("my-tutorial");
-    /// assert_eq!(config.slug, "my-tutorial");
-    /// assert_eq!(config.title, "My Tutorial");
+    /// let config = ProjectConfig::new("my-recipe");
+    /// assert_eq!(config.slug, "my-recipe");
+    /// assert_eq!(config.title, "My Recipe");
     /// ```
     pub fn new(slug: impl Into<String>) -> Self {
         let slug = slug.into();
@@ -57,10 +57,10 @@ impl ProjectConfig {
         Self {
             slug,
             title,
-            destination: PathBuf::from("tutorials"),
+            destination: PathBuf::from("recipes"),
             git_init: true,
             skip_install: false,
-            tutorial_type: TutorialType::Sdk,
+            recipe_type: RecipeType::Sdk,
             category: "polkadot-sdk-cookbook".to_string(),
             needs_node: true,
         }
@@ -84,13 +84,13 @@ impl ProjectConfig {
         self
     }
 
-    /// Set tutorial type
-    pub fn with_tutorial_type(mut self, tutorial_type: TutorialType) -> Self {
-        self.tutorial_type = tutorial_type;
+    /// Set recipe type
+    pub fn with_recipe_type(mut self, recipe_type: RecipeType) -> Self {
+        self.recipe_type = recipe_type;
         self
     }
 
-    /// Set tutorial category
+    /// Set recipe category
     pub fn with_category(mut self, category: impl Into<String>) -> Self {
         self.category = category.into();
         self
@@ -130,39 +130,39 @@ mod tests {
 
     #[test]
     fn test_project_config_new() {
-        let config = ProjectConfig::new("my-tutorial");
-        assert_eq!(config.slug, "my-tutorial");
-        assert_eq!(config.title, "My Tutorial");
-        assert_eq!(config.destination, PathBuf::from("tutorials"));
+        let config = ProjectConfig::new("my-recipe");
+        assert_eq!(config.slug, "my-recipe");
+        assert_eq!(config.title, "My Recipe");
+        assert_eq!(config.destination, PathBuf::from("recipes"));
         assert!(config.git_init);
         assert!(!config.skip_install);
     }
 
     #[test]
     fn test_project_config_builder() {
-        let config = ProjectConfig::new("test-project")
-            .with_destination(PathBuf::from("/tmp/projects"))
+        let config = ProjectConfig::new("test-recipe")
+            .with_destination(PathBuf::from("/tmp/recipes"))
             .with_git_init(false)
             .with_skip_install(true)
-            .with_tutorial_type(TutorialType::Contracts)
+            .with_recipe_type(RecipeType::Contracts)
             .with_category("advanced")
             .with_needs_node(false);
 
-        assert_eq!(config.slug, "test-project");
-        assert_eq!(config.destination, PathBuf::from("/tmp/projects"));
+        assert_eq!(config.slug, "test-recipe");
+        assert_eq!(config.destination, PathBuf::from("/tmp/recipes"));
         assert!(!config.git_init);
         assert!(config.skip_install);
-        assert!(matches!(config.tutorial_type, TutorialType::Contracts));
+        assert!(matches!(config.recipe_type, RecipeType::Contracts));
         assert_eq!(config.category, "advanced");
         assert!(!config.needs_node);
     }
 
     #[test]
     fn test_project_path() {
-        let config = ProjectConfig::new("my-tutorial");
+        let config = ProjectConfig::new("my-recipe");
         assert_eq!(
             config.project_path(),
-            PathBuf::from("tutorials/my-tutorial")
+            PathBuf::from("recipes/my-recipe")
         );
     }
 }

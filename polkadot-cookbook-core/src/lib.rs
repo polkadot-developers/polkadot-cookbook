@@ -8,6 +8,7 @@
 //! - **Async-first API**: All I/O operations are async using Tokio
 //! - **Structured Error Handling**: Comprehensive error types with serialization support
 //! - **Configuration Management**: Type-safe project and tutorial configuration
+//! - **Version Management**: Load and merge global and tutorial-specific version configurations
 //! - **Template Generation**: Reusable templates for project scaffolding
 //! - **Git Integration**: Automated git operations for project workflows
 //! - **Validation**: Input validation and project configuration checks
@@ -66,14 +67,14 @@
 //! ```
 
 // Re-export commonly used types
-pub use config::{ProjectConfig, ProjectInfo, TutorialConfig, TutorialType};
+pub use config::{ProjectConfig, ProjectInfo, RecipeConfig, RecipeType};
 pub use error::{CookbookError, Result};
 pub use scaffold::{Bootstrap, Scaffold};
 
 /// Error types and result aliases
 pub mod error;
 
-/// Configuration management for projects and tutorials
+/// Configuration management for recipes
 pub mod config;
 
 /// Git operations wrapper
@@ -84,6 +85,9 @@ pub mod templates;
 
 /// Project scaffolding logic
 pub mod scaffold;
+
+/// Version management for dependencies
+pub mod version;
 
 /// File system operations (TODO: to be implemented)
 #[cfg(feature = "fs")]

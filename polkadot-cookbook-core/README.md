@@ -1,151 +1,325 @@
 # Polkadot Cookbook Core
 
-Core library for Polkadot Cookbook - programmatic access to tutorial scaffolding, configuration management, and testing utilities.
+SDK library for programmatic recipe creation and management.
 
 ## Overview
 
-`polkadot-cookbook-core` is a Rust library that provides the business logic for the Polkadot Cookbook project. It enables programmatic interaction with tutorial creation, testing, and management functionality.
+`polkadot-cookbook-core` is a Rust library that provides the business logic for creating and managing Polkadot Cookbook recipes. It can be used programmatically by other tools, CLIs, or IDE extensions.
 
-## Features
-
-- **Async-first API**: All I/O operations are async using Tokio
-- **Structured Error Handling**: Comprehensive error types with serialization support
-- **Configuration Management**: Type-safe project and tutorial configuration
-- **Template Generation**: Reusable templates for project scaffolding
-- **Git Integration**: Automated git operations for project workflows
-- **Validation**: Input validation and project configuration checks
-- **Observability**: Structured logging with the `tracing` crate
+**Key Features:**
+- Recipe scaffolding with templates
+- Dependency version management
+- Git operations (branch creation, commits)
+- npm/Node.js setup and installation
+- Test environment configuration
+- Async-first API using Tokio
 
 ## Installation
 
-Add this to your `Cargo.toml`:
+Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-polkadot-cookbook-core = "0.1.0"
-tokio = { version = "1.43", features = ["full"] }
+polkadot-cookbook-core = { path = "../polkadot-cookbook-core" }
+tokio = { version = "1", features = ["full"] }
 ```
 
-## Usage
+## Quick Start
 
-### Creating a New Project
+### Create a Recipe
 
 ```rust
-use polkadot_cookbook_core::{
-    config::ProjectConfig,
-    scaffold::Scaffold,
-};
+use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create project configuration
-    let config = ProjectConfig::new("my-tutorial")
-        .with_destination(PathBuf::from("./tutorials"))
-        .with_git_init(true);
+    // Configure the recipe
+    let config = ProjectConfig::new("my-recipe")
+        .with_destination(PathBuf::from("./recipes"))
+        .with_git_init(true)
+        .with_skip_install(false);
 
-    // Scaffold the project
+    // Create the recipe
     let scaffold = Scaffold::new();
     let project_info = scaffold.create_project(config).await?;
 
-    println!("Created project: {}", project_info.slug);
-    println!("  Path: {}", project_info.project_path.display());
+    println!("Created: {}", project_info.project_path.display());
+    println!("Branch: {}", project_info.git_branch.unwrap());
 
     Ok(())
 }
 ```
 
-### Validating Configuration
+### Manage Versions
 
 ```rust
-use polkadot_cookbook_core::config::{ProjectConfig, validate_project_config};
+use polkadot_cookbook_core::version::{
+    load_global_versions,
+    resolve_recipe_versions,
+    VersionSource,
+};
+use std::path::Path;
 
-let config = ProjectConfig::new("my-tutorial");
-match validate_project_config(&config) {
-    Ok(warnings) => {
-        for warning in warnings {
-            println!("Warning: {}", warning);
-        }
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let repo_root = Path::new(".");
+
+    // Load global versions
+    let global = load_global_versions(repo_root).await?;
+    for (name, version) in &global.versions {
+        println!("{}: {}", name, version);
     }
-    Err(e) => {
-        eprintln!("Invalid configuration: {}", e);
+
+    // Resolve recipe-specific versions
+    let resolved = resolve_recipe_versions(repo_root, "zero-to-hero").await?;
+    for (name, version) in &resolved.versions {
+        let source = match resolved.get_source(name) {
+            Some(VersionSource::Global) => "global",
+            Some(VersionSource::Recipe) => "recipe",
+            None => "unknown",
+        };
+        println!("{}: {} ({})", name, version, source);
     }
+
+    Ok(())
 }
 ```
 
-### Querying Available Templates
+## API Overview
+
+### Modules
+
+- **`config`** - Type-safe project and recipe configuration
+- **`error`** - Comprehensive error types with serialization support
+- **`git`** - Async git operations using git2
+- **`templates`** - Template generation for scaffolding
+- **`scaffold`** - Project creation and directory structure
+- **`bootstrap`** - Test environment setup (npm, dependencies, config files)
+- **`version`** - Version management for recipe dependencies
+
+### Key Types
+
+#### `Scaffold`
+
+Main entry point for creating recipes.
 
 ```rust
-use polkadot_cookbook_core::templates::list_available_templates;
+pub struct Scaffold { /* ... */ }
 
-let templates = list_available_templates();
-for template in templates {
-    println!("{}: {}", template.name, template.description);
+impl Scaffold {
+    pub fn new() -> Self;
+    pub async fn create_project(&self, config: ProjectConfig) -> Result<ProjectInfo>;
 }
 ```
 
-### Error Handling
+#### `ProjectConfig`
+
+Configuration for recipe creation.
+
+```rust
+pub struct ProjectConfig {
+    pub slug: String,
+    pub destination: PathBuf,
+    pub git_init: bool,
+    pub skip_install: bool,
+}
+
+impl ProjectConfig {
+    pub fn new(slug: &str) -> Self;
+    pub fn with_destination(self, path: PathBuf) -> Self;
+    pub fn with_git_init(self, enabled: bool) -> Self;
+    pub fn with_skip_install(self, skip: bool) -> Self;
+}
+```
+
+#### `ProjectInfo`
+
+Information about the created recipe.
+
+```rust
+pub struct ProjectInfo {
+    pub slug: String,
+    pub title: String,
+    pub project_path: PathBuf,
+    pub git_branch: Option<String>,
+}
+```
+
+### Version Management
+
+#### Types
+
+```rust
+pub struct ResolvedVersions {
+    pub versions: HashMap<String, String>,
+    sources: HashMap<String, VersionSource>,
+}
+
+pub enum VersionSource {
+    Global,    // From global versions.yml
+    Recipe,  // From recipe versions.yml
+}
+```
+
+#### Functions
+
+```rust
+// Load global versions
+pub async fn load_global_versions(repo_root: &Path) -> Result<ResolvedVersions>;
+
+// Resolve versions for a specific recipe
+pub async fn resolve_recipe_versions(
+    repo_root: &Path,
+    recipe_slug: &str
+) -> Result<ResolvedVersions>;
+
+// Get version source
+impl ResolvedVersions {
+    pub fn get(&self, name: &str) -> Option<&String>;
+    pub fn get_source(&self, name: &str) -> Option<&VersionSource>;
+}
+```
+
+## Examples
+
+Run examples to see the SDK in action:
+
+```bash
+# Version resolution example
+cargo run --package polkadot-cookbook-core --example version_resolution
+
+# Recipe creation example (coming soon)
+cargo run --package polkadot-cookbook-core --example create_recipe
+```
+
+## Version Management
+
+The SDK provides a powerful version management system that allows recipes to specify dependency versions while inheriting defaults from a global configuration.
+
+### Global Versions
+
+Defined in `versions.yml` at repository root:
+
+```yaml
+versions:
+  rust: "1.86"
+  polkadot_omni_node: "0.5.0"
+  chain_spec_builder: "10.0.0"
+  frame_omni_bencher: "0.13.0"
+
+metadata:
+  schema_version: "1.0"
+```
+
+### Recipe Overrides
+
+Each recipe can override versions in `recipes/<slug>/versions.yml`:
+
+```yaml
+versions:
+  polkadot_omni_node: "0.6.0"  # Override global version
+
+metadata:
+  schema_version: "1.0"
+```
+
+### Resolution
+
+The SDK merges global and recipe versions, with recipe versions taking precedence:
+
+```rust
+let resolved = resolve_recipe_versions(repo_root, "my-recipe").await?;
+
+// Result:
+// - rust: "1.86" (from global)
+// - polkadot_omni_node: "0.6.0" (from recipe)
+// - chain_spec_builder: "10.0.0" (from global)
+// - frame_omni_bencher: "0.13.0" (from global)
+```
+
+For complete version management documentation, see [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md).
+
+## Architecture
+
+### Design Principles
+
+1. **Async-first** - All I/O operations are async using Tokio
+2. **No UI dependencies** - Pure library, no terminal output
+3. **Structured logging** - Uses `tracing` for observability
+4. **Comprehensive errors** - Serializable error types for tool integration
+5. **Testable** - High test coverage, isolated unit tests
+
+### Module Structure
+
+```
+polkadot-cookbook-core/
+├── src/
+│   ├── lib.rs              # Public API
+│   ├── config/             # Configuration types
+│   ├── error/              # Error types
+│   ├── git/                # Git operations
+│   ├── templates/          # File templates
+│   ├── scaffold/           # Scaffolding logic
+│   │   ├── mod.rs         # Main scaffold
+│   │   └── bootstrap.rs   # npm/test setup
+│   └── version/            # Version management
+│       ├── mod.rs         # Public API
+│       ├── types.rs       # Data structures
+│       ├── loader.rs      # YAML loading
+│       └── resolver.rs    # Version merging
+├── examples/               # Usage examples
+└── tests/                  # Integration tests
+```
+
+## Testing
+
+```bash
+# Run all tests
+cargo test --package polkadot-cookbook-core
+
+# Run with logging
+RUST_LOG=debug cargo test --package polkadot-cookbook-core
+
+# Run specific test
+cargo test --package polkadot-cookbook-core version::
+```
+
+## Error Handling
+
+The SDK uses a comprehensive error type:
 
 ```rust
 use polkadot_cookbook_core::error::CookbookError;
 
-match some_operation().await {
-    Ok(result) => println!("Success: {:?}", result),
-    Err(CookbookError::ValidationError(msg)) => {
-        eprintln!("Validation failed: {}", msg);
+match scaffold.create_project(config).await {
+    Ok(info) => println!("Created: {}", info.project_path.display()),
+    Err(CookbookError::FileSystemError { message, path }) => {
+        eprintln!("File error: {} ({:?})", message, path);
     }
-    Err(CookbookError::GitError(msg)) => {
-        eprintln!("Git operation failed: {}", msg);
+    Err(CookbookError::ConfigError(msg)) => {
+        eprintln!("Config error: {}", msg);
     }
-    Err(e) => {
-        eprintln!("Error: {}", e);
-    }
+    Err(e) => eprintln!("Error: {}", e),
 }
-```
-
-## Architecture
-
-The library is organized into the following modules:
-
-- **config**: Project and tutorial configuration management
-- **error**: Structured error types with serialization support
-- **git**: Git operations wrapper
-- **templates**: Template generation for scaffolding
-- **scaffold**: Project scaffolding logic
-- **fs**: File system operations
-- **test_runner**: Test execution engine
-- **query**: Discovery and inspection APIs
-
-## Error Types
-
-All errors implement `Serialize` and `Deserialize` for easy integration with external tools:
-
-```rust
-pub enum CookbookError {
-    GitError(String),
-    ConfigError(String),
-    ScaffoldError(String),
-    TestError(String),
-    FileSystemError { message: String, path: Option<PathBuf> },
-    ValidationError(String),
-    // ... and more
-}
-```
-
-## Logging
-
-The library uses the `tracing` crate for structured logging. Configure logging in your application:
-
-```rust
-use tracing_subscriber;
-
-tracing_subscriber::fmt()
-    .with_env_filter("polkadot_cookbook_core=debug")
-    .init();
 ```
 
 ## Contributing
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for development guidelines.
+To contribute to the SDK:
+
+1. Follow [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
+2. Add documentation comments (`///`) for public APIs
+3. Write tests for new functionality
+4. Run `cargo fmt` and `cargo clippy` before committing
+
+See the [Contributing Guide](../CONTRIBUTING.md) for details.
+
+## Documentation
+
+- **API Docs** - Run `cargo doc --package polkadot-cookbook-core --open`
+- **Version Management** - See [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md)
+- **Examples** - Check `examples/` directory
 
 ## License
 

@@ -1,8 +1,8 @@
 ---
-name: Tutorial Proposal
-about: Propose a new tutorial for the Cookbook
-title: "Tutorial: <concise-title>"
-labels: tutorial, proposal
+name: Recipe Proposal
+about: Propose a new recipe for the Cookbook
+title: "Recipe: <concise-title>"
+labels: recipe, proposal
 assignees: ''
 ---
 
@@ -21,13 +21,13 @@ What will users learn? One or two sentences.
 
 ## Outline (high-level)
 
-- Key steps the tutorial will cover
+- Key steps the recipe will cover
 - Expected result (what users will have running at the end)
 
 ## Type
 
-- [ ] Polkadot Smart Contract tutorial
-- [ ] Polkadot SDK tutorial
+- [ ] Polkadot Smart Contract recipe
+- [ ] Polkadot SDK recipe
 
 ## Notes
 
