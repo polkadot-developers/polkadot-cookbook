@@ -57,6 +57,28 @@ We welcome suggestions for improvements:
 
 The primary way to contribute is by creating new recipes. See the [Recipe Contribution Workflow](#recipe-contribution-workflow) section below.
 
+#### Recipe Types: Tutorials vs Guides
+
+When creating a recipe, you must choose between two types using the `content_type` field in your README frontmatter:
+
+**Tutorial** (`content_type: tutorial`)
+- **Complete journey from zero to working solution**
+- Includes all setup steps (creating directories, cloning repos, installing dependencies)
+- Assumes minimal prior setup or existing project
+- Walks through every command and configuration needed
+- **Example**: "Build Your First Parachain" - starts with `mkdir my-parachain`, guides through setup, configuration, testing, and deployment
+
+**Guide** (`content_type: guide`)
+- **Focused, actionable steps for a specific task**
+- Assumes you already have a working project or environment
+- Skips basic setup, jumps straight to the task at hand
+- More concise, targeting experienced developers
+- **Example**: "Add XCM Support to Your Parachain" - assumes you have a parachain project, shows only the XCM-specific configuration and code
+
+**Key Question**: *Does the reader need to start from scratch?*
+- If **yes** → Tutorial
+- If **no** (they have an existing project) → Guide
+
 ### Improving Documentation
 
 Documentation improvements are always welcome:
@@ -255,9 +277,17 @@ Each recipe must follow this structure:
 
 #### README.md (Required)
 
-The recipe content in Markdown format:
+The recipe content in Markdown format with YAML frontmatter:
 
 ```markdown
+---
+title: Recipe Title
+description: Brief one-sentence description of what this recipe teaches
+difficulty: Beginner  # or Intermediate, Advanced
+content_type: tutorial  # or guide (see Recipe Types section)
+categories: Category1, Category2
+---
+
 # Recipe Title
 
 Brief description of what this recipe teaches.
