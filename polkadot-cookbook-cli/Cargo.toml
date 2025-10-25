@@ -23,6 +23,7 @@ tokio.workspace = true
 # CLI
 clap.workspace = true
 colored.workspace = true
+cliclack.workspace = true
 
 # Logging
 tracing.workspace = true
