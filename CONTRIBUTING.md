@@ -443,17 +443,17 @@ test(zero-to-hero): add integration tests for pallets
 
 For more detailed information, see:
 
-- **[Advanced Topics](docs/ADVANCED_TOPICS.md)** - Tutorial configuration, justfiles, and CI/CD pipeline details
-- **[SDK Architecture](docs/SDK_ARCHITECTURE.md)** - Core library and CLI architecture for contributors
+- **[Architecture](docs/architecture.md)** - System architecture and design
+- **[Testing Guide](docs/testing.md)** - Testing workflows and CI/CD
+- **[Workflows](docs/workflows.md)** - GitHub Actions and automation
 
 ## Getting Help
 
 ### Resources
 
-- **[Tutorial Creation Workflow](docs/TUTORIAL_WORKFLOW.md)** - Visual workflow diagram
-- **[Advanced Topics](docs/ADVANCED_TOPICS.md)** - Configuration and CI/CD details
-- **[SDK Architecture](docs/SDK_ARCHITECTURE.md)** - Core library and CLI documentation
 - **Example Tutorial**: `tutorials/zero-to-hero/`
+- **[CLI Documentation](polkadot-cookbook-cli/)** - CLI tool reference
+- **[SDK Documentation](polkadot-cookbook-core/)** - Core library API
 - **[Polkadot Documentation](https://docs.polkadot.com)**
 
 ### Communication
