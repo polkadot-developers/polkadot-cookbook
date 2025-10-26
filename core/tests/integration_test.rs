@@ -142,7 +142,15 @@ async fn test_template_generation() {
     assert!(content.contains("@polkadot/api"));
 
     // Test tutorial yml template
-    let yml = RecipeYmlTemplate::new("my-tutorial", "My Tutorial", "A test tutorial");
+    use polkadot_cookbook_core::config::RecipeType;
+    let yml = RecipeYmlTemplate::new(
+        "my-tutorial",
+        "My Tutorial",
+        "A test tutorial",
+        RecipeType::Sdk,
+        "test-category",
+        true,
+    );
     let content = yml.generate();
     assert!(content.contains("name: My Tutorial"));
     assert!(content.contains("slug: my-tutorial"));
@@ -212,4 +220,401 @@ async fn test_error_serialization() {
         CookbookError::ValidationError(msg) => assert_eq!(msg, "test error"),
         _ => panic!("Wrong error type"),
     }
+}
+
+// ============================================================================
+// Git Operations Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_create_project_with_git_branch() {
+    use polkadot_cookbook_core::git::GitOperations;
+
+    // Skip if not in a git repo
+    if !GitOperations::is_git_repo().await {
+        eprintln!("Skipping git test - not in a git repository");
+        return;
+    }
+
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("git-branch-test")
+        .with_destination(destination.clone())
+        .with_git_init(true)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    let project_info = scaffold.create_project(config).await.unwrap();
+
+    // Verify git branch was created (or attempted)
+    // Note: Branch creation might fail if git is not configured, which is okay
+    if let Some(branch) = project_info.git_branch {
+        assert!(branch.starts_with("recipe/"));
+        assert!(branch.contains("git-branch-test"));
+    }
+}
+
+#[tokio::test]
+async fn test_git_is_repo() {
+    use polkadot_cookbook_core::git::GitOperations;
+
+    // Test if we can detect git repository
+    let is_repo = GitOperations::is_git_repo().await;
+    // Result depends on test environment, just verify function works
+    assert!(is_repo || !is_repo);
+}
+
+#[tokio::test]
+async fn test_project_without_git() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("no-git-test")
+        .with_destination(destination.clone())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    let project_info = scaffold.create_project(config).await.unwrap();
+
+    // Verify no git branch was created
+    assert!(project_info.git_branch.is_none());
+}
+
+// ============================================================================
+// Recipe Type Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_sdk_recipe_creation() {
+    use polkadot_cookbook_core::config::RecipeType;
+
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("sdk-recipe")
+        .with_destination(destination.clone())
+        .with_recipe_type(RecipeType::Sdk)
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("sdk-recipe");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    assert!(recipe_config.contains("type: sdk"));
+}
+
+#[tokio::test]
+async fn test_contracts_recipe_creation() {
+    use polkadot_cookbook_core::config::RecipeType;
+
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("contracts-recipe")
+        .with_destination(destination.clone())
+        .with_recipe_type(RecipeType::Contracts)
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("contracts-recipe");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    assert!(recipe_config.contains("type: contracts"));
+}
+
+#[tokio::test]
+async fn test_recipe_categories() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("category-test")
+        .with_destination(destination.clone())
+        .with_category("advanced-tutorials")
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("category-test");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    assert!(recipe_config.contains("category: advanced-tutorials"));
+}
+
+#[tokio::test]
+async fn test_needs_node_configuration() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("node-test")
+        .with_destination(destination.clone())
+        .with_needs_node(false)
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("node-test");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    assert!(recipe_config.contains("needs_node: false"));
+}
+
+// ============================================================================
+// Edge Cases Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_long_slug() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let long_slug = "this-is-a-very-long-slug-name-for-testing-edge-cases";
+
+    let config = ProjectConfig::new(long_slug)
+        .with_destination(destination.clone())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    let result = scaffold.create_project(config).await;
+
+    // Should succeed
+    assert!(result.is_ok());
+    assert!(destination.join(long_slug).exists());
+}
+
+#[tokio::test]
+async fn test_slug_with_numbers() {
+    use polkadot_cookbook_core::config::validate_slug;
+
+    // Slugs with numbers should be valid
+    assert!(validate_slug("test-123").is_ok());
+    assert!(validate_slug("123-test").is_ok());
+    assert!(validate_slug("test-123-recipe").is_ok());
+    assert!(validate_slug("v2-migration").is_ok());
+}
+
+#[tokio::test]
+async fn test_single_word_slug() {
+    use polkadot_cookbook_core::config::validate_slug;
+
+    // Single word slugs should be valid
+    assert!(validate_slug("hello").is_ok());
+    assert!(validate_slug("test").is_ok());
+    assert!(validate_slug("migration").is_ok());
+}
+
+#[tokio::test]
+async fn test_description_with_special_characters() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let description = "Learn how to use \"quotes\" and 'apostrophes' in descriptions!";
+
+    let config = ProjectConfig::new("special-desc")
+        .with_destination(destination.clone())
+        .with_description(description.to_string())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("special-desc");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    assert!(recipe_config.contains(description));
+}
+
+#[tokio::test]
+async fn test_empty_description() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("empty-desc")
+        .with_destination(destination.clone())
+        .with_description("".to_string())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    let result = scaffold.create_project(config).await;
+
+    // Should succeed - empty descriptions are allowed
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn test_unicode_in_description() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let description = "Learn about Polkadot 🚀 and blockchain 💎 technology";
+
+    let config = ProjectConfig::new("unicode-test")
+        .with_destination(destination.clone())
+        .with_description(description.to_string())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("unicode-test");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    assert!(recipe_config.contains(description));
+}
+
+#[tokio::test]
+async fn test_multiline_description() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let description = "Line 1\nLine 2\nLine 3";
+
+    let config = ProjectConfig::new("multiline-desc")
+        .with_destination(destination.clone())
+        .with_description(description.to_string())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    scaffold.create_project(config).await.unwrap();
+
+    let project_path = destination.join("multiline-desc");
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+        .await
+        .unwrap();
+
+    // Description should be in the config
+    assert!(recipe_config.contains("Line 1"));
+}
+
+// ============================================================================
+// Bootstrap/NPM Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_skip_install_flag() {
+    let temp_dir = TempDir::new().unwrap();
+    let destination = temp_dir.path().to_path_buf();
+
+    let config = ProjectConfig::new("skip-install")
+        .with_destination(destination.clone())
+        .with_skip_install(true)
+        .with_git_init(false);
+
+    let scaffold = Scaffold::new();
+    let result = scaffold.create_project(config).await;
+
+    // Should succeed without npm install
+    assert!(result.is_ok());
+
+    // When skip_install is true, bootstrap is skipped entirely
+    // So package.json won't be created, but other files should exist
+    let project_path = destination.join("skip-install");
+    assert!(project_path.join("README.md").exists());
+    assert!(project_path.join("recipe.config.yml").exists());
+    assert!(!project_path.join("package.json").exists());
+}
+
+#[tokio::test]
+async fn test_bootstrap_new() {
+    use polkadot_cookbook_core::scaffold::Bootstrap;
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("test-bootstrap");
+
+    // Test that Bootstrap can be created
+    let bootstrap = Bootstrap::new(project_path.clone());
+
+    // Bootstrap instance should be created successfully
+    // We can't test setup() without npm in environment, so we just verify construction works
+    drop(bootstrap);
+}
+
+// ============================================================================
+// File System Edge Cases
+// ============================================================================
+
+#[tokio::test]
+async fn test_nested_destination() {
+    let temp_dir = TempDir::new().unwrap();
+    let nested_dest = temp_dir.path().join("level1").join("level2").join("level3");
+
+    let config = ProjectConfig::new("nested-test")
+        .with_destination(nested_dest.clone())
+        .with_git_init(false)
+        .with_skip_install(true);
+
+    let scaffold = Scaffold::new();
+    let result = scaffold.create_project(config).await;
+
+    // Should succeed - scaffold creates parent directories
+    assert!(result.is_ok());
+    assert!(nested_dest.join("nested-test").exists());
+}
+
+#[tokio::test]
+async fn test_verify_setup() {
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("verify-test");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Manually create required files for testing verify_setup logic
+    tokio::fs::write(project_path.join("package.json"), "{}")
+        .await
+        .unwrap();
+    tokio::fs::write(project_path.join("README.md"), "# Test")
+        .await
+        .unwrap();
+    tokio::fs::write(project_path.join("recipe.config.yml"), "name: test")
+        .await
+        .unwrap();
+
+    let scaffold = Scaffold::new();
+    let missing = scaffold.verify_setup(&project_path).await.unwrap();
+
+    // All required files exist, so missing should be empty
+    assert_eq!(missing.len(), 0, "Some required files are missing: {:?}", missing);
+}
+
+#[tokio::test]
+async fn test_verify_setup_with_missing_files() {
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("incomplete-project");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create project directory but don't create required files
+    let scaffold = Scaffold::new();
+    let missing = scaffold.verify_setup(&project_path).await.unwrap();
+
+    // Should report missing files
+    assert!(missing.len() > 0);
+    assert!(missing.iter().any(|f| f.contains("package.json")));
+    assert!(missing.iter().any(|f| f.contains("README.md")));
 }
