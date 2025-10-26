@@ -104,15 +104,15 @@ jobs:
       - name: Test CLI - Valid slug
         run: |
           cargo run --package polkadot-cookbook-cli -- test-ci-valid --skip-install --no-git
-          if [ ! -f "tutorials/test-ci-valid/README.md" ]; then
+          if [ ! -f "recipes/test-ci-valid/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
           fi
-          rm -rf tutorials/test-ci-valid
+          rm -rf recipes/test-ci-valid
 
       - name: Test CLI - Invalid slug
         run: |
-          if cargo run --package polkadot-cookbook-cli -- Invalid-Slug 2>&1 | grep -q "Invalid tutorial slug"; then
+          if cargo run --package polkadot-cookbook-cli -- Invalid-Slug 2>&1 | grep -q "Invalid recipe slug"; then
             echo "✓ Invalid slug error message found"
             exit 0
           else
