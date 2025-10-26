@@ -5,15 +5,15 @@ on:
     branches:
       - master
     paths:
-      - 'polkadot-cookbook-core/**'
-      - 'polkadot-cookbook-cli/**'
+      - 'core/**'
+      - 'cli/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/test-sdk.yml'
   pull_request:
     paths:
-      - 'polkadot-cookbook-core/**'
-      - 'polkadot-cookbook-cli/**'
+      - 'core/**'
+      - 'cli/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/test-sdk.yml'
@@ -54,22 +54,22 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check formatting
-        run: cargo fmt --check --package polkadot-cookbook-core
+        run: cargo fmt --check --package core
 
       - name: Run clippy
-        run: cargo clippy --package polkadot-cookbook-core -- -D warnings
+        run: cargo clippy --package core -- -D warnings
 
       - name: Build core library
-        run: cargo build --package polkadot-cookbook-core --verbose
+        run: cargo build --package core --verbose
 
       - name: Run unit tests
-        run: cargo test --package polkadot-cookbook-core --lib --verbose
+        run: cargo test --package core --lib --verbose
 
       - name: Run integration tests
-        run: cargo test --package polkadot-cookbook-core --test integration_test --verbose
+        run: cargo test --package core --test integration_test --verbose
 
       - name: Run doc tests
-        run: cargo test --package polkadot-cookbook-core --doc --verbose
+        run: cargo test --package core --doc --verbose
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -208,11 +208,11 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build CLI
-        run: cargo build --package polkadot-cookbook-cli --verbose
+        run: cargo build --package cli --verbose
 
       - name: Test CLI - Valid slug
         run: |
-          cargo run --package polkadot-cookbook-cli -- test-ci-valid --skip-install --no-git
+          cargo run --package cli -- test-ci-valid --skip-install --no-git
           if [ ! -f "recipes/test-ci-valid/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
@@ -221,7 +221,7 @@ jobs:
 
       - name: Test CLI - Invalid slug
         run: |
-          if cargo run --package polkadot-cookbook-cli -- Invalid-Slug 2>&1 | grep -q "Invalid recipe slug"; then
+          if cargo run --package cli -- Invalid-Slug 2>&1 | grep -q "Invalid recipe slug"; then
             echo "✓ Invalid slug error message found"
             exit 0
           else
@@ -230,7 +230,7 @@ jobs:
           fi
 
       - name: Test CLI - Help
-        run: cargo run --package polkadot-cookbook-cli -- --help
+        run: cargo run --package cli -- --help
 
   build-workspace:
     name: Build Workspace
