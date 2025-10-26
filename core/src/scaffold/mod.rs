@@ -162,8 +162,15 @@ impl Scaffold {
         .await?;
 
         // Generate recipe.config.yml
-        let recipe_yml_content =
-            RecipeYmlTemplate::new(&config.slug, &config.title, &config.description).generate();
+        let recipe_yml_content = RecipeYmlTemplate::new(
+            &config.slug,
+            &config.title,
+            &config.description,
+            config.recipe_type.clone(),
+            &config.category,
+            config.needs_node,
+        )
+        .generate();
         self.write_file(&project_path.join("recipe.config.yml"), &recipe_yml_content)
             .await?;
 
