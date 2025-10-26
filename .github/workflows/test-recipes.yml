@@ -1,34 +1,34 @@
-name: PR Tutorial Tests
+name: PR Recipe Tests
 
-# This workflow tests tutorials on pull requests.
+# This workflow tests recipes on pull requests.
 # Version resolution uses the polkadot-cookbook SDK which merges:
 # - Global versions from /versions.yml (defaults)
-# - Tutorial-specific versions from tutorials/{slug}/versions.yml (overrides)
+# - Recipe-specific versions from recipes/{slug}/versions.yml (overrides)
 #
 # Triggers:
-# - Changes to any file in tutorials/** (except scripts/)
+# - Changes to any file in recipes/** (except scripts/)
 # - Changes to global versions.yml
-# - Changes to any tutorial's versions.yml file
+# - Changes to any recipe's versions.yml file
 
 on:
   pull_request:
     paths:
-      - 'tutorials/**'
-      - '!tutorials/**/scripts/**'
+      - 'recipes/**'
+      - '!recipes/**/scripts/**'
       - 'versions.yml'              # Trigger when global versions change
-      - '**/versions.yml'           # Trigger when any tutorial versions change
+      - '**/versions.yml'           # Trigger when any recipe versions change
   workflow_dispatch:
     inputs:
-      tutorial_slug:
-        description: 'Tutorial slug to test (e.g., zero-to-hero)'
+      recipe_slug:
+        description: 'Recipe slug to test (e.g., zero-to-hero)'
         required: true
         type: string
 
 jobs:
-  find-changed-tutorials:
+  find-changed-recipes:
     runs-on: ubuntu-latest
     outputs:
-      tutorials: ${{ steps.changed.outputs.tutorials }}
+      recipes: ${{ steps.changed.outputs.recipes }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +36,7 @@ jobs:
       - id: changed
         env:
           GH_EVENT: ${{ github.event_name }}
-          TUTORIAL_SLUG: ${{ inputs.tutorial_slug }}
+          RECIPE_SLUG: ${{ inputs.recipe_slug }}
         run: |
           set -e
           BASE_SHA=${{ github.event.pull_request.base.sha }}
@@ -44,48 +44,48 @@ jobs:
           echo "Base: $BASE_SHA"
           echo "Head: $HEAD_SHA"
 
-          # Manual trigger: honor provided tutorial_slug
-          if [ "$GH_EVENT" = "workflow_dispatch" ] && [ -n "$TUTORIAL_SLUG" ]; then
-            ARR=$(printf '%s\n' "$TUTORIAL_SLUG" | jq -R . | jq -s .)
+          # Manual trigger: honor provided recipe_slug
+          if [ "$GH_EVENT" = "workflow_dispatch" ] && [ -n "$RECIPE_SLUG" ]; then
+            ARR=$(printf '%s\n' "$RECIPE_SLUG" | jq -R . | jq -s .)
             {
-              echo "tutorials<<__JSON__"
+              echo "recipes<<__JSON__"
               echo "$ARR"
               echo "__JSON__"
             } >> "$GITHUB_OUTPUT"
-            echo "Manual run for tutorial: $ARR" | tr -d '\n' || true
+            echo "Manual run for recipe: $ARR" | tr -d '\n' || true
             exit 0
           fi
-          # List added tutorial slugs
-          ADDED=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" | awk '/^A\t/ {print $2}' | grep '^tutorials/' | cut -d'/' -f2 | sort -u || true)
+          # List added recipe slugs
+          ADDED=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" | awk '/^A\t/ {print $2}' | grep '^recipes/' | cut -d'/' -f2 | sort -u || true)
           if [ -n "$ADDED" ]; then
             ARR=$(printf '%s\n' $ADDED | jq -R . | jq -s .)
             {
-              echo "tutorials<<__JSON__"
+              echo "recipes<<__JSON__"
               echo "$ARR"
               echo "__JSON__"
             } >> "$GITHUB_OUTPUT"
-            echo "Added tutorials: $ARR" | tr -d '\n' || true
+            echo "Added recipes: $ARR" | tr -d '\n' || true
             exit 0
           fi
-          # No newly added tutorials: skip tests
-          echo 'tutorials=[]' >> $GITHUB_OUTPUT
-          echo "No newly added tutorials detected; skipping tests."
+          # No newly added recipes: skip tests
+          echo 'recipes=[]' >> $GITHUB_OUTPUT
+          echo "No newly added recipes detected; skipping tests."
 
   test:
-    needs: find-changed-tutorials
-    if: needs.find-changed-tutorials.outputs.tutorials != '[]'
+    needs: find-changed-recipes
+    if: needs.find-changed-recipes.outputs.recipes != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        slug: ${{ fromJson(needs.find-changed-tutorials.outputs.tutorials) }}
+        slug: ${{ fromJson(needs.find-changed-recipes.outputs.recipes) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: tutorials/${{ matrix.slug }}/package-lock.json
+          cache-dependency-path: recipes/${{ matrix.slug }}/package-lock.json
       - name: Setup Rust toolchain for CLI
         uses: dtolnay/rust-toolchain@stable
       - name: Cache CLI Rust dependencies
@@ -106,18 +106,18 @@ jobs:
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
-      - name: Read tutorial requirements
+      - name: Read recipe requirements
         id: needs
         run: |
-          NEEDS_NODE=$(yq -r '.needs_node // false' tutorials/${{ matrix.slug }}/tutorial.config.yml)
+          NEEDS_NODE=$(yq -r '.needs_node // false' recipes/${{ matrix.slug }}/recipe.config.yml)
           echo "needs-node=$NEEDS_NODE" >> $GITHUB_OUTPUT
       - name: Resolve tool versions using SDK
         id: resolve
         if: steps.needs.outputs.needs-node == 'true'
         run: |
           # Use the polkadot-cookbook CLI to resolve versions
-          # This uses the SDK's version management to merge global and tutorial-specific versions
-          eval $(./target/release/create-tutorial versions ${{ matrix.slug }} --ci)
+          # This uses the SDK's version management to merge global and recipe-specific versions
+          eval $(./target/release/create-recipe versions ${{ matrix.slug }} --ci)
           echo "rust=$RUST" >> $GITHUB_OUTPUT
           echo "chain-spec-builder=$CHAIN_SPEC_BUILDER" >> $GITHUB_OUTPUT
           echo "omni-node=$POLKADOT_OMNI_NODE" >> $GITHUB_OUTPUT
@@ -171,10 +171,10 @@ jobs:
             if curl -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' http://127.0.0.1:9944 >/dev/null 2>&1; then
               echo "RPC is up"; break; fi; sleep 1; done
       - name: Install deps
-        working-directory: tutorials/${{ matrix.slug }}
+        working-directory: recipes/${{ matrix.slug }}
         run: npm ci || npm i
       - name: Run tests
-        working-directory: tutorials/${{ matrix.slug }}
+        working-directory: recipes/${{ matrix.slug }}
         run: npm run test --silent
 
 
