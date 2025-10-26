@@ -21,7 +21,6 @@
 
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-blue.svg)](LICENSE)
 [![Test SDK](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml)
-[![Coverage](.github/badges/coverage.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml)
 [![Kitchensink Parachain](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/build-kitchensink-parachain.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/build-kitchensink-parachain.yml)
 [![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org/)
 [![Node](https://img.shields.io/badge/node-20%2B-green.svg)](https://nodejs.org/)
