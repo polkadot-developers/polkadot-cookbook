@@ -1,12 +1,12 @@
-//! Project scaffolding module
+//! Recipe scaffolding module
 //!
-//! This module provides functionality for creating new tutorial projects,
+//! This module provides functionality for creating new recipes,
 //! including directory structure, template files, and initial configuration.
 
 use crate::config::{ProjectConfig, ProjectInfo};
 use crate::error::{CookbookError, Result};
 use crate::templates::{
-    JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate,
+    JustfileTemplate, ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
     VersionsYmlTemplate,
 };
 use std::path::Path;
@@ -161,13 +161,10 @@ impl Scaffold {
         )
         .await?;
 
-        // Generate tutorial.config.yml
-        let tutorial_yml_content = TutorialYmlTemplate::new(&config.slug, &config.title).generate();
-        self.write_file(
-            &project_path.join("tutorial.config.yml"),
-            &tutorial_yml_content,
-        )
-        .await?;
+        // Generate recipe.config.yml
+        let recipe_yml_content = RecipeYmlTemplate::new(&config.slug, &config.title).generate();
+        self.write_file(&project_path.join("recipe.config.yml"), &recipe_yml_content)
+            .await?;
 
         // Generate README.md
         let readme_content = ReadmeTemplate::new(&config.slug).generate();
@@ -215,7 +212,7 @@ impl Scaffold {
         let required_files = vec![
             project_path.join("package.json"),
             project_path.join("README.md"),
-            project_path.join("tutorial.config.yml"),
+            project_path.join("recipe.config.yml"),
         ];
 
         let mut missing = Vec::new();
@@ -291,7 +288,7 @@ mod tests {
 
         assert!(project_path.join("justfile").exists());
         assert!(project_path.join("README.md").exists());
-        assert!(project_path.join("tutorial.config.yml").exists());
+        assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join(".gitignore").exists());
         assert!(project_path
             .join("tests/test-tutorial-e2e.test.ts")

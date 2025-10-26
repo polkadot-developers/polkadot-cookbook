@@ -33,25 +33,27 @@ runs:
       id: cache
       uses: actions/cache@v4
       with:
-        path: ~/.cargo/bin
+        path: ~/.cargo/bin/polkadot-omni-node
         key: ${{ runner.os }}-${{ runner.arch }}-omni-node-${{ inputs.omni-node-version }}
 
+    - name: Check if binary exists after cache restore
+      id: check-binary
+      shell: bash
+      run: |
+        if [ -f ~/.cargo/bin/polkadot-omni-node ] && [ -x ~/.cargo/bin/polkadot-omni-node ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "✅ Binary found in cache"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "⚠️ Binary not found in cache, will install"
+        fi
+
     - name: Install Polkadot omni-node
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.check-binary.outputs.exists != 'true'
       shell: bash
       run: |
         echo "🔧 Installing polkadot-omni-node@${{ inputs.omni-node-version }}..."
-        
-        if command -v polkadot-omni-node >/dev/null 2>&1; then
-          INSTALLED_VERSION=$(polkadot-omni-node --version | awk '{print $2}')
-          if [ "$INSTALLED_VERSION" = "${{ inputs.omni-node-version }}" ]; then
-            echo "✅ polkadot-omni-node $INSTALLED_VERSION already installed, skipping"
-            exit 0
-          else
-            echo "⚠️ Different version found ($INSTALLED_VERSION), installing requested version..."
-          fi
-        fi
-        
+
         cargo install polkadot-omni-node --version ${{ inputs.omni-node-version }} --locked --force
         echo "✅ Installation completed"
 
@@ -64,7 +66,10 @@ runs:
       shell: bash
       run: |
         echo "🔍 Verifying polkadot-omni-node installation..."
-        
+
+        # Add to PATH for this step since GITHUB_PATH only affects subsequent steps
+        export PATH="${HOME}/.cargo/bin:$PATH"
+
         if ! command -v polkadot-omni-node &> /dev/null; then
           echo "❌ polkadot-omni-node not found in PATH"
           exit 1

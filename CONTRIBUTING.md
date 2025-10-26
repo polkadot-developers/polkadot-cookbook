@@ -1,31 +1,31 @@
 # Contributing to Polkadot Cookbook
 
-Thank you for your interest in contributing to the Polkadot Cookbook! This project aims to provide high-quality, practical tutorials for developers building on Polkadot.
+Thank you for your interest in contributing to the Polkadot Cookbook! This project aims to provide high-quality, practical recipes for developers building on Polkadot.
 
 ## Table of Contents
 
 - [How Can I Contribute?](#how-can-i-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Contributing Tutorials](#contributing-tutorials)
+  - [Contributing Recipes](#contributing-recipes)
   - [Improving Documentation](#improving-documentation)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Setting Up Your Development Environment](#setting-up-your-development-environment)
-- [Tutorial Contribution Workflow](#tutorial-contribution-workflow)
-  - [Step 1: Propose Your Tutorial](#step-1-propose-your-tutorial)
+- [Recipe Contribution Workflow](#recipe-contribution-workflow)
+  - [Step 1: Propose Your Recipe](#step-1-propose-your-recipe)
   - [Step 2: Setup Your Environment](#step-2-setup-your-environment)
-  - [Step 3: Create Tutorial Structure](#step-3-create-tutorial-structure)
-  - [Step 4: Write Your Tutorial](#step-4-write-your-tutorial)
-  - [Step 5: Test Your Tutorial](#step-5-test-your-tutorial)
+  - [Step 3: Create Recipe Structure](#step-3-create-recipe-structure)
+  - [Step 4: Write Your Recipe](#step-4-write-your-recipe)
+  - [Step 5: Test Your Recipe](#step-5-test-your-recipe)
   - [Step 6: Submit a Pull Request](#step-6-submit-a-pull-request)
 - [Development Guidelines](#development-guidelines)
-  - [Tutorial Structure](#tutorial-structure)
+  - [Recipe Structure](#recipe-structure)
   - [Testing Requirements](#testing-requirements)
   - [Code Style](#code-style)
   - [Documentation Standards](#documentation-standards)
 - [Advanced Topics](#advanced-topics)
-  - [Tutorial Configuration](#tutorial-configuration)
+  - [Recipe Configuration](#recipe-configuration)
   - [Justfiles and Scripts](#justfiles-and-scripts)
   - [CI/CD Pipeline](#cicd-pipeline)
 - [Getting Help](#getting-help)
@@ -34,7 +34,7 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
 
 ### Reporting Bugs
 
-If you find a bug in a tutorial or the infrastructure:
+If you find a bug in a recipe or the infrastructure:
 
 1. **Check existing issues** to avoid duplicates
 2. **Use the bug report template** when creating a new issue
@@ -53,9 +53,31 @@ We welcome suggestions for improvements:
 3. **Explain the use case** and benefits
 4. **Provide examples** if applicable
 
-### Contributing Tutorials
+### Contributing Recipes
 
-The primary way to contribute is by creating new tutorials. See the [Tutorial Contribution Workflow](#tutorial-contribution-workflow) section below.
+The primary way to contribute is by creating new recipes. See the [Recipe Contribution Workflow](#recipe-contribution-workflow) section below.
+
+#### Recipe Types: Tutorials vs Guides
+
+When creating a recipe, you must choose between two types using the `content_type` field in your README frontmatter:
+
+**Tutorial** (`content_type: tutorial`)
+- **Complete journey from zero to working solution**
+- Includes all setup steps (creating directories, cloning repos, installing dependencies)
+- Assumes minimal prior setup or existing project
+- Walks through every command and configuration needed
+- **Example**: "Build Your First Parachain" - starts with `mkdir my-parachain`, guides through setup, configuration, testing, and deployment
+
+**Guide** (`content_type: guide`)
+- **Focused, actionable steps for a specific task**
+- Assumes you already have a working project or environment
+- Skips basic setup, jumps straight to the task at hand
+- More concise, targeting experienced developers
+- **Example**: "Add XCM Support to Your Parachain" - assumes you have a parachain project, shows only the XCM-specific configuration and code
+
+**Key Question**: *Does the reader need to start from scratch?*
+- If **yes** → Tutorial
+- If **no** (they have an existing project) → Guide
 
 ### Improving Documentation
 
@@ -103,24 +125,24 @@ Before contributing, ensure you have the following installed:
    cargo run --package polkadot-cookbook-cli -- --help
    ```
 
-## Tutorial Contribution Workflow
+## Recipe Contribution Workflow
 
-### Step 1: Propose Your Tutorial
+### Step 1: Propose Your Recipe
 
-**All tutorials must be proposed and approved before starting work.**
+**All recipes must be proposed and approved before starting work.**
 
-1. Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-tutorial-proposal.md) using the "Tutorial Proposal" template
+1. Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-recipe-proposal.md) using the "Recipe Proposal" template
 
 2. Provide the following information:
    - **Title**: Clear, descriptive title
    - **Learning Objectives**: What will readers learn?
    - **Target Audience**: Beginner, intermediate, or advanced?
    - **Prerequisites**: Required knowledge or setup
-   - **Estimated Length**: How long will the tutorial take?
+   - **Estimated Length**: How long will the recipe take?
    - **Tools/Versions**: Specific tools or dependencies needed
-   - **Outline**: High-level structure of the tutorial
+   - **Outline**: High-level structure of the recipe
 
-3. **Wait for approval** and assignment of a tutorial slug (e.g., `my-tutorial`)
+3. **Wait for approval** and assignment of a recipe slug (e.g., `my-recipe`)
 
 ### Step 2: Setup Your Environment
 
@@ -133,15 +155,15 @@ Before contributing, ensure you have the following installed:
 
 2. **Create a new branch**:
    ```bash
-   git checkout -b feat/tutorial-my-tutorial
+   git checkout -b feat/recipe-my-recipe
    ```
 
-### Step 3: Create Tutorial Structure
+### Step 3: Create Recipe Structure
 
-Run the tutorial creation CLI with your approved slug:
+Run the recipe creation CLI with your approved slug:
 
 ```bash
-cargo run --package polkadot-cookbook-cli -- my-tutorial
+cargo run --package polkadot-cookbook-cli -- my-recipe
 ```
 
 **Available options:**
@@ -150,59 +172,59 @@ cargo run --package polkadot-cookbook-cli -- my-tutorial
 
 **Example with options:**
 ```bash
-cargo run --package polkadot-cookbook-cli -- my-tutorial --skip-install --no-git
+cargo run --package polkadot-cookbook-cli -- my-recipe --skip-install --no-git
 ```
 
 This command will:
 - Create a feature branch (unless `--no-git` is specified)
-- Scaffold the tutorial directory structure
+- Scaffold the recipe directory structure
 - Set up testing infrastructure
 - Install dependencies (unless `--skip-install` is specified)
 - Generate boilerplate files
 
 **Generated structure**:
 ```
-tutorials/my-tutorial/
-├── tutorial.config.yml    # Tutorial metadata and configuration
-├── README.md              # Tutorial content (Markdown)
+recipes/my-recipe/
+├── recipe.config.yml    # Recipe metadata and configuration
+├── README.md              # Recipe content (Markdown)
 ├── package.json           # npm dependencies
 ├── tsconfig.json          # TypeScript configuration
 ├── vitest.config.ts       # Test configuration
 ├── justfile               # Development commands (optional)
-├── src/                   # Tutorial code
+├── src/                   # Recipe code
 └── tests/                 # End-to-end tests
 ```
 
-### Step 4: Write Your Tutorial
+### Step 4: Write Your Recipe
 
-1. **Write the tutorial content** in `tutorials/my-tutorial/README.md`
+1. **Write the recipe content** in `recipes/my-recipe/README.md`
    - Use clear, concise language
    - Include code examples with explanations
    - Add screenshots or diagrams where helpful
    - Provide step-by-step instructions
 
-2. **Add implementation code** under `tutorials/my-tutorial/src/`
+2. **Add implementation code** under `recipes/my-recipe/src/`
    - Follow Polkadot SDK best practices
    - Include inline comments for complex logic
    - Use meaningful variable and function names
 
-3. **Configure your tutorial** in `tutorial.config.yml`
+3. **Configure your recipe** in `recipe.config.yml`
    - Set accurate metadata (name, description, category)
    - Specify if a node is required (`needs_node`)
    - Configure build and runtime settings if applicable
 
-See [Tutorial Structure](#tutorial-structure) for detailed requirements.
+See [Recipe Structure](#recipe-structure) for detailed requirements.
 
-### Step 5: Test Your Tutorial
+### Step 5: Test Your Recipe
 
-1. **Write end-to-end tests** in `tutorials/my-tutorial/tests/`
+1. **Write end-to-end tests** in `recipes/my-recipe/tests/`
    - Use Vitest + @polkadot/api
    - Implement the [fast-skip pattern](#fast-skip-pattern) (required)
    - Test actual functionality, not just API connectivity
 
 2. **Run tests locally**:
    ```bash
-   cd tutorials/my-tutorial
+   cd recipes/my-recipe
    npm test
    ```
 
@@ -217,18 +239,18 @@ See [Testing Requirements](#testing-requirements) for details.
 1. **Commit your changes**:
    ```bash
    git add .
-   git commit -m "feat(tutorial): add my-tutorial"
+   git commit -m "feat(recipe): add my-recipe"
    ```
 
    Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
-   - `feat(tutorial)`: New tutorial
-   - `fix(tutorial)`: Tutorial bug fix
+   - `feat(recipe)`: New recipe
+   - `fix(recipe)`: Recipe bug fix
    - `docs`: Documentation updates
    - `test`: Test updates
 
 2. **Push to your fork**:
    ```bash
-   git push origin feat/tutorial-my-tutorial
+   git push origin feat/recipe-my-recipe
    ```
 
 3. **Create a Pull Request**:
@@ -244,23 +266,31 @@ See [Testing Requirements](#testing-requirements) for details.
    - Request re-review when ready
 
 5. **CI Checks**:
-   - Wait for automated tests to pass (`.github/workflows/test-tutorials.yml`)
+   - Wait for automated tests to pass (`.github/workflows/test-recipes.yml`)
    - Fix any failing tests or linting issues
 
 ## Development Guidelines
 
-### Tutorial Structure
+### Recipe Structure
 
-Each tutorial must follow this structure:
+Each recipe must follow this structure:
 
 #### README.md (Required)
 
-The tutorial content in Markdown format:
+The recipe content in Markdown format with YAML frontmatter:
 
 ```markdown
-# Tutorial Title
+---
+title: Recipe Title
+description: Brief one-sentence description of what this recipe teaches
+difficulty: Beginner  # or Intermediate, Advanced
+content_type: tutorial  # or guide (see Recipe Types section)
+categories: Category1, Category2
+---
 
-Brief description of what this tutorial teaches.
+# Recipe Title
+
+Brief description of what this recipe teaches.
 
 ## Prerequisites
 
@@ -270,7 +300,7 @@ Brief description of what this tutorial teaches.
 
 ## Learning Objectives
 
-By the end of this tutorial, you will:
+By the end of this recipe, you will:
 - Objective 1
 - Objective 2
 - Objective 3
@@ -289,13 +319,13 @@ Summary of what was learned.
 
 ## Next Steps
 
-- Suggested follow-up tutorials
+- Suggested follow-up recipes
 - Additional resources
 ```
 
 #### src/ (Required)
 
-Tutorial implementation code:
+Recipe implementation code:
 - Include inline comments
 - Follow language-specific conventions
 
@@ -306,12 +336,12 @@ End-to-end tests using Vitest + @polkadot/api:
 - Implement fast-skip pattern
 - Test actual functionality
 
-#### tutorial.config.yml (Required)
+#### recipe.config.yml (Required)
 
-Tutorial metadata:
+Recipe metadata:
 ```yaml
-name: My Tutorial Title
-slug: my-tutorial
+name: My Recipe Title
+slug: my-recipe
 category: polkadot-sdk-cookbook  # or contracts-cookbook
 needs_node: true                  # or false
 description: Brief description
@@ -322,7 +352,7 @@ type: sdk                         # or contracts
 
 #### Framework
 
-All tutorials **must** use:
+All recipes **must** use:
 - **Vitest** for test framework
 - **@polkadot/api** for blockchain interaction
 
@@ -334,7 +364,7 @@ All tutorials **must** use:
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
-describe('My Tutorial Tests', () => {
+describe('My Recipe Tests', () => {
   let api: ApiPromise | null = null;
 
   beforeAll(async () => {
@@ -358,7 +388,7 @@ describe('My Tutorial Tests', () => {
     expect(api.isConnected).toBe(true);
   });
 
-  it('should perform tutorial operation', async () => {
+  it('should perform recipe operation', async () => {
     if (!api) return; // Fast skip
 
     // Your test logic
@@ -402,7 +432,7 @@ describe('My Tutorial Tests', () => {
 - Explain **why**, not **what**
 - Document complex algorithms or business logic
 
-#### Tutorial Writing
+#### Recipe Writing
 
 - Adhere to the [PaperMoon Style Guide](https://github.com/papermoonio/documentation-style-guide/blob/main/style-guide.md)
 - Use clear, concise language
@@ -424,7 +454,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 **Types**:
-- `feat`: New feature or tutorial
+- `feat`: New feature or recipe
 - `fix`: Bug fix
 - `docs`: Documentation only
 - `test`: Tests only
@@ -433,8 +463,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 **Examples**:
 ```
-feat(tutorial): add zero-to-hero tutorial
-fix(tutorial): correct chain spec generation in my-tutorial
+feat(recipe): add zero-to-hero recipe
+fix(recipe): correct chain spec generation in my-recipe
 docs: update CONTRIBUTING.md with testing guidelines
 test(zero-to-hero): add integration tests for pallets
 ```
@@ -451,7 +481,7 @@ For more detailed information, see:
 
 ### Resources
 
-- **Example Tutorial**: `tutorials/zero-to-hero/`
+- **Example Recipe**: `recipes/zero-to-hero/`
 - **[CLI Documentation](polkadot-cookbook-cli/)** - CLI tool reference
 - **[SDK Documentation](polkadot-cookbook-core/)** - Core library API
 - **[Polkadot Documentation](https://docs.polkadot.com)**

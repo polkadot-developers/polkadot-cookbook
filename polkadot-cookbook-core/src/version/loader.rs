@@ -54,7 +54,7 @@ impl VersionLoader {
     ///
     /// # async fn example() -> polkadot_cookbook_core::Result<()> {
     /// let tutorial = VersionLoader::load_tutorial(
-    ///     Path::new("tutorials/my-tutorial/versions.yml")
+    ///     Path::new("recipes/my-recipe/versions.yml")
     /// ).await?;
     /// # Ok(())
     /// # }
