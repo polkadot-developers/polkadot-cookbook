@@ -212,7 +212,7 @@ impl Scaffold {
         let required_files = vec![
             project_path.join("package.json"),
             project_path.join("README.md"),
-            project_path.join("tutorial.config.yml"),
+            project_path.join("recipe.config.yml"),
         ];
 
         let mut missing = Vec::new();
@@ -288,7 +288,7 @@ mod tests {
 
         assert!(project_path.join("justfile").exists());
         assert!(project_path.join("README.md").exists());
-        assert!(project_path.join("tutorial.config.yml").exists());
+        assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join(".gitignore").exists());
         assert!(project_path
             .join("tests/test-tutorial-e2e.test.ts")
