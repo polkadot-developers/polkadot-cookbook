@@ -166,7 +166,7 @@ impl Scaffold {
             &config.slug,
             &config.title,
             &config.description,
-            config.recipe_type.clone(),
+            config.recipe_type,
             &config.category,
             config.needs_node,
         )

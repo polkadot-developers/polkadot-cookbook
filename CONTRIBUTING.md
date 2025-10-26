@@ -129,21 +129,24 @@ Before contributing, ensure you have the following installed:
 
    You should see the CLI help with available commands. The CLI provides an interactive experience to guide you through recipe creation!
 
-6. **Set up pre-commit hooks** (recommended):
-   ```bash
-   ./scripts/setup-pre-commit.sh
-   ```
+6. **Pre-commit hooks** (automatically installed):
 
-   This installs automated checks that run before each commit:
+   Git hooks are **automatically installed** when you run `cargo build` or `cargo test` via [cargo-husky](https://github.com/rhysd/cargo-husky).
+
+   **No manual setup required!** The hooks run these checks before each commit:
    - ✅ `cargo fmt` - Formats Rust code (blocking)
    - ✅ `cargo clippy` - Lints Rust code (blocking)
-   - ✅ YAML/JSON/TOML syntax validation (blocking)
-   - ✅ Markdown linting (blocking)
    - ⚠️ Conventional commit message format (warning only)
 
    **Skip hooks**: If needed, use `git commit --no-verify` (use sparingly!)
 
-   **Run manually**: `pre-commit run --all-files`
+   **Run checks manually**:
+   ```bash
+   cargo fmt --all
+   cargo clippy --all-targets --all-features
+   ```
+
+   See [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) for more details.
 
 ## Recipe Contribution Workflow
 

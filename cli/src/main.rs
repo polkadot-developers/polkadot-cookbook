@@ -189,7 +189,7 @@ async fn handle_create(
         // Prompt for slug with hint
         let question = "What is your recipe slug?".polkadot_pink().to_string();
         let hint_text = "(lowercase, dashes only)".dimmed().to_string();
-        let slug: String = input(&format!("{} {}", question, hint_text))
+        let slug: String = input(format!("{question} {hint_text}"))
             .placeholder("my-recipe")
             .validate(|input: &String| {
                 if input.is_empty() {
@@ -222,7 +222,7 @@ async fn handle_create(
     // Prompt for optional description
     let description_question = "Recipe description".polkadot_pink().to_string();
     let hint_text = "(optional, press Enter to skip)".dimmed().to_string();
-    let description: String = input(&format!("{} {}", description_question, hint_text))
+    let description: String = input(format!("{description_question} {hint_text}"))
         .placeholder("Learn how to...")
         .default_input("")
         .interact()?;
@@ -257,7 +257,7 @@ async fn handle_create(
     let title = polkadot_cookbook_core::config::slug_to_title(&slug);
     let project_path = PathBuf::from("recipes").join(&slug);
     let branch_name = if create_git_branch {
-        format!("feat/{}", slug)
+        format!("feat/{slug}")
     } else {
         "(none)".to_string()
     };
@@ -327,7 +327,7 @@ async fn handle_create(
     let scaffold = Scaffold::new();
     match scaffold.create_project(config).await {
         Ok(project_info) => {
-            sp.stop(&format!(
+            sp.stop(format!(
                 "{}",
                 "✅ Recipe created successfully!".polkadot_pink()
             ));
@@ -389,7 +389,7 @@ async fn handle_create(
                         format!("git commit -m \"feat(recipe): add {}\"", project_info.slug)
                             .polkadot_pink(),
                         "→".dimmed(),
-                        format!("git push origin {}", branch).polkadot_pink(),
+                        format!("git push origin {branch}").polkadot_pink(),
                         "📌".polkadot_pink()
                     ),
                 )?;

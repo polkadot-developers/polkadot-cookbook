@@ -600,7 +600,12 @@ async fn test_verify_setup() {
     let missing = scaffold.verify_setup(&project_path).await.unwrap();
 
     // All required files exist, so missing should be empty
-    assert_eq!(missing.len(), 0, "Some required files are missing: {:?}", missing);
+    assert_eq!(
+        missing.len(),
+        0,
+        "Some required files are missing: {:?}",
+        missing
+    );
 }
 
 #[tokio::test]

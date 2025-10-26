@@ -26,7 +26,9 @@ fn test_help_command() {
 
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Create and manage Polkadot Cookbook recipes"))
+        .stdout(predicate::str::contains(
+            "Create and manage Polkadot Cookbook recipes",
+        ))
         .stdout(predicate::str::contains("Usage:"));
 }
 
@@ -91,8 +93,7 @@ fn test_invalid_slug_uppercase() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("Invalid-Slug")
-        .arg("--non-interactive");
+    cmd.arg("Invalid-Slug").arg("--non-interactive");
 
     cmd.assert()
         .failure()
@@ -105,8 +106,7 @@ fn test_invalid_slug_underscore() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("test_recipe")
-        .arg("--non-interactive");
+    cmd.arg("test_recipe").arg("--non-interactive");
 
     cmd.assert()
         .failure()
@@ -119,8 +119,7 @@ fn test_invalid_slug_spaces() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("test recipe")
-        .arg("--non-interactive");
+    cmd.arg("test recipe").arg("--non-interactive");
 
     cmd.assert().failure();
 }
@@ -152,9 +151,8 @@ fn test_recipe_config_content() {
 
     cmd.assert().success();
 
-    let config_content = fs::read_to_string(
-        recipes_dir.join("my-test-recipe/recipe.config.yml")
-    ).unwrap();
+    let config_content =
+        fs::read_to_string(recipes_dir.join("my-test-recipe/recipe.config.yml")).unwrap();
 
     assert!(config_content.contains("name: My Test Recipe"));
     assert!(config_content.contains("slug: my-test-recipe"));
@@ -198,9 +196,7 @@ fn test_gitignore_content() {
 
     cmd.assert().success();
 
-    let gitignore_content = fs::read_to_string(
-        recipes_dir.join("ignore-test/.gitignore")
-    ).unwrap();
+    let gitignore_content = fs::read_to_string(recipes_dir.join("ignore-test/.gitignore")).unwrap();
 
     assert!(gitignore_content.contains("node_modules/"));
     assert!(gitignore_content.contains("dist/"));
@@ -237,8 +233,7 @@ fn test_invalid_working_directory() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("test-recipe")
-        .arg("--non-interactive");
+    cmd.arg("test-recipe").arg("--non-interactive");
 
     cmd.assert()
         .failure()

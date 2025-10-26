@@ -1,198 +1,220 @@
-# Pre-commit Hooks
+# Pre-Commit Hooks
 
-This project uses [pre-commit](https://pre-commit.com/) to run automated checks before each commit, ensuring code quality and consistency.
+Automated git hooks for code quality checks using `cargo-husky`.
 
-## Installation
+## Overview
 
-Run the setup script from the repository root:
+This project uses [cargo-husky](https://github.com/rhysd/cargo-husky) to automatically install and manage git hooks. Unlike Python-based pre-commit frameworks, cargo-husky is Rust-native and requires **zero manual setup**.
 
-```bash
-./scripts/setup-pre-commit.sh
-```
+**Hooks are automatically installed when you run:**
+- `cargo build`
+- `cargo test`
+- Any other cargo command
 
-This will:
-1. Install `pre-commit` if not already installed
-2. Set up git hooks for pre-commit and commit-msg stages
-3. Configure all checks
-
-### Manual Installation
-
-If you prefer to install manually:
-
-```bash
-# Install pre-commit (requires Python)
-pip install pre-commit
-
-# Install the git hooks
-pre-commit install
-pre-commit install --hook-type commit-msg
-```
+No Python, no manual installation required!
 
 ## What Gets Checked
 
-### Rust Code Quality
+### Pre-Commit Hook
 
-- **`cargo fmt`** - Ensures consistent code formatting
-- **`cargo clippy`** - Catches common mistakes and anti-patterns
+Runs before each commit to ensure code quality:
 
-### File Validation
+1. **Rust Formatting** (`cargo fmt --check`)
+   - Ensures code follows Rust formatting standards
+   - **Blocking**: commit fails if formatting issues found
+   - Fix: `cargo fmt --all`
 
-- **YAML syntax** - Validates `.yml` and `.yaml` files
-- **JSON syntax** - Validates `.json` files
-- **TOML syntax** - Validates `Cargo.toml` and other TOML files
+2. **Clippy Lints** (`cargo clippy`)
+   - Catches common mistakes and code smells
+   - **Blocking**: commit fails if warnings found
+   - Fix: Address clippy suggestions
 
-### Code Hygiene
+### Commit Message Hook
 
-- **End of file fixer** - Ensures files end with a newline
-- **Trailing whitespace** - Removes trailing whitespace
-- **Line endings** - Enforces LF line endings
-- **Large files** - Prevents accidentally committing files >1MB
-- **Merge conflicts** - Detects unresolved merge conflict markers
+Validates commit message format (**non-blocking**):
 
-### Documentation
+1. **Conventional Commits**
+   - Recommends format: `<type>(<scope>): <description>`
+   - Valid types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`, `style`
+   - Shows warning if format doesn't match
+   - **Non-blocking**: commit always proceeds
+   - Examples:
+     - `feat(cli): add recipe type selection`
+     - `fix(core): handle missing versions.yml`
+     - `docs: update contributing guidelines`
 
-- **Markdown linting** - Ensures consistent markdown formatting
-  - Rules configured in `.markdownlint.json`
-  - Disabled rules: MD013 (line length), MD033 (inline HTML), MD041 (first line heading)
+2. **Auto-Skips**
+   - Merge commits
+   - Revert commits
 
-### Commit Messages
+## Hook Scripts
 
-- **Conventional commits** - **Warning only (non-blocking)**
-  - Shows a warning if commit doesn't follow conventional format
-  - Commit proceeds regardless (warning only)
-  - Recommended types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`
-  - Format: `type(scope): description`
-  - Examples:
-    - `feat(recipe): add zero-to-hero recipe`
-    - `fix(cli): correct validation error message`
-    - `docs: update CONTRIBUTING.md`
-  - Why non-blocking? We encourage but don't enforce this format to keep the contribution barrier low
+Hooks are stored in `.cargo-husky/hooks/`:
+- `pre-commit` - Formatting and linting checks
+- `commit-msg` - Commit message validation
 
-## Running Manually
+These scripts are plain shell scripts and can be modified as needed.
 
-### Check All Files
+## Manual Hook Installation
+
+If you need to reinstall hooks manually:
 
 ```bash
-pre-commit run --all-files
+# Hooks are automatically installed on next cargo command
+cargo build
+
+# Or if cargo-husky binary is installed:
+cargo husky install
 ```
 
-### Check Specific Files
+## Running Checks Manually
+
+### Format code
 
 ```bash
-pre-commit run --files path/to/file.rs
+cargo fmt --all
 ```
 
-### Check Specific Hook
+### Check formatting
 
 ```bash
-pre-commit run fmt --all-files
-pre-commit run clippy --all-files
+cargo fmt --all -- --check
+```
+
+### Run clippy
+
+```bash
+cargo clippy --all-targets --all-features -- -D warnings
 ```
 
 ## Skipping Hooks
 
-**Use sparingly!** Only skip hooks when absolutely necessary:
+Sometimes you need to bypass hooks (use sparingly):
 
 ```bash
-git commit --no-verify
+# Skip all hooks for this commit
+git commit --no-verify -m "emergency fix"
 ```
 
 Common valid reasons to skip:
 - WIP commits on feature branches
 - Emergency hotfixes (but should still pass checks eventually)
-- Commits that intentionally fail a check (with good reason)
-
-## Troubleshooting
-
-### Hook Fails but Changes Look Correct
-
-Some hooks (like `fmt` and `markdownlint`) auto-fix issues. After they run:
-
-1. Review the changes they made
-2. Stage the auto-fixed files: `git add .`
-3. Commit again
-
-### Clippy Warnings
-
-If clippy fails, fix the warnings:
-
-```bash
-cargo clippy --all -- -D warnings
-```
-
-Then commit again.
-
-### Python/pip Not Found
-
-Install Python:
-- **macOS**: `brew install python`
-- **Ubuntu**: `sudo apt install python3-pip`
-- **Windows**: Download from [python.org](https://www.python.org/downloads/)
-
-### Hooks Take Too Long
-
-Pre-commit caches results. First run is slow, subsequent runs are fast. If hooks are consistently slow:
-
-```bash
-# Clear cache
-pre-commit clean
-
-# Update to latest hook versions
-pre-commit autoupdate
-```
-
-## Configuration
-
-### `.pre-commit-config.yaml`
-
-Main configuration file defining all hooks and their settings.
-
-### `.markdownlint.json`
-
-Markdown linting rules. Customize as needed:
-
-```json
-{
-  "default": true,
-  "MD013": false,  // Line length (disabled)
-  "MD033": false,  // Inline HTML (disabled)
-  "MD041": false   // First line heading (disabled)
-}
-```
-
-## Updating Hooks
-
-Keep hooks up-to-date with the latest versions:
-
-```bash
-pre-commit autoupdate
-```
-
-This updates the `rev` fields in `.pre-commit-config.yaml`.
+- Documented exceptions
 
 ## Disabling Hooks
 
-To temporarily disable pre-commit hooks:
+If you want to disable automatic hook installation:
 
 ```bash
-pre-commit uninstall
+# Set environment variable before running cargo
+CARGO_HUSKY_DONT_INSTALL_HOOKS=1 cargo build
 ```
 
-To re-enable:
+Or remove `cargo-husky` from `Cargo.toml`.
 
+## Troubleshooting
+
+### Hooks not running
+
+**Symptom**: Commits go through without checks
+
+**Solutions**:
+1. Verify hooks are installed: `ls -la .git/hooks/`
+2. Run `cargo build` to reinstall hooks
+3. Check hook files are executable: `ls -l .cargo-husky/hooks/`
+
+### Formatting check fails
+
+**Symptom**: `cargo fmt --check` fails in hook
+
+**Solution**:
 ```bash
-pre-commit install
-pre-commit install --hook-type commit-msg
+# Format all code
+cargo fmt --all
+
+# Verify formatting
+cargo fmt --all -- --check
+
+# Commit again
+git commit
 ```
+
+### Clippy fails
+
+**Symptom**: `cargo clippy` finds warnings
+
+**Solution**:
+```bash
+# See all clippy suggestions
+cargo clippy --all-targets --all-features
+
+# Fix issues and commit again
+git add .
+git commit
+```
+
+### Hook runs but doesn't block
+
+**Symptom**: Hook runs but commit proceeds anyway
+
+**Cause**: Hook script has incorrect exit code or is the non-blocking commit-msg hook
+
+**Solution**:
+- Check hook scripts exit with non-zero on failure
+- Remember: commit-msg hook is intentionally non-blocking
+
+## Comparison to Python Pre-Commit
+
+**Old approach (Python pre-commit):**
+- ❌ Requires Python installation
+- ❌ Manual setup: `./scripts/setup-pre-commit.sh`
+- ❌ Extra dependency for Rust project
+- ✅ Large ecosystem of hooks
+
+**New approach (cargo-husky):**
+- ✅ Rust-native, no Python needed
+- ✅ **Automatic** installation on `cargo build`
+- ✅ Simpler for Rust projects
+- ✅ Hooks are plain shell scripts
+- ✅ Zero external dependencies
+- ✅ No setup script needed
 
 ## CI Integration
 
-Pre-commit hooks also run in CI via GitHub Actions. See `.github/workflows/` for details.
+These same checks run in CI via GitHub Actions workflows. Even if you skip hooks locally, CI will catch issues before merge.
 
-Even if you skip hooks locally, CI will catch issues before merge.
+## Contributing
 
-## Learn More
+When adding new hooks:
 
-- [pre-commit documentation](https://pre-commit.com/)
+1. Create script in `.cargo-husky/hooks/`
+2. Make it executable: `chmod +x .cargo-husky/hooks/new-hook`
+3. Test it: Run the hook script manually
+4. Document it in this file
+
+Example hook structure:
+
+```bash
+#!/bin/sh
+# Description of what this hook does
+
+set -e  # Exit on error
+
+echo "Running my-hook..."
+
+# Your checks here
+if ! your-check-command; then
+    echo "❌ Check failed"
+    exit 1  # Non-zero exit blocks commit
+fi
+
+echo "✅ Check passed"
+exit 0
+```
+
+## References
+
+- [cargo-husky GitHub](https://github.com/rhysd/cargo-husky)
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [Rust pre-commit hooks](https://github.com/doublify/pre-commit-rust)
+- [Git Hooks Documentation](https://git-scm.com/docs/githooks)
+- [Rust Clippy](https://github.com/rust-lang/rust-clippy)
