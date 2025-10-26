@@ -76,20 +76,39 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          cargo llvm-cov --workspace --summary-only > coverage-summary.txt
+          # Generate workspace coverage (for informational purposes)
+          cargo llvm-cov --workspace --summary-only > coverage-workspace.txt
+
+          # Generate core package coverage (for threshold check)
+          cargo llvm-cov --package core --summary-only > coverage-core.txt
+
+          # Generate JSON report
           cargo llvm-cov --workspace --json --output-path coverage.json
-          cat coverage-summary.txt
+
+          echo "=== Workspace Coverage ==="
+          cat coverage-workspace.txt
+          echo ""
+          echo "=== Core Library Coverage (used for threshold) ==="
+          cat coverage-core.txt
 
       - name: Extract coverage percentage
         id: coverage
         run: |
-          COVERAGE=$(cat coverage-summary.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
-          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
-          echo "Coverage: $COVERAGE%"
+          # Extract core package coverage for threshold check
+          CORE_COVERAGE=$(cat coverage-core.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
+
+          # Extract workspace coverage for badge
+          WORKSPACE_COVERAGE=$(cat coverage-workspace.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
+
+          echo "core_percentage=$CORE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "workspace_percentage=$WORKSPACE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "Core Library Coverage: $CORE_COVERAGE%"
+          echo "Workspace Coverage: $WORKSPACE_COVERAGE%"
 
       - name: Generate coverage badge
         run: |
-          COVERAGE="${{ steps.coverage.outputs.percentage }}"
+          # Use core library coverage for badge
+          COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
           if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
             COLOR="brightgreen"
           elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
@@ -98,7 +117,7 @@ jobs:
             COLOR="red"
           fi
           mkdir -p .github/badges
-          curl -o .github/badges/coverage.svg "https://img.shields.io/badge/coverage-${COVERAGE}%25-${COLOR}"
+          curl -o .github/badges/coverage.svg "https://img.shields.io/badge/core%20coverage-${COVERAGE}%25-${COLOR}"
 
       - name: Commit coverage badge
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -115,30 +134,42 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const summary = fs.readFileSync('coverage-summary.txt', 'utf8');
-            const coverage = '${{ steps.coverage.outputs.percentage }}';
+            const coreSummary = fs.readFileSync('coverage-core.txt', 'utf8');
+            const workspaceSummary = fs.readFileSync('coverage-workspace.txt', 'utf8');
+            const coreCoverage = '${{ steps.coverage.outputs.core_percentage }}';
+            const workspaceCoverage = '${{ steps.coverage.outputs.workspace_percentage }}';
 
             let emoji = '✅';
-            let status = 'meets';
-            if (parseFloat(coverage) < 80) {
+            if (parseFloat(coreCoverage) < 80) {
               emoji = '⚠️';
-              status = 'below';
             }
 
             const body = `## ${emoji} Coverage Report
 
-            **Total Coverage: ${coverage}%** (threshold: 80%)
+            **Core Library Coverage: ${coreCoverage}%** (threshold: 80%)
+            **Workspace Coverage: ${workspaceCoverage}%** (informational)
 
             <details>
-            <summary>Coverage by file</summary>
+            <summary>Core library coverage details</summary>
 
             \`\`\`
-            ${summary}
+            ${coreSummary}
             \`\`\`
 
             </details>
 
-            ${parseFloat(coverage) < 80 ? '⚠️ **Warning**: Coverage is below the 80% threshold.' : '✅ Coverage meets the 80% threshold.'}
+            <details>
+            <summary>Full workspace coverage details</summary>
+
+            \`\`\`
+            ${workspaceSummary}
+            \`\`\`
+
+            </details>
+
+            ${parseFloat(coreCoverage) < 80 ? '⚠️ **Warning**: Core library coverage is below the 80% threshold.' : '✅ Core library coverage meets the 80% threshold.'}
+
+            **Note:** Only the core library is required to meet the 80% threshold. CLI coverage is tracked but not enforced due to interactive prompts.
             `;
 
             // Find existing comment
@@ -173,12 +204,17 @@ jobs:
 
       - name: Check coverage threshold
         run: |
-          COVERAGE="${{ steps.coverage.outputs.percentage }}"
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Coverage ${COVERAGE}% is below threshold of 80%"
+          CORE_COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
+          WORKSPACE_COVERAGE="${{ steps.coverage.outputs.workspace_percentage }}"
+
+          echo "Core Library Coverage: ${CORE_COVERAGE}%"
+          echo "Workspace Coverage: ${WORKSPACE_COVERAGE}%"
+
+          if (( $(echo "$CORE_COVERAGE < 80" | bc -l) )); then
+            echo "❌ Core library coverage ${CORE_COVERAGE}% is below threshold of 80%"
             exit 1
           fi
-          echo "✅ Coverage ${COVERAGE}% meets threshold of 80%"
+          echo "✅ Core library coverage ${CORE_COVERAGE}% meets threshold of 80%"
 
   test-cli:
     name: Test CLI
