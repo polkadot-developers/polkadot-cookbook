@@ -207,8 +207,16 @@ async fn handle_create(
     // Prompt for recipe type
     let recipe_type_question = "What type of recipe?".polkadot_pink().to_string();
     let recipe_type: RecipeType = select(&recipe_type_question)
-        .item(RecipeType::Sdk, "Polkadot SDK", "Runtime, pallets, and blockchain development")
-        .item(RecipeType::Contracts, "Smart Contracts", "ink! smart contract development")
+        .item(
+            RecipeType::Sdk,
+            "Polkadot SDK",
+            "Runtime, pallets, and blockchain development",
+        )
+        .item(
+            RecipeType::Contracts,
+            "Smart Contracts",
+            "ink! smart contract development",
+        )
         .interact()?;
 
     // Prompt for optional description
@@ -229,20 +237,20 @@ async fn handle_create(
     let create_git_branch = if no_git {
         false
     } else {
-        let git_question = "Create a git branch for this recipe?".polkadot_pink().to_string();
-        confirm(&git_question)
-            .initial_value(true)
-            .interact()?
+        let git_question = "Create a git branch for this recipe?"
+            .polkadot_pink()
+            .to_string();
+        confirm(&git_question).initial_value(true).interact()?
     };
 
     // Prompt for npm install (only if not specified via flag)
     let skip_install = if skip_install {
         true
     } else {
-        let install_question = "Install npm dependencies (vitest, @polkadot/api, etc.)?".polkadot_pink().to_string();
-        !confirm(&install_question)
-            .initial_value(true)
-            .interact()?
+        let install_question = "Install npm dependencies (vitest, @polkadot/api, etc.)?"
+            .polkadot_pink()
+            .to_string();
+        !confirm(&install_question).initial_value(true).interact()?
     };
 
     // Calculate derived values for the summary
@@ -290,9 +298,7 @@ async fn handle_create(
     )?;
 
     let confirm_question = "Continue?".polkadot_pink().to_string();
-    let should_continue = confirm(&confirm_question)
-        .initial_value(true)
-        .interact()?;
+    let should_continue = confirm(&confirm_question).initial_value(true).interact()?;
 
     if !should_continue {
         outro_cancel("Recipe creation cancelled")?;
@@ -312,14 +318,19 @@ async fn handle_create(
     let spinner_msg = if skip_install {
         "Creating recipe project...".polkadot_pink().to_string()
     } else {
-        "Creating recipe project (this may take ~30 seconds for npm install)...".polkadot_pink().to_string()
+        "Creating recipe project (this may take ~30 seconds for npm install)..."
+            .polkadot_pink()
+            .to_string()
     };
     sp.start(&spinner_msg);
 
     let scaffold = Scaffold::new();
     match scaffold.create_project(config).await {
         Ok(project_info) => {
-            sp.stop(&format!("{}", "✅ Recipe created successfully!".polkadot_pink()));
+            sp.stop(&format!(
+                "{}",
+                "✅ Recipe created successfully!".polkadot_pink()
+            ));
 
             let project_title = "📦 Project Created".polkadot_pink().to_string();
             note(
@@ -328,7 +339,11 @@ async fn handle_create(
                     "Slug:       {}\nTitle:      {}\nLocation:   {}\nGit Branch: {}",
                     project_info.slug.polkadot_pink(),
                     project_info.title.polkadot_pink(),
-                    project_info.project_path.display().to_string().polkadot_pink(),
+                    project_info
+                        .project_path
+                        .display()
+                        .to_string()
+                        .polkadot_pink(),
                     project_info.git_branch.as_deref().unwrap_or("(none)")
                 ),
             )?;
@@ -353,10 +368,12 @@ async fn handle_create(
                     format!("{}/tests/", project_info.project_path.display()).polkadot_pink(),
                     "4.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("cd {} && npm test", project_info.project_path.display()).polkadot_pink(),
+                    format!("cd {} && npm test", project_info.project_path.display())
+                        .polkadot_pink(),
                     "5.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/recipe.config.yml", project_info.project_path.display()).polkadot_pink()
+                    format!("{}/recipe.config.yml", project_info.project_path.display())
+                        .polkadot_pink()
                 ),
             )?;
 
@@ -369,7 +386,8 @@ async fn handle_create(
                         "→".dimmed(),
                         "git add -A".polkadot_pink(),
                         "→".dimmed(),
-                        format!("git commit -m \"feat(recipe): add {}\"", project_info.slug).polkadot_pink(),
+                        format!("git commit -m \"feat(recipe): add {}\"", project_info.slug)
+                            .polkadot_pink(),
                         "→".dimmed(),
                         format!("git push origin {}", branch).polkadot_pink(),
                         "📌".polkadot_pink()
@@ -377,7 +395,9 @@ async fn handle_create(
                 )?;
             }
 
-            let outro_msg = "🎉 All set! Happy coding! Check CONTRIBUTING.md for guidelines.".polkadot_pink().to_string();
+            let outro_msg = "🎉 All set! Happy coding! Check CONTRIBUTING.md for guidelines."
+                .polkadot_pink()
+                .to_string();
             outro(&outro_msg)?;
         }
         Err(e) => {
@@ -407,7 +427,11 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
         std::process::exit(1);
     }
 
-    println!("{} {}", "Creating recipe:".polkadot_pink(), slug.polkadot_pink().bold());
+    println!(
+        "{} {}",
+        "Creating recipe:".polkadot_pink(),
+        slug.polkadot_pink().bold()
+    );
 
     // Create project configuration
     let config = ProjectConfig::new(slug)
@@ -419,8 +443,15 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
     let scaffold = Scaffold::new();
     match scaffold.create_project(config).await {
         Ok(project_info) => {
-            println!("{}", "✅ Recipe created successfully!".polkadot_pink().bold());
-            println!("{} {}", "Path:".polkadot_pink(), project_info.project_path.display());
+            println!(
+                "{}",
+                "✅ Recipe created successfully!".polkadot_pink().bold()
+            );
+            println!(
+                "{} {}",
+                "Path:".polkadot_pink(),
+                project_info.project_path.display()
+            );
             if let Some(ref branch) = project_info.git_branch {
                 println!("{} {}", "Git Branch:".polkadot_pink(), branch);
             }
@@ -517,7 +548,10 @@ async fn handle_versions(
             intro("Validation Result")?;
 
             let mut valid_keys = String::new();
-            valid_keys.push_str(&format!("Found {} valid version keys:\n\n", resolved.versions.len()));
+            valid_keys.push_str(&format!(
+                "Found {} valid version keys:\n\n",
+                resolved.versions.len()
+            ));
             for key in resolved.versions.keys() {
                 valid_keys.push_str(&format!("• {}\n", key.polkadot_pink()));
             }
@@ -570,16 +604,14 @@ async fn handle_versions(
                     Some(VersionSource::Recipe) => "recipe".polkadot_pink().to_string(),
                     None => "unknown".dimmed().to_string(),
                 };
-                versions_text.push_str(&format!("{}  {}  ({})\n",
+                versions_text.push_str(&format!(
+                    "{}  {}  ({})\n",
                     name.polkadot_pink(),
                     version,
                     source
                 ));
             } else {
-                versions_text.push_str(&format!("{}  {}\n",
-                    name.polkadot_pink(),
-                    version
-                ));
+                versions_text.push_str(&format!("{}  {}\n", name.polkadot_pink(), version));
             }
         }
 

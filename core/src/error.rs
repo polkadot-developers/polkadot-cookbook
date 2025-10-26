@@ -66,7 +66,7 @@ pub enum CookbookError {
         /// Command that failed
         command: String,
         /// Error message
-        message: String
+        message: String,
     },
 }
 
