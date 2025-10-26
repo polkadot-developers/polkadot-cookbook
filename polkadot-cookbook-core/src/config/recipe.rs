@@ -37,11 +37,7 @@ pub struct RecipeConfig {
 
 impl RecipeConfig {
     /// Create a new recipe configuration
-    pub fn new(
-        name: impl Into<String>,
-        slug: impl Into<String>,
-        recipe_type: RecipeType,
-    ) -> Self {
+    pub fn new(name: impl Into<String>, slug: impl Into<String>, recipe_type: RecipeType) -> Self {
         Self {
             name: name.into(),
             slug: slug.into(),

@@ -160,9 +160,6 @@ mod tests {
     #[test]
     fn test_project_path() {
         let config = ProjectConfig::new("my-recipe");
-        assert_eq!(
-            config.project_path(),
-            PathBuf::from("recipes/my-recipe")
-        );
+        assert_eq!(config.project_path(), PathBuf::from("recipes/my-recipe"));
     }
 }
