@@ -9,19 +9,28 @@ fn test_all_templates_return_non_empty() {
     // JustfileTemplate
     let justfile = JustfileTemplate::new();
     let content = justfile.generate();
-    assert!(!content.is_empty(), "JustfileTemplate should return non-empty content");
+    assert!(
+        !content.is_empty(),
+        "JustfileTemplate should return non-empty content"
+    );
     assert!(content.len() > 10, "JustfileTemplate content too short");
 
     // ReadmeTemplate
     let readme = ReadmeTemplate::new("test-recipe");
     let content = readme.generate();
-    assert!(!content.is_empty(), "ReadmeTemplate should return non-empty content");
+    assert!(
+        !content.is_empty(),
+        "ReadmeTemplate should return non-empty content"
+    );
     assert!(content.len() > 100, "ReadmeTemplate content too short");
 
     // TestTemplate
     let test = TestTemplate::new("test-recipe");
     let content = test.generate();
-    assert!(!content.is_empty(), "TestTemplate should return non-empty content");
+    assert!(
+        !content.is_empty(),
+        "TestTemplate should return non-empty content"
+    );
     assert!(content.len() > 50, "TestTemplate content too short");
 
     // RecipeYmlTemplate
@@ -35,13 +44,19 @@ fn test_all_templates_return_non_empty() {
         true,
     );
     let content = recipe_yml.generate();
-    assert!(!content.is_empty(), "RecipeYmlTemplate should return non-empty content");
+    assert!(
+        !content.is_empty(),
+        "RecipeYmlTemplate should return non-empty content"
+    );
     assert!(content.len() > 20, "RecipeYmlTemplate content too short");
 
     // VersionsYmlTemplate
     let versions_yml = VersionsYmlTemplate;
     let content = versions_yml.generate();
-    assert!(!content.is_empty(), "VersionsYmlTemplate should return non-empty content");
+    assert!(
+        !content.is_empty(),
+        "VersionsYmlTemplate should return non-empty content"
+    );
     assert!(content.len() > 20, "VersionsYmlTemplate content too short");
 }
 
@@ -144,14 +159,8 @@ fn test_test_template_with_different_slugs() {
 fn test_recipe_yml_template_variations() {
     use polkadot_cookbook_core::config::RecipeType;
     // Test with different inputs
-    let template1 = RecipeYmlTemplate::new(
-        "slug-1",
-        "Title 1",
-        "Desc 1",
-        RecipeType::Sdk,
-        "cat1",
-        true,
-    );
+    let template1 =
+        RecipeYmlTemplate::new("slug-1", "Title 1", "Desc 1", RecipeType::Sdk, "cat1", true);
     let content1 = template1.generate();
     assert!(content1.contains("slug-1"));
     assert!(content1.contains("Title 1"));

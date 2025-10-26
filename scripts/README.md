@@ -2,41 +2,6 @@
 
 Utility scripts for Polkadot Cookbook development and CI/CD.
 
-## Setup Scripts
-
-### `setup-pre-commit.sh`
-
-Installs and configures pre-commit hooks for automated code quality checks.
-
-**Usage:**
-```bash
-./scripts/setup-pre-commit.sh
-```
-
-**What it does:**
-- Installs `pre-commit` via pip (if not already installed)
-- Configures git hooks for pre-commit and commit-msg stages
-- Enables automated checks for Rust formatting, linting, and more
-
-**See:** [docs/pre-commit-hooks.md](../docs/pre-commit-hooks.md)
-
-### `check-commit-msg.sh`
-
-Validates commit message format against conventional commit standards (warning only).
-
-**Usage:**
-```bash
-# Automatically called by pre-commit hook
-# Can also test manually:
-./scripts/check-commit-msg.sh .git/COMMIT_EDITMSG
-```
-
-**What it does:**
-- Checks if commit follows conventional commit format
-- Shows a helpful warning with examples if format doesn't match
-- **Non-blocking** - always allows commit to proceed
-- Skips merge commits and reverts
-
 ## Tool Installation Scripts
 
 ### `setup-rust.sh`
