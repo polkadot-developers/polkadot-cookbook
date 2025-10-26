@@ -36,7 +36,7 @@ The workflow automatically triggers on:
 
 2. **Create or modify a recipe** in the `recipes/` directory:
    ```bash
-   create-recipe create test-version-workflow --skip-install --no-git
+   dot create test-version-workflow --skip-install --no-git
    ```
 
 3. **Customize versions.yml** (optional):
@@ -79,13 +79,13 @@ Simulate the workflow steps locally:
 cd /path/to/polkadot-cookbook
 
 # Build the CLI (same as workflow)
-cargo build --package polkadot-cookbook-cli --release
+cargo build --release
 
 # Test version resolution for a recipe
 TUTORIAL_SLUG="test-version-workflow"
 
 # Resolve versions (same as workflow)
-eval $(./target/release/create-recipe versions $TUTORIAL_SLUG --ci)
+eval $(./target/release/dot versions $TUTORIAL_SLUG --ci)
 
 # Verify environment variables are set
 echo "RUST=$RUST"
@@ -151,7 +151,7 @@ versions:
 
 **Verify locally:**
 ```bash
-create-recipe versions test-version-workflow --show-source
+dot versions test-version-workflow --show-source
 ```
 
 ## Troubleshooting
@@ -167,7 +167,7 @@ create-recipe versions test-version-workflow --show-source
 
 ### Version Resolution Fails
 
-**Symptom:** `create-recipe versions` command fails
+**Symptom:** `dot versions` command fails
 
 **Solution:**
 - Verify `versions.yml` syntax is valid YAML
@@ -183,7 +183,7 @@ create-recipe versions test-version-workflow --show-source
 - Verify key names match global `versions.yml` exactly
 - Use `--show-source` flag to debug which versions are from where:
   ```bash
-  create-recipe versions <slug> --show-source
+  dot versions <slug> --show-source
   ```
 
 ### Workflow Doesn't Trigger
@@ -206,14 +206,14 @@ When adding new version-managed dependencies:
      new_tool: "1.0.0"  # New dependency
    ```
 
-2. **Update template** in `polkadot-cookbook-core/src/templates/versions_yml.rs`:
+2. **Update template** in `core/src/templates/versions_yml.rs`:
    ```rust
    # new_tool: "1.0.0"
    ```
 
 3. **Test resolution:**
    ```bash
-   create-recipe versions --show-source
+   dot versions --show-source
    ```
 
 4. **Create test recipe with override:**
@@ -224,7 +224,7 @@ When adding new version-managed dependencies:
 
 5. **Verify override works:**
    ```bash
-   create-recipe versions test-recipe --show-source
+   dot versions test-recipe --show-source
    ```
 
 ## Continuous Validation
@@ -233,29 +233,29 @@ Run these checks regularly:
 
 ```bash
 # Test CLI builds
-cargo build --package polkadot-cookbook-cli --release
+cargo build --release
 
 # Test SDK tests pass
-cargo test --package polkadot-cookbook-core
+cargo test --package core
 
 # Test global version resolution
-create-recipe versions
+dot versions
 
 # Validate global versions.yml
-create-recipe versions --validate
+dot versions --validate
 
 # Test recipe override resolution
-create-recipe versions test-version-workflow --show-source
+dot versions test-version-workflow --show-source
 
 # Validate recipe versions.yml
-create-recipe versions test-version-workflow --validate
+dot versions test-version-workflow --validate
 
 # Test CI format
-create-recipe versions test-version-workflow --ci
+dot versions test-version-workflow --ci
 ```
 
 ## Further Reading
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Version Management Documentation](../polkadot-cookbook-core/VERSION_MANAGEMENT.md)
+- [Version Management Documentation](../core/VERSION_MANAGEMENT.md)
 - [Workflow File](../.github/workflows/test-recipes.yml)

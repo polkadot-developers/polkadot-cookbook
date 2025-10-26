@@ -1,0 +1,10 @@
+# Clippy configuration for Polkadot Cookbook
+
+# Allow up to 8 arguments in functions (default is 7)
+too-many-arguments-threshold = 8
+
+# Set type complexity threshold
+type-complexity-threshold = 500
+
+# Single char binding names threshold
+single-char-binding-names-threshold = 5

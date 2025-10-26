@@ -15,7 +15,7 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
 - [Recipe Contribution Workflow](#recipe-contribution-workflow)
   - [Step 1: Propose Your Recipe](#step-1-propose-your-recipe)
   - [Step 2: Setup Your Environment](#step-2-setup-your-environment)
-  - [Step 3: Create Recipe Structure](#step-3-create-recipe-structure)
+  - [Step 3: Create Recipe Structure](#step-3-dot-structure)
   - [Step 4: Write Your Recipe](#step-4-write-your-recipe)
   - [Step 5: Test Your Recipe](#step-5-test-your-recipe)
   - [Step 6: Submit a Pull Request](#step-6-submit-a-pull-request)
@@ -37,21 +37,23 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
 If you find a bug in a recipe or the infrastructure:
 
 1. **Check existing issues** to avoid duplicates
-2. **Use the bug report template** when creating a new issue
+2. **Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new/choose)** and select "Custom Blank Issue"
 3. **Provide detailed information**:
    - Steps to reproduce
    - Expected vs actual behavior
    - Environment details (OS, Node version, Rust version)
    - Error messages or logs
+   - Link to the recipe or file with the issue
 
 ### Suggesting Enhancements
 
 We welcome suggestions for improvements:
 
-1. **Open an issue** using the enhancement template
-2. **Describe the enhancement** clearly
+1. **Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new/choose)** and select "Custom Blank Issue"
+2. **Describe the enhancement** clearly with a descriptive title
 3. **Explain the use case** and benefits
 4. **Provide examples** if applicable
+5. **Tag appropriately** (enhancement, documentation, etc.)
 
 ### Contributing Recipes
 
@@ -115,15 +117,36 @@ Before contributing, ensure you have the following installed:
    git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
    ```
 
-4. **Build the Polkadot Cookbook SDK** (first time only):
+4. **Build the CLI tool** (first time only):
    ```bash
-   cargo build --workspace --release
+   cargo build --release
    ```
 
 5. **Verify your setup**:
    ```bash
-   cargo run --package polkadot-cookbook-cli -- --help
+   ./target/release/dot --help
    ```
+
+   You should see the CLI help with available commands. The CLI provides an interactive experience to guide you through recipe creation!
+
+6. **Pre-commit hooks** (automatically installed):
+
+   Git hooks are **automatically installed** when you run `cargo build` or `cargo test` via [cargo-husky](https://github.com/rhysd/cargo-husky).
+
+   **No manual setup required!** The hooks run these checks before each commit:
+   - ✅ `cargo fmt` - Formats Rust code (blocking)
+   - ✅ `cargo clippy` - Lints Rust code (blocking)
+   - ⚠️ Conventional commit message format (warning only)
+
+   **Skip hooks**: If needed, use `git commit --no-verify` (use sparingly!)
+
+   **Run checks manually**:
+   ```bash
+   cargo fmt --all
+   cargo clippy --all-targets --all-features
+   ```
+
+   See [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) for more details.
 
 ## Recipe Contribution Workflow
 
@@ -131,56 +154,81 @@ Before contributing, ensure you have the following installed:
 
 **All recipes must be proposed and approved before starting work.**
 
-1. Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new?template=01-recipe-proposal.md) using the "Recipe Proposal" template
+1. Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new/choose) and select "Recipe Proposal"
 
-2. Provide the following information:
-   - **Title**: Clear, descriptive title
-   - **Learning Objectives**: What will readers learn?
-   - **Target Audience**: Beginner, intermediate, or advanced?
-   - **Prerequisites**: Required knowledge or setup
-   - **Estimated Length**: How long will the recipe take?
-   - **Tools/Versions**: Specific tools or dependencies needed
-   - **Outline**: High-level structure of the recipe
+2. The template will guide you to provide:
+   - **Summary**: What will users learn? (1-2 sentences)
+   - **Audience**: Level (beginner/intermediate/advanced) and prerequisites
+   - **Tools & Versions**: Key tools with versions you plan to use
+   - **Outline**: High-level steps and expected result
+   - **Type**: Polkadot SDK or Smart Contracts recipe
+   - **Notes**: Any additional context for reviewers
 
 3. **Wait for approval** and assignment of a recipe slug (e.g., `my-recipe`)
 
 ### Step 2: Setup Your Environment
 
-1. **Sync with upstream**:
-   ```bash
-   git fetch upstream
-   git checkout master
-   git merge upstream/master
-   ```
+**Sync with upstream**:
+```bash
+git fetch upstream
+git checkout master
+git merge upstream/master
+```
 
-2. **Create a new branch**:
-   ```bash
-   git checkout -b feat/recipe-my-recipe
-   ```
+> **Note**: You don't need to manually create a git branch - the CLI will do this for you automatically in the next step!
 
 ### Step 3: Create Recipe Structure
 
-Run the recipe creation CLI with your approved slug:
+The CLI tool provides an interactive experience to create your recipe:
 
 ```bash
-cargo run --package polkadot-cookbook-cli -- my-recipe
+./target/release/dot create my-recipe
 ```
 
-**Available options:**
+Or simply:
+
+```bash
+./target/release/dot my-recipe
+```
+
+**Interactive Prompts:**
+
+The CLI will guide you through:
+1. **Recipe slug** - Confirmed or prompted (lowercase, dashes only)
+2. **Recipe type** - Choose between Polkadot SDK or Smart Contracts
+3. **Description** - Optional description for your recipe
+4. **Git branch** - Confirm creation of feature branch (default: yes)
+5. **Dependencies** - Confirm npm install (default: yes)
+6. **Summary** - Review configuration before creation
+
+**Non-Interactive Mode:**
+
+For scripts or CI/CD:
+```bash
+./target/release/dot create my-recipe --non-interactive
+```
+
+**Available Options:**
 - `--skip-install` - Skip npm package installation
 - `--no-git` - Skip automatic git branch creation
+- `--non-interactive` - Skip prompts, use defaults
 
-**Example with options:**
+**Example:**
 ```bash
-cargo run --package polkadot-cookbook-cli -- my-recipe --skip-install --no-git
+# Interactive (recommended for first-time users)
+./target/release/dot my-recipe
+
+# Non-interactive with custom options
+./target/release/dot create my-recipe --skip-install --no-git --non-interactive
 ```
 
-This command will:
-- Create a feature branch (unless `--no-git` is specified)
-- Scaffold the recipe directory structure
-- Set up testing infrastructure
-- Install dependencies (unless `--skip-install` is specified)
-- Generate boilerplate files
+**What the CLI does:**
+- ✓ Creates a feature branch `feat/my-recipe` (unless `--no-git`)
+- ✓ Scaffolds the recipe directory structure
+- ✓ Generates template files with your metadata
+- ✓ Sets up testing infrastructure
+- ✓ Installs npm dependencies (unless `--skip-install`)
+- ✓ Shows next steps and git commands
 
 **Generated structure**:
 ```
@@ -191,9 +239,17 @@ recipes/my-recipe/
 ├── tsconfig.json          # TypeScript configuration
 ├── vitest.config.ts       # Test configuration
 ├── justfile               # Development commands (optional)
+├── versions.yml           # Recipe-specific version overrides
+├── .gitignore             # Git ignore file
 ├── src/                   # Recipe code
-└── tests/                 # End-to-end tests
+│   └── .gitkeep
+├── tests/                 # End-to-end tests
+│   └── my-recipe-e2e.test.ts
+└── scripts/               # Helper scripts
+    └── .gitkeep
 ```
+
+> **Tip**: After creation, the CLI displays all the next steps and exact git commands you'll need!
 
 ### Step 4: Write Your Recipe
 
@@ -208,10 +264,12 @@ recipes/my-recipe/
    - Include inline comments for complex logic
    - Use meaningful variable and function names
 
-3. **Configure your recipe** in `recipe.config.yml`
-   - Set accurate metadata (name, description, category)
-   - Specify if a node is required (`needs_node`)
-   - Configure build and runtime settings if applicable
+3. **Review and update your recipe configuration** in `recipe.config.yml`
+   - The CLI pre-populated name, slug, and description from your input
+   - Update the description if needed (or if you skipped it during creation)
+   - Verify `needs_node` is correct for your recipe (default: `true`)
+   - Update `type` field (`sdk` or `contracts`) to match your recipe type
+   - Add or update category if needed
 
 See [Recipe Structure](#recipe-structure) for detailed requirements.
 
@@ -236,6 +294,8 @@ See [Testing Requirements](#testing-requirements) for details.
 
 ### Step 6: Submit a Pull Request
 
+> **Note**: The CLI already created your feature branch `feat/my-recipe` if you didn't use `--no-git`. You just need to commit and push!
+
 1. **Commit your changes**:
    ```bash
    git add .
@@ -250,8 +310,11 @@ See [Testing Requirements](#testing-requirements) for details.
 
 2. **Push to your fork**:
    ```bash
-   git push origin feat/recipe-my-recipe
+   # The CLI creates branches with the pattern: feat/{recipe-slug}
+   git push origin feat/my-recipe
    ```
+
+   > **Tip**: The CLI output shows the exact git commands you need to run!
 
 3. **Create a Pull Request**:
    - Go to the [repository](https://github.com/polkadot-developers/polkadot-cookbook)
@@ -482,8 +545,8 @@ For more detailed information, see:
 ### Resources
 
 - **Example Recipe**: `recipes/zero-to-hero/`
-- **[CLI Documentation](polkadot-cookbook-cli/)** - CLI tool reference
-- **[SDK Documentation](polkadot-cookbook-core/)** - Core library API
+- **[CLI Documentation](cli/)** - CLI tool reference
+- **[SDK Documentation](core/)** - Core library API
 - **[Polkadot Documentation](https://docs.polkadot.com)**
 
 ### Communication
