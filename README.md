@@ -1,11 +1,21 @@
 <div align="center">
 
-<img src="assets/polkadot-chef.svg" alt="Polkadot Chef" width="80" height="80" />
+<div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+  <img src="assets/polkadot-chef.svg" alt="Polkadot Chef" width="80" height="80" />
+  <div>
+    <div style="font-size: 2.5em; font-weight: bold; margin: 0; line-height: 1;">
+      <img height="50px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" style="vertical-align: middle;" />
+      <img height="50px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" style="vertical-align: middle;" />
+    </div>
+    <div style="font-size: 2.5em; font-weight: bold; margin: 0; line-height: 1;">
+      <h1>Polkadot Cookbook</h1>
+    </div>
+  </div>
+</div>
 
-# Polkadot Cookbook
+**Practical, tested recipes for Polkadot SDK development**
 
-<img height="70px" alt="Polkadot SDK Logo" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only"/>
-<img height="70px" alt="Polkadot SDK Logo" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only"/>
+[**Browse Recipes**](#-recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#-documentation)
 
 <br/>
 
@@ -15,10 +25,6 @@
 [![Kitchensink Parachain](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/build-kitchensink-parachain.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/build-kitchensink-parachain.yml)
 [![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org/)
 [![Node](https://img.shields.io/badge/node-20%2B-green.svg)](https://nodejs.org/)
-
-**Practical, tested recipes for Polkadot SDK development**
-
-[**Browse Recipes**](#-recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#-documentation)
 
 </div>
 
