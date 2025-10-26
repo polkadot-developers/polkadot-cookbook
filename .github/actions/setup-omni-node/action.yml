@@ -64,7 +64,10 @@ runs:
       shell: bash
       run: |
         echo "🔍 Verifying polkadot-omni-node installation..."
-        
+
+        # Add to PATH for this step since GITHUB_PATH only affects subsequent steps
+        export PATH="${HOME}/.cargo/bin:$PATH"
+
         if ! command -v polkadot-omni-node &> /dev/null; then
           echo "❌ polkadot-omni-node not found in PATH"
           exit 1
