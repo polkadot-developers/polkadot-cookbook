@@ -64,7 +64,10 @@ runs:
       shell: bash
       run: |
         echo "🔍 Verifying chain-spec-builder installation..."
-        
+
+        # Add to PATH for this step since GITHUB_PATH only affects subsequent steps
+        export PATH="${HOME}/.cargo/bin:$PATH"
+
         if ! command -v chain-spec-builder &> /dev/null; then
           echo "❌ chain-spec-builder not found in PATH"
           exit 1
