@@ -212,7 +212,7 @@ jobs:
 
       - name: Test CLI - Valid slug
         run: |
-          cargo run --package cli -- test-ci-valid --skip-install --no-git
+          cargo run --package cli -- test-ci-valid --skip-install --no-git --non-interactive
           if [ ! -f "recipes/test-ci-valid/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
@@ -221,7 +221,7 @@ jobs:
 
       - name: Test CLI - Invalid slug
         run: |
-          if cargo run --package cli -- Invalid-Slug 2>&1 | grep -q "Invalid recipe slug"; then
+          if cargo run --package cli -- Invalid-Slug --non-interactive 2>&1 | grep -q "Invalid recipe slug"; then
             echo "✓ Invalid slug error message found"
             exit 0
           else
