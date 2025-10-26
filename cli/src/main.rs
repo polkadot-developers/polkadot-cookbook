@@ -433,11 +433,13 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
         slug.polkadot_pink().bold()
     );
 
-    // Create project configuration
+    // Create project configuration with defaults
     let config = ProjectConfig::new(slug)
         .with_destination(PathBuf::from("recipes"))
         .with_git_init(!no_git)
-        .with_skip_install(skip_install);
+        .with_skip_install(skip_install)
+        .with_recipe_type(RecipeType::Sdk) // Default to SDK
+        .with_description("Replace with a short description.".to_string());
 
     // Create the project
     let scaffold = Scaffold::new();
