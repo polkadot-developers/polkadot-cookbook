@@ -5,15 +5,15 @@ on:
     branches:
       - master
     paths:
-      - 'polkadot-cookbook-core/**'
-      - 'polkadot-cookbook-cli/**'
+      - 'core/**'
+      - 'cli/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/test-sdk.yml'
   pull_request:
     paths:
-      - 'polkadot-cookbook-core/**'
-      - 'polkadot-cookbook-cli/**'
+      - 'core/**'
+      - 'cli/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/test-sdk.yml'
@@ -54,35 +54,167 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check formatting
-        run: cargo fmt --check --package polkadot-cookbook-core
+        run: cargo fmt --check --package core
 
       - name: Run clippy
-        run: cargo clippy --package polkadot-cookbook-core -- -D warnings
+        run: cargo clippy --package core -- -D warnings
 
       - name: Build core library
-        run: cargo build --package polkadot-cookbook-core --verbose
+        run: cargo build --package core --verbose
 
       - name: Run unit tests
-        run: cargo test --package polkadot-cookbook-core --lib --verbose
+        run: cargo test --package core --lib --verbose
 
       - name: Run integration tests
-        run: cargo test --package polkadot-cookbook-core --test integration_test --verbose
+        run: cargo test --package core --test integration_test --verbose
 
       - name: Run doc tests
-        run: cargo test --package polkadot-cookbook-core --doc --verbose
+        run: cargo test --package core --doc --verbose
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Generate coverage report
-        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+        run: |
+          # Generate workspace coverage (for informational purposes)
+          cargo llvm-cov --workspace --summary-only > coverage-workspace.txt
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+          # Generate core package coverage (for threshold check)
+          cargo llvm-cov --package core --summary-only > coverage-core.txt
+
+          # Generate JSON report
+          cargo llvm-cov --workspace --json --output-path coverage.json
+
+          echo "=== Workspace Coverage ==="
+          cat coverage-workspace.txt
+          echo ""
+          echo "=== Core Library Coverage (used for threshold) ==="
+          cat coverage-core.txt
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          # Extract core package coverage for threshold check
+          CORE_COVERAGE=$(cat coverage-core.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
+
+          # Extract workspace coverage for badge
+          WORKSPACE_COVERAGE=$(cat coverage-workspace.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
+
+          echo "core_percentage=$CORE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "workspace_percentage=$WORKSPACE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "Core Library Coverage: $CORE_COVERAGE%"
+          echo "Workspace Coverage: $WORKSPACE_COVERAGE%"
+
+      - name: Generate coverage badge
+        run: |
+          # Use core library coverage for badge
+          COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            COLOR="brightgreen"
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          mkdir -p .github/badges
+          curl -o .github/badges/coverage.svg "https://img.shields.io/badge/core%20coverage-${COVERAGE}%25-${COLOR}"
+
+      - name: Commit coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/coverage.svg
+          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
         with:
-          files: lcov.info
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const coreSummary = fs.readFileSync('coverage-core.txt', 'utf8');
+            const workspaceSummary = fs.readFileSync('coverage-workspace.txt', 'utf8');
+            const coreCoverage = '${{ steps.coverage.outputs.core_percentage }}';
+            const workspaceCoverage = '${{ steps.coverage.outputs.workspace_percentage }}';
+
+            let emoji = '✅';
+            if (parseFloat(coreCoverage) < 80) {
+              emoji = '⚠️';
+            }
+
+            const body = `## ${emoji} Coverage Report
+
+            **Core Library Coverage: ${coreCoverage}%** (threshold: 80%)
+            **Workspace Coverage: ${workspaceCoverage}%** (informational)
+
+            <details>
+            <summary>Core library coverage details</summary>
+
+            \`\`\`
+            ${coreSummary}
+            \`\`\`
+
+            </details>
+
+            <details>
+            <summary>Full workspace coverage details</summary>
+
+            \`\`\`
+            ${workspaceSummary}
+            \`\`\`
+
+            </details>
+
+            ${parseFloat(coreCoverage) < 80 ? '⚠️ **Warning**: Core library coverage is below the 80% threshold.' : '✅ Core library coverage meets the 80% threshold.'}
+
+            **Note:** Only the core library is required to meet the 80% threshold. CLI coverage is tracked but not enforced due to interactive prompts.
+            `;
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Coverage Report')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Check coverage threshold
+        run: |
+          CORE_COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
+          WORKSPACE_COVERAGE="${{ steps.coverage.outputs.workspace_percentage }}"
+
+          echo "Core Library Coverage: ${CORE_COVERAGE}%"
+          echo "Workspace Coverage: ${WORKSPACE_COVERAGE}%"
+
+          if (( $(echo "$CORE_COVERAGE < 80" | bc -l) )); then
+            echo "❌ Core library coverage ${CORE_COVERAGE}% is below threshold of 80%"
+            exit 1
+          fi
+          echo "✅ Core library coverage ${CORE_COVERAGE}% meets threshold of 80%"
 
   test-cli:
     name: Test CLI
@@ -112,11 +244,11 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build CLI
-        run: cargo build --package polkadot-cookbook-cli --verbose
+        run: cargo build --package cli --verbose
 
       - name: Test CLI - Valid slug
         run: |
-          cargo run --package polkadot-cookbook-cli -- test-ci-valid --skip-install --no-git
+          cargo run --package cli -- test-ci-valid --skip-install --no-git --non-interactive
           if [ ! -f "recipes/test-ci-valid/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
@@ -125,7 +257,7 @@ jobs:
 
       - name: Test CLI - Invalid slug
         run: |
-          if cargo run --package polkadot-cookbook-cli -- Invalid-Slug 2>&1 | grep -q "Invalid recipe slug"; then
+          if cargo run --package cli -- Invalid-Slug --non-interactive 2>&1 | grep -q "Invalid recipe slug"; then
             echo "✓ Invalid slug error message found"
             exit 0
           else
@@ -134,7 +266,7 @@ jobs:
           fi
 
       - name: Test CLI - Help
-        run: cargo run --package polkadot-cookbook-cli -- --help
+        run: cargo run --package cli -- --help
 
   build-workspace:
     name: Build Workspace

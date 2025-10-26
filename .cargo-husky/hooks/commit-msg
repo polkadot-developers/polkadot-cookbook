@@ -1,0 +1,37 @@
+#!/bin/sh
+# Commit message validation hook
+# Warns about conventional commit format but doesn't block commits
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Skip merge commits and reverts
+if echo "$COMMIT_MSG" | grep -qE "^(Merge|Revert)"; then
+    exit 0
+fi
+
+# Valid conventional commit types
+VALID_TYPES="feat|fix|docs|test|refactor|chore|ci|build|perf|style"
+PATTERN="^($VALID_TYPES)(\(.+\))?: .{1,}"
+
+if ! echo "$COMMIT_MSG" | head -n1 | grep -qE "$PATTERN"; then
+    echo ""
+    echo "⚠️  WARNING: Commit message doesn't follow conventional commit format"
+    echo ""
+    echo "  Recommended format: <type>(<scope>): <description>"
+    echo ""
+    echo "  Examples:"
+    echo "    feat(cli): add recipe type selection"
+    echo "    fix(core): handle missing versions.yml"
+    echo "    docs: update contributing guidelines"
+    echo "    test: add integration tests for git ops"
+    echo ""
+    echo "  Valid types:"
+    echo "    feat, fix, docs, test, refactor, chore, ci, build, perf, style"
+    echo ""
+    echo "  ℹ️  This is just a warning - your commit will proceed."
+    echo ""
+fi
+
+# Always allow commit to proceed
+exit 0

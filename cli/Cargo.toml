@@ -1,0 +1,39 @@
+[package]
+name = "cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI wrapper for Polkadot Cookbook Core library"
+keywords = ["polkadot", "substrate", "blockchain", "recipe", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "dot"
+path = "src/main.rs"
+
+[dependencies]
+# Core library
+core = { path = "../core" }
+
+# Async runtime
+tokio.workspace = true
+
+# CLI
+clap.workspace = true
+colored.workspace = true
+cliclack.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Error handling
+anyhow.workspace = true
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.1"
+tempfile = "3.13"
+cargo-husky = { version = "1", features = ["user-hooks"] }

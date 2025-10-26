@@ -1,0 +1,52 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main body (rounded Polkadot-inspired shape) -->
+  <circle cx="60" cy="65" r="38" fill="#E6007A"/>
+
+  <!-- Polkadot pattern dots on body -->
+  <circle cx="50" cy="55" r="4" fill="#FF1F8F" opacity="0.6"/>
+  <circle cx="70" cy="60" r="4" fill="#FF1F8F" opacity="0.6"/>
+  <circle cx="60" cy="75" r="4" fill="#FF1F8F" opacity="0.6"/>
+  <circle cx="50" cy="75" r="3" fill="#FF1F8F" opacity="0.4"/>
+  <circle cx="70" cy="75" r="3" fill="#FF1F8F" opacity="0.4"/>
+
+  <!-- Chef's hat (white) -->
+  <ellipse cx="60" cy="35" rx="30" ry="12" fill="white"/>
+  <rect x="40" y="30" width="40" height="12" fill="white"/>
+  <ellipse cx="60" cy="20" rx="24" ry="15" fill="white"/>
+
+  <!-- Hat highlights -->
+  <ellipse cx="55" cy="18" rx="8" ry="5" fill="#F5F5F5" opacity="0.5"/>
+
+  <!-- Eyes -->
+  <circle cx="50" cy="60" r="5" fill="white"/>
+  <circle cx="70" cy="60" r="5" fill="white"/>
+  <circle cx="51" cy="61" r="3" fill="#1a1a1a"/>
+  <circle cx="71" cy="61" r="3" fill="#1a1a1a"/>
+
+  <!-- Happy smile -->
+  <path d="M 48 72 Q 60 78 72 72" stroke="#D4006B" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Cute rosy cheeks -->
+  <ellipse cx="42" cy="68" rx="5" ry="3" fill="#FF5FA8" opacity="0.5"/>
+  <ellipse cx="78" cy="68" rx="5" ry="3" fill="#FF5FA8" opacity="0.5"/>
+
+  <!-- Arms holding a cookbook -->
+  <ellipse cx="28" cy="70" rx="8" ry="16" fill="#E6007A" transform="rotate(-20 28 70)"/>
+  <ellipse cx="92" cy="70" rx="8" ry="16" fill="#E6007A" transform="rotate(20 92 70)"/>
+
+  <!-- Little cookbook -->
+  <rect x="52" y="85" width="16" height="12" fill="#562E5C" rx="1"/>
+  <rect x="53" y="86" width="14" height="10" fill="#7B4088" rx="1"/>
+  <line x1="60" y1="87" x2="60" y2="95" stroke="#E6007A" stroke-width="1"/>
+
+  <!-- Sparkles around the character -->
+  <g opacity="0.8">
+    <path d="M 20 30 L 22 32 L 20 34 L 18 32 Z" fill="#FFB6D9"/>
+    <path d="M 100 40 L 102 42 L 100 44 L 98 42 Z" fill="#FFB6D9"/>
+    <path d="M 95 85 L 97 87 L 95 89 L 93 87 Z" fill="#FFB6D9"/>
+    <path d="M 25 80 L 27 82 L 25 84 L 23 82 Z" fill="#FFB6D9"/>
+  </g>
+
+  <!-- Shadow -->
+  <ellipse cx="60" cy="102" rx="25" ry="4" fill="#000000" opacity="0.1"/>
+</svg>

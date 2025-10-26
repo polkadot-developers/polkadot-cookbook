@@ -27,3 +27,6 @@ yarn-error.log*
 # Environment
 .env
 .env.local
+
+# Pre-commit
+.pre-commit-cache/

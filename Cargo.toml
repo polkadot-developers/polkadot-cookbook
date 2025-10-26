@@ -1,8 +1,9 @@
 [workspace]
 members = [
-    "polkadot-cookbook-core",
-    "polkadot-cookbook-cli",
+    "core",
+    "cli",
 ]
+default-members = ["cli"]
 resolver = "2"
 
 [workspace.package]
