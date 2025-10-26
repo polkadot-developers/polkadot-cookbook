@@ -27,7 +27,7 @@
 //!
 //! // Load tutorial-specific versions (optional)
 //! let tutorial = VersionLoader::load_tutorial(
-//!     Path::new("tutorials/my-tutorial/versions.yml")
+//!     Path::new("recipes/my-recipe/versions.yml")
 //! ).await?;
 //!
 //! // Merge configurations
