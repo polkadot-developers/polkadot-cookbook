@@ -1,14 +1,14 @@
 /// Template generation for recipe scaffolding
 pub mod justfile;
 pub mod readme;
-pub mod test;
 pub mod recipe_yml;
+pub mod test;
 pub mod versions_yml;
 
 pub use justfile::JustfileTemplate;
 pub use readme::ReadmeTemplate;
-pub use test::TestTemplate;
 pub use recipe_yml::RecipeYmlTemplate;
+pub use test::TestTemplate;
 pub use versions_yml::VersionsYmlTemplate;
 
 /// Template trait for all template generators

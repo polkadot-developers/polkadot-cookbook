@@ -6,7 +6,7 @@
 use crate::config::{ProjectConfig, ProjectInfo};
 use crate::error::{CookbookError, Result};
 use crate::templates::{
-    JustfileTemplate, ReadmeTemplate, Template, TestTemplate, RecipeYmlTemplate,
+    JustfileTemplate, ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
     VersionsYmlTemplate,
 };
 use std::path::Path;
@@ -163,11 +163,8 @@ impl Scaffold {
 
         // Generate recipe.config.yml
         let recipe_yml_content = RecipeYmlTemplate::new(&config.slug, &config.title).generate();
-        self.write_file(
-            &project_path.join("recipe.config.yml"),
-            &recipe_yml_content,
-        )
-        .await?;
+        self.write_file(&project_path.join("recipe.config.yml"), &recipe_yml_content)
+            .await?;
 
         // Generate README.md
         let readme_content = ReadmeTemplate::new(&config.slug).generate();
