@@ -71,6 +71,19 @@ jobs:
       - name: Run doc tests
         run: cargo test --package polkadot-cookbook-core --doc --verbose
 
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Generate coverage report
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   test-cli:
     name: Test CLI
     runs-on: ubuntu-latest
