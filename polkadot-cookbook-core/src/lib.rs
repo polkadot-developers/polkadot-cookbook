@@ -67,14 +67,14 @@
 //! ```
 
 // Re-export commonly used types
-pub use config::{ProjectConfig, ProjectInfo, TutorialConfig, TutorialType};
+pub use config::{ProjectConfig, ProjectInfo, RecipeConfig, RecipeType};
 pub use error::{CookbookError, Result};
 pub use scaffold::{Bootstrap, Scaffold};
 
 /// Error types and result aliases
 pub mod error;
 
-/// Configuration management for projects and tutorials
+/// Configuration management for recipes
 pub mod config;
 
 /// Git operations wrapper

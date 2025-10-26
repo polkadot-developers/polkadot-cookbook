@@ -40,7 +40,7 @@ async fn test_create_project_end_to_end() {
 
     // Verify files were created
     assert!(project_path.join("README.md").exists());
-    assert!(project_path.join("tutorial.config.yml").exists());
+    assert!(project_path.join("recipe.config.yml").exists());
     assert!(project_path.join("justfile").exists());
     assert!(project_path.join(".gitignore").exists());
     assert!(project_path
@@ -51,15 +51,15 @@ async fn test_create_project_end_to_end() {
     let readme = tokio::fs::read_to_string(project_path.join("README.md"))
         .await
         .unwrap();
-    assert!(readme.contains("# integration-test"));
-    assert!(readme.contains("cd tutorials/integration-test"));
+    assert!(readme.contains("# Integration Test"));
+    assert!(readme.contains("cd recipes/integration-test"));
 
-    let tutorial_config = tokio::fs::read_to_string(project_path.join("tutorial.config.yml"))
+    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
         .await
         .unwrap();
-    assert!(tutorial_config.contains("name: Integration Test"));
-    assert!(tutorial_config.contains("slug: integration-test"));
-    assert!(tutorial_config.contains("category: polkadot-sdk-cookbook"));
+    assert!(recipe_config.contains("name: Integration Test"));
+    assert!(recipe_config.contains("slug: integration-test"));
+    assert!(recipe_config.contains("category: polkadot-sdk-cookbook"));
 }
 
 #[tokio::test]
@@ -120,7 +120,7 @@ async fn test_slug_to_title() {
 #[tokio::test]
 async fn test_template_generation() {
     use polkadot_cookbook_core::templates::{
-        JustfileTemplate, ReadmeTemplate, Template, TestTemplate, TutorialYmlTemplate,
+        JustfileTemplate, ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
     };
 
     // Test justfile template
@@ -132,7 +132,7 @@ async fn test_template_generation() {
     // Test readme template
     let readme = ReadmeTemplate::new("my-tutorial");
     let content = readme.generate();
-    assert!(content.contains("# my-tutorial"));
+    assert!(content.contains("# My Tutorial"));
     assert!(content.contains("## Prerequisites"));
 
     // Test test template
@@ -142,7 +142,7 @@ async fn test_template_generation() {
     assert!(content.contains("@polkadot/api"));
 
     // Test tutorial yml template
-    let yml = TutorialYmlTemplate::new("my-tutorial", "My Tutorial");
+    let yml = RecipeYmlTemplate::new("my-tutorial", "My Tutorial");
     let content = yml.generate();
     assert!(content.contains("name: My Tutorial"));
     assert!(content.contains("slug: my-tutorial"));
@@ -174,13 +174,13 @@ async fn test_dry_run_mode() {
 
 #[tokio::test]
 async fn test_project_config_builder() {
-    use polkadot_cookbook_core::config::TutorialType;
+    use polkadot_cookbook_core::config::RecipeType;
 
     let config = ProjectConfig::new("builder-test")
         .with_destination(PathBuf::from("/tmp/test"))
         .with_git_init(false)
         .with_skip_install(true)
-        .with_tutorial_type(TutorialType::Contracts)
+        .with_recipe_type(RecipeType::Contracts)
         .with_category("advanced")
         .with_needs_node(false);
 
@@ -189,7 +189,7 @@ async fn test_project_config_builder() {
     assert_eq!(config.destination, PathBuf::from("/tmp/test"));
     assert!(!config.git_init);
     assert!(config.skip_install);
-    assert_eq!(config.tutorial_type, TutorialType::Contracts);
+    assert_eq!(config.recipe_type, RecipeType::Contracts);
     assert_eq!(config.category, "advanced");
     assert!(!config.needs_node);
 }

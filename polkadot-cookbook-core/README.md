@@ -1,13 +1,13 @@
 # Polkadot Cookbook Core
 
-SDK library for programmatic tutorial creation and management.
+SDK library for programmatic recipe creation and management.
 
 ## Overview
 
-`polkadot-cookbook-core` is a Rust library that provides the business logic for creating and managing Polkadot Cookbook tutorials. It can be used programmatically by other tools, CLIs, or IDE extensions.
+`polkadot-cookbook-core` is a Rust library that provides the business logic for creating and managing Polkadot Cookbook recipes. It can be used programmatically by other tools, CLIs, or IDE extensions.
 
 **Key Features:**
-- Tutorial scaffolding with templates
+- Recipe scaffolding with templates
 - Dependency version management
 - Git operations (branch creation, commits)
 - npm/Node.js setup and installation
@@ -26,7 +26,7 @@ tokio = { version = "1", features = ["full"] }
 
 ## Quick Start
 
-### Create a Tutorial
+### Create a Recipe
 
 ```rust
 use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
@@ -34,13 +34,13 @@ use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Configure the tutorial
-    let config = ProjectConfig::new("my-tutorial")
-        .with_destination(PathBuf::from("./tutorials"))
+    // Configure the recipe
+    let config = ProjectConfig::new("my-recipe")
+        .with_destination(PathBuf::from("./recipes"))
         .with_git_init(true)
         .with_skip_install(false);
 
-    // Create the tutorial
+    // Create the recipe
     let scaffold = Scaffold::new();
     let project_info = scaffold.create_project(config).await?;
 
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```rust
 use polkadot_cookbook_core::version::{
     load_global_versions,
-    resolve_tutorial_versions,
+    resolve_recipe_versions,
     VersionSource,
 };
 use std::path::Path;
@@ -71,12 +71,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}: {}", name, version);
     }
 
-    // Resolve tutorial-specific versions
-    let resolved = resolve_tutorial_versions(repo_root, "zero-to-hero").await?;
+    // Resolve recipe-specific versions
+    let resolved = resolve_recipe_versions(repo_root, "zero-to-hero").await?;
     for (name, version) in &resolved.versions {
         let source = match resolved.get_source(name) {
             Some(VersionSource::Global) => "global",
-            Some(VersionSource::Tutorial) => "tutorial",
+            Some(VersionSource::Recipe) => "recipe",
             None => "unknown",
         };
         println!("{}: {} ({})", name, version, source);
@@ -90,19 +90,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### Modules
 
-- **`config`** - Type-safe project and tutorial configuration
+- **`config`** - Type-safe project and recipe configuration
 - **`error`** - Comprehensive error types with serialization support
 - **`git`** - Async git operations using git2
 - **`templates`** - Template generation for scaffolding
 - **`scaffold`** - Project creation and directory structure
 - **`bootstrap`** - Test environment setup (npm, dependencies, config files)
-- **`version`** - Version management for tutorial dependencies
+- **`version`** - Version management for recipe dependencies
 
 ### Key Types
 
 #### `Scaffold`
 
-Main entry point for creating tutorials.
+Main entry point for creating recipes.
 
 ```rust
 pub struct Scaffold { /* ... */ }
@@ -115,7 +115,7 @@ impl Scaffold {
 
 #### `ProjectConfig`
 
-Configuration for tutorial creation.
+Configuration for recipe creation.
 
 ```rust
 pub struct ProjectConfig {
@@ -135,7 +135,7 @@ impl ProjectConfig {
 
 #### `ProjectInfo`
 
-Information about the created tutorial.
+Information about the created recipe.
 
 ```rust
 pub struct ProjectInfo {
@@ -158,7 +158,7 @@ pub struct ResolvedVersions {
 
 pub enum VersionSource {
     Global,    // From global versions.yml
-    Tutorial,  // From tutorial versions.yml
+    Recipe,  // From recipe versions.yml
 }
 ```
 
@@ -168,10 +168,10 @@ pub enum VersionSource {
 // Load global versions
 pub async fn load_global_versions(repo_root: &Path) -> Result<ResolvedVersions>;
 
-// Resolve versions for a specific tutorial
-pub async fn resolve_tutorial_versions(
+// Resolve versions for a specific recipe
+pub async fn resolve_recipe_versions(
     repo_root: &Path,
-    tutorial_slug: &str
+    recipe_slug: &str
 ) -> Result<ResolvedVersions>;
 
 // Get version source
@@ -189,13 +189,13 @@ Run examples to see the SDK in action:
 # Version resolution example
 cargo run --package polkadot-cookbook-core --example version_resolution
 
-# Tutorial creation example (coming soon)
-cargo run --package polkadot-cookbook-core --example create_tutorial
+# Recipe creation example (coming soon)
+cargo run --package polkadot-cookbook-core --example create_recipe
 ```
 
 ## Version Management
 
-The SDK provides a powerful version management system that allows tutorials to specify dependency versions while inheriting defaults from a global configuration.
+The SDK provides a powerful version management system that allows recipes to specify dependency versions while inheriting defaults from a global configuration.
 
 ### Global Versions
 
@@ -212,9 +212,9 @@ metadata:
   schema_version: "1.0"
 ```
 
-### Tutorial Overrides
+### Recipe Overrides
 
-Each tutorial can override versions in `tutorials/<slug>/versions.yml`:
+Each recipe can override versions in `recipes/<slug>/versions.yml`:
 
 ```yaml
 versions:
@@ -226,14 +226,14 @@ metadata:
 
 ### Resolution
 
-The SDK merges global and tutorial versions, with tutorial versions taking precedence:
+The SDK merges global and recipe versions, with recipe versions taking precedence:
 
 ```rust
-let resolved = resolve_tutorial_versions(repo_root, "my-tutorial").await?;
+let resolved = resolve_recipe_versions(repo_root, "my-recipe").await?;
 
 // Result:
 // - rust: "1.86" (from global)
-// - polkadot_omni_node: "0.6.0" (from tutorial)
+// - polkadot_omni_node: "0.6.0" (from recipe)
 // - chain_spec_builder: "10.0.0" (from global)
 // - frame_omni_bencher: "0.13.0" (from global)
 ```

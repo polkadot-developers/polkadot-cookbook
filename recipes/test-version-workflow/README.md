@@ -1,6 +1,14 @@
-# test-version-workflow
+---
+title: Test Version Workflow
+description: Learn how to test version resolution workflows in Polkadot SDK projects.
+difficulty: Intermediate
+content_type: tutorial
+categories: Testing, Version Management
+---
 
-Describe the goal, prerequisites, and step-by-step instructions for this tutorial.
+# Test Version Workflow
+
+Describe the goal, prerequisites, and step-by-step instructions for this recipe.
 
 ## Prerequisites
 
@@ -12,7 +20,7 @@ Describe the goal, prerequisites, and step-by-step instructions for this tutoria
 
 1. **Setup environment**
    ```bash
-   cd tutorials/test-version-workflow
+   cd recipes/test-version-workflow
    npm install
    ```
 
@@ -31,7 +39,7 @@ Describe the goal, prerequisites, and step-by-step instructions for this tutoria
 To run the end-to-end tests:
 
 ```bash
-cd tutorials/test-version-workflow
+cd recipes/test-version-workflow
 npm run test
 ```
 

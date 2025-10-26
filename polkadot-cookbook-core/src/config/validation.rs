@@ -65,9 +65,9 @@ pub fn slug_to_title(slug: &str) -> String {
 
 /// Validates that the script is being run from the repository root
 pub fn validate_working_directory() -> Result<()> {
-    if !Path::new("tutorials").exists() {
+    if !Path::new("recipes").exists() {
         return Err(CookbookError::WorkingDirectoryError(
-            "This must be run from the repository root! Expected directory structure: ./tutorials/, ./versions.yml, etc.".to_string()
+            "This must be run from the repository root! Expected directory structure: ./recipes/, ./versions.yml, etc.".to_string()
         ));
     }
 

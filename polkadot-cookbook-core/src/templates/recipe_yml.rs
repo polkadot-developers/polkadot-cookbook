@@ -1,13 +1,13 @@
-/// Tutorial configuration YAML template generator
+/// Recipe configuration YAML template generator
 use super::Template;
 
-/// Generates tutorial.config.yml content for a tutorial project
-pub struct TutorialYmlTemplate {
+/// Generates recipe.config.yml content for a recipe
+pub struct RecipeYmlTemplate {
     slug: String,
     title: String,
 }
 
-impl TutorialYmlTemplate {
+impl RecipeYmlTemplate {
     pub fn new(slug: impl Into<String>, title: impl Into<String>) -> Self {
         Self {
             slug: slug.into(),
@@ -16,7 +16,7 @@ impl TutorialYmlTemplate {
     }
 }
 
-impl Template for TutorialYmlTemplate {
+impl Template for RecipeYmlTemplate {
     fn generate(&self) -> String {
         format!(
             r#"name: {}
@@ -32,8 +32,8 @@ type: sdk # or contracts
 }
 
 /// Legacy function for backward compatibility
-pub fn generate_tutorial_yml(slug: &str, title: &str) -> String {
-    TutorialYmlTemplate::new(slug, title).generate()
+pub fn generate_recipe_yml(slug: &str, title: &str) -> String {
+    RecipeYmlTemplate::new(slug, title).generate()
 }
 
 #[cfg(test)]
@@ -41,16 +41,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_tutorial_yml_includes_slug_and_title() {
-        let template = TutorialYmlTemplate::new("my-tutorial", "My Tutorial");
+    fn test_recipe_yml_includes_slug_and_title() {
+        let template = RecipeYmlTemplate::new("my-recipe", "My Recipe");
         let yml = template.generate();
-        assert!(yml.contains("name: My Tutorial"));
-        assert!(yml.contains("slug: my-tutorial"));
+        assert!(yml.contains("name: My Recipe"));
+        assert!(yml.contains("slug: my-recipe"));
     }
 
     #[test]
-    fn test_tutorial_yml_has_required_fields() {
-        let template = TutorialYmlTemplate::new("test", "Test");
+    fn test_recipe_yml_has_required_fields() {
+        let template = RecipeYmlTemplate::new("test", "Test");
         let yml = template.generate();
         assert!(yml.contains("category:"));
         assert!(yml.contains("needs_node:"));
@@ -60,8 +60,8 @@ mod tests {
 
     #[test]
     fn test_legacy_function() {
-        let yml = generate_tutorial_yml("my-tutorial", "My Tutorial");
-        assert!(yml.contains("name: My Tutorial"));
-        assert!(yml.contains("slug: my-tutorial"));
+        let yml = generate_recipe_yml("my-recipe", "My Recipe");
+        assert!(yml.contains("name: My Recipe"));
+        assert!(yml.contains("slug: my-recipe"));
     }
 }
