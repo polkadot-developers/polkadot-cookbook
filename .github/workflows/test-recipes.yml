@@ -101,7 +101,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-cli-
       - name: Build polkadot-cookbook CLI
-        run: cargo build --package polkadot-cookbook-cli --release
+        run: cargo build --release
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -117,7 +117,7 @@ jobs:
         run: |
           # Use the polkadot-cookbook CLI to resolve versions
           # This uses the SDK's version management to merge global and recipe-specific versions
-          eval $(./target/release/create-recipe versions ${{ matrix.slug }} --ci)
+          eval $(./target/release/dot versions ${{ matrix.slug }} --ci)
           echo "rust=$RUST" >> $GITHUB_OUTPUT
           echo "chain-spec-builder=$CHAIN_SPEC_BUILDER" >> $GITHUB_OUTPUT
           echo "omni-node=$POLKADOT_OMNI_NODE" >> $GITHUB_OUTPUT

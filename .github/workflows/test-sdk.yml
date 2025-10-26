@@ -75,14 +75,110 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Generate coverage report
-        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+        run: |
+          cargo llvm-cov --workspace --summary-only > coverage-summary.txt
+          cargo llvm-cov --workspace --json --output-path coverage.json
+          cat coverage-summary.txt
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(cat coverage-summary.txt | grep "TOTAL" | awk '{print $NF}' | sed 's/%//')
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
+
+      - name: Generate coverage badge
+        run: |
+          COVERAGE="${{ steps.coverage.outputs.percentage }}"
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            COLOR="brightgreen"
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          mkdir -p .github/badges
+          curl -o .github/badges/coverage.svg "https://img.shields.io/badge/coverage-${COVERAGE}%25-${COLOR}"
+
+      - name: Commit coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/coverage.svg
+          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
         with:
-          files: lcov.info
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('coverage-summary.txt', 'utf8');
+            const coverage = '${{ steps.coverage.outputs.percentage }}';
+
+            let emoji = '✅';
+            let status = 'meets';
+            if (parseFloat(coverage) < 80) {
+              emoji = '⚠️';
+              status = 'below';
+            }
+
+            const body = `## ${emoji} Coverage Report
+
+            **Total Coverage: ${coverage}%** (threshold: 80%)
+
+            <details>
+            <summary>Coverage by file</summary>
+
+            \`\`\`
+            ${summary}
+            \`\`\`
+
+            </details>
+
+            ${parseFloat(coverage) < 80 ? '⚠️ **Warning**: Coverage is below the 80% threshold.' : '✅ Coverage meets the 80% threshold.'}
+            `;
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Coverage Report')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE="${{ steps.coverage.outputs.percentage }}"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below threshold of 80%"
+            exit 1
+          fi
+          echo "✅ Coverage ${COVERAGE}% meets threshold of 80%"
 
   test-cli:
     name: Test CLI

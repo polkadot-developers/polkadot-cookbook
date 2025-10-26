@@ -4,14 +4,14 @@ The Polkadot Cookbook uses a modular SDK architecture consisting of two main com
 
 ## Table of Contents
 
-- [Polkadot Cookbook Core](#polkadot-cookbook-core)
-- [Polkadot Cookbook CLI](#polkadot-cookbook-cli)
+- [Polkadot Cookbook Core](#core)
+- [Polkadot Cookbook CLI](#cli)
 - [Why This Architecture?](#why-this-architecture)
 - [Contributing to the SDK](#contributing-to-the-sdk)
 
 ## Polkadot Cookbook Core
 
-**Package**: `polkadot-cookbook-core`
+**Package**: `core`
 
 The core library provides the business logic for recipe creation and management. It can be used programmatically by other tools.
 
@@ -23,7 +23,7 @@ The core library provides the business logic for recipe creation and management.
 - `templates` - Template generation for scaffolding
 - `scaffold` - Project creation and directory structure
 - `bootstrap` - Test environment setup (npm, dependencies, config files)
-- `version` - Version management for recipe dependencies (see [VERSION_MANAGEMENT.md](../polkadot-cookbook-core/VERSION_MANAGEMENT.md))
+- `version` - Version management for recipe dependencies (see [VERSION_MANAGEMENT.md](../core/VERSION_MANAGEMENT.md))
 
 ### Features
 
@@ -54,11 +54,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-For more information, see [`polkadot-cookbook-core/README.md`](../polkadot-cookbook-core/README.md).
+For more information, see [`core/README.md`](../core/README.md).
 
 ## Polkadot Cookbook CLI
 
-**Package**: `polkadot-cookbook-cli`
+**Package**: `cli`
 
 A thin CLI wrapper around the core library that provides a command-line interface with interactive prompts.
 
@@ -81,34 +81,34 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 
 ```bash
 # Create recipe - Interactive mode (prompts for options)
-create-recipe create
+dot create
 
 # Create with slug
-create-recipe create my-recipe
+dot create my-recipe
 
 # With options
-create-recipe create my-recipe --skip-install --no-git
+dot create my-recipe --skip-install --no-git
 
 # Non-interactive mode for CI/CD
-create-recipe create --non-interactive my-recipe
+dot create --non-interactive my-recipe
 
 # View global dependency versions
-create-recipe versions
+dot versions
 
 # View recipe-specific versions
-create-recipe versions my-recipe
+dot versions my-recipe
 
 # Show version sources (global vs recipe override)
-create-recipe versions my-recipe --show-source
+dot versions my-recipe --show-source
 
 # CI-friendly output (KEY=VALUE format)
-create-recipe versions my-recipe --ci
+dot versions my-recipe --ci
 
 # Validate version keys
-create-recipe versions --validate
+dot versions --validate
 
 # Show help
-create-recipe --help
+dot --help
 ```
 
 ## Why This Architecture?
@@ -141,7 +141,7 @@ If you want to contribute to the SDK itself (not just recipes):
 
 ### Core Library Changes
 
-Changes go in `polkadot-cookbook-core/`:
+Changes go in `core/`:
 - Add features to appropriate modules
 - Write comprehensive tests
 - Use structured logging (`tracing`)
@@ -149,7 +149,7 @@ Changes go in `polkadot-cookbook-core/`:
 
 ### CLI Changes
 
-Changes go in `polkadot-cookbook-cli/`:
+Changes go in `cli/`:
 - Keep it thin (mostly UI/formatting)
 - Delegate logic to core library
 - Use interactive prompts for better UX
@@ -158,10 +158,10 @@ Changes go in `polkadot-cookbook-cli/`:
 
 ```bash
 # Test core library
-cargo test --package polkadot-cookbook-core
+cargo test --package core
 
 # Test CLI
-cargo run --package polkadot-cookbook-cli -- test-project --skip-install --no-git
+cargo run --package cli -- test-project --skip-install --no-git
 
 # Test entire workspace
 cargo test --workspace
