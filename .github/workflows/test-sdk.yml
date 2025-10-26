@@ -83,7 +83,7 @@ jobs:
       - name: Extract coverage percentage
         id: coverage
         run: |
-          COVERAGE=$(cat coverage-summary.txt | grep "TOTAL" | awk '{print $NF}' | sed 's/%//')
+          COVERAGE=$(cat coverage-summary.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
           echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "Coverage: $COVERAGE%"
 
