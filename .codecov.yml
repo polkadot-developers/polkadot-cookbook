@@ -9,13 +9,14 @@ coverage:
   status:
     project:
       default:
-        target: auto
+        target: 80%
         threshold: 1%
         informational: false
     patch:
       default:
-        target: auto
-        threshold: 1%
+        target: 80%
+        threshold: 2%
+        informational: false
 
 ignore:
   - "kitchensink-parachain/**"
