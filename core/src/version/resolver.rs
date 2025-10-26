@@ -46,10 +46,7 @@ impl VersionResolver {
     /// // polkadot_omni_node is overridden by recipe
     /// assert_eq!(resolved.get("polkadot_omni_node"), Some(&"0.6.0".to_string()));
     /// ```
-    pub fn merge(
-        global: &GlobalVersionConfig,
-        recipe: &RecipeVersionConfig,
-    ) -> ResolvedVersions {
+    pub fn merge(global: &GlobalVersionConfig, recipe: &RecipeVersionConfig) -> ResolvedVersions {
         let mut resolved = ResolvedVersions::new();
 
         // First, add all global versions
@@ -61,9 +58,7 @@ impl VersionResolver {
         // Then, override with recipe-specific versions
         for (key, value) in &recipe.versions {
             resolved.versions.insert(key.clone(), value.clone());
-            resolved
-                .sources
-                .insert(key.clone(), VersionSource::Recipe);
+            resolved.sources.insert(key.clone(), VersionSource::Recipe);
         }
 
         resolved
@@ -129,7 +124,7 @@ mod tests {
     #[test]
     fn test_merge_overrides_recipe_versions() {
         let global = create_global_config();
-        let recipe =create_recipe_config();
+        let recipe = create_recipe_config();
 
         let resolved = VersionResolver::merge(&global, &recipe);
 
@@ -171,7 +166,7 @@ mod tests {
     #[test]
     fn test_merge_with_empty_recipe() {
         let global = create_global_config();
-        let recipe =RecipeVersionConfig {
+        let recipe = RecipeVersionConfig {
             versions: HashMap::new(),
             metadata: None,
         };
@@ -195,7 +190,7 @@ mod tests {
     #[test]
     fn test_merge_optional_with_some() {
         let global = create_global_config();
-        let recipe =create_recipe_config();
+        let recipe = create_recipe_config();
 
         let resolved = VersionResolver::merge_optional(&global, Some(&recipe));
 
@@ -224,7 +219,7 @@ mod tests {
     #[test]
     fn test_get_version() {
         let global = create_global_config();
-        let recipe =create_recipe_config();
+        let recipe = create_recipe_config();
         let resolved = VersionResolver::merge(&global, &recipe);
 
         assert_eq!(
@@ -237,7 +232,7 @@ mod tests {
     #[test]
     fn test_resolved_versions_methods() {
         let global = create_global_config();
-        let recipe =create_recipe_config();
+        let recipe = create_recipe_config();
         let resolved = VersionResolver::merge(&global, &recipe);
 
         // Test contains
@@ -257,7 +252,7 @@ mod tests {
         let mut recipe_versions = HashMap::new();
         recipe_versions.insert("custom_tool".to_string(), "1.0.0".to_string());
 
-        let recipe =RecipeVersionConfig {
+        let recipe = RecipeVersionConfig {
             versions: recipe_versions,
             metadata: None,
         };

@@ -10,7 +10,11 @@ pub struct RecipeYmlTemplate {
 
 impl RecipeYmlTemplate {
     /// Create a new recipe.config.yml template with the given slug, title, and description
-    pub fn new(slug: impl Into<String>, title: impl Into<String>, description: impl Into<String>) -> Self {
+    pub fn new(
+        slug: impl Into<String>,
+        title: impl Into<String>,
+        description: impl Into<String>,
+    ) -> Self {
         Self {
             slug: slug.into(),
             title: title.into(),
