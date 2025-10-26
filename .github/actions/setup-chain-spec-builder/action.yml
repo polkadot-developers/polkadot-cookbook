@@ -33,24 +33,26 @@ runs:
       id: cache
       uses: actions/cache@v4
       with:
-        path: ~/.cargo/bin
+        path: ~/.cargo/bin/chain-spec-builder
         key: ${{ runner.os }}-${{ runner.arch }}-chain-spec-builder-${{ inputs.chain-spec-builder-version }}
 
+    - name: Check if binary exists after cache restore
+      id: check-binary
+      shell: bash
+      run: |
+        if [ -f ~/.cargo/bin/chain-spec-builder ] && [ -x ~/.cargo/bin/chain-spec-builder ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "✅ Binary found in cache"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "⚠️ Binary not found in cache, will install"
+        fi
+
     - name: Install chain-spec-builder
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.check-binary.outputs.exists != 'true'
       shell: bash
       run: |
         echo "🔧 Installing chain-spec-builder@${{ inputs.chain-spec-builder-version }}..."
-        
-        if command -v chain-spec-builder >/dev/null 2>&1; then
-          INSTALLED_VERSION=$(chain-spec-builder --version | awk '{print $2}')
-          if [ "$INSTALLED_VERSION" = "${{ inputs.chain-spec-builder-version }}" ]; then
-            echo "✅ chain-spec-builder $INSTALLED_VERSION already installed, skipping"
-            exit 0
-          else
-            echo "⚠️ Different version found ($INSTALLED_VERSION), installing requested version..."
-          fi
-        fi
 
         cargo install staging-chain-spec-builder --version ${{ inputs.chain-spec-builder-version }} --locked --force
         echo "✅ Installation completed"
