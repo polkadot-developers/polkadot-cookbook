@@ -56,10 +56,10 @@ npm test
 
 ```bash
 # Build the CLI tool
-cargo build --package polkadot-cookbook-cli --release
+cargo build --package cli --release
 
 # Create your recipe
-./target/release/create-recipe create my-awesome-recipe
+./target/release/dot my-awesome-recipe
 
 # Write, test, and submit
 cd recipes/my-awesome-recipe
@@ -78,8 +78,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 - [Contributing Guide](CONTRIBUTING.md) - How to create and submit recipes
 
 ### For Tool Users
-- [CLI Tool](polkadot-cookbook-cli/) - Command-line tool for creating recipes
-- [SDK Library](polkadot-cookbook-core/) - Programmatic API for tool developers
+- [CLI Tool](cli/) - Command-line tool for creating recipes
+- [SDK Library](core/) - Programmatic API for tool developers
 
 ### For Maintainers
 - [Architecture](docs/architecture.md) - System design and architecture
