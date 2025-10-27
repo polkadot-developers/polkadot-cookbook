@@ -606,24 +606,46 @@ This repository uses Semantic Versioning and automated releases powered by seman
 - **Y (MINOR)**: Backward-compatible enhancements (new tutorials, features, improvements)
 - **Z (PATCH)**: Backward-compatible bug fixes and documentation fixes that require a release note
 
+### Pull Request Title Format
+
+**Important**: PR titles must follow Conventional Commits format as they become the commit message when merged to `master`.
+
+When opening a PR, format your title as:
+- `feat(scope): add new feature` → triggers MINOR release
+- `fix(scope): correct bug` → triggers PATCH release  
+- `feat!(scope): breaking change` → triggers MAJOR release
+- `docs: update documentation` → no release (documentation only)
+- `chore: routine task` → no release
+- `test: add or update tests` → no release
+- `refactor: code improvements` → no release
+
+The scope is optional but recommended (e.g., `tutorial`, `kitchensink`, `runtime`, `ci`).
+
+A GitHub Action will automatically validate your PR title. If it doesn't follow the correct format, the check will fail and you'll need to edit the PR title before merging.
+
+**For breaking changes**, use either:
+1. Add `!` after the type: `feat!(runtime): migrate to new API`
+2. Or include `BREAKING CHANGE:` in the PR description body
+
+Individual commit messages in your PR branch do NOT need to follow conventional commits - only the PR title matters.
+
 ### Conventional Commits → Release Rules
 
-semantic-release determines the next version from commit messages on `master`:
+semantic-release determines the next version from **PR titles** (via squash-merge commits) on `master`:
 
-- `feat(scope): ...` → MINOR
-- `fix(scope): ...` → PATCH
-- `feat!(scope): ...` or commit body with `BREAKING CHANGE: ...` → MAJOR
-- `docs:`, `chore:`, `test:`, `refactor:` → no release by default
+- `feat(scope): ...` → MINOR release
+- `fix(scope): ...` → PATCH release
+- `feat!(scope): ...` or PR body with `BREAKING CHANGE: ...` → MAJOR release
+- `docs:`, `chore:`, `test:`, `refactor:` → no release
 
-Examples:
+Examples of good PR titles:
 
 ```
 feat(tutorial): add zero-to-hero tutorial
 fix(kitchensink): correct chain spec path
-
 feat!(runtime): migrate to SDK X.Y
-
 docs: clarify testing requirements
+chore(deps): update polkadot-sdk to v1.2.3
 ```
 
 ### What happens on merge to master
