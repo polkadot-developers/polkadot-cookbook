@@ -5,10 +5,6 @@
 
 use crate::config::{ProjectConfig, ProjectInfo, RecipeType};
 use crate::error::{CookbookError, Result};
-use crate::templates::{
-    JustfileTemplate, ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
-    VersionsYmlTemplate,
-};
 use std::path::Path;
 use tracing::{debug, info, warn};
 
@@ -220,68 +216,9 @@ impl Scaffold {
         config: &ProjectConfig,
     ) -> Result<()> {
         debug!("Creating Solidity template files");
-
-        // TODO: Implement Solidity template copying when template is ready
-        // For now, use the old typescript_files method as placeholder
-        self.create_typescript_files(project_path, config).await?;
-
-        Ok(())
-    }
-
-    /// Create files for TypeScript-based recipes (legacy/fallback)
-    async fn create_typescript_files(
-        &self,
-        project_path: &Path,
-        config: &ProjectConfig,
-    ) -> Result<()> {
-        debug!("Creating TypeScript template files");
-
-        // Generate justfile
-        let justfile_content = JustfileTemplate::new().generate();
-        self.write_file(&project_path.join("justfile"), &justfile_content)
+        let template_dir = Path::new("templates/recipe-templates/solidity-template");
+        self.copy_template_dir(template_dir, project_path, config)
             .await?;
-
-        // Generate example test
-        let test_content = TestTemplate::new(&config.slug).generate();
-        let test_filename = format!("{}-e2e.test.ts", config.slug);
-        self.write_file(
-            &project_path.join("tests").join(test_filename),
-            &test_content,
-        )
-        .await?;
-
-        // Generate recipe.config.yml
-        let recipe_yml_content = RecipeYmlTemplate::new(
-            &config.slug,
-            &config.title,
-            &config.description,
-            config.recipe_type,
-            &config.category,
-            config.needs_node,
-        )
-        .generate();
-        self.write_file(&project_path.join("recipe.config.yml"), &recipe_yml_content)
-            .await?;
-
-        // Generate README.md
-        let readme_content = ReadmeTemplate::new(&config.slug).generate();
-        self.write_file(&project_path.join("README.md"), &readme_content)
-            .await?;
-
-        // Generate versions.yml
-        let versions_yml_content = VersionsYmlTemplate.generate();
-        self.write_file(&project_path.join("versions.yml"), &versions_yml_content)
-            .await?;
-
-        // Create .gitkeep in scripts/
-        self.write_file(&project_path.join("scripts").join(".gitkeep"), "")
-            .await?;
-
-        // Create .gitignore
-        let gitignore_content = "node_modules/\ndist/\n*.log\n.DS_Store\ncoverage/\n";
-        self.write_file(&project_path.join(".gitignore"), gitignore_content)
-            .await?;
-
         Ok(())
     }
 

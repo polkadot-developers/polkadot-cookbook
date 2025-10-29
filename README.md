@@ -99,8 +99,8 @@ cargo build --release --bin dot
 
 The CLI supports three recipe types:
 - **Polkadot SDK** - Runtime pallets with Rust ✅
-- **Solidity** - Smart contracts with pallet-revive (coming soon)
-- **XCM** - Cross-chain interactions with Chopsticks (coming soon)
+- **XCM** - Cross-chain interactions with Chopsticks ✅
+- **Solidity** - Smart contracts with pallet-revive ✅
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
