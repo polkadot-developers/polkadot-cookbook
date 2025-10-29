@@ -3,6 +3,11 @@ node_modules/
 package-lock.json
 yarn.lock
 
+# Generated PAPI descriptors
+@polkadot-api/
+.papi/
+polkadot-api.json
+
 # Build outputs
 dist/
 *.tsbuildinfo

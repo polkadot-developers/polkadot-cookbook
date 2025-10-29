@@ -4,6 +4,8 @@
   "description": "Teleport assets from Asset Hub to People Chain using XCM and Polkadot API",
   "type": "module",
   "scripts": {
+    "generate": "papi add -n westend2_asset_hub ahp",
+    "postinstall": "npm run generate",
     "test": "vitest run",
     "test:watch": "vitest",
     "chopsticks": "chopsticks --config=chopsticks.yml",
@@ -20,14 +22,15 @@
   "author": "",
   "license": "MIT OR Apache-2.0",
   "dependencies": {
-    "polkadot-api": "^1.7.9",
-    "@polkadot-api/descriptors": "^0.16.1",
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-labs/hdkd": "^0.0.10",
-    "@polkadot-labs/hdkd-helpers": "^0.0.10"
+    "@polkadot-labs/hdkd-helpers": "^0.0.10",
+    "polkadot-api": "^1.20.0"
   },
   "devDependencies": {
-    "@acala-network/chopsticks": "^0.15.1",
-    "@acala-network/chopsticks-testing": "^0.15.1",
+    "@acala-network/chopsticks": "^1.2.3",
+    "@acala-network/chopsticks-testing": "^1.2.3",
+    "@polkadot-api/cli": "^0.15.3",
     "@types/node": "^20.14.0",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
