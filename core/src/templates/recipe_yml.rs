@@ -36,8 +36,9 @@ impl RecipeYmlTemplate {
 impl Template for RecipeYmlTemplate {
     fn generate(&self) -> String {
         let type_str = match self.recipe_type {
-            RecipeType::Sdk => "sdk",
-            RecipeType::Contracts => "contracts",
+            RecipeType::PolkadotSdk => "polkadot-sdk",
+            RecipeType::Solidity => "solidity",
+            RecipeType::Xcm => "xcm",
         };
 
         format!(

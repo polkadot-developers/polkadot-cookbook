@@ -6,10 +6,13 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RecipeType {
-    /// Polkadot SDK recipe
-    Sdk,
-    /// Smart contracts recipe
-    Contracts,
+    /// Polkadot SDK recipe (Runtime pallets with Rust)
+    #[serde(rename = "polkadot-sdk")]
+    PolkadotSdk,
+    /// Solidity smart contracts (pallet-revive)
+    Solidity,
+    /// XCM cross-chain interactions (Chopsticks)
+    Xcm,
 }
 
 /// Recipe metadata from recipe.config.yml
@@ -74,30 +77,34 @@ mod tests {
 
     #[test]
     fn test_recipe_config_new() {
-        let config = RecipeConfig::new("My Recipe", "my-recipe", RecipeType::Sdk);
+        let config = RecipeConfig::new("My Recipe", "my-recipe", RecipeType::PolkadotSdk);
         assert_eq!(config.name, "My Recipe");
         assert_eq!(config.slug, "my-recipe");
-        assert_eq!(config.recipe_type, RecipeType::Sdk);
+        assert_eq!(config.recipe_type, RecipeType::PolkadotSdk);
         assert!(config.needs_node);
     }
 
     #[test]
     fn test_recipe_type_serialization() {
-        let sdk = RecipeType::Sdk;
+        let sdk = RecipeType::PolkadotSdk;
         let json = serde_json::to_string(&sdk).unwrap();
-        assert_eq!(json, "\"sdk\"");
+        assert_eq!(json, "\"polkadot-sdk\"");
 
-        let contracts = RecipeType::Contracts;
-        let json = serde_json::to_string(&contracts).unwrap();
-        assert_eq!(json, "\"contracts\"");
+        let solidity = RecipeType::Solidity;
+        let json = serde_json::to_string(&solidity).unwrap();
+        assert_eq!(json, "\"solidity\"");
+
+        let xcm = RecipeType::Xcm;
+        let json = serde_json::to_string(&xcm).unwrap();
+        assert_eq!(json, "\"xcm\"");
     }
 
     #[test]
     fn test_recipe_config_to_yaml() {
-        let config = RecipeConfig::new("Test", "test", RecipeType::Sdk);
+        let config = RecipeConfig::new("Test", "test", RecipeType::PolkadotSdk);
         let yaml = config.to_yaml().unwrap();
         assert!(yaml.contains("name: Test"));
         assert!(yaml.contains("slug: test"));
-        assert!(yaml.contains("type: sdk"));
+        assert!(yaml.contains("type: polkadot-sdk"));
     }
 }

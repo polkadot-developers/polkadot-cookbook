@@ -208,14 +208,19 @@ async fn handle_create(
     let recipe_type_question = "What type of recipe?".polkadot_pink().to_string();
     let recipe_type: RecipeType = select(&recipe_type_question)
         .item(
-            RecipeType::Sdk,
+            RecipeType::PolkadotSdk,
             "Polkadot SDK",
-            "Runtime, pallets, and blockchain development",
+            "Runtime pallets and blockchain development with Rust",
         )
         .item(
-            RecipeType::Contracts,
-            "Smart Contracts",
-            "ink! smart contract development",
+            RecipeType::Solidity,
+            "Solidity",
+            "Smart contracts using pallet-revive",
+        )
+        .item(
+            RecipeType::Xcm,
+            "XCM",
+            "Cross-chain interactions with Chopsticks",
         )
         .interact()?;
 
@@ -282,8 +287,9 @@ async fn handle_create(
             title.dimmed(),
             "Type:".polkadot_pink(),
             match recipe_type {
-                RecipeType::Sdk => "Polkadot SDK",
-                RecipeType::Contracts => "Smart Contracts",
+                RecipeType::PolkadotSdk => "Polkadot SDK",
+                RecipeType::Solidity => "Solidity",
+                RecipeType::Xcm => "XCM",
             },
             "Location:".polkadot_pink(),
             project_path.display(),
@@ -438,7 +444,7 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
         .with_destination(PathBuf::from("recipes"))
         .with_git_init(!no_git)
         .with_skip_install(skip_install)
-        .with_recipe_type(RecipeType::Sdk) // Default to SDK
+        .with_recipe_type(RecipeType::PolkadotSdk) // Default to Polkadot SDK
         .with_description("Replace with a short description.".to_string());
 
     // Create the project

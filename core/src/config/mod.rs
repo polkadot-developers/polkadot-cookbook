@@ -65,7 +65,7 @@ impl ProjectConfig {
             destination: PathBuf::from("recipes"),
             git_init: true,
             skip_install: false,
-            recipe_type: RecipeType::Sdk,
+            recipe_type: RecipeType::PolkadotSdk,
             category: "polkadot-sdk-cookbook".to_string(),
             needs_node: true,
             description: "Replace with a short description.".to_string(),
