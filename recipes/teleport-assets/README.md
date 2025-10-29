@@ -8,7 +8,7 @@ This recipe demonstrates how to:
 - Use **Polkadot API (PAPI)** for type-safe XCM operations
 - Construct XCM v5 messages with `InitiateTransfer` instruction
 - Teleport assets between parachains (Asset Hub → People Chain)
-- Test XCM transfers with **Chopsticks** multi-chain environment
+- Test XCM transfers with **Chopsticks** multi-chain environment using Polkadot mainnet
 
 This recipe follows best practices using the modern Polkadot API (PAPI) for XCM operations.
 
@@ -55,7 +55,7 @@ npm run chopsticks
 This starts a multi-chain environment with HRMP channels configured:
 - **Asset Hub** on port 8000 (ws://127.0.0.1:8000)
 - **People Chain** on port 8001 (ws://127.0.0.1:8001)
-- **Westend Relay Chain** on port 8002 (ws://127.0.0.1:8002)
+- **Polkadot Relay Chain** on port 8002 (ws://127.0.0.1:8002)
 
 2. **Terminal 2** - Run tests:
 ```bash
@@ -102,7 +102,7 @@ const ahpApi = client.getTypedApi(ahp);
 ### 3. Define Assets and Destination
 
 ```typescript
-const DOT_UNITS = 10_000_000_000n; // 10 decimals for Westend
+const DOT_UNITS = 10_000_000_000n; // 10 decimals for DOT
 
 const dotToWithdraw = {
   id: { parents: 1, interior: XcmV3Junctions.Here() },
@@ -154,12 +154,12 @@ if (weightResult.success) {
 
 ## XCM Instructions Explained
 
-1. **WithdrawAsset** - Withdraws 10 WND from Alice's account on Asset Hub
-2. **PayFees** - Allocates 1 WND for execution fees
+1. **WithdrawAsset** - Withdraws 10 DOT from Alice's account on Asset Hub
+2. **PayFees** - Allocates 1 DOT for execution fees
 3. **InitiateTransfer** - Starts the cross-chain transfer with:
    - Destination: People Chain (ParaId 1004)
-   - Remote fees: 1 WND for fees on People Chain
-   - Assets: Remaining WND to teleport
+   - Remote fees: 1 DOT for fees on People Chain
+   - Assets: Remaining DOT to teleport
    - Remote XCM: Instructions to execute on People Chain
 4. **RefundSurplus** - Returns unused fees
 5. **DepositAsset** - Deposits refunded assets back to Alice
@@ -169,19 +169,14 @@ if (weightResult.success) {
 Chopsticks provides a local multi-chain environment:
 
 ```yaml
-# chopsticks.yml
-relaychain:
-  endpoint: wss://westend-rpc.polkadot.io
-  port: 8000
-
-parachains:
-  - endpoint: wss://westend-asset-hub-rpc.polkadot.io
-    paraId: 1000
-    port: 8001
-
-  - endpoint: wss://westend-people-rpc.polkadot.io
-    paraId: 1004
-    port: 8002
+# Uses custom Chopsticks configs with Dwellir RPC endpoints
+# Command: chopsticks xcm -r polkadot -p polkadot-asset-hub.yml -p polkadot-people.yml
+# This configures:
+# - Polkadot Relay Chain on port 8002 (built-in config)
+# - Asset Hub on port 8000 (wss://asset-hub-polkadot-rpc.n.dwellir.com)
+# - People Chain on port 8001 (wss://people-polkadot-rpc.n.dwellir.com)
+#
+# Custom configs are included to use reliable Dwellir RPC endpoints
 ```
 
 Benefits:

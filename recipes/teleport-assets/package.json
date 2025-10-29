@@ -4,11 +4,11 @@
   "description": "Teleport assets from Asset Hub to People Chain using XCM and Polkadot API",
   "type": "module",
   "scripts": {
-    "generate": "papi add -n westend2_asset_hub ahp",
+    "generate": "papi add -n polkadot_asset_hub ahp",
     "postinstall": "npm run generate",
     "test": "vitest run",
     "test:watch": "vitest",
-    "chopsticks": "chopsticks xcm -r chopsticks-relay.yml -p chopsticks-asset-hub.yml -p chopsticks-people.yml",
+    "chopsticks": "chopsticks xcm -r polkadot -p polkadot-asset-hub.yml -p polkadot-people.yml",
     "lint": "tsc --noEmit && eslint . --ext .ts",
     "teleport": "tsx src/teleport.ts"
   },

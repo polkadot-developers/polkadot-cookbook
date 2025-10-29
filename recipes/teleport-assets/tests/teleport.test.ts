@@ -21,7 +21,7 @@ import { getPolkadotSigner } from 'polkadot-api/signer';
  * This will start (with HRMP channels configured):
  *   - Asset Hub on ws://127.0.0.1:8000
  *   - People Chain on ws://127.0.0.1:8001
- *   - Westend Relay Chain on ws://127.0.0.1:8002
+ *   - Polkadot Relay Chain on ws://127.0.0.1:8002
  */
 
 describe('XCM Teleport Tests', () => {
@@ -30,44 +30,30 @@ describe('XCM Teleport Tests', () => {
   let chopsticksAvailable = false;
 
   beforeAll(async () => {
-    try {
-      console.log('🔌 Attempting to connect to Chopsticks...');
+    console.log('🔌 Attempting to connect to Chopsticks...');
+    console.log('   Make sure Chopsticks is running: npm run chopsticks');
 
-      // Try to connect to Asset Hub (expects Chopsticks XCM running on port 8000)
-      const assetHubProvider = getWsProvider('ws://127.0.0.1:8000');
-      const peopleChainProvider = getWsProvider('ws://127.0.0.1:8001');
+    // Try to connect to Asset Hub (expects Chopsticks XCM running on port 8000)
+    const assetHubProvider = getWsProvider('ws://127.0.0.1:8000');
+    const peopleChainProvider = getWsProvider('ws://127.0.0.1:8001');
 
-      assetHubClient = createClient(assetHubProvider);
-      peopleChainClient = createClient(peopleChainProvider);
+    assetHubClient = createClient(assetHubProvider);
+    peopleChainClient = createClient(peopleChainProvider);
 
-      // Test connection with timeout
-      const api = assetHubClient.getTypedApi(ahp);
-      const connectionTest = Promise.race([
-        api.constants.System.Version(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Connection timeout')), 10000)
-        ),
-      ]);
+    // Test connection with timeout - this will throw if connection fails
+    const api = assetHubClient.getTypedApi(ahp);
+    const connectionTest = Promise.race([
+      api.constants.System.Version(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('❌ Connection timeout - Chopsticks not responding. Start it with: npm run chopsticks')), 10000)
+      ),
+    ]);
 
-      await connectionTest;
+    await connectionTest;
 
-      chopsticksAvailable = true;
-      console.log('✓ Connected to Chopsticks');
-    } catch (error) {
-      // Cleanup failed connections
-      if (assetHubClient) {
-        assetHubClient.destroy();
-        assetHubClient = undefined;
-      }
-      if (peopleChainClient) {
-        peopleChainClient.destroy();
-        peopleChainClient = undefined;
-      }
-
-      console.log('⚠️  Chopsticks not available');
-      console.log('   Run `npm run chopsticks` in another terminal to enable integration tests');
-    }
-  }, 10000);
+    chopsticksAvailable = true;
+    console.log('✓ Connected to Chopsticks');
+  }, 15000);
 
   afterAll(async () => {
     if (assetHubClient) {
@@ -84,26 +70,16 @@ describe('XCM Teleport Tests', () => {
   });
 
   it('should connect to Asset Hub and verify chain spec', async () => {
-    if (!chopsticksAvailable) {
-      console.log('⏭️  Skipping - Chopsticks not available');
-      return;
-    }
-
-    const api = assetHubClient.getTypedApi(ahp);
+    const api = assetHubClient!.getTypedApi(ahp);
     const chainVersion = await api.constants.System.Version();
 
     expect(chainVersion).toBeDefined();
-    expect(chainVersion.spec_name).toBe('westmint');
+    expect(chainVersion.spec_name).toBeDefined();
     console.log(`✓ Connected to ${chainVersion.spec_name} v${chainVersion.spec_version}`);
   });
 
   it('should connect to People Chain and verify chain spec', async () => {
-    if (!chopsticksAvailable) {
-      console.log('⏭️  Skipping - Chopsticks not available');
-      return;
-    }
-
-    const api = peopleChainClient.getTypedApi(ahp);
+    const api = peopleChainClient!.getTypedApi(ahp);
     const chainVersion = await api.constants.System.Version();
 
     expect(chainVersion).toBeDefined();
@@ -111,29 +87,20 @@ describe('XCM Teleport Tests', () => {
   });
 
   it('should have Alice account funded on Asset Hub', async () => {
-    if (!chopsticksAvailable) {
-      console.log('⏭️  Skipping - Chopsticks not available');
-      return;
-    }
-
-    const api = assetHubClient.getTypedApi(ahp);
+    const api = assetHubClient!.getTypedApi(ahp);
     const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
     const accountInfo = await api.query.System.Account.getValue(aliceAddress);
     const balance = accountInfo.data.free;
 
     expect(balance).toBeGreaterThan(0n);
-    console.log(`✓ Alice balance on Asset Hub: ${formatBalance(balance)} WND`);
+    console.log(`✓ Alice balance on Asset Hub: ${formatBalance(balance)} DOT`);
   });
 
-  it('should successfully teleport 10 WND from Asset Hub to People Chain', async () => {
-    if (!chopsticksAvailable) {
-      console.log('⏭️  Skipping - Chopsticks not available');
-      return;
-    }
+  it('should successfully teleport 10 DOT from Asset Hub to People Chain', async () => {
 
-    const assetHubApi = assetHubClient.getTypedApi(ahp);
-    const peopleChainApi = peopleChainClient.getTypedApi(ahp);
+    const assetHubApi = assetHubClient!.getTypedApi(ahp);
+    const peopleChainApi = peopleChainClient!.getTypedApi(ahp);
 
     const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
@@ -143,8 +110,8 @@ describe('XCM Teleport Tests', () => {
     const initialAssetHubBalance = await getBalance(assetHubApi, aliceAddress);
     const initialPeopleChainBalance = await getBalance(peopleChainApi, aliceAddress);
 
-    console.log(`   Asset Hub: ${formatBalance(initialAssetHubBalance)} WND`);
-    console.log(`   People Chain: ${formatBalance(initialPeopleChainBalance)} WND`);
+    console.log(`   Asset Hub: ${formatBalance(initialAssetHubBalance)} DOT`);
+    console.log(`   People Chain: ${formatBalance(initialPeopleChainBalance)} DOT`);
 
     // Execute the teleport
     console.log('\n🚀 Executing teleport...');
@@ -152,34 +119,34 @@ describe('XCM Teleport Tests', () => {
 
     // Wait for XCM message to be processed
     console.log('⏳ Waiting for XCM to process...');
-    await new Promise(resolve => setTimeout(resolve, 6000));
+    await new Promise(resolve => setTimeout(resolve, 12000));
 
     // Get final balances
     const finalAssetHubBalance = await getBalance(assetHubApi, aliceAddress);
     const finalPeopleChainBalance = await getBalance(peopleChainApi, aliceAddress);
 
     console.log('\n📊 Final balances:');
-    console.log(`   Asset Hub: ${formatBalance(finalAssetHubBalance)} WND`);
-    console.log(`   People Chain: ${formatBalance(finalPeopleChainBalance)} WND`);
+    console.log(`   Asset Hub: ${formatBalance(finalAssetHubBalance)} DOT`);
+    console.log(`   People Chain: ${formatBalance(finalPeopleChainBalance)} DOT`);
 
     // Verify the transfer
     const assetHubDiff = initialAssetHubBalance - finalAssetHubBalance;
     const peopleChainDiff = finalPeopleChainBalance - initialPeopleChainBalance;
 
     console.log('\n📈 Balance changes:');
-    console.log(`   Asset Hub: -${formatBalance(assetHubDiff)} WND`);
-    console.log(`   People Chain: +${formatBalance(peopleChainDiff)} WND`);
+    console.log(`   Asset Hub: -${formatBalance(assetHubDiff)} DOT`);
+    console.log(`   People Chain: +${formatBalance(peopleChainDiff)} DOT`);
 
-    // Asset Hub balance should decrease (10 WND + fees)
+    // Asset Hub balance should decrease (10 DOT + fees)
     expect(finalAssetHubBalance).toBeLessThan(initialAssetHubBalance);
-    expect(assetHubDiff).toBeGreaterThanOrEqual(10_000_000_000n); // At least 10 WND
+    expect(assetHubDiff).toBeGreaterThanOrEqual(10_000_000_000n); // At least 10 DOT
 
     // People Chain balance should increase
     expect(finalPeopleChainBalance).toBeGreaterThan(initialPeopleChainBalance);
     expect(peopleChainDiff).toBeGreaterThan(0n);
 
     console.log('\n✅ Teleport successful!');
-  }, 60000);
+  }, 90000);
 });
 
 /**

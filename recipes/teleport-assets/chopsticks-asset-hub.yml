@@ -1,4 +1,0 @@
-endpoint: wss://westend-asset-hub-rpc.polkadot.io
-mock-signature-host: true
-db: ./asset-hub-db.sqlite
-port: 8000
