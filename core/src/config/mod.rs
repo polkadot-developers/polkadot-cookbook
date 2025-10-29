@@ -156,7 +156,7 @@ mod tests {
             .with_destination(PathBuf::from("/tmp/recipes"))
             .with_git_init(false)
             .with_skip_install(true)
-            .with_recipe_type(RecipeType::Contracts)
+            .with_recipe_type(RecipeType::Solidity)
             .with_category("advanced")
             .with_needs_node(false);
 
@@ -164,7 +164,7 @@ mod tests {
         assert_eq!(config.destination, PathBuf::from("/tmp/recipes"));
         assert!(!config.git_init);
         assert!(config.skip_install);
-        assert!(matches!(config.recipe_type, RecipeType::Contracts));
+        assert!(matches!(config.recipe_type, RecipeType::Solidity));
         assert_eq!(config.category, "advanced");
         assert!(!config.needs_node);
     }

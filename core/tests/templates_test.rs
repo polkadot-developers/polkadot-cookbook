@@ -39,7 +39,7 @@ fn test_all_templates_return_non_empty() {
         "test-recipe",
         "Test Recipe",
         "A test description",
-        RecipeType::Sdk,
+        RecipeType::PolkadotSdk,
         "test-cat",
         true,
     );
@@ -81,7 +81,7 @@ fn test_templates_contain_expected_markers() {
         "my-test",
         "My Test",
         "Description",
-        RecipeType::Sdk,
+        RecipeType::PolkadotSdk,
         "test-cat",
         true,
     )
@@ -107,7 +107,7 @@ fn test_template_trait_implemented() {
         "test",
         "Test",
         "Desc",
-        RecipeType::Sdk,
+        RecipeType::PolkadotSdk,
         "cat",
         true,
     ));
@@ -159,8 +159,14 @@ fn test_test_template_with_different_slugs() {
 fn test_recipe_yml_template_variations() {
     use polkadot_cookbook_core::config::RecipeType;
     // Test with different inputs
-    let template1 =
-        RecipeYmlTemplate::new("slug-1", "Title 1", "Desc 1", RecipeType::Sdk, "cat1", true);
+    let template1 = RecipeYmlTemplate::new(
+        "slug-1",
+        "Title 1",
+        "Desc 1",
+        RecipeType::PolkadotSdk,
+        "cat1",
+        true,
+    );
     let content1 = template1.generate();
     assert!(content1.contains("slug-1"));
     assert!(content1.contains("Title 1"));
@@ -170,7 +176,7 @@ fn test_recipe_yml_template_variations() {
         "complex-slug",
         "Complex Title",
         "A longer description with multiple words",
-        RecipeType::Contracts,
+        RecipeType::Solidity,
         "cat2",
         false,
     );

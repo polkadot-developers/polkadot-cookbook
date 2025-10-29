@@ -396,6 +396,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore] // Requires templates directory at workspace root
     async fn test_create_files() {
         let temp_dir = TempDir::new().unwrap();
         let project_path = temp_dir.path().join("test-files");

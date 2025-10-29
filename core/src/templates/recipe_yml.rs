@@ -65,7 +65,7 @@ mod tests {
             "my-recipe",
             "My Recipe",
             "A test recipe",
-            RecipeType::Sdk,
+            RecipeType::PolkadotSdk,
             "test-category",
             true,
         );
@@ -82,7 +82,7 @@ mod tests {
             "test",
             "Test",
             "Test description",
-            RecipeType::Sdk,
+            RecipeType::PolkadotSdk,
             "test-cat",
             true,
         );

@@ -147,7 +147,7 @@ async fn test_template_generation() {
         "my-tutorial",
         "My Tutorial",
         "A test tutorial",
-        RecipeType::Sdk,
+        RecipeType::PolkadotSdk,
         "test-category",
         true,
     );
@@ -189,7 +189,7 @@ async fn test_project_config_builder() {
         .with_destination(PathBuf::from("/tmp/test"))
         .with_git_init(false)
         .with_skip_install(true)
-        .with_recipe_type(RecipeType::Contracts)
+        .with_recipe_type(RecipeType::Solidity)
         .with_category("advanced")
         .with_needs_node(false);
 
@@ -198,7 +198,7 @@ async fn test_project_config_builder() {
     assert_eq!(config.destination, PathBuf::from("/tmp/test"));
     assert!(!config.git_init);
     assert!(config.skip_install);
-    assert_eq!(config.recipe_type, RecipeType::Contracts);
+    assert_eq!(config.recipe_type, RecipeType::Solidity);
     assert_eq!(config.category, "advanced");
     assert!(!config.needs_node);
 }
@@ -295,7 +295,7 @@ async fn test_sdk_recipe_creation() {
 
     let config = ProjectConfig::new("sdk-recipe")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::Sdk)
+        .with_recipe_type(RecipeType::PolkadotSdk)
         .with_git_init(false)
         .with_skip_install(true);
 
@@ -319,7 +319,7 @@ async fn test_contracts_recipe_creation() {
 
     let config = ProjectConfig::new("contracts-recipe")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::Contracts)
+        .with_recipe_type(RecipeType::Solidity)
         .with_git_init(false)
         .with_skip_install(true);
 
