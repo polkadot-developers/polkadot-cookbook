@@ -1,0 +1,32 @@
+name: Basic Pallet
+slug: basic-pallet
+category: polkadot-sdk-cookbook
+needs_node: false
+description: Replace with a short description.
+type: polkadot-sdk
+
+# Metadata for documentation
+difficulty: beginner  # beginner | intermediate | advanced
+tags:
+  - pallet
+  - runtime
+  - substrate
+
+# Polkadot SDK versions (optional overrides)
+# Uncomment and modify if you need specific versions
+# polkadot_sdk: "1.15.0"
+# rust: "1.81.0"
+
+# Test configuration
+test_command: just test
+build_command: just build
+lint_command: just clippy
+
+# Optional: Related recipes
+# related_recipes:
+#   - another-recipe-slug
+
+# Optional: External resources
+# resources:
+#   - title: "FRAME Documentation"
+#     url: "https://docs.substrate.io/reference/frame-pallets/"

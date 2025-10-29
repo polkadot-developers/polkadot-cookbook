@@ -21,9 +21,7 @@
 
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-blue.svg)](LICENSE)
 [![Test SDK](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml)
-[![Kitchensink Parachain](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/build-kitchensink-parachain.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-docs-tests/actions/workflows/build-kitchensink-parachain.yml)
-[![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org/)
-[![Node](https://img.shields.io/badge/node-20%2B-green.svg)](https://nodejs.org/)
+[![Rust](https://img.shields.io/badge/rust-1.81%2B-orange.svg)](https://www.rust-lang.org/)
 
 </div>
 
@@ -31,9 +29,16 @@
 
 ## 🍽️ Recipes
 
+### Polkadot SDK
+
 | Recipe | Description | Difficulty |
 |----------|-------------|------------|
-| [**Zero to Hero**](recipes/zero-to-hero) | Build and deploy your first parachain | 🟢 Beginner |
+| [**Basic Pallet**](recipes/basic-pallet) | Create a custom FRAME pallet with storage and events | 🟢 Beginner |
+
+### Coming Soon
+
+- **Solidity** - Smart contracts using pallet-revive
+- **XCM** - Cross-chain interactions with Chopsticks
 
 > 💡 **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
@@ -47,26 +52,40 @@ Each recipe is self-contained with working code and tests:
 
 ```bash
 git clone https://github.com/polkadot-developers/polkadot-cookbook.git
-cd polkadot-cookbook/recipes/zero-to-hero
-npm install
-npm test
+cd polkadot-cookbook/recipes/basic-pallet
+
+# Run tests
+cargo test
+
+# Build the pallet
+cargo build --release
 ```
 
 ### Contribute a Recipe
+
+Use the CLI tool to create a new recipe:
 
 ```bash
 # Build the CLI tool
 cargo build --package cli --release
 
-# Create your recipe
-./target/release/dot my-awesome-recipe
+# Create your recipe (interactive mode)
+./target/release/dot
+
+# Or use non-interactive mode
+./target/release/dot my-pallet --non-interactive
 
 # Write, test, and submit
-cd recipes/my-awesome-recipe
-# ... edit README.md, implement code, write tests ...
-npm test
+cd recipes/my-pallet
+# ... implement your pallet, write tests ...
+cargo test
 git push
 ```
+
+The CLI supports three recipe types:
+- **Polkadot SDK** - Runtime pallets with Rust
+- **Solidity** - Smart contracts with pallet-revive (coming soon)
+- **XCM** - Cross-chain interactions with Chopsticks (coming soon)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 

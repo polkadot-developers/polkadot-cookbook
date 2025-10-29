@@ -89,14 +89,17 @@ impl Scaffold {
         };
 
         // Create directory structure
-        self.create_directories(&project_path, config.recipe_type).await?;
+        self.create_directories(&project_path, config.recipe_type)
+            .await?;
 
         // Generate and write template files
         self.create_files(&project_path, &config).await?;
 
         // Bootstrap test environment if not skipped
         // Note: Only TypeScript-based recipes (Solidity, XCM) need npm install
-        if !config.skip_install && matches!(config.recipe_type, RecipeType::Solidity | RecipeType::Xcm) {
+        if !config.skip_install
+            && matches!(config.recipe_type, RecipeType::Solidity | RecipeType::Xcm)
+        {
             let bootstrap = Bootstrap::new(project_path.clone());
             bootstrap.setup(&config.slug).await?;
         } else if matches!(config.recipe_type, RecipeType::PolkadotSdk) {
@@ -173,19 +176,28 @@ impl Scaffold {
     }
 
     /// Create files for Polkadot SDK (Rust-based) recipes
-    async fn create_polkadot_sdk_files(&self, project_path: &Path, config: &ProjectConfig) -> Result<()> {
+    async fn create_polkadot_sdk_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+    ) -> Result<()> {
         debug!("Creating Polkadot SDK template files");
 
         // Copy template files from templates/recipe-templates/polkadot-sdk-template/
         let template_dir = Path::new("templates/recipe-templates/polkadot-sdk-template");
 
-        self.copy_template_dir(template_dir, project_path, config).await?;
+        self.copy_template_dir(template_dir, project_path, config)
+            .await?;
 
         Ok(())
     }
 
     /// Create files for TypeScript-based recipes (Solidity, XCM)
-    async fn create_typescript_files(&self, project_path: &Path, config: &ProjectConfig) -> Result<()> {
+    async fn create_typescript_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+    ) -> Result<()> {
         debug!("Creating TypeScript template files");
 
         // Generate justfile
@@ -238,9 +250,18 @@ impl Scaffold {
     }
 
     /// Copy template directory recursively, replacing placeholders
-    fn copy_template_dir<'a>(&'a self, template_dir: &'a Path, dest_dir: &'a Path, config: &'a ProjectConfig) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + 'a>> {
+    fn copy_template_dir<'a>(
+        &'a self,
+        template_dir: &'a Path,
+        dest_dir: &'a Path,
+        config: &'a ProjectConfig,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + 'a>> {
         Box::pin(async move {
-            debug!("Copying template from {} to {}", template_dir.display(), dest_dir.display());
+            debug!(
+                "Copying template from {} to {}",
+                template_dir.display(),
+                dest_dir.display()
+            );
 
             // Helper function to process file content
             let process_content = |content: String, config: &ProjectConfig| -> String {
@@ -259,12 +280,15 @@ impl Scaffold {
                 }
             })?;
 
-            while let Some(entry) = entries.next_entry().await.map_err(|e| {
-                CookbookError::FileSystemError {
-                    message: format!("Failed to read directory entry: {e}"),
-                    path: Some(template_dir.to_path_buf()),
-                }
-            })? {
+            while let Some(entry) =
+                entries
+                    .next_entry()
+                    .await
+                    .map_err(|e| CookbookError::FileSystemError {
+                        message: format!("Failed to read directory entry: {e}"),
+                        path: Some(template_dir.to_path_buf()),
+                    })?
+            {
                 let path = entry.path();
                 let file_name = entry.file_name();
                 let file_name_str = file_name.to_string_lossy();
@@ -372,7 +396,10 @@ mod tests {
         let project_path = temp_dir.path().join("test-project");
 
         let scaffold = Scaffold::new();
-        scaffold.create_directories(&project_path, RecipeType::Solidity).await.unwrap();
+        scaffold
+            .create_directories(&project_path, RecipeType::Solidity)
+            .await
+            .unwrap();
 
         assert!(project_path.exists());
         assert!(project_path.join("tests").exists());
@@ -386,7 +413,10 @@ mod tests {
         let project_path = temp_dir.path().join("dry-run-project");
 
         let scaffold = Scaffold::dry_run();
-        scaffold.create_directories(&project_path, RecipeType::Solidity).await.unwrap();
+        scaffold
+            .create_directories(&project_path, RecipeType::Solidity)
+            .await
+            .unwrap();
 
         // In dry-run mode, directories should NOT be created
         assert!(!project_path.exists());

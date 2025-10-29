@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "pallets/template",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Replace with your pallet name
+pallet-template = { path = "pallets/template", default-features = false }
+
+# Substrate dependencies (versions should match your recipe requirements)
+codec = { package = "parity-scale-codec", version = "3.6.12", default-features = false }
+scale-info = { version = "2.11.1", default-features = false }
+frame-support = { version = "37.0.0", default-features = false }
+frame-system = { version = "37.0.0", default-features = false }
+sp-runtime = { version = "39.0.0", default-features = false }
+sp-core = { version = "34.0.0", default-features = false }
+sp-io = { version = "38.0.0", default-features = false }
