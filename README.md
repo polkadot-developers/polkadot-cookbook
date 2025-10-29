@@ -63,27 +63,37 @@ cargo build --release
 
 ### Contribute a Recipe
 
-Use the CLI tool to create a new recipe:
+Use the CLI tool to create and manage recipes:
 
 ```bash
 # Build the CLI tool
-cargo build --package cli --release
+cargo build --release --bin dot
 
-# Create your recipe (interactive mode)
+# Setup and verify your environment
+./target/release/dot setup
+./target/release/dot doctor
+
+# Create a new recipe (interactive mode)
 ./target/release/dot
 
-# Or use non-interactive mode
-./target/release/dot my-pallet --non-interactive
+# Or create with a specific slug
+./target/release/dot my-pallet
 
-# Write, test, and submit
-cd recipes/my-pallet
-# ... implement your pallet, write tests ...
-cargo test
-git push
+# Test your recipe
+./target/release/dot recipe test my-pallet
+
+# Validate recipe structure
+./target/release/dot recipe validate my-pallet
+
+# Run linting checks
+./target/release/dot recipe lint my-pallet
+
+# List all recipes
+./target/release/dot recipe list
 ```
 
 The CLI supports three recipe types:
-- **Polkadot SDK** - Runtime pallets with Rust
+- **Polkadot SDK** - Runtime pallets with Rust ✅
 - **Solidity** - Smart contracts with pallet-revive (coming soon)
 - **XCM** - Cross-chain interactions with Chopsticks (coming soon)
 
