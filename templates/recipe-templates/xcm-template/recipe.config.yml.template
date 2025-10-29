@@ -1,0 +1,4 @@
+name: {{title}}
+slug: {{slug}}
+description: {{description}}
+type: xcm

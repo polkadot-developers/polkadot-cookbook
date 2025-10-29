@@ -131,8 +131,13 @@ impl Scaffold {
                 // For Rust-based recipes, we'll copy from template
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::Solidity | RecipeType::Xcm => {
-                // For TypeScript-based recipes (Solidity with Hardhat, XCM with Chopsticks)
+            RecipeType::Xcm => {
+                // For XCM recipes with Chopsticks
+                // Template will create src/ and tests/ directories
+                vec![project_path.to_path_buf()]
+            }
+            RecipeType::Solidity => {
+                // For Solidity recipes with pallet-revive
                 vec![
                     project_path.to_path_buf(),
                     project_path.join("tests"),
@@ -167,8 +172,11 @@ impl Scaffold {
             RecipeType::PolkadotSdk => {
                 self.create_polkadot_sdk_files(project_path, config).await?;
             }
-            RecipeType::Solidity | RecipeType::Xcm => {
-                self.create_typescript_files(project_path, config).await?;
+            RecipeType::Xcm => {
+                self.create_xcm_files(project_path, config).await?;
+            }
+            RecipeType::Solidity => {
+                self.create_solidity_files(project_path, config).await?;
             }
         }
 
@@ -192,7 +200,35 @@ impl Scaffold {
         Ok(())
     }
 
-    /// Create files for TypeScript-based recipes (Solidity, XCM)
+    /// Create files for XCM recipes (TypeScript with Chopsticks)
+    async fn create_xcm_files(&self, project_path: &Path, config: &ProjectConfig) -> Result<()> {
+        debug!("Creating XCM template files");
+
+        // Copy template files from templates/recipe-templates/xcm-template/
+        let template_dir = Path::new("templates/recipe-templates/xcm-template");
+
+        self.copy_template_dir(template_dir, project_path, config)
+            .await?;
+
+        Ok(())
+    }
+
+    /// Create files for Solidity recipes (TypeScript with pallet-revive)
+    async fn create_solidity_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+    ) -> Result<()> {
+        debug!("Creating Solidity template files");
+
+        // TODO: Implement Solidity template copying when template is ready
+        // For now, use the old typescript_files method as placeholder
+        self.create_typescript_files(project_path, config).await?;
+
+        Ok(())
+    }
+
+    /// Create files for TypeScript-based recipes (legacy/fallback)
     async fn create_typescript_files(
         &self,
         project_path: &Path,
