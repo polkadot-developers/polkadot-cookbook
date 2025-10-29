@@ -16,6 +16,11 @@
 
 pub use pallet::*;
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
@@ -25,9 +30,12 @@ pub mod pallet {
     pub struct Pallet<T>(_);
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
-    /// The RuntimeEvent bound is automatically applied from frame_system::Config.
     #[pallet::config]
-    pub trait Config: frame_system::Config<RuntimeEvent: From<Event<Self>>> {}
+    pub trait Config: frame_system::Config {
+        /// The overarching event type.
+        #[allow(deprecated)]
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+    }
 
     /// Storage item for a simple value.
     #[pallet::storage]

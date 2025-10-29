@@ -1,9 +1,6 @@
 use frame_support::{assert_noop, assert_ok};
-
-mod mock;
-
-use mock::*;
-use pallet_template::{Error, Event};
+use super::mock::*;
+use super::{Error, Event};
 
 #[test]
 fn it_works_for_default_value() {
