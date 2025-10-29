@@ -1,0 +1,160 @@
+name: Test XCM Recipes
+
+on:
+  pull_request:
+    paths:
+      - 'recipes/**'
+      - '.github/workflows/test-xcm-recipes.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - 'recipes/**'
+  workflow_dispatch:
+    inputs:
+      recipe_slug:
+        description: 'Recipe slug to test (e.g., teleport-assets)'
+        required: false
+        type: string
+
+jobs:
+  find-changed-recipes:
+    runs-on: ubuntu-latest
+    outputs:
+      recipes: ${{ steps.changed.outputs.recipes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: changed
+        env:
+          GH_EVENT: ${{ github.event_name }}
+          RECIPE_SLUG: ${{ inputs.recipe_slug }}
+        run: |
+          set -e
+
+          # Manual trigger: use provided recipe_slug
+          if [ "$GH_EVENT" = "workflow_dispatch" ] && [ -n "$RECIPE_SLUG" ]; then
+            echo "recipes=[\"$RECIPE_SLUG\"]" >> $GITHUB_OUTPUT
+            echo "Manual run for recipe: $RECIPE_SLUG"
+            exit 0
+          fi
+
+          # Push to master: test all recipes
+          if [ "$GH_EVENT" = "push" ]; then
+            RECIPES=$(find recipes -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | jq -R -s -c 'split("\n")[:-1]')
+            echo "recipes=$RECIPES" >> $GITHUB_OUTPUT
+            echo "Testing all recipes: $RECIPES"
+            exit 0
+          fi
+
+          # PR: find changed recipes
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.sha }}
+
+          # Get changed recipe directories
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep '^recipes/' | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+
+          if [ "$CHANGED" = "[]" ] || [ -z "$CHANGED" ]; then
+            echo "recipes=[]" >> $GITHUB_OUTPUT
+            echo "No recipe changes detected"
+          else
+            echo "recipes=$CHANGED" >> $GITHUB_OUTPUT
+            echo "Changed recipes: $CHANGED"
+          fi
+
+  test-xcm:
+    needs: find-changed-recipes
+    if: needs.find-changed-recipes.outputs.recipes != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJson(needs.find-changed-recipes.outputs.recipes) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check recipe type
+        id: recipe-type
+        working-directory: recipes/${{ matrix.slug }}
+        run: |
+          if [ -f "recipe.config.yml" ]; then
+            TYPE=$(grep '^type:' recipe.config.yml | awk '{print $2}')
+            echo "type=$TYPE" >> $GITHUB_OUTPUT
+            echo "Recipe type: $TYPE"
+          else
+            echo "type=unknown" >> $GITHUB_OUTPUT
+            echo "No recipe.config.yml found"
+          fi
+
+      - name: Setup Node.js
+        if: steps.recipe-type.outputs.type == 'xcm'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: recipes/${{ matrix.slug }}/package-lock.json
+
+      - name: Install dependencies
+        if: steps.recipe-type.outputs.type == 'xcm'
+        working-directory: recipes/${{ matrix.slug }}
+        run: npm ci
+
+      - name: Run linting
+        if: steps.recipe-type.outputs.type == 'xcm'
+        working-directory: recipes/${{ matrix.slug }}
+        run: npm run lint
+
+      - name: Start Chopsticks in background
+        if: steps.recipe-type.outputs.type == 'xcm'
+        working-directory: recipes/${{ matrix.slug }}
+        run: |
+          echo "Starting Chopsticks..."
+          npm run chopsticks > chopsticks.log 2>&1 &
+          CHOPSTICKS_PID=$!
+          echo "CHOPSTICKS_PID=$CHOPSTICKS_PID" >> $GITHUB_ENV
+
+          # Wait for Chopsticks to initialize (max 2 minutes)
+          echo "Waiting for Chopsticks to initialize..."
+          timeout 120 bash -c '
+            until grep -q "RPC listening" chopsticks.log 2>/dev/null; do
+              sleep 2
+              echo "Still waiting for Chopsticks..."
+            done
+          ' || {
+            echo "Chopsticks failed to start within 2 minutes"
+            cat chopsticks.log
+            exit 1
+          }
+
+          echo "Chopsticks is ready!"
+          tail -20 chopsticks.log
+
+      - name: Run tests
+        if: steps.recipe-type.outputs.type == 'xcm'
+        working-directory: recipes/${{ matrix.slug }}
+        run: npm test
+
+      - name: Stop Chopsticks
+        if: steps.recipe-type.outputs.type == 'xcm' && always()
+        run: |
+          if [ -n "$CHOPSTICKS_PID" ]; then
+            kill $CHOPSTICKS_PID || true
+          fi
+          # Also kill any remaining chopsticks processes
+          pkill -f chopsticks || true
+
+      - name: Show Chopsticks logs on failure
+        if: steps.recipe-type.outputs.type == 'xcm' && failure()
+        working-directory: recipes/${{ matrix.slug }}
+        run: |
+          echo "=== Chopsticks Logs ==="
+          cat chopsticks.log || echo "No chopsticks.log found"
+
+      - name: Skip non-XCM recipes
+        if: steps.recipe-type.outputs.type != 'xcm'
+        run: |
+          echo "Skipping ${{ matrix.slug }} (type: ${{ steps.recipe-type.outputs.type }})"
+          echo "This workflow only tests XCM recipes"
