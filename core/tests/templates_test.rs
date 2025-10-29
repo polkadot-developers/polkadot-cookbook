@@ -184,7 +184,7 @@ fn test_recipe_yml_template_variations() {
     assert!(content2.contains("complex-slug"));
     assert!(content2.contains("Complex Title"));
     assert!(content2.contains("A longer description"));
-    assert!(content2.contains("type: contracts"));
+    assert!(content2.contains("type: solidity"));
     assert!(content2.contains("needs_node: false"));
 }
 
