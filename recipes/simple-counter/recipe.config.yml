@@ -1,0 +1,6 @@
+name: Simple Counter
+slug: simple-counter
+category: smart-contracts
+needs_node: true
+description: A simple counter smart contract using pallet-revive
+type: solidity

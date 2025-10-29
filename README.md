@@ -41,9 +41,11 @@
 |----------|-------------|------------|
 | [**Teleport Assets**](recipes/teleport-assets) | Teleport assets between parachains using XCM v5 and PAPI | 🟢 Beginner |
 
-### Coming Soon
+### Solidity
 
-- **Solidity** - Smart contracts using pallet-revive
+| Recipe | Description | Difficulty |
+|----------|-------------|------------|
+| [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract using pallet-revive | 🟢 Beginner |
 
 > 💡 **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 

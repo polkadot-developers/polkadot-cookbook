@@ -1,7 +1,7 @@
 {
-  "name": "{{slug}}",
+  "name": "simple-counter",
   "version": "1.0.0",
-  "description": "{{description}}",
+  "description": "A simple counter smart contract using pallet-revive",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
