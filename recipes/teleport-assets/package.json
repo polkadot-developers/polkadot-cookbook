@@ -8,7 +8,7 @@
     "postinstall": "npm run generate",
     "test": "vitest run",
     "test:watch": "vitest",
-    "chopsticks": "chopsticks --config=chopsticks.yml",
+    "chopsticks": "chopsticks xcm -r chopsticks-relay.yml -p chopsticks-asset-hub.yml -p chopsticks-people.yml",
     "lint": "tsc --noEmit && eslint . --ext .ts",
     "teleport": "tsx src/teleport.ts"
   },

@@ -32,8 +32,9 @@ import { getPolkadotSigner } from 'polkadot-api/signer';
 
 /**
  * Teleport assets from Asset Hub to People Chain
+ * @param endpoint - Asset Hub WebSocket endpoint (default: ws://localhost:8000 for Chopsticks XCM)
  */
-export async function teleportAssets(endpoint: string = 'ws://localhost:8001') {
+export async function teleportAssets(endpoint: string = 'ws://localhost:8000') {
   console.log('🚀 Starting XCM Asset Teleport Example\n');
 
   // Step 1: Setup key derivation and signer

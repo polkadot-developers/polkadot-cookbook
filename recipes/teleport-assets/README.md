@@ -47,15 +47,15 @@ This executes the teleport against a local Chopsticks instance (requires Chopsti
 
 ### Option 2: Start Chopsticks and Test
 
-1. **Terminal 1** - Start Chopsticks:
+1. **Terminal 1** - Start Chopsticks XCM:
 ```bash
 npm run chopsticks
 ```
 
-This starts:
-- Westend Relay Chain on port 8000
-- Asset Hub on port 8001
-- People Chain on port 8002
+This starts a multi-chain environment with HRMP channels configured:
+- **Asset Hub** on port 8000 (ws://127.0.0.1:8000)
+- **People Chain** on port 8001 (ws://127.0.0.1:8001)
+- **Westend Relay Chain** on port 8002 (ws://127.0.0.1:8002)
 
 2. **Terminal 2** - Run tests:
 ```bash
@@ -66,6 +66,12 @@ Or run the teleport script:
 ```bash
 npm run teleport
 ```
+
+**Note**: The `chopsticks xcm` command automatically:
+- Forks live chains locally for testing
+- Configures HRMP channels between parachains
+- Enables cross-chain message passing
+- Provides deterministic block production
 
 ## How It Works
 
@@ -88,7 +94,7 @@ const polkadotSigner = getPolkadotSigner(
 
 ```typescript
 const client = createClient(
-  withPolkadotSdkCompat(getWsProvider('ws://localhost:8001'))
+  withPolkadotSdkCompat(getWsProvider('ws://localhost:8000'))
 );
 const ahpApi = client.getTypedApi(ahp);
 ```

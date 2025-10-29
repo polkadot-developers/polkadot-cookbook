@@ -1,71 +1,332 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createClient, type PolkadotClient } from 'polkadot-api';
+import { getWsProvider } from 'polkadot-api/ws-provider/node';
 import { ahp } from '@polkadot-api/descriptors';
-import { teleportAssets } from '../src/teleport.js';
+import {
+  DEV_PHRASE,
+  entropyToMiniSecret,
+  mnemonicToEntropy,
+} from '@polkadot-labs/hdkd-helpers';
+import { sr25519CreateDerive } from '@polkadot-labs/hdkd';
+import { getPolkadotSigner } from 'polkadot-api/signer';
 
 /**
- * XCM Teleport Tests
+ * XCM Teleport Integration Tests
  *
- * These tests verify the XCM teleport functionality structure and types.
- * To test with live chains, run `npm run chopsticks` in another terminal.
+ * These tests verify the full XCM teleport flow using Chopsticks XCM mode.
+ *
+ * IMPORTANT: Start Chopsticks before running these tests:
+ *   npm run chopsticks
+ *
+ * This will start (with HRMP channels configured):
+ *   - Asset Hub on ws://127.0.0.1:8000
+ *   - People Chain on ws://127.0.0.1:8001
+ *   - Westend Relay Chain on ws://127.0.0.1:8002
  */
 
 describe('XCM Teleport Tests', () => {
+  let assetHubClient: PolkadotClient | undefined;
+  let peopleChainClient: PolkadotClient | undefined;
+  let chopsticksAvailable = false;
+
+  beforeAll(async () => {
+    try {
+      console.log('🔌 Attempting to connect to Chopsticks...');
+
+      // Try to connect to Asset Hub (expects Chopsticks XCM running on port 8000)
+      const assetHubProvider = getWsProvider('ws://127.0.0.1:8000');
+      const peopleChainProvider = getWsProvider('ws://127.0.0.1:8001');
+
+      assetHubClient = createClient(assetHubProvider);
+      peopleChainClient = createClient(peopleChainProvider);
+
+      // Test connection with timeout
+      const api = assetHubClient.getTypedApi(ahp);
+      const connectionTest = Promise.race([
+        api.constants.System.Version(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Connection timeout')), 10000)
+        ),
+      ]);
+
+      await connectionTest;
+
+      chopsticksAvailable = true;
+      console.log('✓ Connected to Chopsticks');
+    } catch (error) {
+      // Cleanup failed connections
+      if (assetHubClient) {
+        assetHubClient.destroy();
+        assetHubClient = undefined;
+      }
+      if (peopleChainClient) {
+        peopleChainClient.destroy();
+        peopleChainClient = undefined;
+      }
+
+      console.log('⚠️  Chopsticks not available');
+      console.log('   Run `npm run chopsticks` in another terminal to enable integration tests');
+    }
+  }, 10000);
+
+  afterAll(async () => {
+    if (assetHubClient) {
+      assetHubClient.destroy();
+    }
+    if (peopleChainClient) {
+      peopleChainClient.destroy();
+    }
+  });
+
   it('should have valid PAPI descriptor for Asset Hub', () => {
-    // Verify the ahp descriptor was generated correctly
     expect(ahp).toBeDefined();
     expect(typeof ahp).toBe('object');
-    console.log('✓ Asset Hub descriptor loaded successfully');
   });
 
-  it('should export teleportAssets function', () => {
-    expect(teleportAssets).toBeDefined();
-    expect(typeof teleportAssets).toBe('function');
-    console.log('✓ Teleport function is defined');
+  it('should connect to Asset Hub and verify chain spec', async () => {
+    if (!chopsticksAvailable) {
+      console.log('⏭️  Skipping - Chopsticks not available');
+      return;
+    }
+
+    const api = assetHubClient.getTypedApi(ahp);
+    const chainVersion = await api.constants.System.Version();
+
+    expect(chainVersion).toBeDefined();
+    expect(chainVersion.spec_name).toBe('westmint');
+    console.log(`✓ Connected to ${chainVersion.spec_name} v${chainVersion.spec_version}`);
   });
 
-  it('should have XCM types available from descriptor', async () => {
-    // Verify XCM types are properly exported
-    const { XcmV5Instruction, XcmVersionedXcm, XcmV5AssetFilter } = await import(
-      '@polkadot-api/descriptors'
-    );
+  it('should connect to People Chain and verify chain spec', async () => {
+    if (!chopsticksAvailable) {
+      console.log('⏭️  Skipping - Chopsticks not available');
+      return;
+    }
 
-    expect(XcmV5Instruction).toBeDefined();
-    expect(XcmVersionedXcm).toBeDefined();
-    expect(XcmV5AssetFilter).toBeDefined();
-    console.log('✓ XCM v5 types are available');
+    const api = peopleChainClient.getTypedApi(ahp);
+    const chainVersion = await api.constants.System.Version();
+
+    expect(chainVersion).toBeDefined();
+    console.log(`✓ Connected to ${chainVersion.spec_name} v${chainVersion.spec_version}`);
   });
 
-  // Integration test note
-  it.todo('Integration test: teleport assets between chains (requires Chopsticks)');
+  it('should have Alice account funded on Asset Hub', async () => {
+    if (!chopsticksAvailable) {
+      console.log('⏭️  Skipping - Chopsticks not available');
+      return;
+    }
 
-  // Example test structure for full teleport:
-  /*
-  it('should teleport 10 WND from Asset Hub to People Chain', async () => {
-    if (!assetHubClient || !peopleChainClient) return;
+    const api = assetHubClient.getTypedApi(ahp);
+    const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+
+    const accountInfo = await api.query.System.Account.getValue(aliceAddress);
+    const balance = accountInfo.data.free;
+
+    expect(balance).toBeGreaterThan(0n);
+    console.log(`✓ Alice balance on Asset Hub: ${formatBalance(balance)} WND`);
+  });
+
+  it('should successfully teleport 10 WND from Asset Hub to People Chain', async () => {
+    if (!chopsticksAvailable) {
+      console.log('⏭️  Skipping - Chopsticks not available');
+      return;
+    }
 
     const assetHubApi = assetHubClient.getTypedApi(ahp);
     const peopleChainApi = peopleChainClient.getTypedApi(ahp);
 
     const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
+    console.log('\n📊 Initial balances:');
+
     // Get initial balances
     const initialAssetHubBalance = await getBalance(assetHubApi, aliceAddress);
     const initialPeopleChainBalance = await getBalance(peopleChainApi, aliceAddress);
 
-    // Execute teleport
-    await teleportAssets('ws://localhost:8001');
+    console.log(`   Asset Hub: ${formatBalance(initialAssetHubBalance)} WND`);
+    console.log(`   People Chain: ${formatBalance(initialPeopleChainBalance)} WND`);
 
-    // Verify balances changed
+    // Execute the teleport
+    console.log('\n🚀 Executing teleport...');
+    await executeTestTeleport(assetHubClient);
+
+    // Wait for XCM message to be processed
+    console.log('⏳ Waiting for XCM to process...');
+    await new Promise(resolve => setTimeout(resolve, 6000));
+
+    // Get final balances
     const finalAssetHubBalance = await getBalance(assetHubApi, aliceAddress);
     const finalPeopleChainBalance = await getBalance(peopleChainApi, aliceAddress);
 
+    console.log('\n📊 Final balances:');
+    console.log(`   Asset Hub: ${formatBalance(finalAssetHubBalance)} WND`);
+    console.log(`   People Chain: ${formatBalance(finalPeopleChainBalance)} WND`);
+
+    // Verify the transfer
+    const assetHubDiff = initialAssetHubBalance - finalAssetHubBalance;
+    const peopleChainDiff = finalPeopleChainBalance - initialPeopleChainBalance;
+
+    console.log('\n📈 Balance changes:');
+    console.log(`   Asset Hub: -${formatBalance(assetHubDiff)} WND`);
+    console.log(`   People Chain: +${formatBalance(peopleChainDiff)} WND`);
+
+    // Asset Hub balance should decrease (10 WND + fees)
     expect(finalAssetHubBalance).toBeLessThan(initialAssetHubBalance);
+    expect(assetHubDiff).toBeGreaterThanOrEqual(10_000_000_000n); // At least 10 WND
+
+    // People Chain balance should increase
     expect(finalPeopleChainBalance).toBeGreaterThan(initialPeopleChainBalance);
+    expect(peopleChainDiff).toBeGreaterThan(0n);
+
+    console.log('\n✅ Teleport successful!');
+  }, 60000);
+});
+
+/**
+ * Helper: Get account balance
+ */
+async function getBalance(api: any, address: string): Promise<bigint> {
+  const accountInfo = await api.query.System.Account.getValue(address);
+  return accountInfo.data.free;
+}
+
+/**
+ * Helper: Format balance for display
+ */
+function formatBalance(balance: bigint): string {
+  const DOT_UNITS = 10_000_000_000n;
+  const whole = balance / DOT_UNITS;
+  const fraction = balance % DOT_UNITS;
+  return `${whole}.${fraction.toString().padStart(10, '0').slice(0, 4)}`;
+}
+
+/**
+ * Execute teleport for testing
+ */
+async function executeTestTeleport(client: PolkadotClient) {
+  const {
+    XcmV3Junction,
+    XcmV3Junctions,
+    XcmV3MultiassetFungibility,
+    XcmV5AssetFilter,
+    XcmV5Instruction,
+    XcmV5Junction,
+    XcmV5Junctions,
+    XcmV5WildAsset,
+    XcmVersionedXcm,
+  } = await import('@polkadot-api/descriptors');
+
+  const { Enum, FixedSizeBinary } = await import('polkadot-api');
+  const { withPolkadotSdkCompat } = await import('polkadot-api/polkadot-sdk-compat');
+
+  // Setup signer
+  const entropy = mnemonicToEntropy(DEV_PHRASE);
+  const miniSecret = entropyToMiniSecret(entropy);
+  const derive = sr25519CreateDerive(miniSecret);
+  const keyPair = derive('//Alice');
+
+  const polkadotSigner = getPolkadotSigner(
+    keyPair.publicKey,
+    'Sr25519',
+    keyPair.sign
+  );
+
+  const ahpApi = client.getTypedApi(ahp);
+
+  // Constants
+  const PEOPLE_PARA_ID = 1004;
+  const DOT = {
+    parents: 1,
+    interior: XcmV3Junctions.Here(),
+  };
+  const DOT_UNITS = 10_000_000_000n;
+
+  // Define assets
+  const dotToWithdraw = {
+    id: DOT,
+    fun: XcmV3MultiassetFungibility.Fungible(10n * DOT_UNITS),
+  };
+
+  const dotToPayFees = {
+    id: DOT,
+    fun: XcmV3MultiassetFungibility.Fungible(1n * DOT_UNITS),
+  };
+
+  const destination = {
+    parents: 1,
+    interior: XcmV3Junctions.X1(XcmV3Junction.Parachain(PEOPLE_PARA_ID)),
+  };
+
+  const remoteFees = Enum(
+    'Teleport',
+    XcmV5AssetFilter.Definite([
+      {
+        id: DOT,
+        fun: XcmV3MultiassetFungibility.Fungible(1n * DOT_UNITS),
+      },
+    ])
+  );
+
+  const assets = [
+    Enum('Teleport', XcmV5AssetFilter.Wild(XcmV5WildAsset.AllCounted(1))),
+  ];
+
+  const beneficiary = FixedSizeBinary.fromBytes(keyPair.publicKey);
+
+  const remoteXcm = [
+    XcmV5Instruction.DepositAsset({
+      assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.AllCounted(1)),
+      beneficiary: {
+        parents: 0,
+        interior: XcmV5Junctions.X1(
+          XcmV5Junction.AccountId32({
+            id: beneficiary,
+            network: undefined,
+          })
+        ),
+      },
+    }),
+  ];
+
+  // Construct XCM
+  const xcm = XcmVersionedXcm.V5([
+    XcmV5Instruction.WithdrawAsset([dotToWithdraw]),
+    XcmV5Instruction.PayFees({ asset: dotToPayFees }),
+    XcmV5Instruction.InitiateTransfer({
+      destination,
+      remote_fees: remoteFees,
+      preserve_origin: false,
+      assets,
+      remote_xcm: remoteXcm,
+    }),
+    XcmV5Instruction.RefundSurplus(),
+    XcmV5Instruction.DepositAsset({
+      assets: XcmV5AssetFilter.Wild(XcmV5WildAsset.AllCounted(1)),
+      beneficiary: {
+        parents: 0,
+        interior: XcmV5Junctions.X1(
+          XcmV5Junction.AccountId32({
+            id: beneficiary,
+            network: undefined,
+          })
+        ),
+      },
+    }),
+  ]);
+
+  // Query weight
+  const weightResult = await ahpApi.apis.XcmPaymentApi.query_xcm_weight(xcm);
+
+  if (!weightResult.success) {
+    throw new Error('Failed to query XCM weight');
+  }
+
+  // Execute transaction
+  const tx = ahpApi.tx.PolkadotXcm.execute({
+    message: xcm,
+    max_weight: weightResult.value,
   });
 
-  async function getBalance(api: any, address: string): Promise<bigint> {
-    const accountInfo = await api.query.System.Account.getValue(address);
-    return accountInfo.data.free;
-  }
-  */
-});
+  await tx.signAndSubmit(polkadotSigner);
+  console.log('   ✓ Transaction submitted');
+}

@@ -17,6 +17,7 @@ dist/
 *.sqlite-shm
 *.sqlite-wal
 db.sqlite
+*-db.sqlite
 
 # Environment files
 .env

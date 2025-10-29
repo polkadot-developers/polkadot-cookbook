@@ -1,0 +1,4 @@
+endpoint: wss://westend-rpc.polkadot.io
+mock-signature-host: true
+db: ./relay-db.sqlite
+port: 8002

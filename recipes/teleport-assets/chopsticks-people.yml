@@ -1,0 +1,4 @@
+endpoint: wss://westend-people-rpc.polkadot.io
+mock-signature-host: true
+db: ./people-db.sqlite
+port: 8001
