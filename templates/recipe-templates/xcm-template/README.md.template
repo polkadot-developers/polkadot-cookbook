@@ -8,7 +8,7 @@ This recipe demonstrates cross-chain messaging (XCM) using:
 - **Polkadot API (PAPI)** - The modern, type-safe API for Polkadot
 - **Chopsticks** - Multi-chain testing environment
 
-This template follows best practices from the [Polkadot documentation](https://docs.polkadot.com/tutorials/interoperability/xcm-transfers/).
+This template follows best practices using modern PAPI patterns for XCM operations.
 
 ## Prerequisites
 

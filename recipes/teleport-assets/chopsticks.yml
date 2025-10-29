@@ -1,0 +1,18 @@
+relaychain:
+  endpoint: wss://westend-rpc.polkadot.io
+  db: ./db.sqlite
+  port: 8000
+  block: latest
+
+parachains:
+  # Asset Hub (parachain 1000)
+  - endpoint: wss://westend-asset-hub-rpc.polkadot.io
+    paraId: 1000
+    port: 8001
+    block: latest
+
+  # People Chain (parachain 1004)
+  - endpoint: wss://westend-people-rpc.polkadot.io
+    paraId: 1004
+    port: 8002
+    block: latest

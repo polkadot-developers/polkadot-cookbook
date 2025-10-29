@@ -1,0 +1,39 @@
+{
+  "name": "teleport-assets",
+  "version": "1.0.0",
+  "description": "Teleport assets from Asset Hub to People Chain using XCM and Polkadot API",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "chopsticks": "chopsticks --config=chopsticks.yml",
+    "lint": "tsc --noEmit && eslint . --ext .ts",
+    "teleport": "tsx src/teleport.ts"
+  },
+  "keywords": [
+    "polkadot",
+    "xcm",
+    "chopsticks",
+    "cross-chain",
+    "teleport"
+  ],
+  "author": "",
+  "license": "MIT OR Apache-2.0",
+  "dependencies": {
+    "polkadot-api": "^1.7.9",
+    "@polkadot-api/descriptors": "^0.16.1",
+    "@polkadot-labs/hdkd": "^0.0.10",
+    "@polkadot-labs/hdkd-helpers": "^0.0.10"
+  },
+  "devDependencies": {
+    "@acala-network/chopsticks": "^0.15.1",
+    "@acala-network/chopsticks-testing": "^0.15.1",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

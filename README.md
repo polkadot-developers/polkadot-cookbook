@@ -35,10 +35,15 @@
 |----------|-------------|------------|
 | [**Basic Pallet**](recipes/basic-pallet) | Create a custom FRAME pallet with storage and events | 🟢 Beginner |
 
+### XCM
+
+| Recipe | Description | Difficulty |
+|----------|-------------|------------|
+| [**Teleport Assets**](recipes/teleport-assets) | Teleport assets between parachains using XCM v5 and PAPI | 🟢 Beginner |
+
 ### Coming Soon
 
 - **Solidity** - Smart contracts using pallet-revive
-- **XCM** - Cross-chain interactions with Chopsticks
 
 > 💡 **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
