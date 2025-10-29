@@ -25,11 +25,9 @@ pub mod pallet {
     pub struct Pallet<T>(_);
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
+    /// The RuntimeEvent bound is automatically applied from frame_system::Config.
     #[pallet::config]
-    pub trait Config: frame_system::Config {
-        /// Because this pallet emits events, it depends on the runtime's definition of an event.
-        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-    }
+    pub trait Config: frame_system::Config<RuntimeEvent: From<Event<Self>>> {}
 
     /// Storage item for a simple value.
     #[pallet::storage]
