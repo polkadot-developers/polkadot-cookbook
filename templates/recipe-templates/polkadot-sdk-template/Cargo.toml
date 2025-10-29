@@ -20,7 +20,3 @@ frame-system = { version = "37.0.0", default-features = false }
 sp-runtime = { version = "39.0.0", default-features = false }
 sp-core = { version = "34.0.0", default-features = false }
 sp-io = { version = "38.0.0", default-features = false }
-
-[[bin]]
-name = "template-tests"
-path = "tests/integration_test.rs"
