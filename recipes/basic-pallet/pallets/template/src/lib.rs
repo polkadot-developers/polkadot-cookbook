@@ -83,11 +83,18 @@ pub mod pallet {
         /// Set the balance for an account.
         #[pallet::call_index(1)]
         #[pallet::weight(Weight::from_parts(10_000, 0) + T::DbWeight::get().writes(1))]
-        pub fn set_balance(origin: OriginFor<T>, account: T::AccountId, balance: u32) -> DispatchResult {
+        pub fn set_balance(
+            origin: OriginFor<T>,
+            account: T::AccountId,
+            balance: u32,
+        ) -> DispatchResult {
             ensure_root(origin)?;
 
             <BalanceOf<T>>::insert(&account, balance);
-            Self::deposit_event(Event::BalanceSet { who: account, balance });
+            Self::deposit_event(Event::BalanceSet {
+                who: account,
+                balance,
+            });
 
             Ok(())
         }

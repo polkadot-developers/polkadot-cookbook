@@ -1,6 +1,6 @@
-use frame_support::{assert_noop, assert_ok};
 use super::mock::*;
 use super::{Error, Event};
+use frame_support::{assert_noop, assert_ok};
 
 #[test]
 fn it_works_for_default_value() {
@@ -9,19 +9,16 @@ fn it_works_for_default_value() {
         System::set_block_number(1);
 
         // Store a value
-        assert_ok!(TemplateModule::store_something(RuntimeOrigin::signed(1), 42));
+        assert_ok!(TemplateModule::store_something(
+            RuntimeOrigin::signed(1),
+            42
+        ));
 
         // Verify the value was stored
         assert_eq!(TemplateModule::something(), Some(42));
 
         // Verify event was emitted
-        System::assert_last_event(
-            Event::SomethingStored {
-                value: 42,
-                who: 1,
-            }
-            .into(),
-        );
+        System::assert_last_event(Event::SomethingStored { value: 42, who: 1 }.into());
     });
 }
 
@@ -43,7 +40,10 @@ fn increment_works() {
         System::set_block_number(1);
 
         // Store initial value
-        assert_ok!(TemplateModule::store_something(RuntimeOrigin::signed(1), 10));
+        assert_ok!(TemplateModule::store_something(
+            RuntimeOrigin::signed(1),
+            10
+        ));
 
         // Increment the value
         assert_ok!(TemplateModule::increment(RuntimeOrigin::signed(1)));
@@ -52,13 +52,7 @@ fn increment_works() {
         assert_eq!(TemplateModule::something(), Some(11));
 
         // Verify event was emitted
-        System::assert_last_event(
-            Event::SomethingStored {
-                value: 11,
-                who: 1,
-            }
-            .into(),
-        );
+        System::assert_last_event(Event::SomethingStored { value: 11, who: 1 }.into());
     });
 }
 
