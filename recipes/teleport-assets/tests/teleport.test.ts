@@ -115,7 +115,7 @@ describe('XCM Teleport Tests', () => {
 
     // Execute the teleport
     console.log('\n🚀 Executing teleport...');
-    await executeTestTeleport(assetHubClient);
+    await executeTestTeleport(assetHubClient!);
 
     // Wait for XCM message to be processed
     console.log('⏳ Waiting for XCM to process...');
