@@ -50,7 +50,6 @@ describe('XCM Teleport Tests', () => {
 
     await connectionTest;
 
-    chopsticksAvailable = true;
     console.log('✓ Connected to Chopsticks');
   }, 15000);
 
