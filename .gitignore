@@ -3,7 +3,6 @@ debug/
 target/
 **/*.rs.bk
 *.pdb
-recipes/**/Cargo.lock
 
 # macOS
 .DS_Store
