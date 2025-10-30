@@ -27,7 +27,6 @@ import { getPolkadotSigner } from 'polkadot-api/signer';
 describe('XCM Teleport Tests', () => {
   let assetHubClient: PolkadotClient | undefined;
   let peopleChainClient: PolkadotClient | undefined;
-  let chopsticksAvailable = false;
 
   beforeAll(async () => {
     console.log('🔌 Attempting to connect to Chopsticks...');
@@ -184,7 +183,6 @@ async function executeTestTeleport(client: PolkadotClient) {
   } = await import('@polkadot-api/descriptors');
 
   const { Enum, FixedSizeBinary } = await import('polkadot-api');
-  const { withPolkadotSdkCompat } = await import('polkadot-api/polkadot-sdk-compat');
 
   // Setup signer
   const entropy = mnemonicToEntropy(DEV_PHRASE);
