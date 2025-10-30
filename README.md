@@ -1,85 +1,15 @@
-<style>
-  @keyframes fadeInFull {
-    0% { opacity: 0.7; }
-    100% { opacity: 1; }
-  }
-  @keyframes fadeIn {
-    0% { opacity: 0.9; }
-    100% { opacity: 1; }
-  }
-  .polkadot-logo-fade {
-    opacity: 0.7;
-    animation: fadeInFull 60s ease-in 5s forwards;
-  }
-  .cookbook-fade-in {
-    animation: fadeIn 30s ease-in forwards;
-  }
-  @keyframes gradientFlow {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-  @keyframes textShine {
-    0% {
-      background-position: -200% center;
-    }
-    100% {
-      background-position: 200% center;
-    }
-  }
-  @keyframes breathe {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
-  }
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-2px);
-    }
-  }
-  .polkadot-divider {
-    height: 3px;
-    background: linear-gradient(90deg, #E6007A 0%, #11116B 25%, #E6007A 50%, #11116B 75%, #E6007A 100%);
-    background-size: 200% 100%;
-    border: none;
-    margin: 40px 0;
-    opacity: 0.6;
-    animation: gradientFlow 8s ease-in-out infinite;
-  }
-  .text-shine {
-    animation: breathe 8s ease-in-out infinite;
-  }
-  .heading-shine {
-    animation: float 6s ease-in-out infinite;
-  }
-</style>
-
 <div style="margin-bottom: 20px;">
-  <img class="polkadot-logo-fade" height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
-  <img class="polkadot-logo-fade" height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
+  <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
+  <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
 </div>
 
 <div align="center">
 
 <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-  <img class="cookbook-fade-in" src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="80" height="80" />
-  <img class="cookbook-fade-in" src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="80" height="80" />
+  <img src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="80" height="80" />
+  <img src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="80" height="80" />
   <div>
-    <h1 class="cookbook-fade-in" style="font-size: 2.5em; font-weight: bold; margin: 0; line-height: 1;">Polkadot Cookbook</h1>
+    <h1 style="font-size: 2.5em; font-weight: bold; margin: 0; line-height: 1;">Polkadot Cookbook</h1>
   </div>
 </div>
 
@@ -96,13 +26,13 @@
 
 </div>
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Recipes</span>
+## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Recipes
 
 The Polkadot Cookbook provides recipes across 5 pathways of Polkadot development:
 
-### <img src=".media/icons/runtime-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/runtime-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Runtime Development (Polkadot SDK)</span>
+### <img src=".media/icons/runtime-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/runtime-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Runtime Development (Polkadot SDK)
 
 Build custom FRAME pallets and runtime logic with Rust.
 
@@ -110,7 +40,7 @@ Build custom FRAME pallets and runtime logic with Rust.
 |----------|-------------|------------|
 | [**Basic Pallet**](recipes/basic-pallet) | Create a custom FRAME pallet with storage and events | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
-### <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Smart Contracts (Solidity)</span>
+### <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Smart Contracts (Solidity)
 
 Deploy and interact with Solidity contracts using pallet-revive.
 
@@ -118,7 +48,7 @@ Deploy and interact with Solidity contracts using pallet-revive.
 |----------|-------------|------------|
 | [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract using pallet-revive | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
-### <img src=".media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Basic Interactions</span>
+### <img src=".media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Basic Interactions
 
 Single-chain transaction submission and state queries with PAPI.
 
@@ -126,7 +56,7 @@ Single-chain transaction submission and state queries with PAPI.
 |----------|-------------|------------|
 | *Coming soon* | Balance transfers, batch operations, proxy calls | - |
 
-### <img src=".media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">XCM (Cross-Chain Messaging)</span>
+### <img src=".media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> XCM (Cross-Chain Messaging)
 
 Asset transfers and cross-chain communication with Chopsticks.
 
@@ -134,7 +64,7 @@ Asset transfers and cross-chain communication with Chopsticks.
 |----------|-------------|------------|
 | [**Teleport Assets**](recipes/teleport-assets) | Teleport assets between parachains using XCM v5 and PAPI | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
-### <img src=".media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Testing Infrastructure</span>
+### <img src=".media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Testing Infrastructure
 
 Zombienet and Chopsticks configurations for network testing.
 
@@ -144,9 +74,9 @@ Zombienet and Chopsticks configurations for network testing.
 
 > <img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="18" height="18" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Quick Start</span>
+## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Quick Start
 
 ### Run a Recipe
 
@@ -215,9 +145,9 @@ The CLI supports five recipe pathways:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Documentation</span>
+## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Documentation
 
 ### For Recipe Contributors
 - [Contributing Guide](CONTRIBUTING.md) - How to create and submit recipes
@@ -231,9 +161,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 - [Testing](docs/testing.md) - Testing guide
 - [Workflows](docs/workflows.md) - CI/CD and automation
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Contributing</span>
+## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Contributing
 
 We welcome all contributions:
 
@@ -244,13 +174,13 @@ We welcome all contributions:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">License</span>
+## <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> License
 
 MIT OR Apache-2.0
 
-<hr class="polkadot-divider" />
+<hr />
 
 <div align="center">
 
