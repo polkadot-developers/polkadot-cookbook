@@ -66,6 +66,23 @@ impl Scaffold {
             warn!("{}", warning);
         }
 
+        // Load global versions to get rust version for templates
+        let rust_version = match crate::version::load_global_versions(Path::new(".")).await {
+            Ok(versions) => versions
+                .get("rust")
+                .map(|v| v.as_str())
+                .unwrap_or("1.81.0")
+                .to_string(),
+            Err(e) => {
+                warn!(
+                    "Failed to load versions.yml, using default rust version: {}",
+                    e
+                );
+                "1.81.0".to_string()
+            }
+        };
+        debug!("Using rust version: {}", rust_version);
+
         let project_path = config.project_path();
 
         // Create git branch if requested
@@ -89,7 +106,8 @@ impl Scaffold {
             .await?;
 
         // Generate and write template files
-        self.create_files(&project_path, &config).await?;
+        self.create_files(&project_path, &config, &rust_version)
+            .await?;
 
         // Bootstrap test environment if not skipped
         // Note: Only TypeScript-based recipes (Solidity, XCM) need npm install
@@ -161,18 +179,26 @@ impl Scaffold {
     }
 
     /// Create template files for a project
-    async fn create_files(&self, project_path: &Path, config: &ProjectConfig) -> Result<()> {
+    async fn create_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+        rust_version: &str,
+    ) -> Result<()> {
         debug!("Creating template files in: {}", project_path.display());
 
         match config.recipe_type {
             RecipeType::PolkadotSdk => {
-                self.create_polkadot_sdk_files(project_path, config).await?;
+                self.create_polkadot_sdk_files(project_path, config, rust_version)
+                    .await?;
             }
             RecipeType::Xcm => {
-                self.create_xcm_files(project_path, config).await?;
+                self.create_xcm_files(project_path, config, rust_version)
+                    .await?;
             }
             RecipeType::Solidity => {
-                self.create_solidity_files(project_path, config).await?;
+                self.create_solidity_files(project_path, config, rust_version)
+                    .await?;
             }
         }
 
@@ -184,26 +210,32 @@ impl Scaffold {
         &self,
         project_path: &Path,
         config: &ProjectConfig,
+        rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Polkadot SDK template files");
 
         // Copy template files from templates/recipe-templates/polkadot-sdk-template/
         let template_dir = Path::new("templates/recipe-templates/polkadot-sdk-template");
 
-        self.copy_template_dir(template_dir, project_path, config)
+        self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
 
         Ok(())
     }
 
     /// Create files for XCM recipes (TypeScript with Chopsticks)
-    async fn create_xcm_files(&self, project_path: &Path, config: &ProjectConfig) -> Result<()> {
+    async fn create_xcm_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+        rust_version: &str,
+    ) -> Result<()> {
         debug!("Creating XCM template files");
 
         // Copy template files from templates/recipe-templates/xcm-template/
         let template_dir = Path::new("templates/recipe-templates/xcm-template");
 
-        self.copy_template_dir(template_dir, project_path, config)
+        self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
 
         Ok(())
@@ -214,10 +246,11 @@ impl Scaffold {
         &self,
         project_path: &Path,
         config: &ProjectConfig,
+        rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Solidity template files");
         let template_dir = Path::new("templates/recipe-templates/solidity-template");
-        self.copy_template_dir(template_dir, project_path, config)
+        self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
         Ok(())
     }
@@ -228,6 +261,7 @@ impl Scaffold {
         template_dir: &'a Path,
         dest_dir: &'a Path,
         config: &'a ProjectConfig,
+        rust_version: &'a str,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + 'a>> {
         Box::pin(async move {
             debug!(
@@ -237,13 +271,14 @@ impl Scaffold {
             );
 
             // Helper function to process file content
-            let process_content = |content: String, config: &ProjectConfig| -> String {
-                content
-                    .replace("{{slug}}", &config.slug)
-                    .replace("{{title}}", &config.title)
-                    .replace("{{description}}", &config.description)
-                    .replace("{{rust_version}}", "1.81.0") // TODO: Get from versions.yml
-            };
+            let process_content =
+                |content: String, config: &ProjectConfig, rust_version: &str| -> String {
+                    content
+                        .replace("{{slug}}", &config.slug)
+                        .replace("{{title}}", &config.title)
+                        .replace("{{description}}", &config.description)
+                        .replace("{{rust_version}}", rust_version)
+                };
 
             // Recursive copy function
             let mut entries = tokio::fs::read_dir(template_dir).await.map_err(|e| {
@@ -287,7 +322,8 @@ impl Scaffold {
                             path: Some(dest_path.clone()),
                         }
                     })?;
-                    self.copy_template_dir(&path, &dest_path, config).await?;
+                    self.copy_template_dir(&path, &dest_path, config, rust_version)
+                        .await?;
                 } else {
                     // Copy and process files
                     let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
@@ -297,7 +333,7 @@ impl Scaffold {
                         }
                     })?;
 
-                    let processed_content = process_content(content, config);
+                    let processed_content = process_content(content, config, rust_version);
                     self.write_file(&dest_path, &processed_content).await?;
                 }
             }
@@ -410,7 +446,10 @@ mod tests {
 
         let config = ProjectConfig::new("test-tutorial");
         let scaffold = Scaffold::new();
-        scaffold.create_files(&project_path, &config).await.unwrap();
+        scaffold
+            .create_files(&project_path, &config, "1.86")
+            .await
+            .unwrap();
 
         assert!(project_path.join("justfile").exists());
         assert!(project_path.join("README.md").exists());
