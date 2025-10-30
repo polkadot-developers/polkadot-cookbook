@@ -339,9 +339,7 @@ impl Scaffold {
                             crate::config::RecipePathway::Xcm => "xcm",
                             crate::config::RecipePathway::Testing => "testing",
                             crate::config::RecipePathway::RequestNew => {
-                                unreachable!(
-                                    "RequestNew pathway should never reach scaffold code"
-                                )
+                                unreachable!("RequestNew pathway should never reach scaffold code")
                             }
                         };
                         format!("pathway: {value}")

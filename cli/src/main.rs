@@ -347,7 +347,9 @@ async fn handle_create(
             {} Any specific requirements\n\n\
             We'll review your request and add the template if it fits the cookbook!",
             "→".polkadot_pink(),
-            "https://github.com/paritytech/polkadot-cookbook/issues/new".polkadot_pink().bold(),
+            "https://github.com/paritytech/polkadot-cookbook/issues/new"
+                .polkadot_pink()
+                .bold(),
             "•".polkadot_pink(),
             "•".polkadot_pink(),
             "•".polkadot_pink(),
@@ -746,7 +748,9 @@ async fn run_non_interactive(
                 eprintln!("• What technology/framework it involves");
                 eprintln!("• Example use cases");
                 eprintln!("• Any specific requirements\n");
-                eprintln!("We'll review your request and add the template if it fits the cookbook!");
+                eprintln!(
+                    "We'll review your request and add the template if it fits the cookbook!"
+                );
                 std::process::exit(0);
             }
             _ => {
