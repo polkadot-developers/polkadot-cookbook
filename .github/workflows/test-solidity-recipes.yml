@@ -1,4 +1,4 @@
-name: Test Solidity Recipes
+name: Solidity Recipes
 
 on:
   push:

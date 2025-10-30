@@ -1,4 +1,4 @@
-name: Test Polkadot SDK Recipes
+name: Polkadot SDK Recipes
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Test XCM Recipes
+name: XCM Recipes
 
 on:
   pull_request:
