@@ -111,7 +111,7 @@ jobs:
 
       - name: Generate coverage badge
         run: |
-          # Use core library coverage for badge
+          # Use core library coverage for badge (displayed in PR comments only)
           COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
           if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
             COLOR="brightgreen"
@@ -120,22 +120,8 @@ jobs:
           else
             COLOR="red"
           fi
-          mkdir -p .github/badges
-          curl -o .github/badges/coverage.svg "https://img.shields.io/badge/core%20coverage-${COVERAGE}%25-${COLOR}"
-
-      - name: Commit coverage badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-          # Ensure we're on master branch
-          git checkout master || git checkout -b master
-          git pull origin master || true
-
-          git add .github/badges/coverage.svg
-          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
-          git push origin master
+          echo "Coverage badge would be: ${COVERAGE}% (${COLOR})"
+          echo "Note: Badge is not automatically committed due to branch protection"
 
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
