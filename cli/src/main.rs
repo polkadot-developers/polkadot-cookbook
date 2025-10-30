@@ -122,6 +122,20 @@ enum RecipeCommands {
     },
     /// List all recipes
     List,
+    /// Submit a recipe as a pull request
+    Submit {
+        /// Recipe slug (defaults to current directory)
+        #[arg(value_name = "SLUG")]
+        slug: Option<String>,
+
+        /// Title for the pull request
+        #[arg(short, long)]
+        title: Option<String>,
+
+        /// Body/description for the pull request
+        #[arg(short, long)]
+        body: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -165,6 +179,9 @@ async fn main() -> Result<()> {
             }
             RecipeCommands::List => {
                 handle_recipe_list().await?;
+            }
+            RecipeCommands::Submit { slug, title, body } => {
+                handle_recipe_submit(slug, title, body).await?;
             }
         },
         Some(Commands::Versions {
@@ -271,18 +288,18 @@ async fn handle_create(
     let recipe_type: RecipeType = select(&recipe_type_question)
         .item(
             RecipeType::PolkadotSdk,
-            "Polkadot SDK",
+            "Polkadot SDK (Runtime Development)",
             "Runtime pallets and blockchain development with Rust",
         )
         .item(
             RecipeType::Solidity,
-            "Solidity",
+            "Smart Contracts (Solidity)",
             "Smart contracts using pallet-revive",
         )
         .item(
             RecipeType::Xcm,
-            "XCM",
-            "Cross-chain interactions with Chopsticks",
+            "Chain Interactions (Basic Interactions, Cross-Chain Interactions)",
+            "Basic transactions and cross-chain interactions using Polkadot.js API and Chopsticks",
         )
         .interact()?;
 
@@ -349,9 +366,10 @@ async fn handle_create(
             title.dimmed(),
             "Type:".polkadot_pink(),
             match recipe_type {
-                RecipeType::PolkadotSdk => "Polkadot SDK",
-                RecipeType::Solidity => "Solidity",
-                RecipeType::Xcm => "XCM",
+                RecipeType::PolkadotSdk => "Polkadot SDK (Runtime Development)",
+                RecipeType::Solidity => "Smart Contracts (Solidity)",
+                RecipeType::Xcm =>
+                    "Chain Interactions (Basic Interactions, Cross-Chain Interactions)",
             },
             "Location:".polkadot_pink(),
             project_path.display(),
@@ -445,20 +463,27 @@ async fn handle_create(
                 ),
             )?;
 
-            if let Some(branch) = project_info.git_branch {
-                let git_title = "🔀 Ready to Contribute?".polkadot_pink().to_string();
+            if let Some(_branch) = project_info.git_branch {
+                let git_title = "🔀 Ready to Submit?".polkadot_pink().to_string();
                 note(
                     &git_title,
                     format!(
-                        "{} {}\n{} {}\n{} {}\n\n{} Then open a Pull Request on GitHub!",
-                        "→".dimmed(),
+                        "{} Use the submit command to create a PR:\n   {}\n\n\
+                         {} Or manually:\n\
+                         {} {}\n\
+                         {} {}\n\
+                         {} {}",
+                        "1.".polkadot_pink().bold(),
+                        format!("./target/release/dot recipe submit {}", project_info.slug)
+                            .polkadot_pink(),
+                        "2.".polkadot_pink().bold(),
+                        "   →".dimmed(),
                         "git add -A".polkadot_pink(),
-                        "→".dimmed(),
+                        "   →".dimmed(),
                         format!("git commit -m \"feat(recipe): add {}\"", project_info.slug)
                             .polkadot_pink(),
-                        "→".dimmed(),
-                        format!("git push origin {branch}").polkadot_pink(),
-                        "📌".polkadot_pink()
+                        "   →".dimmed(),
+                        "git push && gh pr create".polkadot_pink(),
                     ),
                 )?;
             }
@@ -1115,11 +1140,11 @@ async fn handle_recipe_list() -> Result<()> {
                 let config_path = entry.path().join("recipe.config.yml");
                 let recipe_type = if let Ok(content) = std::fs::read_to_string(&config_path) {
                     if content.contains("type: polkadot-sdk") {
-                        "Polkadot SDK"
+                        "Polkadot SDK (Runtime Development)"
                     } else if content.contains("type: solidity") {
-                        "Solidity"
+                        "Smart Contracts (Solidity)"
                     } else if content.contains("type: xcm") {
-                        "XCM"
+                        "Chain Interactions (Basic Interactions, Cross-Chain Interactions)"
                     } else {
                         "Unknown"
                     }
@@ -1147,6 +1172,338 @@ async fn handle_recipe_list() -> Result<()> {
 
     outro("Done")?;
     Ok(())
+}
+
+async fn handle_recipe_submit(
+    slug: Option<String>,
+    title: Option<String>,
+    body: Option<String>,
+) -> Result<()> {
+    let recipe_path = get_recipe_path(slug.clone())?;
+    let recipe_slug = recipe_path
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    clear_screen()?;
+    intro(format!("📤 Submit Recipe: {}", recipe_slug.polkadot_pink()))?;
+
+    // Get GitHub token
+    let github_token = match get_github_token() {
+        Ok(token) => token,
+        Err(e) => {
+            outro_cancel(format!(
+                "GitHub authentication required.\n\n\
+                 Error: {e}\n\n\
+                 Please set GITHUB_TOKEN environment variable:\n\
+                 export GITHUB_TOKEN=ghp_your_token_here\n\n\
+                 Or authenticate with GitHub CLI:\n\
+                 gh auth login\n\n\
+                 Create a token at: https://github.com/settings/tokens/new\n\
+                 Required scopes: repo, workflow"
+            ))?;
+            std::process::exit(1);
+        }
+    };
+
+    // Get repository info from git remote
+    let (owner, repo) = match get_repo_info() {
+        Ok(info) => info,
+        Err(e) => {
+            outro_cancel(format!(
+                "Failed to detect repository information.\n\n\
+                 Error: {e}\n\n\
+                 Make sure you have a git remote configured:\n\
+                 git remote add origin https://github.com/YOUR_USERNAME/polkadot-cookbook.git"
+            ))?;
+            std::process::exit(1);
+        }
+    };
+
+    // Read recipe metadata
+    let config_path = recipe_path.join("recipe.config.yml");
+    let config_content = std::fs::read_to_string(&config_path)?;
+
+    // Extract recipe name and description from config
+    let recipe_name = config_content
+        .lines()
+        .find(|l| l.starts_with("name:"))
+        .and_then(|l| l.split(':').nth(1))
+        .map(|s| s.trim())
+        .unwrap_or(&recipe_slug);
+
+    let recipe_desc = config_content
+        .lines()
+        .find(|l| l.starts_with("description:"))
+        .and_then(|l| l.split(':').nth(1))
+        .map(|s| s.trim())
+        .unwrap_or("A new Polkadot Cookbook recipe");
+
+    let recipe_type = if config_content.contains("type: polkadot-sdk") {
+        "Polkadot SDK"
+    } else if config_content.contains("type: solidity") {
+        "Solidity"
+    } else if config_content.contains("type: xcm") {
+        "XCM"
+    } else {
+        "Unknown"
+    };
+
+    // Check git status
+    let git_status = std::process::Command::new("git")
+        .args(["status", "--porcelain"])
+        .current_dir(&recipe_path)
+        .output()?;
+
+    let has_changes = !String::from_utf8_lossy(&git_status.stdout)
+        .trim()
+        .is_empty();
+
+    // Get current branch
+    let current_branch_output = std::process::Command::new("git")
+        .args(["branch", "--show-current"])
+        .output()?;
+    let current_branch = String::from_utf8_lossy(&current_branch_output.stdout)
+        .trim()
+        .to_string();
+
+    note(
+        "Recipe Info",
+        format!(
+            "Name:        {}\nSlug:        {}\nType:        {}\nBranch:      {}\nChanges:     {}",
+            recipe_name.polkadot_pink(),
+            recipe_slug.polkadot_pink(),
+            recipe_type,
+            current_branch.polkadot_pink(),
+            if has_changes {
+                "Yes (uncommitted)".yellow().to_string()
+            } else {
+                "None".dimmed().to_string()
+            }
+        ),
+    )?;
+
+    // Generate default PR title and body
+    let default_title = title.unwrap_or_else(|| format!("feat(recipe): add {recipe_slug}"));
+    let default_body = body.unwrap_or_else(|| {
+        format!(
+            "## Summary\n\n\
+             This PR adds a new {recipe_type} recipe: **{recipe_name}**\n\n\
+             {recipe_desc}\n\n\
+             ## Recipe Details\n\n\
+             - **Type**: {recipe_type}\n\
+             - **Slug**: `{recipe_slug}`\n\n\
+             ## Testing\n\n\
+             - [ ] All tests pass\n\
+             - [ ] Code is properly formatted\n\
+             - [ ] Documentation is complete\n\n\
+             ## Notes\n\n\
+             This recipe is ready for review and does not require a prior proposal issue. \
+             The Polkadot Cookbook accepts direct recipe contributions via PR."
+        )
+    });
+
+    // Show what will be done
+    note(
+        "Pull Request Preview",
+        format!(
+            "Title:\n{}\n\nDescription:\n{}",
+            default_title.polkadot_pink(),
+            default_body.dimmed()
+        ),
+    )?;
+
+    // Confirm submission
+    let should_continue = confirm("Continue with PR creation?".polkadot_pink().to_string())
+        .initial_value(true)
+        .interact()?;
+
+    if !should_continue {
+        outro_cancel("Recipe submission cancelled")?;
+        std::process::exit(0);
+    }
+
+    // If there are uncommitted changes, commit them
+    if has_changes {
+        let should_commit = confirm("Commit uncommitted changes?".polkadot_pink().to_string())
+            .initial_value(true)
+            .interact()?;
+
+        if should_commit {
+            let sp = spinner();
+            sp.start("Committing changes...");
+
+            let commit_msg = format!("feat(recipe): add {recipe_slug}");
+            let commit_output = std::process::Command::new("git")
+                .args(["commit", "-am", &commit_msg])
+                .current_dir(&recipe_path)
+                .output()?;
+
+            if !commit_output.status.success() {
+                sp.stop("❌ Failed to commit changes");
+                let stderr = String::from_utf8_lossy(&commit_output.stderr);
+                note("Error", &stderr)?;
+                outro_cancel("Commit failed")?;
+                std::process::exit(1);
+            }
+
+            sp.stop("✅ Changes committed");
+        } else {
+            outro_cancel("Please commit your changes first and try again")?;
+            std::process::exit(0);
+        }
+    }
+
+    // Push the branch
+    let sp = spinner();
+    sp.start(format!(
+        "Pushing branch {}...",
+        current_branch.polkadot_pink()
+    ));
+
+    let push_output = std::process::Command::new("git")
+        .args(["push", "origin", &current_branch, "--set-upstream"])
+        .output()?;
+
+    if !push_output.status.success() {
+        sp.stop("❌ Failed to push branch");
+        let stderr = String::from_utf8_lossy(&push_output.stderr);
+        note("Error", &stderr)?;
+        outro_cancel("Push failed")?;
+        std::process::exit(1);
+    }
+
+    sp.stop(format!(
+        "✅ Branch {} pushed",
+        current_branch.polkadot_pink()
+    ));
+
+    // Create the PR using GitHub API
+    sp.start("Creating pull request...");
+
+    let octocrab = octocrab::Octocrab::builder()
+        .personal_token(github_token)
+        .build()?;
+
+    let pr_result = octocrab
+        .pulls(&owner, &repo)
+        .create(&default_title, &current_branch, "master")
+        .body(&default_body)
+        .send()
+        .await;
+
+    let pr = match pr_result {
+        Ok(pr) => pr,
+        Err(e) => {
+            sp.stop("❌ Failed to create pull request");
+            note("Error", format!("{e}"))?;
+            outro_cancel(
+                "PR creation failed. Please check:\n\
+                 • Your GitHub token has 'repo' permissions\n\
+                 • The branch has been pushed to your fork\n\
+                 • You don't already have an open PR for this branch",
+            )?;
+            std::process::exit(1);
+        }
+    };
+
+    let pr_url = pr
+        .html_url
+        .map(|u| u.to_string())
+        .unwrap_or_else(|| format!("https://github.com/{}/{}/pull/{}", owner, repo, pr.number));
+    sp.stop("✅ Pull request created!");
+
+    note("Success", format!("PR URL: {}", pr_url.polkadot_pink()))?;
+
+    outro(format!(
+        "🎉 Recipe submitted successfully!\n\n\
+         Your recipe will be reviewed by maintainers.\n\
+         View your PR at: {}",
+        pr_url.polkadot_pink()
+    ))?;
+
+    Ok(())
+}
+
+/// Get GitHub token from environment variable or gh CLI config
+fn get_github_token() -> Result<String> {
+    // First try environment variable
+    if let Ok(token) = std::env::var("GITHUB_TOKEN") {
+        if !token.is_empty() {
+            return Ok(token);
+        }
+    }
+
+    // Try gh CLI config file
+    if let Some(home) = std::env::var_os("HOME") {
+        let gh_config_path = PathBuf::from(home).join(".config/gh/hosts.yml");
+        if gh_config_path.exists() {
+            if let Ok(content) = std::fs::read_to_string(&gh_config_path) {
+                // Parse the YAML to find oauth_token
+                for line in content.lines() {
+                    if line.trim().starts_with("oauth_token:") {
+                        if let Some(token) = line.split(':').nth(1) {
+                            let token = token.trim().to_string();
+                            if !token.is_empty() {
+                                return Ok(token);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Err(anyhow::anyhow!("No GitHub token found"))
+}
+
+/// Extract repository owner and name from git remote URL
+fn get_repo_info() -> Result<(String, String)> {
+    let output = std::process::Command::new("git")
+        .args(["remote", "get-url", "origin"])
+        .output()?;
+
+    if !output.status.success() {
+        return Err(anyhow::anyhow!("Failed to get git remote URL"));
+    }
+
+    let remote_url = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+    // Parse different URL formats:
+    // - https://github.com/owner/repo.git
+    // - git@github.com:owner/repo.git
+    // - https://github.com/owner/repo
+
+    let parts: Vec<&str> = if remote_url.contains("github.com:") {
+        // SSH format: git@github.com:owner/repo.git
+        remote_url.split("github.com:").collect()
+    } else if remote_url.contains("github.com/") {
+        // HTTPS format: https://github.com/owner/repo.git
+        remote_url.split("github.com/").collect()
+    } else {
+        return Err(anyhow::anyhow!(
+            "Unsupported git remote URL format: {remote_url}"
+        ));
+    };
+
+    if parts.len() != 2 {
+        return Err(anyhow::anyhow!(
+            "Could not parse git remote URL: {remote_url}"
+        ));
+    }
+
+    let repo_path = parts[1].trim_end_matches(".git");
+    let repo_parts: Vec<&str> = repo_path.split('/').collect();
+
+    if repo_parts.len() != 2 {
+        return Err(anyhow::anyhow!(
+            "Invalid repository path in remote URL: {repo_path}"
+        ));
+    }
+
+    Ok((repo_parts[0].to_string(), repo_parts[1].to_string()))
 }
 
 fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {

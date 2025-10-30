@@ -97,12 +97,17 @@ cargo build --release --bin dot
 
 # List all recipes
 ./target/release/dot recipe list
+
+# Submit your recipe as a pull request
+./target/release/dot recipe submit my-pallet
 ```
 
 The CLI supports three recipe types:
 - **Polkadot SDK** - Runtime pallets with Rust ✅
 - **XCM** - Cross-chain interactions with Chopsticks ✅
 - **Solidity** - Smart contracts with pallet-revive ✅
+
+**New:** No proposal required! Submit recipes directly via PR using the `dot recipe submit` command.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 

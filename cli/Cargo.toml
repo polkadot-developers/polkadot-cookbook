@@ -32,6 +32,9 @@ tracing-subscriber.workspace = true
 # Error handling
 anyhow.workspace = true
 
+# GitHub API
+octocrab.workspace = true
+
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "3.1"

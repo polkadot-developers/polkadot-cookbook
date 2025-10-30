@@ -1,10 +1,14 @@
 ---
-name: Recipe Proposal
-about: Propose a new recipe for the Cookbook
+name: Recipe Proposal (Optional)
+about: [OPTIONAL] Propose and get feedback before creating a recipe - Direct PR submission is now preferred!
 title: "Recipe: <concise-title>"
 labels: recipe, proposal
 assignees: ''
 ---
+
+> **Note:** Recipe proposals are now **optional**! You can contribute recipes directly via pull request without prior approval.
+> Use the `dot recipe submit` command after creating your recipe, or submit a PR manually.
+> Only use this template if you want early feedback before starting work on a recipe.
 
 ## Summary
 

@@ -277,6 +277,7 @@ impl Scaffold {
                         .replace("{{slug}}", &config.slug)
                         .replace("{{title}}", &config.title)
                         .replace("{{description}}", &config.description)
+                        .replace("{{category}}", &config.category)
                         .replace("{{rust_version}}", rust_version)
                 };
 
@@ -316,12 +317,16 @@ impl Scaffold {
 
                 if path.is_dir() {
                     // Recursively copy directories
-                    tokio::fs::create_dir_all(&dest_path).await.map_err(|e| {
-                        CookbookError::FileSystemError {
-                            message: format!("Failed to create directory: {e}"),
-                            path: Some(dest_path.clone()),
-                        }
-                    })?;
+                    if self.dry_run {
+                        info!("Would create directory: {}", dest_path.display());
+                    } else {
+                        tokio::fs::create_dir_all(&dest_path).await.map_err(|e| {
+                            CookbookError::FileSystemError {
+                                message: format!("Failed to create directory: {e}"),
+                                path: Some(dest_path.clone()),
+                            }
+                        })?;
+                    }
                     self.copy_template_dir(&path, &dest_path, config, rust_version)
                         .await?;
                 } else {
@@ -432,32 +437,35 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore] // Requires templates directory at workspace root
     async fn test_create_files() {
+        // This test needs to run from workspace root where templates/ directory exists
+        // Change to workspace root for this test
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = manifest_dir.parent().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(workspace_root).unwrap();
+
         let temp_dir = TempDir::new().unwrap();
         let project_path = temp_dir.path().join("test-files");
         tokio::fs::create_dir_all(&project_path).await.unwrap();
-        tokio::fs::create_dir_all(project_path.join("tests"))
-            .await
-            .unwrap();
-        tokio::fs::create_dir_all(project_path.join("scripts"))
-            .await
-            .unwrap();
 
         let config = ProjectConfig::new("test-tutorial");
         let scaffold = Scaffold::new();
-        scaffold
-            .create_files(&project_path, &config, "1.86")
-            .await
-            .unwrap();
+        let result = scaffold.create_files(&project_path, &config, "1.86").await;
 
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+
+        result.unwrap();
+
+        // Verify core files were created from templates
         assert!(project_path.join("justfile").exists());
         assert!(project_path.join("README.md").exists());
         assert!(project_path.join("recipe.config.yml").exists());
-        assert!(project_path.join(".gitignore").exists());
-        assert!(project_path
-            .join("tests/test-tutorial-e2e.test.ts")
-            .exists());
+        assert!(project_path.join("Cargo.toml").exists());
+        // Note: Polkadot SDK recipes don't have .gitignore or separate TypeScript test files
+        // They use Cargo's built-in gitignore and have Rust unit tests in the pallet code
+        assert!(project_path.join("pallets").exists());
     }
 
     #[test]

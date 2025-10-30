@@ -13,12 +13,11 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
   - [Prerequisites](#prerequisites)
   - [Setting Up Your Development Environment](#setting-up-your-development-environment)
 - [Recipe Contribution Workflow](#recipe-contribution-workflow)
-  - [Step 1: Propose Your Recipe](#step-1-propose-your-recipe)
-  - [Step 2: Setup Your Environment](#step-2-setup-your-environment)
-  - [Step 3: Create Recipe Structure](#step-3-dot-structure)
-  - [Step 4: Write Your Recipe](#step-4-write-your-recipe)
-  - [Step 5: Test Your Recipe](#step-5-test-your-recipe)
-  - [Step 6: Submit a Pull Request](#step-6-submit-a-pull-request)
+  - [Step 1: Setup Your Environment](#step-1-setup-your-environment)
+  - [Step 2: Create Recipe Structure](#step-2-create-recipe-structure)
+  - [Step 3: Write Your Recipe](#step-3-write-your-recipe)
+  - [Step 4: Test Your Recipe](#step-4-test-your-recipe)
+  - [Step 5: Submit Your Recipe](#step-5-submit-your-recipe)
 - [Development Guidelines](#development-guidelines)
   - [Recipe Structure](#recipe-structure)
   - [Testing Requirements](#testing-requirements)
@@ -57,7 +56,9 @@ We welcome suggestions for improvements:
 
 ### Contributing Recipes
 
-The primary way to contribute is by creating new recipes. See the [Recipe Contribution Workflow](#recipe-contribution-workflow) section below.
+The primary way to contribute is by creating new recipes. Anyone can contribute a recipe by submitting a pull request - **no prior proposal or approval is required**. See the [Recipe Contribution Workflow](#recipe-contribution-workflow) section below.
+
+**Note:** A recipe in the Polkadot Cookbook does not guarantee that it will be used in the official Polkadot Docs. Recipes are community-contributed resources that may be selected for documentation based on quality, relevance, and maintainability.
 
 #### Recipe Types: Tutorials vs Guides
 
@@ -159,23 +160,11 @@ Before contributing, ensure you have the following installed:
 
 ## Recipe Contribution Workflow
 
-### Step 1: Propose Your Recipe
+**New Streamlined Process:** You can now contribute recipes directly via pull request without a prior proposal! The `dot recipe submit` command makes it easy to create PRs with a single command.
 
-**All recipes must be proposed and approved before starting work.**
+### Step 1: Setup Your Environment
 
-1. Open a [new issue](https://github.com/polkadot-developers/polkadot-cookbook/issues/new/choose) and select "Recipe Proposal"
-
-2. The template will guide you to provide:
-   - **Summary**: What will users learn? (1-2 sentences)
-   - **Audience**: Level (beginner/intermediate/advanced) and prerequisites
-   - **Tools & Versions**: Key tools with versions you plan to use
-   - **Outline**: High-level steps and expected result
-   - **Type**: Polkadot SDK or Smart Contracts recipe
-   - **Notes**: Any additional context for reviewers
-
-3. **Wait for approval** and assignment of a recipe slug (e.g., `my-recipe`)
-
-### Step 2: Setup Your Environment
+If you haven't already completed the [Setting Up Your Development Environment](#setting-up-your-development-environment) steps, do that first.
 
 **Sync with upstream**:
 ```bash
@@ -186,7 +175,7 @@ git merge upstream/master
 
 > **Note**: You don't need to manually create a git branch - the CLI will do this for you automatically in the next step!
 
-### Step 3: Create Recipe Structure
+### Step 2: Create Recipe Structure
 
 The CLI tool provides an interactive experience to create your recipe:
 
@@ -241,7 +230,7 @@ recipes/my-pallet/
 
 > **Tip**: After creation, you can use `dot recipe validate` to check your structure!
 
-### Step 4: Write Your Recipe
+### Step 3: Write Your Recipe
 
 1. **Write the recipe content** in `recipes/my-pallet/README.md`
    - Use clear, concise language
@@ -267,7 +256,7 @@ recipes/my-pallet/
 
 See [Recipe Structure](#recipe-structure) for detailed requirements.
 
-### Step 5: Test Your Recipe
+### Step 4: Test Your Recipe
 
 1. **Use CLI testing tools**:
    ```bash
@@ -303,9 +292,43 @@ See [Recipe Structure](#recipe-structure) for detailed requirements.
 
 See [Testing Requirements](#testing-requirements) for details.
 
-### Step 6: Submit a Pull Request
+### Step 5: Submit Your Recipe
 
-> **Note**: The CLI already created your feature branch `feat/my-recipe` if you didn't use `--no-git`. You just need to commit and push!
+The easiest way to submit your recipe is using the built-in submit command:
+
+#### Option 1: Using the CLI Submit Command (Recommended)
+
+```bash
+./target/release/dot recipe submit my-recipe
+```
+
+Or from within the recipe directory:
+```bash
+cd recipes/my-recipe
+../../target/release/dot recipe submit
+```
+
+**What the submit command does:**
+- ✓ Validates recipe structure
+- ✓ Commits any uncommitted changes
+- ✓ Pushes your branch to your fork
+- ✓ Creates a pull request with auto-generated title and description
+- ✓ Links to the PR URL when complete
+
+**Authentication:**
+The submit command uses the GitHub API and requires a GitHub token. It will automatically check:
+1. `GITHUB_TOKEN` environment variable
+2. GitHub CLI (`gh`) config file at `~/.config/gh/hosts.yml`
+
+If neither is found, create a token at https://github.com/settings/tokens/new with `repo` scope.
+
+**Optional flags:**
+- `--title "Custom PR Title"` - Specify a custom PR title
+- `--body "Custom description"` - Specify a custom PR description
+
+#### Option 2: Manual Submission
+
+If you prefer to submit manually:
 
 1. **Commit your changes**:
    ```bash
@@ -325,23 +348,25 @@ See [Testing Requirements](#testing-requirements) for details.
    git push origin feat/my-recipe
    ```
 
-   > **Tip**: The CLI output shows the exact git commands you need to run!
-
 3. **Create a Pull Request**:
    - Go to the [repository](https://github.com/polkadot-developers/polkadot-cookbook)
    - Click "New Pull Request"
    - Select your branch
-   - Fill out the PR template completely
-   - Link the related proposal issue
+   - Fill out the PR template
+   - Use the GitHub web interface or: `gh pr create --title "feat(recipe): add my-recipe"`
 
-4. **Respond to review feedback**:
+#### After Submission
+
+1. **Respond to review feedback**:
    - Address all reviewer comments
    - Push additional commits as needed
    - Request re-review when ready
 
-5. **CI Checks**:
+2. **CI Checks**:
    - Wait for automated tests to pass (`.github/workflows/test-recipes.yml`)
    - Fix any failing tests or linting issues
+
+**Note:** Recipes are reviewed for quality, accuracy, and adherence to guidelines. Not all submitted recipes may be merged, but feedback will be provided to help improve them.
 
 ## Development Guidelines
 
