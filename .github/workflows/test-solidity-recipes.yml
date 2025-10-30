@@ -22,6 +22,7 @@ on:
 
 jobs:
   discover-recipes:
+    name: Discover Recipes
     runs-on: ubuntu-latest
     outputs:
       recipes: ${{ steps.find-recipes.outputs.recipes }}
@@ -37,6 +38,7 @@ jobs:
           echo "recipes=$recipes" >> $GITHUB_OUTPUT
 
   test-recipes:
+    name: Solidity (${{ matrix.recipe }})
     needs: discover-recipes
     if: needs.discover-recipes.outputs.recipes != '[]'
     runs-on: ubuntu-latest
@@ -91,6 +93,7 @@ jobs:
           fi
 
   summary:
+    name: Summary
     needs: [discover-recipes, test-recipes]
     if: always()
     runs-on: ubuntu-latest

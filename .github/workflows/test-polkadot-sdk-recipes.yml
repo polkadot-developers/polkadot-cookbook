@@ -19,6 +19,7 @@ on:
 
 jobs:
   find-changed-recipes:
+    name: Find Changed Recipes
     runs-on: ubuntu-latest
     outputs:
       recipes: ${{ steps.changed.outputs.recipes }}
@@ -69,6 +70,7 @@ jobs:
           fi
 
   test-polkadot-sdk:
+    name: Polkadot SDK (${{ matrix.slug }})
     needs: find-changed-recipes
     if: needs.find-changed-recipes.outputs.recipes != '[]'
     runs-on: ubuntu-latest
