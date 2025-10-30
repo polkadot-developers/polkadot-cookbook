@@ -1,0 +1,17 @@
+relaychain:
+  endpoint: wss://rococo-rpc.polkadot.io
+  db: ./db.sqlite
+  port: 8000
+  block: latest
+
+parachains:
+  - endpoint: wss://rococo-asset-hub-rpc.polkadot.io
+    paraId: 1000
+    port: 8001
+    block: latest
+
+  # Add more parachains as needed for your XCM recipe
+  # - endpoint: wss://your-parachain-rpc-url
+  #   paraId: 2000
+  #   port: 8002
+  #   block: latest

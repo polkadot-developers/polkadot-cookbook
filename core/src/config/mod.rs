@@ -7,10 +7,10 @@ pub mod recipe;
 /// Recipe validation utilities
 pub mod validation;
 
-pub use recipe::{RecipeConfig, RecipeType};
+pub use recipe::{ContentType, Difficulty, RecipeConfig, RecipePathway, RecipeType};
 pub use validation::{
-    is_valid_slug, slug_to_title, validate_project_config, validate_slug,
-    validate_working_directory,
+    is_valid_slug, slug_to_title, title_to_slug, validate_project_config, validate_slug,
+    validate_title, validate_working_directory,
 };
 
 /// Configuration for creating a new recipe
@@ -42,6 +42,15 @@ pub struct ProjectConfig {
 
     /// Recipe description
     pub description: String,
+
+    /// Recipe pathway (optional)
+    pub pathway: Option<RecipePathway>,
+
+    /// Content type (optional)
+    pub content_type: Option<ContentType>,
+
+    /// Difficulty level (optional)
+    pub difficulty: Option<Difficulty>,
 }
 
 impl ProjectConfig {
@@ -65,11 +74,20 @@ impl ProjectConfig {
             destination: PathBuf::from("recipes"),
             git_init: true,
             skip_install: false,
-            recipe_type: RecipeType::Sdk,
+            recipe_type: RecipeType::PolkadotSdk,
             category: "polkadot-sdk-cookbook".to_string(),
             needs_node: true,
             description: "Replace with a short description.".to_string(),
+            pathway: None,
+            content_type: None,
+            difficulty: None,
         }
+    }
+
+    /// Set the recipe title
+    pub fn with_title(mut self, title: impl Into<String>) -> Self {
+        self.title = title.into();
+        self
     }
 
     /// Set the destination directory
@@ -114,6 +132,24 @@ impl ProjectConfig {
         self
     }
 
+    /// Set recipe pathway
+    pub fn with_pathway(mut self, pathway: RecipePathway) -> Self {
+        self.pathway = Some(pathway);
+        self
+    }
+
+    /// Set content type
+    pub fn with_content_type(mut self, content_type: ContentType) -> Self {
+        self.content_type = Some(content_type);
+        self
+    }
+
+    /// Set difficulty level
+    pub fn with_difficulty(mut self, difficulty: Difficulty) -> Self {
+        self.difficulty = Some(difficulty);
+        self
+    }
+
     /// Get the full project path
     pub fn project_path(&self) -> PathBuf {
         self.destination.join(&self.slug)
@@ -148,6 +184,9 @@ mod tests {
         assert_eq!(config.destination, PathBuf::from("recipes"));
         assert!(config.git_init);
         assert!(!config.skip_install);
+        assert_eq!(config.pathway, None);
+        assert_eq!(config.content_type, None);
+        assert_eq!(config.difficulty, None);
     }
 
     #[test]
@@ -156,17 +195,23 @@ mod tests {
             .with_destination(PathBuf::from("/tmp/recipes"))
             .with_git_init(false)
             .with_skip_install(true)
-            .with_recipe_type(RecipeType::Contracts)
+            .with_recipe_type(RecipeType::Solidity)
             .with_category("advanced")
-            .with_needs_node(false);
+            .with_needs_node(false)
+            .with_pathway(RecipePathway::Contracts)
+            .with_content_type(ContentType::Tutorial)
+            .with_difficulty(Difficulty::Beginner);
 
         assert_eq!(config.slug, "test-recipe");
         assert_eq!(config.destination, PathBuf::from("/tmp/recipes"));
         assert!(!config.git_init);
         assert!(config.skip_install);
-        assert!(matches!(config.recipe_type, RecipeType::Contracts));
+        assert!(matches!(config.recipe_type, RecipeType::Solidity));
         assert_eq!(config.category, "advanced");
         assert!(!config.needs_node);
+        assert_eq!(config.pathway, Some(RecipePathway::Contracts));
+        assert_eq!(config.content_type, Some(ContentType::Tutorial));
+        assert_eq!(config.difficulty, Some(Difficulty::Beginner));
     }
 
     #[test]

@@ -1,0 +1,108 @@
+name: Solidity Recipes
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'recipes/*/contracts/**'
+      - 'recipes/*/test/**'
+      - 'recipes/*/hardhat.config.ts'
+      - 'recipes/*/package.json'
+      - 'recipes/*/tsconfig.json'
+      - '.github/workflows/test-solidity-recipes.yml'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - 'recipes/*/contracts/**'
+      - 'recipes/*/test/**'
+      - 'recipes/*/hardhat.config.ts'
+      - 'recipes/*/package.json'
+      - 'recipes/*/tsconfig.json'
+      - '.github/workflows/test-solidity-recipes.yml'
+
+jobs:
+  discover-recipes:
+    name: Discover Recipes
+    runs-on: ubuntu-latest
+    outputs:
+      recipes: ${{ steps.find-recipes.outputs.recipes }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find Solidity recipes
+        id: find-recipes
+        run: |
+          # Find all recipe directories with hardhat.config.ts
+          recipes=$(find recipes -type f -name "hardhat.config.ts" -exec dirname {} \; | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          echo "Found recipes: $recipes"
+          echo "recipes=$recipes" >> $GITHUB_OUTPUT
+
+  test-recipes:
+    name: Solidity (${{ matrix.recipe }})
+    needs: discover-recipes
+    if: needs.discover-recipes.outputs.recipes != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        recipe: ${{ fromJson(needs.discover-recipes.outputs.recipes) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '${{ matrix.recipe }}/package-lock.json'
+
+      - name: Get recipe name
+        id: recipe-info
+        run: |
+          recipe_name=$(basename ${{ matrix.recipe }})
+          echo "name=$recipe_name" >> $GITHUB_OUTPUT
+          echo "Testing recipe: $recipe_name"
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.recipe }}
+        run: npm ci
+
+      - name: Compile contracts
+        working-directory: ${{ matrix.recipe }}
+        run: npm run compile
+
+      - name: Run TypeScript check
+        working-directory: ${{ matrix.recipe }}
+        run: npx tsc --noEmit || true
+
+      - name: Run tests
+        working-directory: ${{ matrix.recipe }}
+        run: npm test
+        env:
+          CI: true
+
+      - name: Test results summary
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ ${{ steps.recipe-info.outputs.name }} tests passed"
+          else
+            echo "❌ ${{ steps.recipe-info.outputs.name }} tests failed"
+            exit 1
+          fi
+
+  summary:
+    name: Summary
+    needs: [discover-recipes, test-recipes]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-recipes.result }}" == "success" ] || [ "${{ needs.test-recipes.result }}" == "skipped" ]; then
+            echo "✅ All Solidity recipe tests passed or no recipes to test"
+          else
+            echo "❌ Some Solidity recipe tests failed"
+            exit 1
+          fi

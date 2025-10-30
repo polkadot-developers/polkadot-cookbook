@@ -171,4 +171,158 @@ mod tests {
             assert!(!branch_name.is_empty());
         }
     }
+
+    #[tokio::test]
+    async fn test_current_branch_not_in_repo() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+
+        // Change to a directory that's not a git repo
+        std::env::set_current_dir(temp_dir.path()).unwrap();
+
+        let result = GitOperations::current_branch().await;
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+
+        // Should fail because it's not a git repo
+        assert!(result.is_err());
+        if let Err(CookbookError::GitError(msg)) = result {
+            assert!(msg.contains("Failed to open git repository"));
+        }
+    }
+
+    #[tokio::test]
+    async fn test_create_branch_in_repo() {
+        use tempfile::TempDir;
+
+        // Create a temporary git repo
+        let temp_dir = TempDir::new().unwrap();
+        GitOperations::init(temp_dir.path()).await.unwrap();
+
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(temp_dir.path()).unwrap();
+
+        // Create initial commit (required for branch creation)
+        let repo = Repository::open(".").unwrap();
+        let sig = git2::Signature::now("Test User", "test@example.com").unwrap();
+        let tree_id = {
+            let mut index = repo.index().unwrap();
+            index.write_tree().unwrap()
+        };
+        let tree = repo.find_tree(tree_id).unwrap();
+        repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])
+            .unwrap();
+
+        // Now create a branch
+        let result = GitOperations::create_branch("test-branch").await;
+
+        std::env::set_current_dir(original_dir).unwrap();
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "feat/tutorial-test-branch");
+    }
+
+    #[tokio::test]
+    async fn test_create_branch_already_exists() {
+        use tempfile::TempDir;
+
+        // Create a temporary git repo
+        let temp_dir = TempDir::new().unwrap();
+        GitOperations::init(temp_dir.path()).await.unwrap();
+
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(temp_dir.path()).unwrap();
+
+        // Create initial commit
+        let repo = Repository::open(".").unwrap();
+        let sig = git2::Signature::now("Test User", "test@example.com").unwrap();
+        let tree_id = {
+            let mut index = repo.index().unwrap();
+            index.write_tree().unwrap()
+        };
+        let tree = repo.find_tree(tree_id).unwrap();
+        let commit = repo
+            .commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])
+            .unwrap();
+
+        // Create branch manually
+        let commit_obj = repo.find_commit(commit).unwrap();
+        repo.branch("feat/tutorial-duplicate", &commit_obj, false)
+            .unwrap();
+
+        // Try to create the same branch again
+        let result = GitOperations::create_branch("duplicate").await;
+
+        std::env::set_current_dir(original_dir).unwrap();
+
+        // Should fail because branch already exists
+        assert!(result.is_err());
+        if let Err(CookbookError::GitError(msg)) = result {
+            assert!(msg.contains("Failed to create branch") || msg.contains("already exist"));
+        }
+    }
+
+    #[tokio::test]
+    async fn test_create_branch_not_in_repo() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+
+        // Change to a directory that's not a git repo
+        std::env::set_current_dir(temp_dir.path()).unwrap();
+
+        let result = GitOperations::create_branch("test-branch").await;
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+
+        // Should fail because it's not a git repo
+        assert!(result.is_err());
+        if let Err(CookbookError::GitError(msg)) = result {
+            assert!(msg.contains("Failed to open git repository"));
+        }
+    }
+
+    #[tokio::test]
+    async fn test_is_git_repo_in_non_repo() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+
+        // Change to a directory that's not a git repo
+        std::env::set_current_dir(temp_dir.path()).unwrap();
+
+        let is_repo = GitOperations::is_git_repo().await;
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+
+        assert!(!is_repo);
+    }
+
+    #[tokio::test]
+    async fn test_init_creates_repo() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let repo_path = temp_dir.path().join("new-repo");
+
+        // Initially should not be a git repo
+        assert!(!repo_path.join(".git").exists());
+
+        let result = GitOperations::init(&repo_path).await;
+        assert!(result.is_ok());
+
+        // Now should be a git repo
+        assert!(repo_path.join(".git").exists());
+
+        // Should be able to open it
+        let repo = Repository::open(&repo_path);
+        assert!(repo.is_ok());
+    }
 }

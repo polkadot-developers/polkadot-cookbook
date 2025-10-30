@@ -6,8 +6,16 @@ use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
 use std::path::PathBuf;
 use tempfile::TempDir;
 
+/// Helper to ensure tests run from workspace root where templates exist
+fn ensure_workspace_root() {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let workspace_root = manifest_dir.parent().unwrap();
+    std::env::set_current_dir(workspace_root).unwrap();
+}
+
 #[tokio::test]
 async fn test_create_project_end_to_end() {
+    ensure_workspace_root();
     // Create a temporary directory for testing
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
@@ -31,28 +39,23 @@ async fn test_create_project_end_to_end() {
     );
     assert!(project_info.git_branch.is_none());
 
-    // Verify directories were created
+    // Verify directories were created (Polkadot SDK recipe structure)
     let project_path = destination.join("integration-test");
     assert!(project_path.exists());
-    assert!(project_path.join("src").exists());
-    assert!(project_path.join("tests").exists());
-    assert!(project_path.join("scripts").exists());
+    assert!(project_path.join("pallets").exists());
 
     // Verify files were created
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("recipe.config.yml").exists());
     assert!(project_path.join("justfile").exists());
-    assert!(project_path.join(".gitignore").exists());
-    assert!(project_path
-        .join("tests/integration-test-e2e.test.ts")
-        .exists());
+    assert!(project_path.join("Cargo.toml").exists());
+    // Note: Polkadot SDK recipes don't have .gitignore or TypeScript test files
 
     // Verify file contents
     let readme = tokio::fs::read_to_string(project_path.join("README.md"))
         .await
         .unwrap();
     assert!(readme.contains("# Integration Test"));
-    assert!(readme.contains("cd recipes/integration-test"));
 
     let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
         .await
@@ -64,6 +67,7 @@ async fn test_create_project_end_to_end() {
 
 #[tokio::test]
 async fn test_create_project_with_existing_directory_fails() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -147,7 +151,7 @@ async fn test_template_generation() {
         "my-tutorial",
         "My Tutorial",
         "A test tutorial",
-        RecipeType::Sdk,
+        RecipeType::PolkadotSdk,
         "test-category",
         true,
     );
@@ -159,6 +163,7 @@ async fn test_template_generation() {
 
 #[tokio::test]
 async fn test_dry_run_mode() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -189,7 +194,7 @@ async fn test_project_config_builder() {
         .with_destination(PathBuf::from("/tmp/test"))
         .with_git_init(false)
         .with_skip_install(true)
-        .with_recipe_type(RecipeType::Contracts)
+        .with_recipe_type(RecipeType::Solidity)
         .with_category("advanced")
         .with_needs_node(false);
 
@@ -198,7 +203,7 @@ async fn test_project_config_builder() {
     assert_eq!(config.destination, PathBuf::from("/tmp/test"));
     assert!(!config.git_init);
     assert!(config.skip_install);
-    assert_eq!(config.recipe_type, RecipeType::Contracts);
+    assert_eq!(config.recipe_type, RecipeType::Solidity);
     assert_eq!(config.category, "advanced");
     assert!(!config.needs_node);
 }
@@ -228,6 +233,7 @@ async fn test_error_serialization() {
 
 #[tokio::test]
 async fn test_create_project_with_git_branch() {
+    ensure_workspace_root();
     use polkadot_cookbook_core::git::GitOperations;
 
     // Skip if not in a git repo
@@ -250,7 +256,7 @@ async fn test_create_project_with_git_branch() {
     // Verify git branch was created (or attempted)
     // Note: Branch creation might fail if git is not configured, which is okay
     if let Some(branch) = project_info.git_branch {
-        assert!(branch.starts_with("recipe/"));
+        assert!(branch.starts_with("feat/tutorial-"));
         assert!(branch.contains("git-branch-test"));
     }
 }
@@ -267,6 +273,7 @@ async fn test_git_is_repo() {
 
 #[tokio::test]
 async fn test_project_without_git() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -288,6 +295,7 @@ async fn test_project_without_git() {
 
 #[tokio::test]
 async fn test_sdk_recipe_creation() {
+    ensure_workspace_root();
     use polkadot_cookbook_core::config::RecipeType;
 
     let temp_dir = TempDir::new().unwrap();
@@ -295,7 +303,7 @@ async fn test_sdk_recipe_creation() {
 
     let config = ProjectConfig::new("sdk-recipe")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::Sdk)
+        .with_recipe_type(RecipeType::PolkadotSdk)
         .with_git_init(false)
         .with_skip_install(true);
 
@@ -307,11 +315,12 @@ async fn test_sdk_recipe_creation() {
         .await
         .unwrap();
 
-    assert!(recipe_config.contains("type: sdk"));
+    assert!(recipe_config.contains("type: polkadot-sdk"));
 }
 
 #[tokio::test]
 async fn test_contracts_recipe_creation() {
+    ensure_workspace_root();
     use polkadot_cookbook_core::config::RecipeType;
 
     let temp_dir = TempDir::new().unwrap();
@@ -319,7 +328,7 @@ async fn test_contracts_recipe_creation() {
 
     let config = ProjectConfig::new("contracts-recipe")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::Contracts)
+        .with_recipe_type(RecipeType::Solidity)
         .with_git_init(false)
         .with_skip_install(true);
 
@@ -331,11 +340,12 @@ async fn test_contracts_recipe_creation() {
         .await
         .unwrap();
 
-    assert!(recipe_config.contains("type: contracts"));
+    assert!(recipe_config.contains("type: solidity"));
 }
 
 #[tokio::test]
 async fn test_recipe_categories() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -358,6 +368,7 @@ async fn test_recipe_categories() {
 
 #[tokio::test]
 async fn test_needs_node_configuration() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -384,6 +395,7 @@ async fn test_needs_node_configuration() {
 
 #[tokio::test]
 async fn test_long_slug() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -425,6 +437,7 @@ async fn test_single_word_slug() {
 
 #[tokio::test]
 async fn test_description_with_special_characters() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -449,6 +462,7 @@ async fn test_description_with_special_characters() {
 
 #[tokio::test]
 async fn test_empty_description() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -467,6 +481,7 @@ async fn test_empty_description() {
 
 #[tokio::test]
 async fn test_unicode_in_description() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -491,6 +506,7 @@ async fn test_unicode_in_description() {
 
 #[tokio::test]
 async fn test_multiline_description() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -520,6 +536,7 @@ async fn test_multiline_description() {
 
 #[tokio::test]
 async fn test_skip_install_flag() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
@@ -563,6 +580,7 @@ async fn test_bootstrap_new() {
 
 #[tokio::test]
 async fn test_nested_destination() {
+    ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let nested_dest = temp_dir.path().join("level1").join("level2").join("level3");
 

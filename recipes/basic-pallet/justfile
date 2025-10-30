@@ -1,0 +1,49 @@
+# Justfile for basic-pallet recipe
+
+# Default recipe lists available commands
+default:
+    @just --list
+
+# Build the pallet
+build:
+    cargo build --release
+
+# Run tests
+test:
+    cargo test --all-features
+
+# Run tests with output
+test-verbose:
+    cargo test --all-features -- --nocapture
+
+# Check code without building
+check:
+    cargo check --all-features
+
+# Format code
+fmt:
+    cargo fmt --all
+
+# Check formatting
+fmt-check:
+    cargo fmt --all -- --check
+
+# Run clippy lints
+clippy:
+    cargo clippy --all-features --all-targets -- -D warnings
+
+# Clean build artifacts
+clean:
+    cargo clean
+
+# Run all checks (fmt, clippy, test)
+ci: fmt-check clippy test
+    @echo "✅ All checks passed!"
+
+# Build documentation
+doc:
+    cargo doc --no-deps --open
+
+# Watch for changes and run tests
+watch:
+    cargo watch -x test
