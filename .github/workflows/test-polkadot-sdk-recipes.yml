@@ -53,8 +53,12 @@ jobs:
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.sha }}
 
-          # Get changed recipe directories
-          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep '^recipes/' | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          # Get changed recipe directories (only those that still exist)
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep '^recipes/' | cut -d'/' -f2 | sort -u | while read recipe; do
+            if [ -d "recipes/$recipe" ]; then
+              echo "$recipe"
+            fi
+          done | jq -R -s -c 'split("\n")[:-1]')
 
           if [ "$CHANGED" = "[]" ] || [ -z "$CHANGED" ]; then
             echo "recipes=[]" >> $GITHUB_OUTPUT
