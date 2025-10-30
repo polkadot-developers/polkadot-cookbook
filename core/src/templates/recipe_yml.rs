@@ -39,6 +39,8 @@ impl Template for RecipeYmlTemplate {
             RecipeType::PolkadotSdk => "polkadot-sdk",
             RecipeType::Solidity => "solidity",
             RecipeType::Xcm => "xcm",
+            RecipeType::BasicInteraction => "basic-interaction",
+            RecipeType::Testing => "testing",
         };
 
         format!(

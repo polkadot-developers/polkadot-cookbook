@@ -1,0 +1,10 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bulb -->
+  <circle cx="12" cy="10" r="4" fill="none" stroke="#E6007A" stroke-width="1.5"/>
+  <!-- Base -->
+  <rect x="10.5" y="14" width="3" height="3" rx="0.5" fill="none" stroke="#E6007A" stroke-width="1.5"/>
+  <!-- Light rays as dots -->
+  <circle cx="12" cy="4" r="0.8" fill="#E6007A"/>
+  <circle cx="17" cy="7" r="0.8" fill="#E6007A"/>
+  <circle cx="7" cy="7" r="0.8" fill="#E6007A"/>
+</svg>

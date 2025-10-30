@@ -8,7 +8,7 @@ use clap::{Parser, Subcommand};
 use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, select, spinner};
 use colored::Colorize;
 use polkadot_cookbook_core::{
-    config::{ProjectConfig, RecipeType},
+    config::{ContentType, Difficulty, ProjectConfig, RecipePathway, RecipeType},
     version::{load_global_versions, resolve_recipe_versions, VersionSource},
     Scaffold,
 };
@@ -43,6 +43,22 @@ struct Cli {
     /// Only used when no subcommand is provided (defaults to 'create')
     #[arg(value_name = "SLUG")]
     slug: Option<String>,
+
+    /// Recipe title (for non-interactive mode)
+    #[arg(long)]
+    title: Option<String>,
+
+    /// Recipe pathway (for non-interactive mode): runtime, contracts, basic-interaction, xcm, testing, request-new
+    #[arg(long)]
+    pathway: Option<String>,
+
+    /// Difficulty level (for non-interactive mode): beginner, intermediate, advanced
+    #[arg(long)]
+    difficulty: Option<String>,
+
+    /// Content type (for non-interactive mode): tutorial, guide
+    #[arg(long, name = "content-type")]
+    content_type: Option<String>,
 
     /// Skip npm install
     #[arg(long, default_value = "false", global = true)]
@@ -156,7 +172,17 @@ async fn main() -> Result<()> {
         Some(Commands::Create { slug: cmd_slug }) => {
             // Use subcommand slug or global slug
             let slug = cmd_slug.or(cli.slug);
-            handle_create(slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
+            handle_create(
+                slug,
+                cli.title,
+                cli.pathway,
+                cli.difficulty,
+                cli.content_type,
+                cli.skip_install,
+                cli.no_git,
+                cli.non_interactive,
+            )
+            .await?;
         }
         Some(Commands::Setup) => {
             handle_setup().await?;
@@ -166,7 +192,17 @@ async fn main() -> Result<()> {
         }
         Some(Commands::Recipe { command }) => match command {
             RecipeCommands::New { slug } => {
-                handle_create(slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
+                handle_create(
+                    slug,
+                    cli.title,
+                    cli.pathway,
+                    cli.difficulty,
+                    cli.content_type,
+                    cli.skip_install,
+                    cli.no_git,
+                    cli.non_interactive,
+                )
+                .await?;
             }
             RecipeCommands::Test { slug } => {
                 handle_recipe_test(slug).await?;
@@ -194,7 +230,17 @@ async fn main() -> Result<()> {
         }
         None => {
             // No subcommand, default to create
-            handle_create(cli.slug, cli.skip_install, cli.no_git, cli.non_interactive).await?;
+            handle_create(
+                cli.slug,
+                cli.title,
+                cli.pathway,
+                cli.difficulty,
+                cli.content_type,
+                cli.skip_install,
+                cli.no_git,
+                cli.non_interactive,
+            )
+            .await?;
         }
     }
 
@@ -203,6 +249,10 @@ async fn main() -> Result<()> {
 
 async fn handle_create(
     slug: Option<String>,
+    title: Option<String>,
+    pathway: Option<String>,
+    difficulty: Option<String>,
+    content_type: Option<String>,
     skip_install: bool,
     no_git: bool,
     non_interactive: bool,
@@ -211,7 +261,16 @@ async fn handle_create(
     if non_interactive {
         let slug = slug
             .ok_or_else(|| anyhow::anyhow!("Slug argument is required in non-interactive mode"))?;
-        return run_non_interactive(&slug, skip_install, no_git).await;
+        return run_non_interactive(
+            &slug,
+            title,
+            pathway,
+            difficulty,
+            content_type,
+            skip_install,
+            no_git,
+        )
+        .await;
     }
 
     // Interactive mode with cliclack
@@ -238,10 +297,82 @@ async fn handle_create(
         "Let's create your new recipe. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
     )?;
 
-    // Get or prompt for slug
-    let slug = if let Some(s) = slug {
-        // Validate provided slug
-        if let Err(e) = polkadot_cookbook_core::config::validate_slug(&s) {
+    // Step 1: Ask for pathway first (so users know what they can build)
+    let pathway_question = "What kind of recipe are you building?"
+        .polkadot_pink()
+        .to_string();
+    let pathway: RecipePathway = select(&pathway_question)
+        .item(
+            RecipePathway::Runtime,
+            "Runtime Development (Polkadot SDK)",
+            "Build custom pallets and runtime logic with FRAME",
+        )
+        .item(
+            RecipePathway::Contracts,
+            "Smart Contracts (Solidity)",
+            "Deploy contracts using pallet-revive",
+        )
+        .item(
+            RecipePathway::BasicInteraction,
+            "Basic Interactions",
+            "Single-chain transactions and state queries with PAPI",
+        )
+        .item(
+            RecipePathway::Xcm,
+            "XCM (Cross-Chain Messaging)",
+            "Asset transfers and cross-chain calls with Chopsticks",
+        )
+        .item(
+            RecipePathway::Testing,
+            "Testing Infrastructure",
+            "Zombienet and Chopsticks network configurations",
+        )
+        .item(
+            RecipePathway::RequestNew,
+            "None of these - Request new template",
+            "Don't see what you need? Request a new recipe template",
+        )
+        .interact()?;
+
+    // Handle "Request New Template" selection
+    if pathway == RecipePathway::RequestNew {
+        outro_cancel(format!(
+            "🎯 Request a New Recipe Template\n\n\
+            We'd love to support your use case! Please create a GitHub issue:\n\n\
+            {} {}\n\n\
+            Include in your issue:\n\
+            {} What kind of recipe you want to create\n\
+            {} What technology/framework it involves\n\
+            {} Example use cases\n\
+            {} Any specific requirements\n\n\
+            We'll review your request and add the template if it fits the cookbook!",
+            "→".polkadot_pink(),
+            "https://github.com/paritytech/polkadot-cookbook/issues/new".polkadot_pink().bold(),
+            "•".polkadot_pink(),
+            "•".polkadot_pink(),
+            "•".polkadot_pink(),
+            "•".polkadot_pink(),
+        ))?;
+        std::process::exit(0);
+    }
+
+    // Map pathway to recipe type (for template selection)
+    let recipe_type = match pathway {
+        RecipePathway::Runtime => RecipeType::PolkadotSdk,
+        RecipePathway::Contracts => RecipeType::Solidity,
+        RecipePathway::BasicInteraction => RecipeType::BasicInteraction,
+        RecipePathway::Xcm => RecipeType::Xcm,
+        RecipePathway::Testing => RecipeType::Testing,
+        RecipePathway::RequestNew => {
+            // This should never be reached since we exit above
+            unreachable!("RequestNew pathway should have been handled before reaching here")
+        }
+    };
+
+    // Step 2: Ask for title (now that user knows the pathway)
+    let (title, slug) = if let Some(s) = slug.as_ref() {
+        // Slug was provided via CLI arg - validate and derive title
+        if let Err(e) = polkadot_cookbook_core::config::validate_slug(s) {
             outro_cancel(format!(
                 "❌ Invalid recipe slug format: {}\n\n\
                 Slugs must be:\n\
@@ -263,13 +394,35 @@ async fn handle_create(
             ))?;
             std::process::exit(1);
         }
-        s
+        let title = polkadot_cookbook_core::config::slug_to_title(s);
+        (title, s.clone())
     } else {
-        // Prompt for slug with hint
-        let question = "What is your recipe slug?".polkadot_pink().to_string();
-        let hint_text = "(lowercase, dashes only)".dimmed().to_string();
-        let slug: String = input(format!("{question} {hint_text}"))
-            .placeholder("my-recipe")
+        // Interactive mode: ask for title
+        let title_question = "What is your recipe title?".polkadot_pink().to_string();
+        let hint_text = "(e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')"
+            .dimmed()
+            .to_string();
+        let title: String = input(format!("{title_question} {hint_text}"))
+            .placeholder("My Recipe")
+            .validate(|input: &String| {
+                if input.trim().is_empty() {
+                    Err("Title cannot be empty")
+                } else if let Err(e) = polkadot_cookbook_core::config::validate_title(input) {
+                    Err(Box::leak(e.to_string().into_boxed_str()) as &str)
+                } else {
+                    Ok(())
+                }
+            })
+            .interact()?;
+
+        // Generate suggested slug from title
+        let suggested_slug = polkadot_cookbook_core::config::title_to_slug(&title);
+
+        // Prompt for slug with suggestion pre-filled
+        let slug_question = "Recipe slug".polkadot_pink().to_string();
+        let slug_hint = "(lowercase, dashes only)".dimmed().to_string();
+        let slug: String = input(format!("{slug_question} {slug_hint}"))
+            .default_input(&suggested_slug)
             .validate(|input: &String| {
                 if input.is_empty() {
                     Err("Slug cannot be empty")
@@ -280,34 +433,54 @@ async fn handle_create(
                 }
             })
             .interact()?;
-        slug
+
+        (title.trim().to_string(), slug)
     };
 
-    // Prompt for recipe type
-    let recipe_type_question = "What type of recipe?".polkadot_pink().to_string();
-    let recipe_type: RecipeType = select(&recipe_type_question)
+    // Step 3: Prompt for difficulty level
+    let difficulty_question = "What's the difficulty level?".polkadot_pink().to_string();
+    let difficulty: Difficulty = select(&difficulty_question)
         .item(
-            RecipeType::PolkadotSdk,
-            "Polkadot SDK (Runtime Development)",
-            "Runtime pallets and blockchain development with Rust",
+            Difficulty::Beginner,
+            "Beginner",
+            "New to Polkadot or blockchain development",
         )
         .item(
-            RecipeType::Solidity,
-            "Smart Contracts (Solidity)",
-            "Smart contracts using pallet-revive",
+            Difficulty::Intermediate,
+            "Intermediate",
+            "Familiar with Polkadot concepts and basic development",
         )
         .item(
-            RecipeType::Xcm,
-            "Chain Interactions (Basic Interactions, Cross-Chain Interactions)",
-            "Basic transactions and cross-chain interactions using Polkadot.js API and Chopsticks",
+            Difficulty::Advanced,
+            "Advanced",
+            "Expert-level topics and complex implementations",
         )
         .interact()?;
 
-    // Prompt for optional description
-    let description_question = "Recipe description".polkadot_pink().to_string();
-    let hint_text = "(optional, press Enter to skip)".dimmed().to_string();
+    // Step 4: Prompt for content type
+    let content_type_question = "What type of content will this recipe include?"
+        .polkadot_pink()
+        .to_string();
+    let content_type: ContentType = select(&content_type_question)
+        .item(
+            ContentType::Tutorial,
+            "Tutorial",
+            "Step-by-step guide from zero to working solution",
+        )
+        .item(
+            ContentType::Guide,
+            "Guide",
+            "Focused, actionable steps for a specific task",
+        )
+        .interact()?;
+
+    // Step 5: Prompt for description
+    let description_question = "Brief description".polkadot_pink().to_string();
+    let hint_text = "(1-2 sentences, 120-160 characters for SEO)"
+        .dimmed()
+        .to_string();
     let description: String = input(format!("{description_question} {hint_text}"))
-        .placeholder("Learn how to...")
+        .placeholder("Learn how to build a custom NFT pallet with minting, transfers, and storage")
         .default_input("")
         .interact()?;
 
@@ -338,7 +511,6 @@ async fn handle_create(
     };
 
     // Calculate derived values for the summary
-    let title = polkadot_cookbook_core::config::slug_to_title(&slug);
     let project_path = PathBuf::from("recipes").join(&slug);
     let branch_name = if create_git_branch {
         format!("feat/{slug}")
@@ -351,25 +523,42 @@ async fn handle_create(
     note(
         &summary_title,
         format!(
-            "{:<16} {} ({})\n\
+            "{:<16} {}\n\
+             {:<16} {}\n\
+             {:<16} {}\n\
+             {:<16} {}\n\
              {:<16} {}\n\
              {:<16} {}\n\
              {:<16} {}\n\n\
              Files to create:\n\
              {} README.md\n\
              {} recipe.config.yml\n\
-             {} versions.yml\n\
-             {} tests/e2e.test.ts\n\
-             {} justfile",
-            "Recipe:".polkadot_pink(),
-            slug.polkadot_pink().bold(),
-            title.dimmed(),
-            "Type:".polkadot_pink(),
-            match recipe_type {
-                RecipeType::PolkadotSdk => "Polkadot SDK (Runtime Development)",
-                RecipeType::Solidity => "Smart Contracts (Solidity)",
-                RecipeType::Xcm =>
-                    "Chain Interactions (Basic Interactions, Cross-Chain Interactions)",
+             {} Template files for {}",
+            "Title:".polkadot_pink(),
+            title.polkadot_pink().bold(),
+            "Slug:".polkadot_pink(),
+            slug.dimmed(),
+            "Pathway:".polkadot_pink(),
+            match pathway {
+                RecipePathway::Runtime => "Runtime Development",
+                RecipePathway::Contracts => "Smart Contracts",
+                RecipePathway::BasicInteraction => "Basic Interactions",
+                RecipePathway::Xcm => "XCM",
+                RecipePathway::Testing => "Testing Infrastructure",
+                RecipePathway::RequestNew => {
+                    unreachable!("RequestNew should have been handled before summary")
+                }
+            },
+            "Difficulty:".polkadot_pink(),
+            match difficulty {
+                Difficulty::Beginner => "Beginner",
+                Difficulty::Intermediate => "Intermediate",
+                Difficulty::Advanced => "Advanced",
+            },
+            "Content Type:".polkadot_pink(),
+            match content_type {
+                ContentType::Tutorial => "Tutorial",
+                ContentType::Guide => "Guide",
             },
             "Location:".polkadot_pink(),
             project_path.display(),
@@ -378,8 +567,16 @@ async fn handle_create(
             "•".polkadot_pink(),
             "•".polkadot_pink(),
             "•".polkadot_pink(),
-            "•".polkadot_pink(),
-            "•".polkadot_pink()
+            match pathway {
+                RecipePathway::Runtime => "Polkadot SDK",
+                RecipePathway::Contracts => "Solidity",
+                RecipePathway::BasicInteraction => "Basic Interactions",
+                RecipePathway::Xcm => "XCM",
+                RecipePathway::Testing => "Testing",
+                RecipePathway::RequestNew => {
+                    unreachable!("RequestNew should have been handled before summary")
+                }
+            }
         ),
     )?;
 
@@ -393,11 +590,15 @@ async fn handle_create(
 
     // Create project configuration
     let config = ProjectConfig::new(&slug)
+        .with_title(&title)
         .with_destination(PathBuf::from("recipes"))
         .with_git_init(create_git_branch)
         .with_skip_install(skip_install)
         .with_recipe_type(recipe_type)
-        .with_description(description);
+        .with_description(description)
+        .with_pathway(pathway)
+        .with_content_type(content_type)
+        .with_difficulty(difficulty);
 
     // Create the project with spinner
     let sp = spinner();
@@ -504,7 +705,15 @@ async fn handle_create(
 }
 
 /// Run in non-interactive mode (for CI/CD or scripting)
-async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Result<()> {
+async fn run_non_interactive(
+    slug: &str,
+    title: Option<String>,
+    pathway: Option<String>,
+    difficulty: Option<String>,
+    content_type: Option<String>,
+    skip_install: bool,
+    no_git: bool,
+) -> Result<()> {
     // Validate slug
     if let Err(e) = polkadot_cookbook_core::config::validate_slug(slug) {
         eprintln!("❌ Invalid recipe slug format: {e}");
@@ -520,19 +729,106 @@ async fn run_non_interactive(slug: &str, skip_install: bool, no_git: bool) -> Re
         std::process::exit(1);
     }
 
+    // Parse pathway to recipe type
+    let recipe_type = if let Some(p) = pathway {
+        match p.as_str() {
+            "runtime" => RecipeType::PolkadotSdk,
+            "contracts" => RecipeType::Solidity,
+            "basic-interaction" => RecipeType::BasicInteraction,
+            "xcm" => RecipeType::Xcm,
+            "testing" => RecipeType::Testing,
+            "request-new" => {
+                eprintln!("🎯 Request a New Recipe Template\n");
+                eprintln!("We'd love to support your use case! Please create a GitHub issue:\n");
+                eprintln!("→ https://github.com/paritytech/polkadot-cookbook/issues/new\n");
+                eprintln!("Include in your issue:");
+                eprintln!("• What kind of recipe you want to create");
+                eprintln!("• What technology/framework it involves");
+                eprintln!("• Example use cases");
+                eprintln!("• Any specific requirements\n");
+                eprintln!("We'll review your request and add the template if it fits the cookbook!");
+                std::process::exit(0);
+            }
+            _ => {
+                eprintln!("❌ Invalid pathway: {p}");
+                eprintln!(
+                    "Valid pathways: runtime, contracts, basic-interaction, xcm, testing, request-new"
+                );
+                std::process::exit(1);
+            }
+        }
+    } else {
+        RecipeType::PolkadotSdk // Default
+    };
+
+    // Determine title
+    let title = title.unwrap_or_else(|| polkadot_cookbook_core::config::slug_to_title(slug));
+
+    // Parse difficulty
+    let difficulty_level = if let Some(d) = difficulty {
+        match d.as_str() {
+            "beginner" => Some(Difficulty::Beginner),
+            "intermediate" => Some(Difficulty::Intermediate),
+            "advanced" => Some(Difficulty::Advanced),
+            _ => {
+                eprintln!("❌ Invalid difficulty: {d}");
+                eprintln!("Valid difficulties: beginner, intermediate, advanced");
+                std::process::exit(1);
+            }
+        }
+    } else {
+        None
+    };
+
+    // Parse content type
+    let content_type_value = if let Some(ct) = content_type {
+        match ct.as_str() {
+            "tutorial" => Some(ContentType::Tutorial),
+            "guide" => Some(ContentType::Guide),
+            _ => {
+                eprintln!("❌ Invalid content type: {ct}");
+                eprintln!("Valid content types: tutorial, guide");
+                std::process::exit(1);
+            }
+        }
+    } else {
+        None
+    };
+
+    // Determine pathway from recipe type
+    let pathway_value = match recipe_type {
+        RecipeType::PolkadotSdk => Some(RecipePathway::Runtime),
+        RecipeType::Solidity => Some(RecipePathway::Contracts),
+        RecipeType::BasicInteraction => Some(RecipePathway::BasicInteraction),
+        RecipeType::Xcm => Some(RecipePathway::Xcm),
+        RecipeType::Testing => Some(RecipePathway::Testing),
+    };
+
     println!(
         "{} {}",
         "Creating recipe:".polkadot_pink(),
         slug.polkadot_pink().bold()
     );
 
-    // Create project configuration with defaults
-    let config = ProjectConfig::new(slug)
+    // Create project configuration with provided or default values
+    let mut config = ProjectConfig::new(slug)
+        .with_title(&title)
         .with_destination(PathBuf::from("recipes"))
         .with_git_init(!no_git)
         .with_skip_install(skip_install)
-        .with_recipe_type(RecipeType::PolkadotSdk) // Default to Polkadot SDK
+        .with_recipe_type(recipe_type)
         .with_description("Replace with a short description.".to_string());
+
+    // Add optional fields if provided
+    if let Some(p) = pathway_value {
+        config = config.with_pathway(p);
+    }
+    if let Some(ct) = content_type_value {
+        config = config.with_content_type(ct);
+    }
+    if let Some(d) = difficulty_level {
+        config = config.with_difficulty(d);
+    }
 
     // Create the project
     let scaffold = Scaffold::new();

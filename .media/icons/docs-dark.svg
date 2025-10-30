@@ -1,0 +1,9 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Stack of books -->
+  <rect x="7" y="13" width="10" height="2" rx="0.5" fill="#E6007A" opacity="0.7"/>
+  <rect x="6" y="10" width="12" height="2.5" rx="0.5" fill="#E6007A" opacity="0.85"/>
+  <rect x="7" y="7" width="10" height="2.5" rx="0.5" fill="#E6007A"/>
+  <!-- Spine dots -->
+  <circle cx="8" cy="8.2" r="0.6" fill="#ffffff" opacity="0.5"/>
+  <circle cx="8" cy="11.2" r="0.6" fill="#ffffff" opacity="0.5"/>
+</svg>

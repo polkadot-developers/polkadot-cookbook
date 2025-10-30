@@ -110,9 +110,15 @@ impl Scaffold {
             .await?;
 
         // Bootstrap test environment if not skipped
-        // Note: Only TypeScript-based recipes (Solidity, XCM) need npm install
+        // Note: Only TypeScript-based recipes need npm install
         if !config.skip_install
-            && matches!(config.recipe_type, RecipeType::Solidity | RecipeType::Xcm)
+            && matches!(
+                config.recipe_type,
+                RecipeType::Solidity
+                    | RecipeType::Xcm
+                    | RecipeType::BasicInteraction
+                    | RecipeType::Testing
+            )
         {
             let bootstrap = Bootstrap::new(project_path.clone());
             bootstrap.setup(&config.slug).await?;
@@ -148,6 +154,16 @@ impl Scaffold {
             RecipeType::Xcm => {
                 // For XCM recipes with Chopsticks
                 // Template will create src/ and tests/ directories
+                vec![project_path.to_path_buf()]
+            }
+            RecipeType::BasicInteraction => {
+                // For basic interaction recipes (TypeScript + PAPI)
+                // Template will create src/ and tests/ directories
+                vec![project_path.to_path_buf()]
+            }
+            RecipeType::Testing => {
+                // For testing infrastructure recipes (Zombienet/Chopsticks configs)
+                // Template will create configs/, scripts/, tests/ directories
                 vec![project_path.to_path_buf()]
             }
             RecipeType::Solidity => {
@@ -194,6 +210,14 @@ impl Scaffold {
             }
             RecipeType::Xcm => {
                 self.create_xcm_files(project_path, config, rust_version)
+                    .await?;
+            }
+            RecipeType::BasicInteraction => {
+                self.create_basic_interaction_files(project_path, config, rust_version)
+                    .await?;
+            }
+            RecipeType::Testing => {
+                self.create_testing_files(project_path, config, rust_version)
                     .await?;
             }
             RecipeType::Solidity => {
@@ -255,6 +279,34 @@ impl Scaffold {
         Ok(())
     }
 
+    /// Create files for Basic Interaction recipes (TypeScript with PAPI)
+    async fn create_basic_interaction_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+        rust_version: &str,
+    ) -> Result<()> {
+        debug!("Creating Basic Interaction template files");
+        let template_dir = Path::new("templates/recipe-templates/basic-interaction-template");
+        self.copy_template_dir(template_dir, project_path, config, rust_version)
+            .await?;
+        Ok(())
+    }
+
+    /// Create files for Testing Infrastructure recipes (Zombienet/Chopsticks)
+    async fn create_testing_files(
+        &self,
+        project_path: &Path,
+        config: &ProjectConfig,
+        rust_version: &str,
+    ) -> Result<()> {
+        debug!("Creating Testing Infrastructure template files");
+        let template_dir = Path::new("templates/recipe-templates/testing-template");
+        self.copy_template_dir(template_dir, project_path, config, rust_version)
+            .await?;
+        Ok(())
+    }
+
     /// Copy template directory recursively, replacing placeholders
     fn copy_template_dir<'a>(
         &'a self,
@@ -271,15 +323,66 @@ impl Scaffold {
             );
 
             // Helper function to process file content
-            let process_content =
-                |content: String, config: &ProjectConfig, rust_version: &str| -> String {
-                    content
-                        .replace("{{slug}}", &config.slug)
-                        .replace("{{title}}", &config.title)
-                        .replace("{{description}}", &config.description)
-                        .replace("{{category}}", &config.category)
-                        .replace("{{rust_version}}", rust_version)
-                };
+            let process_content = |content: String,
+                                   config: &ProjectConfig,
+                                   rust_version: &str|
+             -> String {
+                // Format optional fields as YAML lines or empty strings
+                let pathway_line = config
+                    .pathway
+                    .as_ref()
+                    .map(|p| {
+                        let value = match p {
+                            crate::config::RecipePathway::Runtime => "runtime",
+                            crate::config::RecipePathway::Contracts => "contracts",
+                            crate::config::RecipePathway::BasicInteraction => "basic-interaction",
+                            crate::config::RecipePathway::Xcm => "xcm",
+                            crate::config::RecipePathway::Testing => "testing",
+                            crate::config::RecipePathway::RequestNew => {
+                                unreachable!(
+                                    "RequestNew pathway should never reach scaffold code"
+                                )
+                            }
+                        };
+                        format!("pathway: {value}")
+                    })
+                    .unwrap_or_default();
+
+                let content_type_line = config
+                    .content_type
+                    .as_ref()
+                    .map(|ct| {
+                        let value = match ct {
+                            crate::config::ContentType::Tutorial => "tutorial",
+                            crate::config::ContentType::Guide => "guide",
+                        };
+                        format!("content_type: {value}")
+                    })
+                    .unwrap_or_default();
+
+                let difficulty_line = config
+                    .difficulty
+                    .as_ref()
+                    .map(|d| {
+                        let value = match d {
+                            crate::config::Difficulty::Beginner => "beginner",
+                            crate::config::Difficulty::Intermediate => "intermediate",
+                            crate::config::Difficulty::Advanced => "advanced",
+                        };
+                        format!("difficulty: {value}")
+                    })
+                    .unwrap_or_default();
+
+                content
+                    .replace("{{slug}}", &config.slug)
+                    .replace("{{title}}", &config.title)
+                    .replace("{{description}}", &config.description)
+                    .replace("{{category}}", &config.category)
+                    .replace("{{rust_version}}", rust_version)
+                    .replace("{{pathway}}", &pathway_line)
+                    .replace("{{content_type}}", &content_type_line)
+                    .replace("{{difficulty}}", &difficulty_line)
+            };
 
             // Recursive copy function
             let mut entries = tokio::fs::read_dir(template_dir).await.map_err(|e| {
@@ -304,6 +407,35 @@ impl Scaffold {
 
                 // Skip hidden files
                 if file_name_str.starts_with('.') {
+                    continue;
+                }
+
+                // Handle content-type-specific README templates
+                if file_name_str == "README.tutorial.md.template"
+                    || file_name_str == "README.guide.md.template"
+                {
+                    let is_tutorial = file_name_str == "README.tutorial.md.template";
+                    let config_is_tutorial = config
+                        .content_type
+                        .as_ref()
+                        .map(|ct| matches!(ct, crate::config::ContentType::Tutorial))
+                        .unwrap_or(true); // Default to tutorial if not specified
+
+                    // Skip if content type doesn't match
+                    if is_tutorial != config_is_tutorial {
+                        continue;
+                    }
+
+                    // Use matching template as README.md
+                    let dest_path = dest_dir.join("README.md");
+                    let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
+                        CookbookError::FileSystemError {
+                            message: format!("Failed to read template file: {e}"),
+                            path: Some(path.clone()),
+                        }
+                    })?;
+                    let processed_content = process_content(content, config, rust_version);
+                    self.write_file(&dest_path, &processed_content).await?;
                     continue;
                 }
 
@@ -401,7 +533,7 @@ impl Default for Scaffold {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::RecipeType;
+    use crate::config::{ContentType, Difficulty, RecipePathway, RecipeType};
     use tempfile::TempDir;
 
     #[tokio::test]
@@ -472,5 +604,160 @@ mod tests {
     fn test_scaffold_default() {
         let scaffold = Scaffold::default();
         assert!(!scaffold.dry_run);
+    }
+
+    #[tokio::test]
+    async fn test_create_basic_interaction_recipe() {
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = manifest_dir.parent().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(workspace_root).unwrap();
+
+        let temp_dir = TempDir::new().unwrap();
+        let project_path = temp_dir.path().join("basic-interaction-test");
+        tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+        let config = ProjectConfig::new("basic-interaction-test")
+            .with_recipe_type(RecipeType::BasicInteraction);
+
+        let scaffold = Scaffold::new();
+        let result = scaffold.create_files(&project_path, &config, "1.86").await;
+
+        std::env::set_current_dir(original_dir).unwrap();
+        result.unwrap();
+
+        // Verify TypeScript-based structure was created
+        assert!(project_path.join("package.json").exists());
+        assert!(project_path.join("tsconfig.json").exists());
+        assert!(project_path.join("vitest.config.ts").exists());
+        assert!(project_path.join("recipe.config.yml").exists());
+        assert!(project_path.join("src").exists());
+        assert!(project_path.join("tests").exists());
+    }
+
+    #[tokio::test]
+    async fn test_create_testing_recipe() {
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = manifest_dir.parent().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(workspace_root).unwrap();
+
+        let temp_dir = TempDir::new().unwrap();
+        let project_path = temp_dir.path().join("testing-recipe-test");
+        tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+        let config =
+            ProjectConfig::new("testing-recipe-test").with_recipe_type(RecipeType::Testing);
+
+        let scaffold = Scaffold::new();
+        let result = scaffold.create_files(&project_path, &config, "1.86").await;
+
+        std::env::set_current_dir(original_dir).unwrap();
+        result.unwrap();
+
+        // Verify testing infrastructure was created
+        assert!(project_path.join("recipe.config.yml").exists());
+        assert!(project_path.join("configs").exists());
+        assert!(project_path.join("tests").exists());
+    }
+
+    #[tokio::test]
+    async fn test_create_xcm_recipe() {
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = manifest_dir.parent().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(workspace_root).unwrap();
+
+        let temp_dir = TempDir::new().unwrap();
+        let project_path = temp_dir.path().join("xcm-test");
+        tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+        let config = ProjectConfig::new("xcm-test").with_recipe_type(RecipeType::Xcm);
+
+        let scaffold = Scaffold::new();
+        let result = scaffold.create_files(&project_path, &config, "1.86").await;
+
+        std::env::set_current_dir(original_dir).unwrap();
+        result.unwrap();
+
+        // Verify XCM/Chopsticks structure was created
+        assert!(project_path.join("package.json").exists());
+        assert!(project_path.join("chopsticks.yml").exists());
+        assert!(project_path.join("recipe.config.yml").exists());
+    }
+
+    #[tokio::test]
+    async fn test_optional_fields_in_recipe_config() {
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = manifest_dir.parent().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(workspace_root).unwrap();
+
+        let temp_dir = TempDir::new().unwrap();
+        let project_path = temp_dir.path().join("optional-fields-test");
+        tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+        let config = ProjectConfig::new("optional-fields-test")
+            .with_recipe_type(RecipeType::PolkadotSdk)
+            .with_pathway(RecipePathway::Runtime)
+            .with_content_type(ContentType::Tutorial)
+            .with_difficulty(Difficulty::Beginner);
+
+        let scaffold = Scaffold::new();
+        scaffold
+            .create_files(&project_path, &config, "1.86")
+            .await
+            .unwrap();
+
+        std::env::set_current_dir(original_dir).unwrap();
+
+        // Read the generated recipe.config.yml
+        let config_path = project_path.join("recipe.config.yml");
+        let content = tokio::fs::read_to_string(&config_path).await.unwrap();
+
+        // Verify optional fields are present
+        assert!(content.contains("pathway: runtime"));
+        assert!(content.contains("content_type: tutorial"));
+        assert!(content.contains("difficulty: beginner"));
+    }
+
+    #[tokio::test]
+    async fn test_optional_fields_empty_when_not_provided() {
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = manifest_dir.parent().unwrap();
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(workspace_root).unwrap();
+
+        let temp_dir = TempDir::new().unwrap();
+        let project_path = temp_dir.path().join("no-optional-fields-test");
+        tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+        // Create config WITHOUT optional fields
+        let config =
+            ProjectConfig::new("no-optional-fields-test").with_recipe_type(RecipeType::PolkadotSdk);
+
+        let scaffold = Scaffold::new();
+        scaffold
+            .create_files(&project_path, &config, "1.86")
+            .await
+            .unwrap();
+
+        std::env::set_current_dir(original_dir).unwrap();
+
+        // Read the generated recipe.config.yml
+        let config_path = project_path.join("recipe.config.yml");
+        let content = tokio::fs::read_to_string(&config_path).await.unwrap();
+
+        // Verify optional fields are NOT present (or are empty lines)
+        // They should not have "pathway: ", "content_type: ", or "difficulty: " with values
+        let has_pathway_value = content.contains("pathway: runtime")
+            || content.contains("pathway: contracts")
+            || content.contains("pathway: basic-interaction")
+            || content.contains("pathway: xcm")
+            || content.contains("pathway: testing");
+        assert!(
+            !has_pathway_value,
+            "Should not have pathway value when not provided"
+        );
     }
 }

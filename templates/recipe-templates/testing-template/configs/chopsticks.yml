@@ -1,0 +1,10 @@
+relaychain:
+  endpoint: wss://rococo-rpc.polkadot.io
+  port: 8000
+  db: ./test-db-relay.sqlite
+
+parachains:
+  - endpoint: wss://rococo-asset-hub-rpc.polkadot.io
+    paraId: 1000
+    port: 8001
+    db: ./test-db-parachain.sqlite

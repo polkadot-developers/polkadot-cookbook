@@ -1,6 +1,71 @@
-# Contributing to Polkadot Cookbook
+<style>
+  @keyframes fadeInFull {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0.9; }
+    100% { opacity: 1; }
+  }
+  .polkadot-logo-fade {
+    opacity: 0.7;
+    animation: fadeInFull 60s ease-in 5s forwards;
+  }
+  .cookbook-fade-in {
+    animation: fadeIn 30s ease-in forwards;
+  }
+  @keyframes gradientFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-2px);
+    }
+  }
+  .polkadot-divider {
+    height: 3px;
+    background: linear-gradient(90deg, #E6007A 0%, #11116B 25%, #E6007A 50%, #11116B 75%, #E6007A 100%);
+    background-size: 200% 100%;
+    border: none;
+    margin: 40px 0;
+    opacity: 0.6;
+    animation: gradientFlow 8s ease-in-out infinite;
+  }
+  .heading-shine {
+    animation: float 6s ease-in-out infinite;
+  }
+</style>
+
+<div style="margin-bottom: 20px;">
+  <img class="polkadot-logo-fade" height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
+  <img class="polkadot-logo-fade" height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
+</div>
+
+<div align="center">
+
+<img class="cookbook-fade-in" src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="60" height="60" />
+<img class="cookbook-fade-in" src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="60" height="60" />
+
+<br/>
+
+# <span class="cookbook-fade-in">Contributing to Polkadot Cookbook</span>
 
 Thank you for your interest in contributing to the Polkadot Cookbook! This project aims to provide high-quality, practical recipes for developers building on Polkadot.
+
+</div>
+
+<hr class="polkadot-divider" />
 
 ## Table of Contents
 
@@ -29,7 +94,7 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
   - [CI/CD Pipeline](#cicd-pipeline)
 - [Getting Help](#getting-help)
 
-## How Can I Contribute?
+## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">How Can I Contribute?</span>
 
 ### Reporting Bugs
 
@@ -82,6 +147,46 @@ When creating a recipe, you must choose between two types using the `content_typ
 - If **yes** → Tutorial
 - If **no** (they have an existing project) → Guide
 
+#### Recipe Pathways
+
+The Polkadot Cookbook organizes recipes into 5 distinct pathways, each covering a major area of Polkadot development:
+
+**1. Runtime Development (Polkadot SDK)**
+- Build custom FRAME pallets
+- Configure runtime logic
+- Implement storage, events, and dispatchable functions
+- Add benchmarking for weight calculations
+- **Technologies**: Rust, FRAME, Substrate
+- **Examples**: Custom token pallet, governance pallet, NFT pallet
+
+**2. Smart Contracts (Solidity)**
+- Deploy Solidity contracts using pallet-revive
+- Test contracts with Hardhat
+- Interact with contracts via scripts
+- **Technologies**: Solidity, TypeScript, Hardhat, pallet-revive
+- **Examples**: ERC-20 token, NFT collection, Uniswap V2 deployment
+
+**3. Basic Interactions**
+- Single-chain transaction submission
+- State queries and balance checks
+- Batch operations and proxy calls
+- **Technologies**: TypeScript, PAPI (Polkadot API)
+- **Examples**: Balance transfer, batch transactions, proxy operations
+
+**4. XCM (Cross-Chain Messaging)**
+- Asset teleportation and transfers
+- HRMP channel management
+- Cross-chain calls and fee estimation
+- **Technologies**: TypeScript, PAPI, Chopsticks
+- **Examples**: Teleport assets, open XCM channels, cross-chain transfers
+
+**5. Testing Infrastructure**
+- Zombienet network configurations
+- Chopsticks fork testing setups
+- Multi-chain testing scenarios
+- **Technologies**: Zombienet, Chopsticks, TOML/YAML configs
+- **Examples**: Parachain test network, relay chain fork, XCM test environment
+
 ### Improving Documentation
 
 Documentation improvements are always welcome:
@@ -93,7 +198,9 @@ Documentation improvements are always welcome:
 
 Submit documentation changes via pull request following the same process as code contributions.
 
-## Getting Started
+<hr class="polkadot-divider" />
+
+## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Getting Started</span>
 
 ### Prerequisites
 
@@ -158,7 +265,9 @@ Before contributing, ensure you have the following installed:
 
    See [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) for more details.
 
-## Recipe Contribution Workflow
+<hr class="polkadot-divider" />
+
+## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Recipe Contribution Workflow</span>
 
 **New Streamlined Process:** You can now contribute recipes directly via pull request without a prior proposal! The `dot recipe submit` command makes it easy to create PRs with a single command.
 
@@ -192,40 +301,132 @@ Or use explicit command:
 **Interactive Prompts:**
 
 The CLI will guide you through:
-1. **Recipe slug** - Confirmed or prompted (lowercase, dashes only)
-2. **Recipe type** - Choose between Polkadot SDK, Solidity, or XCM
-3. **Recipe name** - Display name for your recipe
-4. **Description** - Brief description of what the recipe teaches
+1. **Pathway** - Choose from 5 pathways (determines what you can build):
+   - **Runtime Development** - Build custom pallets and runtime logic with FRAME
+   - **Smart Contracts** - Deploy contracts using pallet-revive (Solidity)
+   - **Basic Interactions** - Single-chain transactions and state queries with PAPI
+   - **XCM** - Cross-chain messaging and asset transfers with Chopsticks
+   - **Testing Infrastructure** - Zombienet and Chopsticks network configurations
+2. **Recipe title** - Human-readable name following our naming convention (see below)
+3. **Recipe slug** - URL-friendly identifier (auto-generated from title, customizable)
+4. **Difficulty level** - Beginner, Intermediate, or Advanced
+5. **Content type** - Tutorial or Guide (determines README structure, see below)
+6. **Description** - Brief description (1-2 sentences, 120-160 characters for SEO)
+7. **Git branch** - Automatically creates `feat/{slug}` branch (optional)
+8. **npm install** - Install dependencies for TypeScript recipes (optional)
+
+**Title Naming Convention:**
+
+To ensure SEO-friendly, organized, and discoverable recipes, follow this pattern:
+
+**Pattern:** `[Feature/Technology] [Optional: with/for/using] [Capability/Use Case]`
+
+**Good Examples:**
+- ✅ "NFT Pallet with Minting and Transfers"
+- ✅ "Governance Pallet for Token Holders"
+- ✅ "Asset Transfer using XCM"
+- ✅ "Multi-Signature Wallet"
+- ✅ "Token Staking System"
+- ✅ "Cross-Chain Asset Bridge"
+
+**Bad Examples (and why they're rejected):**
+- ❌ "My NFT Pallet" - Personal pronouns not allowed
+- ❌ "Simple Counter" - Vague qualifiers (use difficulty field instead)
+- ❌ "NFT Pallet Tutorial" - Don't include content type in title
+- ❌ "Test Recipe" - Too generic, not production-oriented
+- ❌ "My Favorite Recipe" - Personal and vague
+
+**Rules:**
+1. **Be Specific** - Name the actual feature/technology
+2. **Focus on Capability** - What does it enable users to do?
+3. **Use Keywords** - Think SEO - what would someone search for?
+4. **No Meta Terms** - Don't use "Tutorial", "Guide", "Recipe", "Example"
+5. **No Personal Pronouns** - Avoid "My", "Our", "Your"
+6. **No Qualifiers** - Avoid "Simple", "Basic", "Advanced", "Easy" (use difficulty field)
+7. **Minimum Length** - At least 3 characters
+
+The CLI will automatically validate titles and provide helpful suggestions if validation fails.
+
+**Content Types: Tutorial vs Guide**
+
+Your content type choice determines the README structure and focus:
+
+**Tutorial** - Comprehensive Learning Journey
+- **Best for**: Teaching concepts from scratch
+- **Structure**: Step-by-step with explanations of "why" and "how"
+- **Sections**: Overview, What You'll Learn, Step-by-Step Implementation, Testing, Troubleshooting, Next Steps
+- **Tone**: Educational, assumes minimal knowledge
+- **Length**: Longer, more detailed
+- **Example**: "Building an NFT pallet from zero to deployment"
+
+**Guide** - Focused Task Reference
+- **Best for**: Solving specific problems or implementing features
+- **Structure**: Quick patterns and actionable steps
+- **Sections**: Overview, Quick Start, Implementation, Usage, Common Patterns, Troubleshooting
+- **Tone**: Concise, assumes some knowledge
+- **Length**: Shorter, reference-oriented
+- **Example**: "Implementing signature verification in an existing pallet"
+
+The CLI automatically generates the appropriate README template based on your selection. You can customize the generated README while maintaining the overall structure.
 
 **Non-Interactive Mode:**
 
-For scripts or CI/CD:
+For scripts or CI/CD, you can provide all options via flags:
 ```bash
-./target/release/dot my-pallet --non-interactive
+./target/release/dot my-pallet \
+  --non-interactive \
+  --title "Custom Storage Pallet" \
+  --pathway runtime \
+  --difficulty beginner \
+  --content-type tutorial
 ```
 
+**Available flags:**
+- `--title` - Recipe title
+- `--pathway` - One of: `runtime`, `contracts`, `basic-interaction`, `xcm`, `testing`
+- `--difficulty` - One of: `beginner`, `intermediate`, `advanced`
+- `--content-type` - One of: `tutorial`, `guide`
+- `--skip-install` - Skip npm dependency installation
+- `--no-git` - Skip git branch creation
+
 **What the CLI does:**
-- ✓ Scaffolds the recipe directory structure
-- ✓ Generates template files based on recipe type
-- ✓ Creates recipe.config.yml with metadata
-- ✓ Sets up testing infrastructure
+- ✓ Scaffolds the recipe directory structure based on selected pathway
+- ✓ Generates template files optimized for the recipe type
+- ✓ Creates recipe.config.yml with metadata (pathway, difficulty, content type)
+- ✓ Sets up testing infrastructure (Cargo tests, Vitest, or Chopsticks)
+- ✓ Installs dependencies (npm for TypeScript recipes)
+- ✓ Creates git branch automatically
 - ✓ Shows next steps and commands
 
-**Generated structure for Polkadot SDK recipes:**
+**Generated structures by pathway:**
+
+**Runtime Development (Polkadot SDK):**
 ```
 recipes/my-pallet/
 ├── Cargo.toml            # Workspace configuration
 ├── recipe.config.yml     # Recipe metadata
 ├── README.md             # Recipe documentation
-├── justfile              # Development commands (optional)
+├── justfile              # Development commands
 ├── pallets/
 │   └── template/         # Your pallet implementation
 │       ├── Cargo.toml
 │       └── src/
-│           └── lib.rs    # Pallet code
-└── tests/                # Mock runtime and tests
-    ├── mock.rs           # Mock runtime for testing
-    └── integration_test.rs
+│           ├── lib.rs          # Pallet code
+│           ├── mock.rs         # Mock runtime
+│           ├── tests.rs        # Unit tests
+│           └── benchmarking.rs # Benchmarking (optional)
+```
+
+**Smart Contracts, Basic Interactions, XCM, Testing:**
+```
+recipes/my-recipe/
+├── package.json          # npm dependencies
+├── tsconfig.json         # TypeScript config
+├── recipe.config.yml     # Recipe metadata
+├── README.md             # Recipe documentation
+├── src/                  # Implementation code
+├── tests/                # Test files
+└── [configs/]            # Config files (for Testing recipes)
 ```
 
 > **Tip**: After creation, you can use `dot recipe validate` to check your structure!
@@ -368,7 +569,9 @@ If you prefer to submit manually:
 
 **Note:** Recipes are reviewed for quality, accuracy, and adherence to guidelines. Not all submitted recipes may be merged, but feedback will be provided to help improve them.
 
-## Development Guidelines
+<hr class="polkadot-divider" />
+
+## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Development Guidelines</span>
 
 ### Recipe Structure
 
@@ -605,7 +808,9 @@ test(custom-pallet): add integration tests for dispatchables
 chore(cli): update dependencies
 ```
 
-## Additional Resources
+<hr class="polkadot-divider" />
+
+## <img src=".media/icons/book-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/book-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Additional Resources</span>
 
 For more detailed information, see:
 
@@ -613,7 +818,9 @@ For more detailed information, see:
 - **[Testing Guide](docs/testing.md)** - Testing workflows and CI/CD
 - **[Workflows](docs/workflows.md)** - GitHub Actions and automation
 
-## Getting Help
+<hr class="polkadot-divider" />
+
+## <img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Getting Help</span>
 
 ### Resources
 
@@ -627,6 +834,17 @@ For more detailed information, see:
 
 - **Questions**: Open an [issue](https://github.com/polkadot-developers/polkadot-cookbook/issues)
 
----
+<hr class="polkadot-divider" />
+
+<div align="center">
+
+<img src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="40" height="40" />
+<img src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="40" height="40" />
+
+<br/>
 
 Thank you for contributing to Polkadot Cookbook!
+
+[Back to Top](#contributing-to-polkadot-cookbook) • [README](README.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
+
+</div>

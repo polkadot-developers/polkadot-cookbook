@@ -4,9 +4,11 @@ category: {{category}}
 needs_node: false
 description: {{description}}
 type: polkadot-sdk
+{{pathway}}
+{{content_type}}
+{{difficulty}}
 
 # Metadata for documentation
-difficulty: beginner  # beginner | intermediate | advanced
 tags:
   - pallet
   - runtime

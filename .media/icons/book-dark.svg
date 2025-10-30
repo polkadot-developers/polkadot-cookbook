@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Open book -->
+  <path d="M12 6 Q10 7 7 7 L7 17 Q10 17 12 18" fill="none" stroke="#E6007A" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M12 6 Q14 7 17 7 L17 17 Q14 17 12 18" fill="none" stroke="#E6007A" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Page dots -->
+  <circle cx="9" cy="10" r="0.6" fill="#E6007A" opacity="0.6"/>
+  <circle cx="15" cy="10" r="0.6" fill="#E6007A" opacity="0.6"/>
+</svg>

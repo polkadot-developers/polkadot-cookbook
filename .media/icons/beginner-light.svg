@@ -1,0 +1,6 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green circle -->
+  <circle cx="12" cy="12" r="6" fill="#00E676"/>
+  <!-- Small center dot for consistency -->
+  <circle cx="12" cy="12" r="2" fill="#ffffff" opacity="0.4"/>
+</svg>

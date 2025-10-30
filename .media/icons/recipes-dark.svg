@@ -1,0 +1,9 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Plate rim -->
+  <circle cx="12" cy="13" r="8" fill="none" stroke="#E6007A" stroke-width="1.5"/>
+  <!-- Center dot -->
+  <circle cx="12" cy="13" r="3" fill="#E6007A"/>
+  <!-- Small decorative dots -->
+  <circle cx="8" cy="13" r="1" fill="#E6007A" opacity="0.6"/>
+  <circle cx="16" cy="13" r="1" fill="#E6007A" opacity="0.6"/>
+</svg>

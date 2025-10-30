@@ -1,0 +1,7 @@
+name: {{title}}
+slug: {{slug}}
+description: {{description}}
+type: basic-interaction
+{{pathway}}
+{{content_type}}
+{{difficulty}}
