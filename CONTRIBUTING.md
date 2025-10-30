@@ -1,71 +1,22 @@
-<style>
-  @keyframes fadeInFull {
-    0% { opacity: 0.7; }
-    100% { opacity: 1; }
-  }
-  @keyframes fadeIn {
-    0% { opacity: 0.9; }
-    100% { opacity: 1; }
-  }
-  .polkadot-logo-fade {
-    opacity: 0.7;
-    animation: fadeInFull 60s ease-in 5s forwards;
-  }
-  .cookbook-fade-in {
-    animation: fadeIn 30s ease-in forwards;
-  }
-  @keyframes gradientFlow {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-2px);
-    }
-  }
-  .polkadot-divider {
-    height: 3px;
-    background: linear-gradient(90deg, #E6007A 0%, #11116B 25%, #E6007A 50%, #11116B 75%, #E6007A 100%);
-    background-size: 200% 100%;
-    border: none;
-    margin: 40px 0;
-    opacity: 0.6;
-    animation: gradientFlow 8s ease-in-out infinite;
-  }
-  .heading-shine {
-    animation: float 6s ease-in-out infinite;
-  }
-</style>
-
 <div style="margin-bottom: 20px;">
-  <img class="polkadot-logo-fade" height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
-  <img class="polkadot-logo-fade" height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
+  <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
+  <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
 </div>
 
 <div align="center">
 
-<img class="cookbook-fade-in" src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="60" height="60" />
-<img class="cookbook-fade-in" src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="60" height="60" />
+<img src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="60" height="60" />
+<img src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="60" height="60" />
 
 <br/>
 
-# <span class="cookbook-fade-in">Contributing to Polkadot Cookbook</span>
+# Contributing to Polkadot Cookbook
 
 Thank you for your interest in contributing to the Polkadot Cookbook! This project aims to provide high-quality, practical recipes for developers building on Polkadot.
 
 </div>
 
-<hr class="polkadot-divider" />
+<hr />
 
 ## Table of Contents
 
@@ -94,7 +45,7 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
   - [CI/CD Pipeline](#cicd-pipeline)
 - [Getting Help](#getting-help)
 
-## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">How Can I Contribute?</span>
+## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> How Can I Contribute?
 
 ### Reporting Bugs
 
@@ -198,9 +149,9 @@ Documentation improvements are always welcome:
 
 Submit documentation changes via pull request following the same process as code contributions.
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Getting Started</span>
+## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Getting Started
 
 ### Prerequisites
 
@@ -265,9 +216,9 @@ Before contributing, ensure you have the following installed:
 
    See [docs/pre-commit-hooks.md](docs/pre-commit-hooks.md) for more details.
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Recipe Contribution Workflow</span>
+## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Recipe Contribution Workflow
 
 **New Streamlined Process:** You can now contribute recipes directly via pull request without a prior proposal! The `dot recipe submit` command makes it easy to create PRs with a single command.
 
@@ -569,9 +520,9 @@ If you prefer to submit manually:
 
 **Note:** Recipes are reviewed for quality, accuracy, and adherence to guidelines. Not all submitted recipes may be merged, but feedback will be provided to help improve them.
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Development Guidelines</span>
+## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Development Guidelines
 
 ### Recipe Structure
 
@@ -808,9 +759,9 @@ test(custom-pallet): add integration tests for dispatchables
 chore(cli): update dependencies
 ```
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/book-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/book-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Additional Resources</span>
+## <img src=".media/icons/book-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/book-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Additional Resources
 
 For more detailed information, see:
 
@@ -818,9 +769,9 @@ For more detailed information, see:
 - **[Testing Guide](docs/testing.md)** - Testing workflows and CI/CD
 - **[Workflows](docs/workflows.md)** - GitHub Actions and automation
 
-<hr class="polkadot-divider" />
+<hr />
 
-## <img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> <span class="heading-shine">Getting Help</span>
+## <img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Getting Help
 
 ### Resources
 
@@ -834,7 +785,7 @@ For more detailed information, see:
 
 - **Questions**: Open an [issue](https://github.com/polkadot-developers/polkadot-cookbook/issues)
 
-<hr class="polkadot-divider" />
+<hr />
 
 <div align="center">
 
