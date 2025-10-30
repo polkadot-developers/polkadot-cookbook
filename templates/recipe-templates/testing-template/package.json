@@ -1,0 +1,29 @@
+{
+  "name": "{{slug}}",
+  "version": "1.0.0",
+  "description": "{{description}}",
+  "type": "module",
+  "scripts": {
+    "zombienet": "zombienet spawn ./configs/network.toml",
+    "chopsticks": "chopsticks --config=./configs/chopsticks.yml",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "polkadot",
+    "zombienet",
+    "chopsticks",
+    "testing",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "MIT OR Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@acala-network/chopsticks": "^1.2.3",
+    "@acala-network/chopsticks-testing": "^1.2.3",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

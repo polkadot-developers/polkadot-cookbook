@@ -1,0 +1,105 @@
+# {{title}}
+
+{{description}}
+
+## Overview
+
+This recipe demonstrates testing infrastructure configuration using:
+- **Zombienet** - Network simulation tool for Polkadot
+- **Chopsticks** - Fast blockchain fork testing
+
+This template provides configuration examples for setting up test networks.
+
+## Prerequisites
+
+- Node.js 20+
+- npm or yarn
+- Docker (for Zombienet)
+- Basic understanding of blockchain testing
+
+## Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+## Zombienet Configuration
+
+Zombienet allows you to spawn a local test network with multiple chains.
+
+### Running Zombienet
+
+```bash
+npm run zombienet
+```
+
+This will spawn the network defined in `configs/network.toml`.
+
+### Configuration
+
+Edit `configs/network.toml` to customize:
+- Number of validators
+- Parachain configuration
+- Genesis state
+- Runtime parameters
+
+## Chopsticks Configuration
+
+Chopsticks allows you to fork live chains for testing.
+
+### Running Chopsticks
+
+```bash
+npm run chopsticks
+```
+
+This will fork the chains defined in `configs/chopsticks.yml`.
+
+### Configuration
+
+Edit `configs/chopsticks.yml` to customize:
+- Chain endpoints
+- Fork block height
+- Chain overrides
+- Network ports
+
+## Running Tests
+
+```bash
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+## What You'll Learn
+
+- How to configure Zombienet for multi-chain testing
+- How to set up Chopsticks for chain forking
+- How to write tests against test networks
+- How to simulate complex network scenarios
+
+## Implementation
+
+The recipe includes:
+
+- `configs/network.toml` - Zombienet network configuration
+- `configs/chopsticks.yml` - Chopsticks fork configuration
+- `scripts/` - Helper scripts for network management
+- `tests/` - Test suite for network validation
+
+## Next Steps
+
+- Customize network topology
+- Add more validators or parachains
+- Implement custom test scenarios
+- Explore different chain configurations
+
+## Resources
+
+- [Zombienet Documentation](https://paritytech.github.io/zombienet/)
+- [Chopsticks Documentation](https://github.com/AcalaNetwork/chopsticks)
+- [Polkadot Testing Guide](https://docs.polkadot.com/tutorials/)

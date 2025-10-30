@@ -1,4 +1,4 @@
-name: Test Polkadot Cookbook SDK
+name: Polkadot Cookbook SDK
 
 on:
   push:
@@ -23,7 +23,7 @@ env:
 
 jobs:
   test-core:
-    name: Test Core Library
+    name: Core Library
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -63,10 +63,10 @@ jobs:
         run: cargo build --package core --verbose
 
       - name: Run unit tests
-        run: cargo test --package core --lib --verbose
+        run: cargo test --package core --lib --verbose -- --test-threads=1
 
       - name: Run integration tests
-        run: cargo test --package core --test integration_test --verbose
+        run: cargo test --package core --test integration_test --verbose -- --test-threads=1
 
       - name: Run doc tests
         run: cargo test --package core --doc --verbose
@@ -77,13 +77,13 @@ jobs:
       - name: Generate coverage report
         run: |
           # Generate workspace coverage (for informational purposes)
-          cargo llvm-cov --workspace --summary-only > coverage-workspace.txt
+          cargo llvm-cov --workspace --summary-only -- --test-threads=1 > coverage-workspace.txt
 
           # Generate core package coverage (for threshold check)
-          cargo llvm-cov --package core --summary-only > coverage-core.txt
+          cargo llvm-cov --package core --summary-only -- --test-threads=1 > coverage-core.txt
 
           # Generate JSON report
-          cargo llvm-cov --workspace --json --output-path coverage.json
+          cargo llvm-cov --workspace --json --output-path coverage.json -- --test-threads=1
 
           echo "=== Workspace Coverage ==="
           cat coverage-workspace.txt
@@ -217,7 +217,7 @@ jobs:
           echo "✅ Core library coverage ${CORE_COVERAGE}% meets threshold of 80%"
 
   test-cli:
-    name: Test CLI
+    name: CLI
     runs-on: ubuntu-latest
     needs: test-core
     steps:

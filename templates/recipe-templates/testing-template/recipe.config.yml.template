@@ -1,0 +1,7 @@
+name: {{title}}
+slug: {{slug}}
+description: {{description}}
+type: testing
+{{pathway}}
+{{content_type}}
+{{difficulty}}
