@@ -1,37 +1,57 @@
 #!/bin/sh
 # Commit message validation hook
-# Warns about conventional commit format but doesn't block commits
+# Enforces conventional commit format for semantic versioning
 
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
-# Skip merge commits and reverts
-if echo "$COMMIT_MSG" | grep -qE "^(Merge|Revert)"; then
+# Skip merge commits, reverts, and release commits from CI
+if echo "$COMMIT_MSG" | grep -qE "^(Merge|Revert|chore\(release\))"; then
     exit 0
 fi
 
 # Valid conventional commit types
 VALID_TYPES="feat|fix|docs|test|refactor|chore|ci|build|perf|style"
-PATTERN="^($VALID_TYPES)(\(.+\))?: .{1,}"
+# Pattern allows optional scope, optional breaking change marker (!), and description
+PATTERN="^($VALID_TYPES)(\(.+\))?(!)?:.{1,}"
 
 if ! echo "$COMMIT_MSG" | head -n1 | grep -qE "$PATTERN"; then
     echo ""
-    echo "⚠️  WARNING: Commit message doesn't follow conventional commit format"
+    echo "❌ ERROR: Commit message must follow conventional commit format"
     echo ""
-    echo "  Recommended format: <type>(<scope>): <description>"
+    echo "  Required format: <type>(<scope>): <description>"
+    echo ""
+    echo "  For breaking changes: <type>(<scope>)!: <description>"
     echo ""
     echo "  Examples:"
-    echo "    feat(cli): add recipe type selection"
-    echo "    fix(core): handle missing versions.yml"
-    echo "    docs: update contributing guidelines"
-    echo "    test: add integration tests for git ops"
+    echo "    feat(recipe): add basic pallet example"
+    echo "    fix(cli): correct validation bug"
+    echo "    docs: update README with new instructions"
+    echo "    feat(recipe)!: redesign config format (breaking)"
     echo ""
     echo "  Valid types:"
-    echo "    feat, fix, docs, test, refactor, chore, ci, build, perf, style"
+    echo "    feat     - New feature (triggers MINOR version bump)"
+    echo "    fix      - Bug fix (triggers PATCH version bump)"
+    echo "    docs     - Documentation only"
+    echo "    test     - Adding tests"
+    echo "    refactor - Code refactoring"
+    echo "    chore    - Maintenance tasks"
+    echo "    ci       - CI/CD changes"
+    echo "    build    - Build system changes"
+    echo "    perf     - Performance improvements"
+    echo "    style    - Code style/formatting"
     echo ""
-    echo "  ℹ️  This is just a warning - your commit will proceed."
+    echo "  Add '!' before colon for breaking changes (triggers MAJOR version bump)"
     echo ""
+    echo "  💡 Tip: Use --no-verify to bypass this check (use sparingly!)"
+    echo ""
+    exit 1
 fi
 
-# Always allow commit to proceed
+# Check for breaking change marker in message body
+if echo "$COMMIT_MSG" | grep -q "BREAKING CHANGE:"; then
+    echo "✓ Breaking change detected in commit message body"
+fi
+
+# Success
 exit 0

@@ -1,0 +1,56 @@
+# Release Manifest Template
+# This file serves as a template for release manifests
+# Actual releases will be in releases/v0.x.x/manifest.yml
+
+release: v0.0.0
+release_date: 2025-01-01T00:00:00Z
+status: alpha  # alpha | beta | stable
+
+# Tooling versions used to test these recipes
+tooling:
+  cli_version: cli-v0.0.0
+  sdk_version: sdk-v0.0.0
+  rust: "1.86"
+  polkadot_sdk: "1.15.0"
+  node: "20.0.0"
+
+# Recipe inventory
+# Each recipe entry includes:
+# - version: Recipe-specific semantic version
+# - path: Path to recipe directory
+# - tested: Whether tests passed in CI
+# - commit: Git commit hash for immutable reference
+# - pathway: Recipe pathway (runtime, contracts, xcm, basic-interaction, testing)
+# - difficulty: beginner | intermediate | advanced
+# - description: Brief recipe description
+# - last_updated: ISO 8601 timestamp of last modification
+
+recipes:
+  example-recipe:
+    version: "1.0.0"
+    path: "recipes/example-recipe"
+    tested: true
+    commit: "abc123def456"
+    pathway: "runtime"
+    difficulty: "beginner"
+    description: "Example recipe description"
+    last_updated: "2025-01-01T00:00:00Z"
+
+# Release statistics
+stats:
+  total_recipes: 0
+  tested_recipes: 0
+  pathways:
+    runtime: 0
+    contracts: 0
+    xcm: 0
+    basic-interaction: 0
+    testing: 0
+
+# Changelog summary
+changes:
+  new: []      # New recipes in this release
+  updated: []  # Updated recipes in this release
+  fixed: []    # Bug fixes in this release
+  breaking: [] # Breaking changes in this release
+  deprecated: []  # Deprecated recipes

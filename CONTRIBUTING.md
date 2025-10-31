@@ -155,13 +155,19 @@ Submit documentation changes via pull request following the same process as code
 
 ### Prerequisites
 
-Before contributing, ensure you have the following installed:
+**Required for all contributors:**
 
-- **Rust** `1.81+` - [Install via rustup](https://rustup.rs)
 - **Git** - [Download](https://git-scm.com/)
+
+**Required only for specific recipe types:**
+
+- **Rust** `1.81+` - [Install via rustup](https://rustup.rs) (for Runtime Development recipes)
+- **Node.js** `20+` - [Download](https://nodejs.org/) (for Smart Contracts, XCM, Basic Interactions recipes)
 
 **Optional but recommended:**
 - **Just** - Task runner for recipes - `cargo install just`
+
+> **Note:** The `dot` CLI tool is available as a pre-built binary - no Rust required unless you're working on runtime recipes or contributing to the CLI itself!
 
 ### Setting Up Your Development Environment
 
@@ -178,21 +184,43 @@ Before contributing, ensure you have the following installed:
    git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
    ```
 
-4. **Build the CLI tool** (first time only):
+4. **Install the `dot` CLI tool**:
+
+   **Option A: Download pre-built binary (Recommended)**
+
+   ```bash
+   # Linux (x86_64)
+   curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-linux-amd64.tar.gz | tar xz
+   sudo mv dot /usr/local/bin/
+
+   # macOS (Intel)
+   curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-amd64.tar.gz | tar xz
+   sudo mv dot /usr/local/bin/
+
+   # macOS (Apple Silicon)
+   curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-arm64.tar.gz | tar xz
+   sudo mv dot /usr/local/bin/
+
+   # Windows: Download from https://github.com/polkadot-developers/polkadot-cookbook/releases
+   ```
+
+   **Option B: Build from source** (if contributing to CLI itself)
+
    ```bash
    cargo build --release --bin dot
+   # Use ./target/release/dot instead of just 'dot' in commands below
    ```
 
 5. **Verify your setup**:
    ```bash
-   ./target/release/dot setup
+   dot setup
    ```
 
    The `setup` command will check your environment and guide you through installing any missing dependencies.
 
 6. **Run diagnostics** (optional):
    ```bash
-   ./target/release/dot doctor
+   dot doctor
    ```
 
    The `doctor` command performs comprehensive environment checks and shows the status of all tools.
@@ -204,7 +232,7 @@ Before contributing, ensure you have the following installed:
    **No manual setup required!** The hooks run these checks before each commit:
    - ✅ `cargo fmt` - Formats Rust code (blocking)
    - ✅ `cargo clippy` - Lints Rust code (blocking)
-   - ⚠️ Conventional commit message format (warning only)
+   - ⚠️ Conventional commit message format (blocking - enforced)
 
    **Skip hooks**: If needed, use `git commit --no-verify` (use sparingly!)
 
@@ -240,13 +268,13 @@ git merge upstream/master
 The CLI tool provides an interactive experience to create your recipe:
 
 ```bash
-./target/release/dot my-pallet
+dot my-pallet
 ```
 
 Or use explicit command:
 
 ```bash
-./target/release/dot recipe new my-pallet
+dot recipe new my-pallet
 ```
 
 **Interactive Prompts:**
@@ -324,7 +352,7 @@ The CLI automatically generates the appropriate README template based on your se
 
 For scripts or CI/CD, you can provide all options via flags:
 ```bash
-./target/release/dot my-pallet \
+dot my-pallet \
   --non-interactive \
   --title "Custom Storage Pallet" \
   --pathway runtime \
@@ -413,13 +441,13 @@ See [Recipe Structure](#recipe-structure) for detailed requirements.
 1. **Use CLI testing tools**:
    ```bash
    # Test your recipe
-   ./target/release/dot recipe test my-pallet
+   dot recipe test my-pallet
 
    # Validate structure
-   ./target/release/dot recipe validate my-pallet
+   dot recipe validate my-pallet
 
    # Run linting
-   ./target/release/dot recipe lint my-pallet
+   dot recipe lint my-pallet
    ```
 
 2. **Or test directly with Cargo**:
@@ -451,13 +479,13 @@ The easiest way to submit your recipe is using the built-in submit command:
 #### Option 1: Using the CLI Submit Command (Recommended)
 
 ```bash
-./target/release/dot recipe submit my-recipe
+dot recipe submit my-recipe
 ```
 
 Or from within the recipe directory:
 ```bash
 cd recipes/my-recipe
-../../target/release/dot recipe submit
+dot recipe submit
 ```
 
 **What the submit command does:**
