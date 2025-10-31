@@ -1,5 +1,6 @@
 name: Basic Pallet
 slug: basic-pallet
+version: 0.1.0  # Semantic version for this recipe
 category: polkadot-sdk-cookbook
 needs_node: false
 description: Replace with a short description.

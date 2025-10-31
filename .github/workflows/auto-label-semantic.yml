@@ -1,0 +1,175 @@
+name: Auto-Label Semantic Version
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  analyze-commits:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Analyze commits and apply label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Check if semantic label already exists (manual override)
+            const existingLabels = pr.labels.map(l => l.name);
+            const hasManualLabel = existingLabels.some(l => l.startsWith('semantic:'));
+
+            if (hasManualLabel) {
+              console.log('Manual semantic label already applied, respecting override');
+              return;
+            }
+
+            // Get all commits in this PR
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+
+            let hasMajor = false;
+            let hasMinor = false;
+            let hasPatch = false;
+            const analyzedCommits = [];
+
+            // Analyze each commit message
+            for (const commit of commits.data) {
+              const message = commit.commit.message;
+              const firstLine = message.split('\n')[0];
+
+              console.log(`Analyzing: ${firstLine}`);
+
+              // Match conventional commit pattern
+              // Examples:
+              // feat(recipe): add feature
+              // fix(recipe): bug fix
+              // feat(recipe)!: breaking change
+              // feat!: breaking change
+              const match = firstLine.match(/^(feat|fix|chore|docs|refactor|test|perf|style|ci|build)(\(.+\))?(!)?:/);
+
+              if (match) {
+                const type = match[1];
+                const scope = match[2] || '';
+                const hasBreaking = match[3] === '!' || message.includes('BREAKING CHANGE:');
+
+                let impact = 'none';
+                if (hasBreaking) {
+                  hasMajor = true;
+                  impact = 'MAJOR';
+                } else if (type === 'feat') {
+                  hasMinor = true;
+                  impact = 'MINOR';
+                } else if (['fix', 'perf'].includes(type)) {
+                  hasPatch = true;
+                  impact = 'PATCH';
+                }
+
+                analyzedCommits.push({
+                  sha: commit.sha.substring(0, 7),
+                  type,
+                  scope,
+                  breaking: hasBreaking,
+                  impact,
+                  message: firstLine
+                });
+              } else {
+                console.log(`  ⚠️  Commit does not follow conventional commits format`);
+                analyzedCommits.push({
+                  sha: commit.sha.substring(0, 7),
+                  impact: 'INVALID',
+                  message: firstLine
+                });
+              }
+            }
+
+            // Determine highest semantic level
+            let semanticLevel = null;
+            if (hasMajor) {
+              semanticLevel = 'major';
+            } else if (hasMinor) {
+              semanticLevel = 'minor';
+            } else if (hasPatch) {
+              semanticLevel = 'patch';
+            } else {
+              // No version bump needed (only chore, docs, etc)
+              semanticLevel = 'none';
+            }
+
+            console.log(`\nDetermined semantic level: ${semanticLevel}`);
+
+            // Apply semantic label
+            if (semanticLevel !== 'none') {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: [`semantic:${semanticLevel}`],
+              });
+            }
+
+            // Build analysis table
+            let table = '| Commit | Type | Impact | Message |\n';
+            table += '|--------|------|--------|----------|\n';
+            for (const commit of analyzedCommits) {
+              const impactEmoji = {
+                'MAJOR': '🔴',
+                'MINOR': '🟡',
+                'PATCH': '🟢',
+                'INVALID': '⚠️',
+                'none': '⚪'
+              }[commit.impact] || '⚪';
+
+              table += `| \`${commit.sha}\` | ${commit.type || 'invalid'} | ${impactEmoji} ${commit.impact} | ${commit.message.substring(0, 60)}${commit.message.length > 60 ? '...' : ''} |\n`;
+            }
+
+            // Create comment explaining the decision
+            const versionBumpText = semanticLevel !== 'none'
+              ? `**${semanticLevel.toUpperCase()}** version bump`
+              : 'No version bump required';
+
+            const commentBody = `## 🤖 Semantic Version Analysis
+
+**Result:** ${versionBumpText}
+
+### Commit Analysis
+
+${table}
+
+### Summary
+- Breaking changes (🔴 MAJOR): ${hasMajor ? '✓' : '✗'}
+- New features (🟡 MINOR): ${hasMinor ? '✓' : '✗'}
+- Bug fixes (🟢 PATCH): ${hasPatch ? '✓' : '✗'}
+
+${semanticLevel !== 'none' ? `This PR will trigger a **${semanticLevel.toUpperCase()}** version bump when merged.` : 'This PR contains only non-versioned changes (docs, chore, etc).'}
+
+---
+
+**Manual override:** If this is incorrect, you can manually add one of these labels:
+- \`semantic:major\` - Breaking changes
+- \`semantic:minor\` - New features
+- \`semantic:patch\` - Bug fixes
+- \`semantic:none\` - No version bump
+
+Once a manual label is added, this workflow will respect it and not override.`;
+
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: commentBody
+            });

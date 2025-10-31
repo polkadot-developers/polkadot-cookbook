@@ -1,0 +1,420 @@
+name: Release on Breaking Change
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'cli/**'
+      - 'core/**'
+
+jobs:
+  detect-breaking-change:
+    runs-on: ubuntu-latest
+    outputs:
+      has_breaking: ${{ steps.check.outputs.has_breaking }}
+      component: ${{ steps.check.outputs.component }}
+      pr_number: ${{ steps.check.outputs.pr_number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect breaking change
+        id: check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Get the commit that triggered this push
+            const commit = context.payload.head_commit;
+
+            if (!commit) {
+              console.log('No commit found');
+              core.setOutput('has_breaking', 'false');
+              return;
+            }
+
+            // Extract PR number from commit message (format: "Merge pull request #123")
+            const prMatch = commit.message.match(/#(\d+)/);
+
+            if (!prMatch) {
+              console.log('Not a PR merge commit, skipping');
+              core.setOutput('has_breaking', 'false');
+              return;
+            }
+
+            const prNumber = parseInt(prMatch[1]);
+            core.setOutput('pr_number', prNumber);
+
+            // Get PR details to check for semantic:major label
+            try {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+
+              const labels = pr.data.labels.map(l => l.name);
+              const hasBreakingLabel = labels.includes('semantic:major');
+
+              if (!hasBreakingLabel) {
+                console.log('No semantic:major label found');
+                core.setOutput('has_breaking', 'false');
+                return;
+              }
+
+              // Check which component changed
+              const files = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+
+              const changedFiles = files.data.map(f => f.filename);
+              const cliChanged = changedFiles.some(f => f.startsWith('cli/'));
+              const sdkChanged = changedFiles.some(f => f.startsWith('core/'));
+
+              if (cliChanged || sdkChanged) {
+                core.setOutput('has_breaking', 'true');
+                core.setOutput('component', cliChanged ? 'CLI' : 'SDK');
+                console.log(`Breaking change detected in ${cliChanged ? 'CLI' : 'SDK'}`);
+              } else {
+                core.setOutput('has_breaking', 'false');
+              }
+            } catch (error) {
+              console.log(`Error fetching PR: ${error.message}`);
+              core.setOutput('has_breaking', 'false');
+            }
+
+      - name: Log detection result
+        run: |
+          echo "Has breaking change: ${{ steps.check.outputs.has_breaking }}"
+          echo "Component: ${{ steps.check.outputs.component }}"
+          echo "PR: ${{ steps.check.outputs.pr_number }}"
+
+  get-cli-version:
+    needs: detect-breaking-change
+    if: needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'CLI'
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get current CLI version
+        id: version
+        run: |
+          # Extract version from Cargo.toml
+          CURRENT_VERSION=$(grep "^version" cli/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Bump major version for breaking change
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          NEW_VERSION="$((MAJOR + 1)).0.0"
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New CLI version: $NEW_VERSION"
+
+  release-cli:
+    needs: [detect-breaking-change, get-cli-version]
+    uses: ./.github/workflows/release-cli.yml
+    permissions:
+      contents: write
+    with:
+      version: ${{ needs.get-cli-version.outputs.new_version }}
+      is_breaking: true
+    secrets: inherit
+
+  release-sdk:
+    needs: detect-breaking-change
+    if: needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'SDK'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Get current SDK version
+        id: version
+        run: |
+          # Extract version from Cargo.toml
+          CURRENT_VERSION=$(grep "^version" core/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Bump major version
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          NEW_VERSION="$((MAJOR + 1)).0.0"
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New SDK version: $NEW_VERSION"
+
+      - name: Build and test SDK
+        run: |
+          cd core
+          cargo build --release
+          cargo test --release
+
+      - name: Create SDK release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.version.outputs.new }}
+          PR_NUMBER: ${{ needs.detect-breaking-change.outputs.pr_number }}
+        run: |
+          TAG_NAME="sdk-v$NEW_VERSION"
+
+          # Create release notes
+          cat > /tmp/sdk-release-notes.md <<'EOF'
+          <div align="center">
+            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
+            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
+          </div>
+
+          EOF
+
+          cat >> /tmp/sdk-release-notes.md <<EOF
+          # Cookbook SDK v$NEW_VERSION
+
+          **⚠️ Breaking Change Release**
+
+          This is a breaking change release of the SDK library. All recipes have been retested
+          and a new recipe release will follow automatically.
+
+          ## Installation
+
+          Add to your \`Cargo.toml\`:
+
+          \`\`\`toml
+          [dependencies]
+          polkadot-cookbook-sdk = { git = "https://github.com/polkadot-developers/polkadot-cookbook.git", tag = "sdk-v$NEW_VERSION" }
+          \`\`\`
+
+          ## Changes
+
+          See PR #${PR_NUMBER} for details.
+
+          ---
+
+          **Note:** This is a breaking change. Please update your dependencies accordingly.
+
+          <div align="center">
+
+          Built by [Polkadot Developers](https://github.com/polkadot-developers)
+
+          [Recipes](https://github.com/polkadot-developers/polkadot-cookbook#-recipes) • [Contributing](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
+
+          </div>
+          EOF
+
+          # Create tag and release
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a $TAG_NAME -m "SDK Release v$NEW_VERSION (breaking)"
+          git push origin $TAG_NAME
+
+          gh release create $TAG_NAME \
+            --title "Cookbook SDK v$NEW_VERSION (Breaking Change)" \
+            --notes-file /tmp/sdk-release-notes.md
+
+  test-and-release-recipes:
+    needs: [detect-breaking-change, release-cli, release-sdk]
+    if: |
+      always() &&
+      needs.detect-breaking-change.outputs.has_breaking == 'true' &&
+      (needs.release-cli.result == 'success' || needs.release-sdk.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test all recipes
+        id: test
+        run: |
+          echo "Testing all recipes with updated CLI/SDK..."
+
+          # Test each recipe
+          for recipe in recipes/*/; do
+            recipe_name=$(basename "$recipe")
+            echo "Testing $recipe_name..."
+
+            if [ -f "$recipe/Cargo.toml" ]; then
+              cd "$recipe"
+              cargo test --all-features || exit 1
+              cd ../..
+            elif [ -f "$recipe/package.json" ]; then
+              cd "$recipe"
+              if grep -q "\"test\":" package.json; then
+                npm test || exit 1
+              fi
+              cd ../..
+            fi
+          done
+
+      - name: Get last recipe release
+        id: last_release
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*.*.*" 2>/dev/null || echo "v0.0.0")
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: new_version
+        env:
+          LAST_TAG: ${{ steps.last_release.outputs.last_tag }}
+        run: |
+          # For breaking change, we bump minor in alpha (v0.x.0)
+          VERSION_NO_V=${LAST_TAG#v}
+          MAJOR=$(echo $VERSION_NO_V | cut -d. -f1)
+          MINOR=$(echo $VERSION_NO_V | cut -d. -f2)
+          PATCH=$(echo $VERSION_NO_V | cut -d. -f3)
+
+          if [ "$MAJOR" = "0" ]; then
+            # In alpha, bump minor for breaking changes
+            NEW_VERSION="v0.$((MINOR + 1)).0"
+          else
+            # Post-alpha, bump major for breaking changes
+            NEW_VERSION="v$((MAJOR + 1)).0.0"
+          fi
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New recipe version: $NEW_VERSION"
+
+      - name: Generate release manifest
+        env:
+          NEW_VERSION: ${{ steps.new_version.outputs.new_version }}
+          COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
+        run: |
+          mkdir -p releases/$NEW_VERSION
+
+          # Generate manifest (similar to weekly release)
+          cat > releases/$NEW_VERSION/manifest.yml <<EOF
+          release: $NEW_VERSION
+          release_date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          status: alpha
+          triggered_by: ${COMPONENT}_breaking_change
+
+          tooling:
+            rust: "$(rustc --version | awk '{print $2}')"
+            node: "$(node --version 2>/dev/null || echo 'N/A')"
+
+          recipes:
+          EOF
+
+          # Add each recipe
+          for recipe_dir in recipes/*/; do
+            if [ ! -d "$recipe_dir" ]; then continue; fi
+
+            recipe_name=$(basename "$recipe_dir")
+            config_file="$recipe_dir/recipe.config.yml"
+
+            if [ -f "$config_file" ]; then
+              version=$(grep "^version:" "$config_file" | awk '{print $2}' || echo "0.1.0")
+              difficulty=$(grep "^difficulty:" "$config_file" | awk '{print $2}' || echo "unknown")
+              description=$(grep "^description:" "$config_file" | sed 's/^description: //' || echo "No description")
+              commit_hash=$(git log -1 --format="%H" -- "$recipe_dir" | head -c 10)
+
+              cat >> releases/$NEW_VERSION/manifest.yml <<EOF
+            $recipe_name:
+              version: "$version"
+              path: "recipes/$recipe_name"
+              tested: true
+              commit: "$commit_hash"
+              difficulty: "$difficulty"
+              description: "$description"
+          EOF
+            fi
+          done
+
+      - name: Generate release notes
+        env:
+          NEW_VERSION: ${{ steps.new_version.outputs.new_version }}
+          COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
+          PR_NUMBER: ${{ needs.detect-breaking-change.outputs.pr_number }}
+        run: |
+          cat > releases/$NEW_VERSION/RELEASE_NOTES.md <<'EOF'
+          <div align="center">
+            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
+            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
+          </div>
+
+          EOF
+
+          cat >> releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
+          # Polkadot Cookbook $NEW_VERSION
+
+          **⚠️ Breaking Change Release**
+
+          Released: $(date -u +"%Y-%m-%d")
+
+          This release was triggered by a breaking change in the ${COMPONENT}.
+          All recipes have been retested and verified to work with the updated tooling.
+
+          ## Trigger
+
+          - ${COMPONENT} breaking change (PR #${PR_NUMBER})
+
+          ## Compatibility
+
+          This release was tested with:
+          - Rust: $(rustc --version | awk '{print $2}')
+          - Node.js: $(node --version 2>/dev/null || echo 'N/A')
+
+          ## Testing
+
+          All recipes have been retested and passed with the new ${COMPONENT} version.
+
+          Full manifest: [manifest.yml](./manifest.yml)
+
+          ---
+
+          **Status:** Alpha (v0.x.x) - Expect frequent changes and updates.
+
+          <div align="center">
+
+          Built by [Polkadot Developers](https://github.com/polkadot-developers)
+
+          [Recipes](https://github.com/polkadot-developers/polkadot-cookbook#-recipes) • [Contributing](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
+
+          </div>
+          EOF
+
+      - name: Commit and create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.new_version.outputs.new_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add releases/$NEW_VERSION/
+          git commit -m "chore(release): $NEW_VERSION triggered by breaking change"
+          git push origin HEAD:master
+
+          git tag -a $NEW_VERSION -m "Release $NEW_VERSION (breaking change)"
+          git push origin $NEW_VERSION
+
+          gh release create $NEW_VERSION \
+            --title "Polkadot Cookbook $NEW_VERSION (Breaking Change)" \
+            --notes-file releases/$NEW_VERSION/RELEASE_NOTES.md \
+            releases/$NEW_VERSION/manifest.yml
