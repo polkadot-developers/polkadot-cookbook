@@ -248,6 +248,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -458,22 +459,58 @@ jobs:
           </div>
           EOF
 
-      - name: Commit and create release
+      - name: Create release branch and PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW_VERSION: ${{ steps.new_version.outputs.new_version }}
+          COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
+          PR_NUMBER: ${{ needs.detect-breaking-change.outputs.pr_number }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Create and switch to release branch
+          BRANCH_NAME="release/$NEW_VERSION"
+          git checkout -b $BRANCH_NAME
+
+          # Commit release files
           git add releases/$NEW_VERSION/
           git commit -m "chore(release): $NEW_VERSION triggered by breaking change"
-          git push origin HEAD:master
 
-          git tag -a $NEW_VERSION -m "Release $NEW_VERSION (breaking change)"
-          git push origin $NEW_VERSION
+          # Push branch
+          git push origin $BRANCH_NAME
 
-          gh release create $NEW_VERSION \
-            --title "Polkadot Cookbook $NEW_VERSION (Breaking Change)" \
-            --notes-file releases/$NEW_VERSION/RELEASE_NOTES.md \
-            releases/$NEW_VERSION/manifest.yml
+          # Create PR
+          gh pr create \
+            --title "Release $NEW_VERSION (Breaking Change)" \
+            --body "$(cat <<'PRBODY'
+          ## Breaking Change Release $NEW_VERSION
+
+          ⚠️ This PR contains the release manifest and notes for version $NEW_VERSION, triggered by a breaking change in the **$COMPONENT**.
+
+          ### Changes
+          - Triggered by: ${COMPONENT} breaking change (PR #${PR_NUMBER})
+          - All recipes retested successfully
+          - Release manifest generated
+          - Release notes generated
+
+          ### Next Steps
+          Once this PR is merged:
+          1. A Git tag will be created automatically
+          2. A GitHub Release will be published
+          3. Release artifacts will be attached
+
+          ---
+
+          🤖 This PR was automatically created by the Release on Breaking Change workflow.
+          PRBODY
+          )" \
+            --label "semantic:major" \
+            --label "release"
+
+      - name: PR Created
+        run: |
+          echo "✅ Release PR created successfully!"
+          echo "Once the PR is merged, a separate workflow will:"
+          echo "  - Create the Git tag $NEW_VERSION"
+          echo "  - Publish the GitHub Release"
