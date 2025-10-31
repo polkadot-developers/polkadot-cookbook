@@ -15,7 +15,7 @@
 
 **Practical, tested recipes for Polkadot SDK development**
 
-[**Browse Recipes**](#-recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#-documentation)
+[**Browse Recipes**](#recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#documentation)
 
 <br/>
 
@@ -27,6 +27,8 @@
 </div>
 
 <hr />
+
+<a id="recipes"></a>
 
 ## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Recipes
 
@@ -75,6 +77,8 @@ Zombienet and Chopsticks configurations for network testing.
 > <img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="18" height="18" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
 <hr />
+
+<a id="quick-start"></a>
 
 ## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Quick Start
 
@@ -169,6 +173,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 <hr />
 
+<a id="documentation"></a>
+
 ## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Documentation
 
 ### For Recipe Contributors
@@ -185,6 +191,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 <hr />
 
+<a id="contributing"></a>
+
 ## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Contributing
 
 We welcome all contributions:
@@ -197,6 +205,8 @@ We welcome all contributions:
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 <hr />
+
+<a id="license"></a>
 
 ## <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> License
 
@@ -213,6 +223,6 @@ MIT OR Apache-2.0
 
 Built by [Polkadot Developers](https://github.com/polkadot-developers)
 
-[Recipes](#-recipes) • [Contributing](CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
+[Recipes](#recipes) • [Contributing](CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
 
 </div>
