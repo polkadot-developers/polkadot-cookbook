@@ -149,28 +149,28 @@ jobs:
 
             const commentBody = `## 🤖 Semantic Version Analysis
 
-**Result:** ${versionBumpText}
+            **Result:** ${versionBumpText}
 
-### Commit Analysis
+            ### Commit Analysis
 
-${table}
+            ${table}
 
-### Summary
-- Breaking changes (🔴 MAJOR): ${hasMajor ? '✓' : '✗'}
-- New features (🟡 MINOR): ${hasMinor ? '✓' : '✗'}
-- Bug fixes (🟢 PATCH): ${hasPatch ? '✓' : '✗'}
+            ### Summary
+            - Breaking changes (🔴 MAJOR): ${hasMajor ? '✓' : '✗'}
+            - New features (🟡 MINOR): ${hasMinor ? '✓' : '✗'}
+            - Bug fixes (🟢 PATCH): ${hasPatch ? '✓' : '✗'}
 
-${semanticLevel !== 'none' ? `This PR will trigger a **${semanticLevel.toUpperCase()}** version bump when merged.` : 'This PR contains only non-versioned changes (docs, chore, etc).'}
+            ${semanticLevel !== 'none' ? `This PR will trigger a **${semanticLevel.toUpperCase()}** version bump when merged.` : 'This PR contains only non-versioned changes (docs, chore, etc).'}
 
----
+            ---
 
-**Manual override:** If this is incorrect, you can manually add one of these labels:
-- \`semantic:major\` - Breaking changes
-- \`semantic:minor\` - New features
-- \`semantic:patch\` - Bug fixes
-- \`semantic:none\` - No version bump
+            **Manual override:** If this is incorrect, you can manually add one of these labels:
+            - \`semantic:major\` - Breaking changes
+            - \`semantic:minor\` - New features
+            - \`semantic:patch\` - Bug fixes
+            - \`semantic:none\` - No version bump
 
-Once a manual label is added, this workflow will respect it and not override.`;
+            Once a manual label is added, this workflow will respect it and not override.`;
 
             // Post comment
             await github.rest.issues.createComment({

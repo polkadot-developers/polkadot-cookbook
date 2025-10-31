@@ -27,6 +27,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Set default outputs first
+            core.setOutput('has_breaking', 'false');
+            core.setOutput('component', '');
+            core.setOutput('pr_number', '');
+
             // Get the commit that triggered this push
             const commit = context.payload.head_commit;
 
@@ -128,6 +133,7 @@ jobs:
 
   release-cli:
     needs: [detect-breaking-change, get-cli-version]
+    if: needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'CLI'
     uses: ./.github/workflows/release-cli.yml
     permissions:
       contents: write
