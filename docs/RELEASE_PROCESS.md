@@ -230,7 +230,6 @@ recipes:
   basic-pallet:
     version: "0.1.0"
     path: "recipes/basic-pallet"
-    docs_ready: true      # Ready for docs.polkadot.com
     tested: true          # Passed CI tests
     commit: "abc123def"   # Immutable reference
     pathway: "runtime"
@@ -287,26 +286,25 @@ https://github.com/polkadot-developers/polkadot-cookbook/blob/v0.2.0/recipes/bas
 
 docs.polkadot.com can:
 1. Fetch manifest from latest release
-2. Filter recipes with `docs_ready: true`
+2. Browse available tested recipes
 3. Generate links to tagged release or commit hashes
 4. Check compatibility (Rust, Polkadot SDK versions)
 
 ### Workflow for Docs Authors
 
 1. Check latest release: https://github.com/polkadot-developers/polkadot-cookbook/releases
-2. Review manifest for `docs_ready: true` recipes
+2. Review manifest for available recipes
 3. Reference specific release tag in tutorials
 4. Use commit hashes for immutable references (optional)
 
 ## Recipe Configuration
 
-Each recipe must include `version` and `docs_ready` in `recipe.config.yml`:
+Each recipe must include `version` in `recipe.config.yml`:
 
 ```yaml
 name: Basic Pallet
 slug: basic-pallet
 version: 0.1.0        # Recipe semantic version
-docs_ready: false     # Ready for docs.polkadot.com?
 type: polkadot-sdk
 difficulty: beginner
 # ... other fields
@@ -327,20 +325,6 @@ difficulty: beginner
 - Contributors bump version in their PR when making changes
 - Maintainers verify during review
 - CLI tool can automate this (future enhancement)
-
-### `docs_ready` Flag
-
-**Set to `true` when:**
-- Recipe is complete and working
-- Tests are passing
-- Documentation is comprehensive
-- Ready to be referenced in docs.polkadot.com
-
-**Set to `false` when:**
-- Recipe is experimental or WIP
-- Tests are failing
-- Documentation is incomplete
-- Not yet suitable for tutorials
 
 ## Troubleshooting
 
@@ -386,20 +370,17 @@ difficulty: beginner
 - Use conventional commits for all commits
 - Test recipes locally before submitting
 - Update recipe version in config file
-- Mark recipes as `docs_ready: true` when appropriate
 
 ❌ **DON'T:**
 - Use non-conventional commit messages
 - Submit untested recipes
 - Forget to bump recipe version for changes
-- Mark incomplete recipes as `docs_ready`
 
 ### For Maintainers
 
 ✅ **DO:**
 - Review semantic labels on PRs
 - Verify recipe versions are bumped correctly
-- Check that `docs_ready` flag is appropriate
 - Monitor release workflow for failures
 
 ❌ **DON'T:**
@@ -417,7 +398,6 @@ difficulty: beginner
 
 ❌ **DON'T:**
 - Reference `master` branch directly (unstable)
-- Assume all recipes are docs-ready
 - Ignore version compatibility information
 
 ## Future Enhancements

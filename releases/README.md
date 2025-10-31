@@ -74,7 +74,6 @@ recipes:                      # Recipe inventory
   basic-pallet:
     version: "0.1.0"          # Recipe version
     path: "recipes/basic-pallet"
-    docs_ready: true          # Ready for docs.polkadot.com?
     tested: true              # Passed CI tests?
     commit: "abc123"          # Git commit hash
     pathway: "runtime"        # Recipe pathway
@@ -91,7 +90,7 @@ https://github.com/polkadot-developers/polkadot-cookbook/tree/v0.1.0/recipes/bas
 ```
 
 The manifest provides:
-- List of recipes marked as `docs_ready: true`
+- List of tested recipes
 - Commit hashes for immutable references
 - Compatibility information (Polkadot SDK, Rust versions)
 

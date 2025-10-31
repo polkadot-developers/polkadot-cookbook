@@ -8,7 +8,6 @@ type: polkadot-sdk
 
 # Metadata for documentation
 difficulty: beginner  # beginner | intermediate | advanced
-docs_ready: false  # Ready to be referenced in docs.polkadot.com?
 tags:
   - pallet
   - runtime

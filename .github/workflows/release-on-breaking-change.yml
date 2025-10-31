@@ -330,7 +330,6 @@ jobs:
 
             if [ -f "$config_file" ]; then
               version=$(grep "^version:" "$config_file" | awk '{print $2}' || echo "0.1.0")
-              docs_ready=$(grep "^docs_ready:" "$config_file" | awk '{print $2}' || echo "false")
               difficulty=$(grep "^difficulty:" "$config_file" | awk '{print $2}' || echo "unknown")
               description=$(grep "^description:" "$config_file" | sed 's/^description: //' || echo "No description")
               commit_hash=$(git log -1 --format="%H" -- "$recipe_dir" | head -c 10)
@@ -339,7 +338,6 @@ jobs:
             $recipe_name:
               version: "$version"
               path: "recipes/$recipe_name"
-              docs_ready: $docs_ready
               tested: true
               commit: "$commit_hash"
               difficulty: "$difficulty"

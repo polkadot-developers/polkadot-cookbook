@@ -18,7 +18,6 @@ tooling:
 # Each recipe entry includes:
 # - version: Recipe-specific semantic version
 # - path: Path to recipe directory
-# - docs_ready: Whether this recipe is ready for docs.polkadot.com
 # - tested: Whether tests passed in CI
 # - commit: Git commit hash for immutable reference
 # - pathway: Recipe pathway (runtime, contracts, xcm, basic-interaction, testing)
@@ -30,7 +29,6 @@ recipes:
   example-recipe:
     version: "1.0.0"
     path: "recipes/example-recipe"
-    docs_ready: true
     tested: true
     commit: "abc123def456"
     pathway: "runtime"
@@ -41,7 +39,6 @@ recipes:
 # Release statistics
 stats:
   total_recipes: 0
-  docs_ready_recipes: 0
   tested_recipes: 0
   pathways:
     runtime: 0
