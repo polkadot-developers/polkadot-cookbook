@@ -23,6 +23,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Guard: only run on pull_request events
+            if (context.eventName !== 'pull_request') {
+              console.log(`Skipping: workflow triggered by '${context.eventName}' event, not 'pull_request'`);
+              return;
+            }
+
             const pr = context.payload.pull_request;
 
             // Check if semantic label already exists (manual override)
