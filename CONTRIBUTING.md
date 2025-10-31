@@ -20,27 +20,27 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
 
 ## Table of Contents
 
-- [How Can I Contribute?](#how-can-i-contribute)
+- [How Can I Contribute?](#-how-can-i-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
   - [Contributing Recipes](#contributing-recipes)
   - [Improving Documentation](#improving-documentation)
-- [Getting Started](#getting-started)
+- [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
   - [Setting Up Your Development Environment](#setting-up-your-development-environment)
-- [Recipe Contribution Workflow](#recipe-contribution-workflow)
+- [Recipe Contribution Workflow](#-recipe-contribution-workflow)
   - [Step 1: Setup Your Environment](#step-1-setup-your-environment)
   - [Step 2: Create Recipe Structure](#step-2-create-recipe-structure)
   - [Step 3: Write Your Recipe](#step-3-write-your-recipe)
   - [Step 4: Test Your Recipe](#step-4-test-your-recipe)
   - [Step 5: Submit Your Recipe](#step-5-submit-your-recipe)
-- [Development Guidelines](#development-guidelines)
+- [Development Guidelines](#-development-guidelines)
   - [Recipe Structure](#recipe-structure)
   - [Testing Requirements](#testing-requirements)
   - [Code Style](#code-style)
   - [Documentation Standards](#documentation-standards)
-- [Additional Resources](#additional-resources)
-- [Getting Help](#getting-help)
+- [Additional Resources](#-additional-resources)
+- [Getting Help](#-getting-help)
 
 ## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> How Can I Contribute?
 
@@ -244,8 +244,6 @@ Submit documentation changes via pull request following the same process as code
 <hr />
 
 ## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Recipe Contribution Workflow
-
-**New Streamlined Process:** You can now contribute recipes directly via pull request without a prior proposal! The `dot recipe submit` command makes it easy to create PRs with a single command.
 
 ### Step 1: Setup Your Environment
 
