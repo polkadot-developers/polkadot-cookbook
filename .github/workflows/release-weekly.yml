@@ -248,7 +248,13 @@ jobs:
           EOF
 
           # Get merged PRs since last release
-          git log $LAST_TAG..HEAD --merges --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
+          if [ "$LAST_TAG" = "v0.0.0" ]; then
+            # First release - show all merge commits
+            git log --merges --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
+          else
+            # Subsequent releases - show commits since last tag
+            git log $LAST_TAG..HEAD --merges --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
+          fi
 
           cat >> releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
 
