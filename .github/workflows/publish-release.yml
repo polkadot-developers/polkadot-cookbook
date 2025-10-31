@@ -1,0 +1,88 @@
+name: Publish Release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'releases/v*/manifest.yml'
+      - 'releases/v*/RELEASE_NOTES.md'
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect release version
+        id: version
+        run: |
+          # Get files changed in this commit
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+
+          # Find release version from changed manifest
+          VERSION=$(echo "$CHANGED_FILES" | grep -oP 'releases/\K(v[0-9]+\.[0-9]+\.[0-9]+)' | head -1)
+
+          if [ -z "$VERSION" ]; then
+            echo "No release version detected"
+            exit 0
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected release version: $VERSION"
+
+          # Check if tag already exists
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists, skipping release creation"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Git tag
+        if: steps.version.outputs.skip == 'false' && steps.version.outputs.version != ''
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Determine release type from commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MSG" | grep -qi "breaking change"; then
+            TAG_MSG="Release $VERSION (breaking change)"
+          else
+            TAG_MSG="Release $VERSION"
+          fi
+
+          git tag -a $VERSION -m "$TAG_MSG"
+          git push origin $VERSION
+
+          echo "✅ Created and pushed tag $VERSION"
+
+      - name: Create GitHub Release
+        if: steps.version.outputs.skip == 'false' && steps.version.outputs.version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Determine release title from commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MSG" | grep -qi "breaking change"; then
+            TITLE="Polkadot Cookbook $VERSION (Breaking Change)"
+          else
+            TITLE="Polkadot Cookbook $VERSION"
+          fi
+
+          # Create release
+          gh release create $VERSION \
+            --title "$TITLE" \
+            --notes-file "releases/$VERSION/RELEASE_NOTES.md" \
+            "releases/$VERSION/manifest.yml"
+
+          echo "✅ Created GitHub Release $VERSION"
