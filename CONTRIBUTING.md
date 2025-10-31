@@ -39,10 +39,7 @@ Thank you for your interest in contributing to the Polkadot Cookbook! This proje
   - [Testing Requirements](#testing-requirements)
   - [Code Style](#code-style)
   - [Documentation Standards](#documentation-standards)
-- [Advanced Topics](#advanced-topics)
-  - [Recipe Configuration](#recipe-configuration)
-  - [Justfiles and Scripts](#justfiles-and-scripts)
-  - [CI/CD Pipeline](#cicd-pipeline)
+- [Additional Resources](#additional-resources)
 - [Getting Help](#getting-help)
 
 ## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> How Can I Contribute?

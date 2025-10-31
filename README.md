@@ -15,7 +15,7 @@
 
 **Practical, tested recipes for Polkadot SDK development**
 
-[**Browse Recipes**](#-recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#-documentation)
+[**Browse Recipes**](#recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#documentation)
 
 <br/>
 
