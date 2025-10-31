@@ -11,22 +11,56 @@ on:
       - 'Cargo.lock'
       - '.github/workflows/test-sdk.yml'
   pull_request:
-    paths:
-      - 'core/**'
-      - 'cli/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/test-sdk.yml'
+    # Always run on PRs to satisfy branch protection, but skip work conditionally
 
 env:
   RUST_VERSION: 1.86
 
 jobs:
+  check-changes:
+    name: Detect SDK Changes
+    runs-on: ubuntu-latest
+    outputs:
+      sdk_changed: ${{ steps.filter.outputs.sdk }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for SDK-related changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # On push to master, always run
+            echo "sdk=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # For PRs, check if SDK files changed
+          git fetch origin ${{ github.base_ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          if echo "$CHANGED_FILES" | grep -qE '^(core/|cli/|Cargo\.(toml|lock)|\.github/workflows/test-sdk\.yml)'; then
+            echo "sdk=true" >> $GITHUB_OUTPUT
+            echo "SDK files changed, running tests"
+          else
+            echo "sdk=false" >> $GITHUB_OUTPUT
+            echo "No SDK files changed, skipping tests"
+          fi
+
   test-core:
     name: Core Library
+    needs: check-changes
     runs-on: ubuntu-latest
     steps:
+      - name: Skip if no SDK changes
+        if: needs.check-changes.outputs.sdk_changed == 'false'
+        run: |
+          echo "No SDK-related files changed, skipping Core Library tests"
+          exit 0
+
       - name: Checkout code
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref || github.ref }}
@@ -34,51 +68,63 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Rust
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
           components: rustfmt, clippy
 
       - name: Cache cargo registry
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo index
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo build
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Check formatting
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo fmt --check --package core
 
       - name: Run clippy
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo clippy --package core -- -D warnings
 
       - name: Build core library
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo build --package core --verbose
 
       - name: Run unit tests
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo test --package core --lib --verbose -- --test-threads=1
 
       - name: Run integration tests
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo test --package core --test integration_test --verbose -- --test-threads=1
 
       - name: Run doc tests
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo test --package core --doc --verbose
 
       - name: Install cargo-llvm-cov
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Generate coverage report
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           # Generate workspace coverage (for informational purposes)
           cargo llvm-cov --workspace --summary-only -- --test-threads=1 > coverage-workspace.txt
@@ -96,6 +142,7 @@ jobs:
           cat coverage-core.txt
 
       - name: Extract coverage percentage
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         id: coverage
         run: |
           # Extract core package coverage for threshold check
@@ -110,6 +157,7 @@ jobs:
           echo "Workspace Coverage: $WORKSPACE_COVERAGE%"
 
       - name: Generate coverage badge
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           # Use core library coverage for badge (displayed in PR comments only)
           COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
@@ -124,7 +172,7 @@ jobs:
           echo "Note: Badge is not automatically committed due to branch protection"
 
       - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -198,6 +246,7 @@ jobs:
             }
 
       - name: Check coverage threshold
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           CORE_COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
           WORKSPACE_COVERAGE="${{ steps.coverage.outputs.workspace_percentage }}"
@@ -214,22 +263,32 @@ jobs:
   test-cli:
     name: CLI
     runs-on: ubuntu-latest
-    needs: test-core
+    needs: [check-changes, test-core]
     steps:
+      - name: Skip if no SDK changes
+        if: needs.check-changes.outputs.sdk_changed == 'false'
+        run: |
+          echo "No SDK-related files changed, skipping CLI tests"
+          exit 0
+
       - name: Checkout code
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Rust
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
       - name: Setup Node.js
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Cache cargo
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -239,9 +298,11 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build CLI
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo build --package cli --verbose
 
       - name: Test CLI - Valid slug
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           cargo run --package cli -- test-ci-valid --skip-install --no-git --non-interactive
           if [ ! -f "recipes/test-ci-valid/README.md" ]; then
@@ -251,6 +312,7 @@ jobs:
           rm -rf recipes/test-ci-valid
 
       - name: Test CLI - Invalid slug
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           if cargo run --package cli -- Invalid-Slug --non-interactive 2>&1 | grep -q "Invalid recipe slug"; then
             echo "✓ Invalid slug error message found"
@@ -261,21 +323,32 @@ jobs:
           fi
 
       - name: Test CLI - Help
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo run --package cli -- --help
 
   build-workspace:
     name: Build Workspace
+    needs: check-changes
     runs-on: ubuntu-latest
     steps:
+      - name: Skip if no SDK changes
+        if: needs.check-changes.outputs.sdk_changed == 'false'
+        run: |
+          echo "No SDK-related files changed, skipping workspace build"
+          exit 0
+
       - name: Checkout code
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Rust
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
       - name: Cache cargo
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -285,7 +358,9 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build workspace
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo build --workspace --verbose
 
       - name: Check workspace
+        if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo check --workspace --verbose
