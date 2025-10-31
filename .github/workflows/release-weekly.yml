@@ -272,16 +272,8 @@ jobs:
           LAST_TAG: ${{ needs.check-changes.outputs.last_tag }}
           VERSION_BUMP: ${{ needs.check-changes.outputs.version_bump }}
         run: |
-          cat > releases/$NEW_VERSION/RELEASE_NOTES.md <<'EOF'
-          <div align="center">
-            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
-            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
-          </div>
-
-          EOF
-
-          cat >> releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
-          # Polkadot Cookbook $NEW_VERSION
+          cat > releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
+          # Release $NEW_VERSION
 
           Released: $(date -u +"%Y-%m-%d")
 
@@ -319,15 +311,7 @@ jobs:
 
           ---
 
-          **Status:** Alpha (v0.x.x) - Expect frequent changes and updates.
-
-          <div align="center">
-
-          Built by [Polkadot Developers](https://github.com/polkadot-developers)
-
-          [Recipes](https://github.com/polkadot-developers/polkadot-cookbook#-recipes) • [Contributing](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
-
-          </div>
+          **Status:** Alpha (v0.x.x)
           EOF
 
       - name: Create release branch and PR

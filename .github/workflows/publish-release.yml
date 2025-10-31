@@ -8,11 +8,11 @@ on:
       - 'releases/v*/RELEASE_NOTES.md'
 
 jobs:
-  publish-release:
+  detect-version:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      skip: ${{ steps.version.outputs.skip }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,6 +30,7 @@ jobs:
 
           if [ -z "$VERSION" ]; then
             echo "No release version detected"
+            echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -44,10 +45,117 @@ jobs:
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
+  build-cli-binaries:
+    needs: detect-version
+    if: needs.detect-version.outputs.skip == 'false' && needs.detect-version.outputs.version != ''
+    name: Build CLI Binary (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: dot
+            asset_name: dot-linux-amd64
+
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: dot
+            asset_name: dot-linux-arm64
+            cross: true
+
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: dot
+            asset_name: dot-macos-amd64
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: dot
+            asset_name: dot-macos-arm64
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: dot.exe
+            asset_name: dot-windows-amd64.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross (for cross-compilation)
+        if: matrix.cross
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build CLI binary
+        run: |
+          cd cli
+          if [ "${{ matrix.cross }}" = "true" ]; then
+            cross build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
+
+      - name: Prepare binary
+        shell: bash
+        run: |
+          cd cli/target/${{ matrix.target }}/release
+
+          # Strip binary (except on Windows and macOS arm64)
+          if [[ "${{ matrix.os }}" != "windows-latest" && "${{ matrix.target }}" != "aarch64-apple-darwin" ]]; then
+            strip ${{ matrix.artifact_name }} || true
+          fi
+
+          # Create archive
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            7z a ../../../${{ matrix.asset_name }}.zip ${{ matrix.artifact_name }}
+          else
+            tar czf ../../../${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: |
+            cli/${{ matrix.asset_name }}.tar.gz
+            cli/${{ matrix.asset_name }}.zip
+          if-no-files-found: error
+
+  publish-release:
+    needs: [detect-version, build-cli-binaries]
+    if: needs.detect-version.outputs.skip == 'false' && needs.detect-version.outputs.version != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Download all CLI binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: cli-artifacts
+
       - name: Create Git tag
-        if: steps.version.outputs.skip == 'false' && steps.version.outputs.version != ''
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          VERSION: ${{ needs.detect-version.outputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -66,23 +174,31 @@ jobs:
           echo "✅ Created and pushed tag $VERSION"
 
       - name: Create GitHub Release
-        if: steps.version.outputs.skip == 'false' && steps.version.outputs.version != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.version.outputs.version }}
+          VERSION: ${{ needs.detect-version.outputs.version }}
         run: |
           # Determine release title from commit message
           COMMIT_MSG=$(git log -1 --pretty=%B)
           if echo "$COMMIT_MSG" | grep -qi "breaking change"; then
-            TITLE="Polkadot Cookbook $VERSION (Breaking Change)"
+            TITLE="Release $VERSION (Breaking Change)"
           else
-            TITLE="Polkadot Cookbook $VERSION"
+            TITLE="Release $VERSION"
           fi
 
-          # Create release
+          # Collect all CLI binary archives
+          CLI_ASSETS=""
+          for file in cli-artifacts/**/*.tar.gz cli-artifacts/**/*.zip; do
+            if [ -f "$file" ]; then
+              CLI_ASSETS="$CLI_ASSETS $file"
+            fi
+          done
+
+          # Create release with manifest and CLI binaries
           gh release create $VERSION \
             --title "$TITLE" \
             --notes-file "releases/$VERSION/RELEASE_NOTES.md" \
-            "releases/$VERSION/manifest.yml"
+            "releases/$VERSION/manifest.yml" \
+            $CLI_ASSETS
 
-          echo "✅ Created GitHub Release $VERSION"
+          echo "✅ Created GitHub Release $VERSION with CLI binaries"
