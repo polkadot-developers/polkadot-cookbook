@@ -44,14 +44,14 @@ describe('XCM Teleport Tests', () => {
     const connectionTest = Promise.race([
       api.constants.System.Version(),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('❌ Connection timeout - Chopsticks not responding. Start it with: npm run chopsticks')), 10000)
+        setTimeout(() => reject(new Error('❌ Connection timeout - Chopsticks not responding. Start it with: npm run chopsticks')), 30000)
       ),
     ]);
 
     await connectionTest;
 
     console.log('✓ Connected to Chopsticks');
-  }, 15000);
+  }, 45000);
 
   afterAll(async () => {
     if (assetHubClient) {
