@@ -152,6 +152,7 @@ jobs:
             elif [ -f "$recipe/package.json" ]; then
               cd "$recipe"
               if grep -q "\"test\":" package.json; then
+                npm install || exit 1
                 npm test || exit 1
               fi
               cd ../..

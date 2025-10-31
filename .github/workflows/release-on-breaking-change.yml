@@ -33,6 +33,8 @@ jobs:
             if (!commit) {
               console.log('No commit found');
               core.setOutput('has_breaking', 'false');
+              core.setOutput('component', '');
+              core.setOutput('pr_number', '');
               return;
             }
 
@@ -42,6 +44,8 @@ jobs:
             if (!prMatch) {
               console.log('Not a PR merge commit, skipping');
               core.setOutput('has_breaking', 'false');
+              core.setOutput('component', '');
+              core.setOutput('pr_number', '');
               return;
             }
 
@@ -62,6 +66,7 @@ jobs:
               if (!hasBreakingLabel) {
                 console.log('No semantic:major label found');
                 core.setOutput('has_breaking', 'false');
+                core.setOutput('component', '');
                 return;
               }
 
@@ -82,10 +87,13 @@ jobs:
                 console.log(`Breaking change detected in ${cliChanged ? 'CLI' : 'SDK'}`);
               } else {
                 core.setOutput('has_breaking', 'false');
+                core.setOutput('component', '');
               }
             } catch (error) {
               console.log(`Error fetching PR: ${error.message}`);
               core.setOutput('has_breaking', 'false');
+              core.setOutput('component', '');
+              core.setOutput('pr_number', '');
             }
 
       - name: Log detection result
@@ -266,6 +274,7 @@ jobs:
             elif [ -f "$recipe/package.json" ]; then
               cd "$recipe"
               if grep -q "\"test\":" package.json; then
+                npm install || exit 1
                 npm test || exit 1
               fi
               cd ../..
