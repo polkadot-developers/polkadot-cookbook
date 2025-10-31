@@ -95,36 +95,58 @@ cargo build --release
 
 ### Contribute a Recipe
 
-Use the CLI tool to create and manage recipes:
+#### Install the CLI Tool
+
+**Download pre-built binary (Recommended):**
 
 ```bash
-# Build the CLI tool
-cargo build --release --bin dot
+# Linux (x86_64)
+curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-linux-amd64.tar.gz | tar xz
+sudo mv dot /usr/local/bin/
 
+# macOS (Intel)
+curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-amd64.tar.gz | tar xz
+sudo mv dot /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-arm64.tar.gz | tar xz
+sudo mv dot /usr/local/bin/
+```
+
+**Or build from source:**
+
+```bash
+cargo build --release --bin dot
+# Binary will be at ./target/release/dot
+```
+
+#### Use the CLI
+
+```bash
 # Setup and verify your environment
-./target/release/dot setup
-./target/release/dot doctor
+dot setup
+dot doctor
 
 # Create a new recipe (interactive mode)
-./target/release/dot
+dot
 
 # Or create with a specific slug
-./target/release/dot my-pallet
+dot my-pallet
 
 # Test your recipe
-./target/release/dot recipe test my-pallet
+dot recipe test my-pallet
 
 # Validate recipe structure
-./target/release/dot recipe validate my-pallet
+dot recipe validate my-pallet
 
 # Run linting checks
-./target/release/dot recipe lint my-pallet
+dot recipe lint my-pallet
 
 # List all recipes
-./target/release/dot recipe list
+dot recipe list
 
 # Submit your recipe as a pull request
-./target/release/dot recipe submit my-pallet
+dot recipe submit my-pallet
 ```
 
 The CLI supports five recipe pathways:

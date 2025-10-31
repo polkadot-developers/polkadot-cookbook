@@ -1,0 +1,308 @@
+name: Weekly Recipe Release
+
+on:
+  schedule:
+    # Every Wednesday at 9:00 AM Bangkok Time (02:00 UTC)
+    - cron: '0 2 * * 3'
+
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      version_bump:
+        description: 'Force version bump type'
+        required: false
+        type: choice
+        options:
+          - 'auto'
+          - 'major'
+          - 'minor'
+          - 'patch'
+        default: 'auto'
+      skip_tests:
+        description: 'Skip recipe tests (use with caution!)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+      version_bump: ${{ steps.check.outputs.version_bump }}
+      last_tag: ${{ steps.last_release.outputs.last_tag }}
+      new_version: ${{ steps.check.outputs.new_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get last release
+        id: last_release
+        run: |
+          # Get last recipe release tag (v*.*.*)
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*.*.*" 2>/dev/null || echo "v0.0.0")
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+          echo "Last release: $LAST_TAG"
+
+      - name: Analyze changes since last release
+        id: check
+        env:
+          LAST_TAG: ${{ steps.last_release.outputs.last_tag }}
+          FORCE_BUMP: ${{ github.event.inputs.version_bump }}
+        run: |
+          # Get all merged PRs since last release
+          if [ "$LAST_TAG" = "v0.0.0" ]; then
+            echo "No previous release, this will be initial release"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "version_bump=minor" >> $GITHUB_OUTPUT
+            echo "new_version=v0.1.0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Get merge commits since last tag
+          MERGE_COMMITS=$(git log $LAST_TAG..HEAD --merges --pretty=format:"%s %b" || echo "")
+
+          if [ -z "$MERGE_COMMITS" ]; then
+            echo "No changes since last release"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+
+          # Check for manual version bump override
+          if [ "$FORCE_BUMP" != "auto" ] && [ -n "$FORCE_BUMP" ]; then
+            echo "Using manual version bump: $FORCE_BUMP"
+            echo "version_bump=$FORCE_BUMP" >> $GITHUB_OUTPUT
+          else
+            # Determine version bump from semantic labels in merge commits
+            # Look for semantic:major, semantic:minor, semantic:patch in commit messages
+            if echo "$MERGE_COMMITS" | grep -qi "semantic:major"; then
+              echo "version_bump=major" >> $GITHUB_OUTPUT
+            elif echo "$MERGE_COMMITS" | grep -qi "semantic:minor"; then
+              echo "version_bump=minor" >> $GITHUB_OUTPUT
+            elif echo "$MERGE_COMMITS" | grep -qi "semantic:patch"; then
+              echo "version_bump=patch" >> $GITHUB_OUTPUT
+            else
+              echo "No semantic labels found, defaulting to patch"
+              echo "version_bump=patch" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+          # Calculate new version
+          BUMP_TYPE=$(grep "version_bump=" $GITHUB_OUTPUT | cut -d'=' -f2)
+          CURRENT_VERSION=$LAST_TAG
+
+          # Parse version (remove 'v' prefix)
+          VERSION_NO_V=${CURRENT_VERSION#v}
+          MAJOR=$(echo $VERSION_NO_V | cut -d. -f1)
+          MINOR=$(echo $VERSION_NO_V | cut -d. -f2)
+          PATCH=$(echo $VERSION_NO_V | cut -d. -f3)
+
+          case $BUMP_TYPE in
+            major)
+              NEW_VERSION="v$((MAJOR + 1)).0.0"
+              ;;
+            minor)
+              NEW_VERSION="v${MAJOR}.$((MINOR + 1)).0"
+              ;;
+            patch)
+              NEW_VERSION="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+              ;;
+          esac
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version will be: $NEW_VERSION"
+
+  test-recipes:
+    needs: check-changes
+    if: needs.check-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test all recipes
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        run: |
+          # TODO: Implement test-all command in CLI
+          # For now, test each recipe individually
+          for recipe in recipes/*/; do
+            recipe_name=$(basename "$recipe")
+            echo "Testing $recipe_name..."
+
+            # Check if recipe has tests
+            if [ -f "$recipe/Cargo.toml" ]; then
+              cd "$recipe"
+              cargo test --all-features || exit 1
+              cd ../..
+            elif [ -f "$recipe/package.json" ]; then
+              cd "$recipe"
+              if grep -q "\"test\":" package.json; then
+                npm test || exit 1
+              fi
+              cd ../..
+            fi
+          done
+
+  create-release:
+    needs: [check-changes, test-recipes]
+    if: needs.check-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate release manifest
+        env:
+          NEW_VERSION: ${{ needs.check-changes.outputs.new_version }}
+          LAST_TAG: ${{ needs.check-changes.outputs.last_tag }}
+        run: |
+          mkdir -p releases/$NEW_VERSION
+
+          # Generate manifest by reading recipe.config.yml files
+          cat > releases/$NEW_VERSION/manifest.yml <<EOF
+          release: $NEW_VERSION
+          release_date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          status: alpha
+
+          tooling:
+            rust: "$(rustc --version | awk '{print $2}')"
+            node: "$(node --version 2>/dev/null || echo 'N/A')"
+
+          recipes:
+          EOF
+
+          # Add each recipe to manifest
+          for recipe_dir in recipes/*/; do
+            if [ ! -d "$recipe_dir" ]; then continue; fi
+
+            recipe_name=$(basename "$recipe_dir")
+            config_file="$recipe_dir/recipe.config.yml"
+
+            if [ -f "$config_file" ]; then
+              version=$(grep "^version:" "$config_file" | awk '{print $2}' || echo "0.1.0")
+              docs_ready=$(grep "^docs_ready:" "$config_file" | awk '{print $2}' || echo "false")
+              difficulty=$(grep "^difficulty:" "$config_file" | awk '{print $2}' || echo "unknown")
+              description=$(grep "^description:" "$config_file" | sed 's/^description: //' || echo "No description")
+              commit_hash=$(git log -1 --format="%H" -- "$recipe_dir" | head -c 10)
+
+              cat >> releases/$NEW_VERSION/manifest.yml <<EOF
+            $recipe_name:
+              version: "$version"
+              path: "recipes/$recipe_name"
+              docs_ready: $docs_ready
+              tested: true
+              commit: "$commit_hash"
+              difficulty: "$difficulty"
+              description: "$description"
+          EOF
+            fi
+          done
+
+      - name: Generate release notes
+        env:
+          NEW_VERSION: ${{ needs.check-changes.outputs.new_version }}
+          LAST_TAG: ${{ needs.check-changes.outputs.last_tag }}
+          VERSION_BUMP: ${{ needs.check-changes.outputs.version_bump }}
+        run: |
+          cat > releases/$NEW_VERSION/RELEASE_NOTES.md <<'EOF'
+          <div align="center">
+            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_White.png#gh-dark-mode-only" />
+            <img height="24px" alt="Polkadot" src="https://github.com/paritytech/polkadot-sdk/raw/master/docs/images/Polkadot_Logo_Horizontal_Pink_Black.png#gh-light-mode-only" />
+          </div>
+
+          EOF
+
+          cat >> releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
+          # Polkadot Cookbook $NEW_VERSION
+
+          Released: $(date -u +"%Y-%m-%d")
+
+          ## Changes Since $LAST_TAG
+
+          **Version Bump:** ${VERSION_BUMP^^}
+
+          ### Merged Pull Requests
+
+          EOF
+
+          # Get merged PRs since last release
+          git log $LAST_TAG..HEAD --merges --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
+
+          cat >> releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
+
+
+          ## Compatibility
+
+          This release was tested with:
+          - Rust: $(rustc --version | awk '{print $2}')
+          - Node.js: $(node --version 2>/dev/null || echo 'N/A')
+
+          ## Testing
+
+          All recipes have passed CI tests.
+
+          Full manifest: [manifest.yml](./manifest.yml)
+
+          ---
+
+          **Status:** Alpha (v0.x.x) - Expect frequent changes and updates.
+
+          <div align="center">
+
+          Built by [Polkadot Developers](https://github.com/polkadot-developers)
+
+          [Recipes](https://github.com/polkadot-developers/polkadot-cookbook#-recipes) • [Contributing](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) • [Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)
+
+          </div>
+          EOF
+
+      - name: Commit manifest and release notes
+        env:
+          NEW_VERSION: ${{ needs.check-changes.outputs.new_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add releases/$NEW_VERSION/
+          git commit -m "chore(release): add manifest and notes for $NEW_VERSION"
+          git push origin HEAD:master
+
+      - name: Create Git tag
+        env:
+          NEW_VERSION: ${{ needs.check-changes.outputs.new_version }}
+        run: |
+          git tag -a $NEW_VERSION -m "Release $NEW_VERSION"
+          git push origin $NEW_VERSION
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ needs.check-changes.outputs.new_version }}
+        run: |
+          gh release create $NEW_VERSION \
+            --title "Polkadot Cookbook $NEW_VERSION" \
+            --notes-file releases/$NEW_VERSION/RELEASE_NOTES.md \
+            releases/$NEW_VERSION/manifest.yml

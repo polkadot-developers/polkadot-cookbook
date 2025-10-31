@@ -1,4 +1,7 @@
 name: Teleport Assets
 slug: teleport-assets
+version: 0.1.0  # Semantic version for this recipe
 description: Teleport assets from Asset Hub to People Chain using XCM v5 and Polkadot API
 type: xcm
+difficulty: beginner
+docs_ready: false  # Ready to be referenced in docs.polkadot.com?
