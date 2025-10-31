@@ -94,12 +94,12 @@ jobs:
       - name: Prepare binary
         shell: bash
         run: |
-          # Find the binary (it should be in cli/target/<target>/release)
-          BINARY_PATH=$(find cli/target -type f -name "${{ matrix.artifact_name }}" | grep -E "/${{ matrix.target }}/release/${{ matrix.artifact_name }}$" | head -1)
+          # In a Cargo workspace, binaries are in target/<target>/release, not cli/target
+          BINARY_PATH=$(find target -type f -name "${{ matrix.artifact_name }}" | grep -E "/${{ matrix.target }}/release/${{ matrix.artifact_name }}$" | head -1)
 
           if [ -z "$BINARY_PATH" ]; then
             echo "ERROR: Binary not found!"
-            find cli/target -type f -name "${{ matrix.artifact_name }}" || echo "No binaries found at all"
+            find target -type f -name "${{ matrix.artifact_name }}" || echo "No binaries found at all"
             exit 1
           fi
 
