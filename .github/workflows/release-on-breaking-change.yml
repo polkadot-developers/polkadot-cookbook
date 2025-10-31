@@ -263,6 +263,11 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Test all recipes
         id: test
         run: |
@@ -281,7 +286,46 @@ jobs:
               cd "$recipe"
               if grep -q "\"test\":" package.json; then
                 npm install || exit 1
-                npm test || exit 1
+
+                # Check if recipe needs Chopsticks
+                if grep -q "\"chopsticks\":" package.json; then
+                  echo "Starting Chopsticks for $recipe_name..."
+                  npm run chopsticks > chopsticks.log 2>&1 &
+                  CHOPSTICKS_PID=$!
+
+                  # Wait for Chopsticks to initialize (max 2 minutes)
+                  echo "Waiting for Chopsticks to initialize..."
+                  timeout 120 bash -c '
+                    until grep -q "RPC listening" chopsticks.log 2>/dev/null; do
+                      sleep 2
+                      echo "Still waiting for Chopsticks..."
+                    done
+                  ' || {
+                    echo "Chopsticks failed to start within 2 minutes"
+                    cat chopsticks.log
+                    exit 1
+                  }
+
+                  echo "Chopsticks is ready!"
+                  tail -20 chopsticks.log
+
+                  # Run tests
+                  npm test || {
+                    echo "Tests failed, stopping Chopsticks..."
+                    kill $CHOPSTICKS_PID || true
+                    pkill -f chopsticks || true
+                    cat chopsticks.log
+                    exit 1
+                  }
+
+                  # Stop Chopsticks
+                  echo "Stopping Chopsticks..."
+                  kill $CHOPSTICKS_PID || true
+                  pkill -f chopsticks || true
+                else
+                  # No Chopsticks needed, just run tests
+                  npm test || exit 1
+                fi
               fi
               cd ../..
             fi
