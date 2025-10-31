@@ -82,6 +82,7 @@ jobs:
           key: ${{ matrix.target }}
 
       - name: Build CLI binary
+        shell: bash
         run: |
           cd cli
           if [ "${{ matrix.cross }}" = "true" ]; then
@@ -93,18 +94,29 @@ jobs:
       - name: Prepare binary
         shell: bash
         run: |
-          cd cli/target/${{ matrix.target }}/release
+          # Find the binary (it should be in cli/target/<target>/release)
+          BINARY_PATH=$(find cli/target -type f -name "${{ matrix.artifact_name }}" | grep -E "/${{ matrix.target }}/release/${{ matrix.artifact_name }}$" | head -1)
+
+          if [ -z "$BINARY_PATH" ]; then
+            echo "ERROR: Binary not found!"
+            find cli/target -type f -name "${{ matrix.artifact_name }}" || echo "No binaries found at all"
+            exit 1
+          fi
+
+          echo "Found binary at: $BINARY_PATH"
+          BINARY_DIR=$(dirname "$BINARY_PATH")
+          cd "$BINARY_DIR"
 
           # Strip binary (except on Windows and macOS arm64)
           if [[ "${{ matrix.os }}" != "windows-latest" && "${{ matrix.target }}" != "aarch64-apple-darwin" ]]; then
             strip ${{ matrix.artifact_name }} || true
           fi
 
-          # Create archive
+          # Create archive in cli directory
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a ../../../${{ matrix.asset_name }}.zip ${{ matrix.artifact_name }}
+            7z a "$GITHUB_WORKSPACE/cli/${{ matrix.asset_name }}.zip" ${{ matrix.artifact_name }}
           else
-            tar czf ../../../${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }}
+            tar czf "$GITHUB_WORKSPACE/cli/${{ matrix.asset_name }}.tar.gz" ${{ matrix.artifact_name }}
           fi
 
       - name: Upload artifact
