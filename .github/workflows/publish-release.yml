@@ -110,6 +110,16 @@ jobs:
             cargo build --release --target ${{ matrix.target }}
           fi
 
+      - name: Debug - List files
+        shell: bash
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Looking for binaries ==="
+          find . -name "${{ matrix.artifact_name }}" -type f 2>/dev/null || echo "No binaries found"
+          echo "=== Checking cli directory structure ==="
+          ls -R cli/ 2>/dev/null | head -100 || echo "cli/ doesn't exist"
+
       - name: Prepare binary
         shell: bash
         run: |
