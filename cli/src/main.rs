@@ -33,31 +33,26 @@ impl PolkadotColor for String {
 
 #[derive(Parser)]
 #[command(name = "dot")]
-#[command(about = "Create and manage Polkadot Cookbook recipes", long_about = None)]
+#[command(about = "Polkadot Cookbook CLI - Create and manage recipes", long_about = None)]
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Commands>,
-
-    /// Recipe slug (e.g., "my-recipe"). If not provided, will prompt interactively.
-    /// Only used when no subcommand is provided (defaults to 'create')
-    #[arg(value_name = "SLUG")]
-    slug: Option<String>,
+    command: Commands,
 
     /// Recipe title (for non-interactive mode)
-    #[arg(long)]
+    #[arg(long, global = true)]
     title: Option<String>,
 
     /// Recipe pathway (for non-interactive mode): runtime, contracts, basic-interaction, xcm, testing, request-new
-    #[arg(long)]
+    #[arg(long, global = true)]
     pathway: Option<String>,
 
     /// Difficulty level (for non-interactive mode): beginner, intermediate, advanced
-    #[arg(long)]
+    #[arg(long, global = true)]
     difficulty: Option<String>,
 
     /// Content type (for non-interactive mode): tutorial, guide
-    #[arg(long, name = "content-type")]
+    #[arg(long, name = "content-type", global = true)]
     content_type: Option<String>,
 
     /// Skip npm install
@@ -68,28 +63,22 @@ struct Cli {
     #[arg(long, default_value = "false", global = true)]
     no_git: bool,
 
-    /// Non-interactive mode (use defaults, require slug argument)
+    /// Non-interactive mode (use defaults, require title argument)
     #[arg(long, default_value = "false", global = true)]
     non_interactive: bool,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new recipe (default command if none specified)
-    Create {
-        /// Recipe slug (e.g., "my-recipe")
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
+    /// Create and manage recipes
+    Recipe {
+        #[command(subcommand)]
+        command: RecipeCommands,
     },
     /// Setup development environment
     Setup,
     /// Check environment and diagnose issues
     Doctor,
-    /// Manage recipes
-    Recipe {
-        #[command(subcommand)]
-        command: RecipeCommands,
-    },
     /// Manage and view dependency versions
     Versions {
         /// Recipe slug to resolve versions for (omit for global versions only)
@@ -112,12 +101,8 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum RecipeCommands {
-    /// Create a new recipe
-    New {
-        /// Recipe slug (e.g., "my-recipe")
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
-    },
+    /// Create a new recipe (interactive)
+    Create,
     /// Run recipe tests
     Test {
         /// Recipe slug (defaults to current directory)
@@ -169,31 +154,9 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Create { slug: cmd_slug }) => {
-            // Use subcommand slug or global slug
-            let slug = cmd_slug.or(cli.slug);
-            handle_create(
-                slug,
-                cli.title,
-                cli.pathway,
-                cli.difficulty,
-                cli.content_type,
-                cli.skip_install,
-                cli.no_git,
-                cli.non_interactive,
-            )
-            .await?;
-        }
-        Some(Commands::Setup) => {
-            handle_setup().await?;
-        }
-        Some(Commands::Doctor) => {
-            handle_doctor().await?;
-        }
-        Some(Commands::Recipe { command }) => match command {
-            RecipeCommands::New { slug } => {
+        Commands::Recipe { command } => match command {
+            RecipeCommands::Create => {
                 handle_create(
-                    slug,
                     cli.title,
                     cli.pathway,
                     cli.difficulty,
@@ -220,27 +183,19 @@ async fn main() -> Result<()> {
                 handle_recipe_submit(slug, title, body).await?;
             }
         },
-        Some(Commands::Versions {
+        Commands::Setup => {
+            handle_setup().await?;
+        }
+        Commands::Doctor => {
+            handle_doctor().await?;
+        }
+        Commands::Versions {
             recipe_slug,
             ci,
             show_source,
             validate,
-        }) => {
+        } => {
             handle_versions(recipe_slug, ci, show_source, validate).await?;
-        }
-        None => {
-            // No subcommand, default to create
-            handle_create(
-                cli.slug,
-                cli.title,
-                cli.pathway,
-                cli.difficulty,
-                cli.content_type,
-                cli.skip_install,
-                cli.no_git,
-                cli.non_interactive,
-            )
-            .await?;
         }
     }
 
@@ -248,7 +203,6 @@ async fn main() -> Result<()> {
 }
 
 async fn handle_create(
-    slug: Option<String>,
     title: Option<String>,
     pathway: Option<String>,
     difficulty: Option<String>,
@@ -257,13 +211,13 @@ async fn handle_create(
     no_git: bool,
     non_interactive: bool,
 ) -> Result<()> {
-    // Non-interactive mode: require slug argument
+    // Non-interactive mode: require title argument
     if non_interactive {
-        let slug = slug
-            .ok_or_else(|| anyhow::anyhow!("Slug argument is required in non-interactive mode"))?;
+        let title = title.ok_or_else(|| {
+            anyhow::anyhow!("Title argument (--title) is required in non-interactive mode")
+        })?;
         return run_non_interactive(
-            &slug,
-            title,
+            &title,
             pathway,
             difficulty,
             content_type,
@@ -372,72 +326,43 @@ async fn handle_create(
     };
 
     // Step 2: Ask for title (now that user knows the pathway)
-    let (title, slug) = if let Some(s) = slug.as_ref() {
-        // Slug was provided via CLI arg - validate and derive title
-        if let Err(e) = polkadot_cookbook_core::config::validate_slug(s) {
-            outro_cancel(format!(
-                "❌ Invalid recipe slug format: {}\n\n\
-                Slugs must be:\n\
-                • Lowercase letters only\n\
-                • Words separated by dashes\n\n\
-                Examples:\n\
-                {} my-recipe\n\
-                {} add-nft-pallet\n\
-                {} zero-to-hero\n\n\
-                Invalid:\n\
-                {} MyRecipe\n\
-                {} my_recipe",
-                e,
-                "✓".polkadot_pink(),
-                "✓".polkadot_pink(),
-                "✓".polkadot_pink(),
-                "✗".dimmed(),
-                "✗".dimmed()
-            ))?;
-            std::process::exit(1);
-        }
-        let title = polkadot_cookbook_core::config::slug_to_title(s);
-        (title, s.clone())
-    } else {
-        // Interactive mode: ask for title
-        let title_question = "What is your recipe title?".polkadot_pink().to_string();
-        let hint_text = "(e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')"
-            .dimmed()
-            .to_string();
-        let title: String = input(format!("{title_question} {hint_text}"))
-            .placeholder("My Recipe")
-            .validate(|input: &String| {
-                if input.trim().is_empty() {
-                    Err("Title cannot be empty")
-                } else if let Err(e) = polkadot_cookbook_core::config::validate_title(input) {
-                    Err(Box::leak(e.to_string().into_boxed_str()) as &str)
-                } else {
-                    Ok(())
-                }
-            })
-            .interact()?;
+    let title_question = "What is your recipe title?".polkadot_pink().to_string();
+    let hint_text = "(e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')"
+        .dimmed()
+        .to_string();
+    let title: String = input(format!("{title_question} {hint_text}"))
+        .placeholder("My Recipe")
+        .validate(|input: &String| {
+            if input.trim().is_empty() {
+                Err("Title cannot be empty")
+            } else if let Err(e) = polkadot_cookbook_core::config::validate_title(input) {
+                Err(Box::leak(e.to_string().into_boxed_str()) as &str)
+            } else {
+                Ok(())
+            }
+        })
+        .interact()?;
 
-        // Generate suggested slug from title
-        let suggested_slug = polkadot_cookbook_core::config::title_to_slug(&title);
+    // Generate suggested slug from title
+    let suggested_slug = polkadot_cookbook_core::config::title_to_slug(&title);
 
-        // Prompt for slug with suggestion pre-filled
-        let slug_question = "Recipe slug".polkadot_pink().to_string();
-        let slug_hint = "(lowercase, dashes only)".dimmed().to_string();
-        let slug: String = input(format!("{slug_question} {slug_hint}"))
-            .default_input(&suggested_slug)
-            .validate(|input: &String| {
-                if input.is_empty() {
-                    Err("Slug cannot be empty")
-                } else if let Err(e) = polkadot_cookbook_core::config::validate_slug(input) {
-                    Err(Box::leak(e.to_string().into_boxed_str()) as &str)
-                } else {
-                    Ok(())
-                }
-            })
-            .interact()?;
+    // Prompt for slug with suggestion pre-filled
+    let slug_question = "Recipe slug".polkadot_pink().to_string();
+    let slug_hint = "(lowercase, dashes only)".dimmed().to_string();
+    let slug: String = input(format!("{slug_question} {slug_hint}"))
+        .default_input(&suggested_slug)
+        .validate(|input: &String| {
+            if input.is_empty() {
+                Err("Slug cannot be empty")
+            } else if let Err(e) = polkadot_cookbook_core::config::validate_slug(input) {
+                Err(Box::leak(e.to_string().into_boxed_str()) as &str)
+            } else {
+                Ok(())
+            }
+        })
+        .interact()?;
 
-        (title.trim().to_string(), slug)
-    };
+    let title = title.trim().to_string();
 
     // Step 3: Prompt for difficulty level
     let difficulty_question = "What's the difficulty level?".polkadot_pink().to_string();
@@ -708,21 +633,22 @@ async fn handle_create(
 
 /// Run in non-interactive mode (for CI/CD or scripting)
 async fn run_non_interactive(
-    slug: &str,
-    title: Option<String>,
+    title: &str,
     pathway: Option<String>,
     difficulty: Option<String>,
     content_type: Option<String>,
     skip_install: bool,
     no_git: bool,
 ) -> Result<()> {
-    // Validate slug
-    if let Err(e) = polkadot_cookbook_core::config::validate_slug(slug) {
-        eprintln!("❌ Invalid recipe slug format: {e}");
-        eprintln!("Slug must be lowercase, with words separated by dashes.");
-        eprintln!("Examples: \"my-recipe\", \"add-nft-pallet\", \"zero-to-hero\"");
+    // Validate title
+    if let Err(e) = polkadot_cookbook_core::config::validate_title(title) {
+        eprintln!("❌ Invalid recipe title: {e}");
+        eprintln!("Title must be properly formatted.");
         std::process::exit(1);
     }
+
+    // Generate slug from title
+    let slug = polkadot_cookbook_core::config::title_to_slug(title);
 
     // Validate working directory
     if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
@@ -765,8 +691,7 @@ async fn run_non_interactive(
         RecipeType::PolkadotSdk // Default
     };
 
-    // Determine title
-    let title = title.unwrap_or_else(|| polkadot_cookbook_core::config::slug_to_title(slug));
+    // Title is already provided as input parameter
 
     // Parse difficulty
     let difficulty_level = if let Some(d) = difficulty {
@@ -809,14 +734,15 @@ async fn run_non_interactive(
     };
 
     println!(
-        "{} {}",
+        "{} {} ({})",
         "Creating recipe:".polkadot_pink(),
-        slug.polkadot_pink().bold()
+        title.polkadot_pink().bold(),
+        slug.dimmed()
     );
 
     // Create project configuration with provided or default values
-    let mut config = ProjectConfig::new(slug)
-        .with_title(&title)
+    let mut config = ProjectConfig::new(&slug)
+        .with_title(title)
         .with_destination(PathBuf::from("recipes"))
         .with_git_init(!no_git)
         .with_skip_install(skip_install)

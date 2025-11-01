@@ -295,7 +295,7 @@ Note: Unknown keys will be ignored by the workflow.
 When creating a new recipe using the CLI, a `versions.yml` template is automatically generated:
 
 ```bash
-dot create my-new-recipe
+dot recipe create --title "My New Recipe"
 ```
 
 This creates `recipes/my-new-recipe/versions.yml` with commented examples:

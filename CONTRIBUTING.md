@@ -29,12 +29,8 @@ Thank you for your interest in contributing! The easiest way to contribute a rec
 curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-linux-amd64.tar.gz | tar xz
 sudo mv dot /usr/local/bin/
 
-# macOS (Intel)
-curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-amd64.tar.gz | tar xz
-sudo mv dot /usr/local/bin/
-
 # macOS (Apple Silicon)
-curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-arm64.tar.gz | tar xz
+curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-apple-silicon.tar.gz | tar xz
 sudo mv dot /usr/local/bin/
 ```
 
@@ -63,10 +59,7 @@ dot setup
 
 ```bash
 # Interactive mode (recommended)
-dot
-
-# Or with a slug
-dot my-recipe-name
+dot recipe create
 ```
 
 The CLI will guide you through:
@@ -149,22 +142,20 @@ dot setup          # Check and setup your environment
 dot doctor         # Run comprehensive health checks
 
 # Recipe management
-dot                # Create recipe (interactive)
-dot <slug>         # Create recipe with slug
-dot recipe new     # Create recipe (explicit command)
-dot recipe list    # List all recipes
-dot recipe test    # Test a recipe
+dot recipe create   # Create recipe (interactive)
+dot recipe list     # List all recipes
+dot recipe test     # Test a recipe
 dot recipe validate # Validate recipe structure
-dot recipe lint    # Run linting checks
-dot recipe submit  # Submit as pull request
+dot recipe lint     # Run linting checks
+dot recipe submit   # Submit as pull request
 
 # Non-interactive mode
-dot my-recipe \
-  --non-interactive \
+dot recipe create \
   --title "My Recipe Title" \
   --pathway runtime \
   --difficulty beginner \
-  --content-type tutorial
+  --content-type tutorial \
+  --non-interactive
 ```
 
 <hr />
