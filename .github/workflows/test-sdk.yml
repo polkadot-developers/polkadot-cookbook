@@ -301,21 +301,21 @@ jobs:
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo build --package cli --verbose
 
-      - name: Test CLI - Valid slug
+      - name: Test CLI - Valid recipe creation
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          cargo run --package cli -- test-ci-valid --skip-install --no-git --non-interactive
-          if [ ! -f "recipes/test-ci-valid/README.md" ]; then
+          cargo run --package cli -- recipe create --title "Testing CLI Validation" --skip-install --no-git --non-interactive
+          if [ ! -f "recipes/testing-cli-validation/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
           fi
-          rm -rf recipes/test-ci-valid
+          rm -rf recipes/testing-cli-validation
 
-      - name: Test CLI - Invalid slug
+      - name: Test CLI - Missing required title
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          if cargo run --package cli -- Invalid-Slug --non-interactive 2>&1 | grep -q "Invalid recipe slug"; then
-            echo "✓ Invalid slug error message found"
+          if cargo run --package cli -- recipe create --non-interactive 2>&1 | grep -q "Title argument"; then
+            echo "✓ Missing title error message found"
             exit 0
           else
             echo "✗ Expected error message not found"
