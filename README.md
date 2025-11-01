@@ -108,12 +108,8 @@ cargo build --release
 curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-linux-amd64.tar.gz | tar xz
 sudo mv dot /usr/local/bin/
 
-# macOS (Intel)
-curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-amd64.tar.gz | tar xz
-sudo mv dot /usr/local/bin/
-
 # macOS (Apple Silicon)
-curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-arm64.tar.gz | tar xz
+curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-apple-silicon.tar.gz | tar xz
 sudo mv dot /usr/local/bin/
 ```
 
@@ -133,9 +129,6 @@ dot doctor
 
 # Create a new recipe (interactive mode)
 dot
-
-# Or create with a specific slug
-dot my-pallet
 
 # Test your recipe
 dot recipe test my-pallet
