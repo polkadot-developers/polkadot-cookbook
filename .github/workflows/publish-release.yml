@@ -69,12 +69,12 @@ jobs:
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: dot
-            asset_name: dot-macos-amd64
+            asset_name: dot-macos-intel
 
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: dot
-            asset_name: dot-macos-arm64
+            asset_name: dot-macos-apple-silicon
 
           - os: windows-latest
             target: x86_64-pc-windows-msvc
