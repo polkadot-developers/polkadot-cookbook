@@ -67,9 +67,7 @@ fn test_help_command() {
 
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains(
-            "Create and manage Polkadot Cookbook recipes",
-        ))
+        .stdout(predicate::str::contains("Create and manage recipes"))
         .stdout(predicate::str::contains("Usage:"));
 }
 
@@ -90,7 +88,10 @@ fn test_create_recipe_non_interactive() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("test-recipe")
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Custom Pallet Storage")
         .arg("--skip-install")
         .arg("--no-git")
         .arg("--non-interactive");
@@ -98,12 +99,14 @@ fn test_create_recipe_non_interactive() {
     cmd.assert().success();
 
     // Verify directory structure
-    assert!(recipes_dir.join("test-recipe").exists());
-    assert!(recipes_dir.join("test-recipe/README.md").exists());
-    assert!(recipes_dir.join("test-recipe/recipe.config.yml").exists());
-    assert!(recipes_dir.join("test-recipe/justfile").exists());
+    assert!(recipes_dir.join("custom-pallet-storage").exists());
+    assert!(recipes_dir.join("custom-pallet-storage/README.md").exists());
+    assert!(recipes_dir
+        .join("custom-pallet-storage/recipe.config.yml")
+        .exists());
+    assert!(recipes_dir.join("custom-pallet-storage/justfile").exists());
     // Note: Polkadot SDK recipes don't have .gitignore or local versions.yml
-    assert!(recipes_dir.join("test-recipe/pallets").exists());
+    assert!(recipes_dir.join("custom-pallet-storage/pallets").exists());
 }
 
 #[test]
@@ -113,8 +116,10 @@ fn test_create_recipe_with_create_subcommand() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("create")
-        .arg("test-subcommand")
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Test Subcommand")
         .arg("--skip-install")
         .arg("--no-git")
         .arg("--non-interactive");
@@ -127,39 +132,22 @@ fn test_create_recipe_with_create_subcommand() {
 
 #[test]
 fn test_invalid_slug_uppercase() {
-    let temp_dir = setup_test_repo();
-
-    let mut cmd = Command::cargo_bin("dot").unwrap();
-    cmd.current_dir(temp_dir.path());
-    cmd.arg("Invalid-Slug").arg("--non-interactive");
-
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("Invalid recipe slug"));
+    // This test is no longer relevant since we don't accept slugs directly
+    // Slugs are auto-generated from titles
+    // Keeping as a placeholder for title validation if needed in the future
 }
 
 #[test]
 fn test_invalid_slug_underscore() {
-    let temp_dir = setup_test_repo();
-
-    let mut cmd = Command::cargo_bin("dot").unwrap();
-    cmd.current_dir(temp_dir.path());
-    cmd.arg("test_recipe").arg("--non-interactive");
-
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("Invalid recipe slug"));
+    // This test is no longer relevant since we don't accept slugs directly
+    // Slugs are auto-generated from titles
+    // Keeping as a placeholder for title validation if needed in the future
 }
 
 #[test]
 fn test_invalid_slug_spaces() {
-    let temp_dir = setup_test_repo();
-
-    let mut cmd = Command::cargo_bin("dot").unwrap();
-    cmd.current_dir(temp_dir.path());
-    cmd.arg("test recipe").arg("--non-interactive");
-
-    cmd.assert().failure();
+    // This test is no longer relevant since slugs are auto-generated from titles
+    // Titles can have spaces, which get converted to hyphens in slugs
 }
 
 #[test]
@@ -168,11 +156,11 @@ fn test_non_interactive_requires_slug() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("--non-interactive");
+    cmd.arg("recipe").arg("create").arg("--non-interactive");
 
     cmd.assert()
         .failure()
-        .stderr(predicate::str::contains("Slug argument is required"));
+        .stderr(predicate::str::contains("Title argument"));
 }
 
 #[test]
@@ -182,7 +170,10 @@ fn test_recipe_config_content() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("my-test-recipe")
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Advanced Pallet Configuration")
         .arg("--skip-install")
         .arg("--no-git")
         .arg("--non-interactive");
@@ -190,10 +181,11 @@ fn test_recipe_config_content() {
     cmd.assert().success();
 
     let config_content =
-        fs::read_to_string(recipes_dir.join("my-test-recipe/recipe.config.yml")).unwrap();
+        fs::read_to_string(recipes_dir.join("advanced-pallet-configuration/recipe.config.yml"))
+            .unwrap();
 
-    assert!(config_content.contains("name: My Test Recipe"));
-    assert!(config_content.contains("slug: my-test-recipe"));
+    assert!(config_content.contains("name: Advanced Pallet Configuration"));
+    assert!(config_content.contains("slug: advanced-pallet-configuration"));
     assert!(config_content.contains("type: polkadot-sdk"));
     assert!(config_content.contains("description: Replace with a short description."));
 }
@@ -205,7 +197,10 @@ fn test_test_file_generated() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("test-e2e")
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Test E2E")
         .arg("--skip-install")
         .arg("--no-git")
         .arg("--non-interactive");
@@ -226,7 +221,10 @@ fn test_gitignore_content() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("ignore-test")
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Ignore Test")
         .arg("--skip-install")
         .arg("--no-git")
         .arg("--non-interactive");
@@ -247,7 +245,10 @@ fn test_versions_yml_exists() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("version-test")
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Version Test")
         .arg("--skip-install")
         .arg("--no-git")
         .arg("--non-interactive");
@@ -268,7 +269,11 @@ fn test_invalid_working_directory() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("test-recipe").arg("--non-interactive");
+    cmd.arg("recipe")
+        .arg("create")
+        .arg("--title")
+        .arg("Testing Directory Validation")
+        .arg("--non-interactive");
 
     cmd.assert()
         .failure()
