@@ -28,15 +28,15 @@ export PATH="$PATH:/path/to/polkadot-cookbook/target/release"
 ### Create a Recipe (Interactive)
 
 ```bash
-dot create
+dot recipe create
 ```
 
 This launches an interactive prompt that guides you through recipe creation.
 
-### Create a Recipe (Command Line)
+### Create a Recipe (Non-Interactive)
 
 ```bash
-dot create my-awesome-recipe
+dot recipe create --title "My Awesome Recipe" --non-interactive
 ```
 
 ### View Versions
@@ -54,36 +54,37 @@ dot versions my-recipe --show-source
 
 ## Commands
 
-### `create`
+### `recipe create`
 
 Create a new recipe with scaffolded structure.
 
 **Usage:**
 ```bash
-dot create [OPTIONS] [SLUG]
+dot recipe create [OPTIONS]
 ```
 
-**Arguments:**
-- `SLUG` - Recipe slug (e.g., "my-recipe"). Optional in interactive mode.
-
 **Options:**
+- `--title <TITLE>` - Recipe title (required in non-interactive mode)
+- `--pathway <PATHWAY>` - Recipe pathway: runtime, contracts, basic-interaction, xcm, testing
+- `--difficulty <DIFFICULTY>` - Difficulty level: beginner, intermediate, advanced
+- `--content-type <TYPE>` - Content type: tutorial, guide
 - `--skip-install` - Skip npm dependency installation
 - `--no-git` - Skip git branch creation
-- `--non-interactive` - Non-interactive mode (requires SLUG)
+- `--non-interactive` - Non-interactive mode (requires --title)
 
 **Examples:**
 ```bash
 # Interactive mode (recommended)
-dot create
+dot recipe create
 
-# With slug
-dot create custom-pallet-recipe
+# Non-interactive with title (slug auto-generated)
+dot recipe create --title "Custom Pallet Recipe"
 
 # Skip installation for faster creation
-dot create my-recipe --skip-install
+dot recipe create --title "My Recipe" --skip-install --non-interactive
 
-# CI/CD mode
-dot create my-recipe --non-interactive --skip-install
+# CI/CD mode with full options
+dot recipe create --title "My Recipe" --pathway runtime --difficulty beginner --non-interactive --skip-install
 ```
 
 **What it creates:**
@@ -160,7 +161,7 @@ versions:
 
 ```bash
 # 1. Create recipe structure
-dot create my-awesome-recipe
+dot recipe create --title "My Awesome Recipe"
 
 # 2. Write content
 cd recipes/my-awesome-recipe
@@ -185,7 +186,7 @@ git push origin recipe/my-awesome-recipe
 
 ```bash
 # Create recipe
-dot create test-new-version
+dot recipe create --title "Test New Version"
 
 # Edit versions
 cd recipes/test-new-version
@@ -231,17 +232,17 @@ Edit `recipes/<slug>/recipe.config.yml` to configure:
 
 ```bash
 cd /path/to/polkadot-cookbook
-dot create my-recipe
+dot recipe create --title "My Recipe"
 ```
 
-### "Slug argument is required"
+### "Title argument is required"
 
-**Problem:** Non-interactive mode without slug
+**Problem:** Non-interactive mode without title
 
-**Solution:** Provide slug argument
+**Solution:** Provide --title argument
 
 ```bash
-dot create my-recipe --non-interactive
+dot recipe create --title "My Recipe" --non-interactive
 ```
 
 ### "Failed to resolve versions"
