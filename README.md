@@ -128,7 +128,7 @@ dot setup
 dot doctor
 
 # Create a new recipe (interactive mode)
-dot
+dot recipe create
 
 # Test your recipe
 dot recipe test my-pallet

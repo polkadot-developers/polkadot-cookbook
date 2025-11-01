@@ -33,26 +33,26 @@ impl PolkadotColor for String {
 
 #[derive(Parser)]
 #[command(name = "dot")]
-#[command(about = "Create and manage Polkadot Cookbook recipes", long_about = None)]
+#[command(about = "Polkadot Cookbook CLI - Create and manage recipes", long_about = None)]
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 
     /// Recipe title (for non-interactive mode)
-    #[arg(long)]
+    #[arg(long, global = true)]
     title: Option<String>,
 
     /// Recipe pathway (for non-interactive mode): runtime, contracts, basic-interaction, xcm, testing, request-new
-    #[arg(long)]
+    #[arg(long, global = true)]
     pathway: Option<String>,
 
     /// Difficulty level (for non-interactive mode): beginner, intermediate, advanced
-    #[arg(long)]
+    #[arg(long, global = true)]
     difficulty: Option<String>,
 
     /// Content type (for non-interactive mode): tutorial, guide
-    #[arg(long, name = "content-type")]
+    #[arg(long, name = "content-type", global = true)]
     content_type: Option<String>,
 
     /// Skip npm install
@@ -70,17 +70,15 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new recipe (default command if none specified)
-    Create,
-    /// Setup development environment
-    Setup,
-    /// Check environment and diagnose issues
-    Doctor,
-    /// Manage recipes
+    /// Create and manage recipes
     Recipe {
         #[command(subcommand)]
         command: RecipeCommands,
     },
+    /// Setup development environment
+    Setup,
+    /// Check environment and diagnose issues
+    Doctor,
     /// Manage and view dependency versions
     Versions {
         /// Recipe slug to resolve versions for (omit for global versions only)
@@ -104,7 +102,7 @@ enum Commands {
 #[derive(Subcommand)]
 enum RecipeCommands {
     /// Create a new recipe (interactive)
-    New,
+    Create,
     /// Run recipe tests
     Test {
         /// Recipe slug (defaults to current directory)
@@ -156,26 +154,8 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Create) => {
-            handle_create(
-                cli.title,
-                cli.pathway,
-                cli.difficulty,
-                cli.content_type,
-                cli.skip_install,
-                cli.no_git,
-                cli.non_interactive,
-            )
-            .await?;
-        }
-        Some(Commands::Setup) => {
-            handle_setup().await?;
-        }
-        Some(Commands::Doctor) => {
-            handle_doctor().await?;
-        }
-        Some(Commands::Recipe { command }) => match command {
-            RecipeCommands::New => {
+        Commands::Recipe { command } => match command {
+            RecipeCommands::Create => {
                 handle_create(
                     cli.title,
                     cli.pathway,
@@ -203,26 +183,19 @@ async fn main() -> Result<()> {
                 handle_recipe_submit(slug, title, body).await?;
             }
         },
-        Some(Commands::Versions {
+        Commands::Setup => {
+            handle_setup().await?;
+        }
+        Commands::Doctor => {
+            handle_doctor().await?;
+        }
+        Commands::Versions {
             recipe_slug,
             ci,
             show_source,
             validate,
-        }) => {
+        } => {
             handle_versions(recipe_slug, ci, show_source, validate).await?;
-        }
-        None => {
-            // No subcommand, default to create
-            handle_create(
-                cli.title,
-                cli.pathway,
-                cli.difficulty,
-                cli.content_type,
-                cli.skip_install,
-                cli.no_git,
-                cli.non_interactive,
-            )
-            .await?;
         }
     }
 
