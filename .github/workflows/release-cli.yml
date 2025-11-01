@@ -50,12 +50,12 @@ jobs:
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: dot
-            asset_name: dot-macos-amd64
+            asset_name: dot-macos-intel
 
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: dot
-            asset_name: dot-macos-arm64
+            asset_name: dot-macos-apple-silicon
 
           - os: windows-latest
             target: x86_64-pc-windows-msvc
@@ -179,13 +179,13 @@ jobs:
 
           ### macOS (Intel)
           \`\`\`bash
-          curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/download/cli-v${VERSION}/dot-macos-amd64.tar.gz | tar xz
+          curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/download/cli-v${VERSION}/dot-macos-intel.tar.gz | tar xz
           sudo mv dot /usr/local/bin/
           \`\`\`
 
           ### macOS (Apple Silicon)
           \`\`\`bash
-          curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/download/cli-v${VERSION}/dot-macos-arm64.tar.gz | tar xz
+          curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/download/cli-v${VERSION}/dot-macos-apple-silicon.tar.gz | tar xz
           sudo mv dot /usr/local/bin/
           \`\`\`
 
