@@ -61,10 +61,10 @@ jobs:
             exit 0
           fi
 
-          # Get merge commits since last tag
-          MERGE_COMMITS=$(git log $LAST_TAG..HEAD --merges --pretty=format:"%s %b" || echo "")
+          # Get all commits since last tag (including squash-merged PRs)
+          ALL_COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s %b" || echo "")
 
-          if [ -z "$MERGE_COMMITS" ]; then
+          if [ -z "$ALL_COMMITS" ]; then
             echo "No changes since last release"
             echo "has_changes=false" >> $GITHUB_OUTPUT
             exit 0
@@ -77,21 +77,30 @@ jobs:
             echo "Using manual version bump: $FORCE_BUMP"
             echo "version_bump=$FORCE_BUMP" >> $GITHUB_OUTPUT
           else
-            # Determine version bump from semantic labels in merge commits
-            # Look for semantic:major, semantic:minor, semantic:patch in commit messages
-            if echo "$MERGE_COMMITS" | grep -qi "semantic:major"; then
+            # Determine version bump from commit messages
+            # Priority: breaking > feat > fix
+            # Look for:
+            # - "BREAKING CHANGE" or "breaking change" in commit body
+            # - "feat:" or "feature:" prefix (new feature)
+            # - "fix:" prefix (bug fix)
+            # - Conventional commit types
+
+            if echo "$ALL_COMMITS" | grep -qiE "(BREAKING CHANGE|breaking change)"; then
+              echo "Detected breaking change in commits"
               echo "version_bump=major" >> $GITHUB_OUTPUT
-            elif echo "$MERGE_COMMITS" | grep -qi "semantic:minor"; then
+            elif echo "$ALL_COMMITS" | grep -qiE "^(feat|feature|refactor)\("; then
+              echo "Detected feature or refactor in commits"
               echo "version_bump=minor" >> $GITHUB_OUTPUT
-            elif echo "$MERGE_COMMITS" | grep -qi "semantic:patch"; then
+            elif echo "$ALL_COMMITS" | grep -qiE "^(fix|chore|docs|test|ci)\("; then
+              echo "Detected fix/chore/docs in commits"
               echo "version_bump=patch" >> $GITHUB_OUTPUT
             else
-              echo "No semantic labels found, defaulting to patch"
+              echo "No conventional commit prefix found, defaulting to patch"
               echo "version_bump=patch" >> $GITHUB_OUTPUT
             fi
           fi
 
-          # Calculate new version
+          # Calculate new version with alpha versioning rules
           BUMP_TYPE=$(grep "version_bump=" $GITHUB_OUTPUT | cut -d'=' -f2)
           CURRENT_VERSION=$LAST_TAG
 
@@ -100,6 +109,12 @@ jobs:
           MAJOR=$(echo $VERSION_NO_V | cut -d. -f1)
           MINOR=$(echo $VERSION_NO_V | cut -d. -f2)
           PATCH=$(echo $VERSION_NO_V | cut -d. -f3)
+
+          # Alpha versioning (v0.x.x): major bumps become minor bumps
+          if [ "$MAJOR" = "0" ] && [ "$BUMP_TYPE" = "major" ]; then
+            echo "Alpha versioning: treating major bump as minor bump"
+            BUMP_TYPE="minor"
+          fi
 
           case $BUMP_TYPE in
             major)
@@ -281,17 +296,19 @@ jobs:
 
           **Version Bump:** ${VERSION_BUMP^^}
 
-          ### Merged Pull Requests
+          ### Changes
 
           EOF
 
-          # Get merged PRs since last release
+          # Get all commits since last release (including squash-merged PRs)
           if [ "$LAST_TAG" = "v0.0.0" ]; then
-            # First release - show all merge commits
-            git log --merges --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
+            # First release - show all commits with PR numbers
+            git log --pretty=format:"- %s (%h)" | grep -E "\(#[0-9]+\)" >> releases/$NEW_VERSION/RELEASE_NOTES.md || \
+            git log --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
           else
             # Subsequent releases - show commits since last tag
-            git log $LAST_TAG..HEAD --merges --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
+            git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" | grep -E "\(#[0-9]+\)" >> releases/$NEW_VERSION/RELEASE_NOTES.md || \
+            git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" >> releases/$NEW_VERSION/RELEASE_NOTES.md
           fi
 
           cat >> releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
