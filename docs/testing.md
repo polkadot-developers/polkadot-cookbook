@@ -36,7 +36,7 @@ The workflow automatically triggers on:
 
 2. **Create or modify a recipe** in the `recipes/` directory:
    ```bash
-   dot create test-version-workflow --skip-install --no-git
+   dot recipe create --title "Test Version Workflow" --skip-install --no-git --non-interactive
    ```
 
 3. **Customize versions.yml** (optional):
