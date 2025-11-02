@@ -18,8 +18,59 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-semver-checks
+        run: |
+          cargo install cargo-semver-checks --locked
+
+      - name: Fetch base branch for comparison
+        run: |
+          git fetch origin ${{ github.base_ref }}
+
+      - name: Check for API breaking changes
+        id: semver-check
+        continue-on-error: true
+        run: |
+          echo "Checking for API breaking changes in SDK..."
+
+          HAS_BREAKING=false
+
+          # Note: CLI crate is skipped - it's binary-only with no public library API
+          # Only check core/SDK crate which has a public library API
+
+          if [ -d "core" ]; then
+            echo "Checking core/SDK crate for API breaking changes..."
+            echo "Comparing current code against base branch: ${{ github.base_ref }}"
+
+            cd core
+
+            # Use --baseline-rev to compare against base branch (works for unpublished crates)
+            if ! cargo semver-checks check-release \
+                --baseline-rev origin/${{ github.base_ref }} \
+                2>&1 | tee /tmp/core-semver.log; then
+              echo "⚠️ API breaking changes detected in SDK"
+              HAS_BREAKING=true
+            else
+              echo "✓ No API breaking changes detected in SDK"
+            fi
+
+            cd ..
+          fi
+
+          echo "has_breaking=$HAS_BREAKING" >> $GITHUB_OUTPUT
+
+          # Save logs for comment
+          if [ "$HAS_BREAKING" = "true" ]; then
+            echo "SEMVER_BREAKING=true" >> $GITHUB_ENV
+            cp /tmp/core-semver.log /tmp/semver-report.log 2>/dev/null || true
+          fi
+
       - name: Analyze commits and apply label
         uses: actions/github-script@v7
+        env:
+          SEMVER_BREAKING: ${{ steps.semver-check.outputs.has_breaking }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -102,6 +153,21 @@ jobs:
               }
             }
 
+            // Check for API breaking changes detected by cargo-semver-checks
+            const semverBreaking = process.env.SEMVER_BREAKING === 'true';
+            if (semverBreaking) {
+              console.log('⚠️  API breaking changes detected by cargo-semver-checks');
+              hasMajor = true;
+              analyzedCommits.push({
+                sha: 'semver',
+                type: 'API',
+                scope: '',
+                breaking: true,
+                impact: 'MAJOR',
+                message: 'Breaking API changes detected by cargo-semver-checks'
+              });
+            }
+
             // Determine highest semantic level
             let semanticLevel = null;
             if (hasMajor) {
@@ -147,16 +213,21 @@ jobs:
               ? `**${semanticLevel.toUpperCase()}** version bump`
               : 'No version bump required';
 
+            const apiBreakingNote = semverBreaking
+              ? '\n\n⚠️ **API Breaking Changes Detected**\n\nThe `cargo-semver-checks` tool detected breaking changes in the SDK public API. This will trigger a MAJOR version bump (or MINOR in alpha v0.x.x).\n\n**Note:** Only the SDK/core library is checked for API breaking changes. The CLI is binary-only and has no public library API to check.\n'
+              : '';
+
             const commentBody = `## 🤖 Semantic Version Analysis
 
             **Result:** ${versionBumpText}
-
+            ${apiBreakingNote}
             ### Commit Analysis
 
             ${table}
 
             ### Summary
-            - Breaking changes (🔴 MAJOR): ${hasMajor ? '✓' : '✗'}
+            - SDK API breaking changes (🔴 MAJOR): ${semverBreaking ? '✓ Detected by cargo-semver-checks' : '✗'}
+            - Conventional breaking changes (🔴 MAJOR): ${hasMajor && !semverBreaking ? '✓' : '✗'}
             - New features (🟡 MINOR): ${hasMinor ? '✓' : '✗'}
             - Bug fixes (🟢 PATCH): ${hasPatch ? '✓' : '✗'}
 
