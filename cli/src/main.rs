@@ -264,7 +264,7 @@ async fn handle_create(
         .item(
             RecipePathway::Contracts,
             "Smart Contracts (Solidity)",
-            "Deploy contracts using pallet-revive",
+            "Deploy Solidity contracts",
         )
         .item(
             RecipePathway::BasicInteraction,

@@ -1,7 +1,7 @@
 {
   "name": "simple-counter",
   "version": "1.0.0",
-  "description": "A simple counter smart contract using pallet-revive",
+  "description": "A simple counter smart contract in Solidity",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
@@ -13,7 +13,6 @@
   "keywords": [
     "polkadot",
     "solidity",
-    "pallet-revive",
     "smart-contracts"
   ],
   "license": "MIT OR Apache-2.0",

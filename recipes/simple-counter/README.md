@@ -1,12 +1,10 @@
 # Simple Counter
 
-A simple counter smart contract using pallet-revive
+A simple counter smart contract in Solidity
 
 ## Overview
 
 This recipe demonstrates Solidity smart contract development using:
-- **pallet-revive** - EVM-compatible smart contracts on Polkadot
-- **Hardhat** - Development environment for Solidity
 - **Ethers.js** - Library for interacting with contracts
 
 ## Prerequisites
@@ -61,7 +59,7 @@ The recipe includes:
 
 ## What You'll Learn
 
-- How to write Solidity contracts for pallet-revive
+- How to write Solidity contracts
 - How to compile and deploy contracts
 - How to write tests for your contracts
 - How to interact with deployed contracts
@@ -75,7 +73,6 @@ The recipe includes:
 
 ## Resources
 
-- [pallet-revive Documentation](https://paritytech.github.io/polkadot-sdk/master/pallet_revive/index.html)
 - [Solidity Documentation](https://docs.soliditylang.org/)
-- [Hardhat Documentation](https://hardhat.org/docs)
+- [Polkadot SDK Documentation](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
 - [Ethers.js Documentation](https://docs.ethers.org/)

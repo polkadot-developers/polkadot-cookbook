@@ -4,12 +4,11 @@
 
 ## Overview
 
-A focused guide for implementing Solidity smart contracts on Polkadot using pallet-revive. This guide shows you how to quickly set up, develop, test, and deploy EVM-compatible contracts.
+A focused guide for implementing Solidity smart contracts. This guide shows you how to quickly set up, develop, test, and deploy EVM-compatible contracts.
 
 **Prerequisites:**
 - Node.js 20+
 - Solidity knowledge
-- Hardhat experience
 
 ## Quick Start
 
@@ -92,27 +91,12 @@ npm test
 ### Local Node
 
 ```bash
-# Terminal 1: Start node
-npx hardhat node
-
-# Terminal 2: Deploy
 npm run deploy:local
 ```
 
 ### Testnet
 
-Configure network in `hardhat.config.ts`:
-
-```typescript
-networks: {
-  testnet: {
-    url: "https://rpc.testnet.example",
-    accounts: [process.env.PRIVATE_KEY]
-  }
-}
-```
-
-Deploy:
+Deploy to testnet:
 ```bash
 npm run deploy:testnet
 ```
@@ -318,33 +302,12 @@ function batchUpdate(uint256[] calldata values) external {
 **Transaction reverts:**
 - Check require/revert messages
 - Verify function parameters
-- Test with hardhat console
-
-## Integration with Polkadot
-
-### Using pallet-revive
-
-pallet-revive provides EVM compatibility on Polkadot:
-
-- Deploy Solidity contracts as on Ethereum
-- Use standard tools (Hardhat, Ethers.js)
-- Interact via JSON-RPC
-- Access Polkadot-specific features (optional)
-
-### Cross-Chain Features
-
-```solidity
-// Example: Interact with Polkadot runtime
-interface IPolkadot {
-    function callPallet(bytes calldata data) external;
-}
-```
+- Review transaction logs
 
 ## Resources
 
-- [pallet-revive Docs](https://paritytech.github.io/polkadot-sdk/master/pallet_revive/index.html)
+- [Polkadot SDK Documentation](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
 - [Solidity Docs](https://docs.soliditylang.org/)
-- [Hardhat Docs](https://hardhat.org/docs)
 - [Ethers.js Docs](https://docs.ethers.org/)
 - [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
 

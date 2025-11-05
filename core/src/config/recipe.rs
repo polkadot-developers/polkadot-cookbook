@@ -9,7 +9,7 @@ pub enum RecipeType {
     /// Polkadot SDK recipe (Runtime pallets with Rust)
     #[serde(rename = "polkadot-sdk")]
     PolkadotSdk,
-    /// Solidity smart contracts (pallet-revive)
+    /// Solidity smart contracts
     Solidity,
     /// XCM cross-chain interactions (Chopsticks)
     Xcm,
