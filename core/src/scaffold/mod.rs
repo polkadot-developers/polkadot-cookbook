@@ -167,7 +167,7 @@ impl Scaffold {
                 vec![project_path.to_path_buf()]
             }
             RecipeType::Solidity => {
-                // For Solidity recipes with pallet-revive
+                // For Solidity recipes
                 vec![
                     project_path.to_path_buf(),
                     project_path.join("tests"),
@@ -265,7 +265,7 @@ impl Scaffold {
         Ok(())
     }
 
-    /// Create files for Solidity recipes (TypeScript with pallet-revive)
+    /// Create files for Solidity recipes (TypeScript)
     async fn create_solidity_files(
         &self,
         project_path: &Path,

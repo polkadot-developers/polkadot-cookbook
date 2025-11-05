@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 /**
  * @title Counter
- * @dev Simple counter contract demonstrating pallet-revive Solidity support
+ * @dev Simple counter contract
  */
 contract Counter {
     uint256 private count;
