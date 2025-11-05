@@ -1,0 +1,40 @@
+{
+  "name": "xcm-fee-estimation",
+  "version": "1.0.0",
+  "description": "Estimate fees for cross-chain asset transfers using XCM (Cross-Consensus Messaging).",
+  "type": "module",
+  "scripts": {
+    "generate": "papi add -n paseo_asset_hub wss://asset-hub-paseo-rpc.n.dwellir.com && papi add -n paseo_bridge_hub wss://bridge-hub-paseo.dotters.network",
+    "postinstall": "npm run generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx src/index.ts",
+    "chopsticks": "chopsticks --config=chopsticks-asset-hub.yml --config=chopsticks-bridge-hub.yml",
+    "lint": "tsc --noEmit && eslint . --ext .ts"
+  },
+  "keywords": [
+    "polkadot",
+    "xcm",
+    "chopsticks",
+    "cross-chain"
+  ],
+  "author": "",
+  "license": "MIT OR Apache-2.0",
+  "dependencies": {
+    "polkadot-api": "^1.20.0",
+    "@polkadot-labs/hdkd": "^0.0.10",
+    "@polkadot-labs/hdkd-helpers": "^0.0.10"
+  },
+  "devDependencies": {
+    "@acala-network/chopsticks": "^1.2.3",
+    "@acala-network/chopsticks-testing": "^1.2.3",
+    "@polkadot-api/cli": "^0.15.3",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

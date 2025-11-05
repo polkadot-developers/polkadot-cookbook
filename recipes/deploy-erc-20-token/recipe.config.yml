@@ -1,0 +1,7 @@
+name: Deploy ERC-20 Token
+slug: deploy-erc-20-token
+description: Replace with a short description.
+type: solidity
+pathway: contracts
+
+difficulty: beginner

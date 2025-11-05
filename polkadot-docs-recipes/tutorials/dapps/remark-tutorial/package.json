@@ -1,0 +1,26 @@
+{
+  "name": "papi-account-watcher",
+  "version": "0.1.0",
+  "description": "CLI app that watches for remarks on Polkadot using PAPI",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "polkadot-api": "latest",
+    "@polkadot-api/sm-provider": "latest",
+    "smoldot": "latest",
+    "commander": "^11.0.0",
+    "chalk": "^5.3.0",
+    "figlet": "^1.7.0",
+    "@noble/hashes": "latest",
+    "play-sound": "^1.1.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/figlet": "^1.5.0",
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0"
+  }
+}

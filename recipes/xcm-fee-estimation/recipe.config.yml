@@ -1,0 +1,7 @@
+name: XCM Fee Estimation
+slug: xcm-fee-estimation
+description: Replace with a short description.
+type: xcm
+pathway: xcm
+
+difficulty: intermediate

@@ -1,0 +1,9 @@
+title: "PAPI Account Watcher"
+difficulty: intermediate
+time: 30
+categories:
+  - dapps
+  - papi
+  - typescript
+description: "Build a CLI app that listens to on-chain events using the Polkadot API and responds to specific messages for a given account"
+version: "0.1.0"
