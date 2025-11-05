@@ -1,0 +1,30 @@
+release: v0.3.0
+release_date: 2025-11-05T03:10:42Z
+status: alpha
+
+tooling:
+  rust: "1.91.0"
+  node: "v20.19.5"
+
+recipes:
+  basic-pallet:
+    version: "0.1.0"
+    path: "recipes/basic-pallet"
+    tested: true
+    commit: "45ee944efa"
+    difficulty: "beginner"
+    description: "Replace with a short description."
+  simple-counter:
+    version: "0.1.0"
+    path: "recipes/simple-counter"
+    tested: true
+    commit: "45ee944efa"
+    difficulty: "beginner"
+    description: "A simple counter smart contract using pallet-revive"
+  teleport-assets:
+    version: "0.1.0"
+    path: "recipes/teleport-assets"
+    tested: true
+    commit: "c6ef5b3d2e"
+    difficulty: "beginner"
+    description: "Teleport assets from Asset Hub to People Chain using XCM v5 and Polkadot API"
