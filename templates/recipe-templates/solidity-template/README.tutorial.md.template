@@ -4,7 +4,7 @@
 
 ## Overview
 
-This tutorial teaches you Solidity smart contract development on Polkadot using **pallet-revive** - an EVM-compatible smart contract execution environment. You'll learn to write, test, deploy, and interact with Solidity contracts in the Polkadot ecosystem.
+This tutorial teaches you Solidity smart contract development. You'll learn to write, test, deploy, and interact with Solidity contracts.
 
 ## Prerequisites
 
@@ -19,10 +19,10 @@ Before starting, ensure you have:
 
 By completing this tutorial, you will understand:
 
-- How to set up a Solidity development environment for Polkadot
-- How to write EVM-compatible contracts for pallet-revive
+- How to set up a Solidity development environment
+- How to write EVM-compatible contracts
 - How to compile contracts and generate TypeScript types
-- How to write comprehensive tests using Hardhat
+- How to write comprehensive tests for your contracts
 - How to deploy contracts to local and remote networks
 - How to interact with deployed contracts using Ethers.js
 
@@ -38,10 +38,9 @@ npm install
 ```
 
 **What's installed:**
-- **Hardhat** - Development environment and test runner
 - **Ethers.js** - Library for blockchain interactions
 - **TypeScript** - Type-safe contract interactions
-- **Testing libraries** - Chai assertions and Hardhat plugins
+- **Testing libraries** - Chai assertions and testing utilities
 
 ### Step 2: Understanding the Contract Structure
 
@@ -54,7 +53,6 @@ scripts/            # Deployment scripts
 ├── deploy.ts       # Automated deployment
 test/               # Contract tests
 ├── Contract.test.ts # Test suite
-hardhat.config.ts   # Hardhat configuration
 ```
 
 ### Step 3: Writing Your Contract
@@ -101,7 +99,7 @@ npm run compile
 
 ### Step 5: Writing Tests
 
-Tests use Hardhat's testing framework:
+Write tests for your contracts:
 
 ```typescript
 import { expect } from "chai";
@@ -144,10 +142,6 @@ npm test
 Deploy to a local development node:
 
 ```bash
-# Start local node (in another terminal)
-npx hardhat node
-
-# Deploy
 npm run deploy:local
 ```
 
@@ -222,19 +216,14 @@ it("should emit ValueUpdated event", async () => {
 ### Local Development
 
 ```bash
-# Terminal 1: Start node
-npx hardhat node
-
-# Terminal 2: Deploy
 npm run deploy:local
 ```
 
 ### Testnet Deployment
 
-1. Configure network in `hardhat.config.ts`
-2. Fund your account with test tokens
-3. Deploy: `npm run deploy:testnet`
-4. Verify deployment on block explorer
+1. Fund your account with test tokens
+2. Deploy: `npm run deploy:testnet`
+3. Verify deployment on block explorer
 
 ### Production Deployment
 
@@ -354,9 +343,9 @@ Extend your knowledge:
 
 ## Resources
 
-- [pallet-revive Documentation](https://paritytech.github.io/polkadot-sdk/master/pallet_revive/index.html)
+- [Polkadot SDK Documentation](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
 - [Solidity Documentation](https://docs.soliditylang.org/)
-- [Hardhat Guides](https://hardhat.org/tutorial)
+- [Ethers.js Documentation](https://docs.ethers.org/)
 - [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
 - [Ethereum Security Best Practices](https://consensys.github.io/smart-contract-best-practices/)
 

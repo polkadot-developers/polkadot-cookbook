@@ -44,11 +44,11 @@ Build custom FRAME pallets and runtime logic with Rust.
 
 ### <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Smart Contracts (Solidity)
 
-Deploy and interact with Solidity contracts using pallet-revive.
+Deploy and interact with Solidity contracts.
 
 | Recipe | Description | Difficulty |
 |----------|-------------|------------|
-| [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract using pallet-revive | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract in Solidity | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
 ### <img src=".media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Basic Interactions
 
@@ -148,7 +148,7 @@ dot recipe submit my-pallet
 
 The CLI supports five recipe pathways:
 - **Runtime Development** - Build custom FRAME pallets with Rust
-- **Smart Contracts** - Deploy Solidity contracts with pallet-revive
+- **Smart Contracts** - Deploy Solidity contracts
 - **Basic Interactions** - Single-chain transactions with PAPI (TypeScript)
 - **XCM** - Cross-chain messaging with Chopsticks (TypeScript)
 - **Testing Infrastructure** - Zombienet and Chopsticks configurations

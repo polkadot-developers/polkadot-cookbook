@@ -46,11 +46,6 @@ cargo build --release --bin dot
 ### 2. Setup Your Environment
 
 ```bash
-# Fork the repository on GitHub first, then:
-git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
-cd polkadot-cookbook
-git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
-
 # Verify your setup
 dot setup
 ```
