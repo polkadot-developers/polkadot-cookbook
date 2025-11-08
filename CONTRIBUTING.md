@@ -193,12 +193,27 @@ test(my-recipe): add integration tests
 
 ## Additional Resources
 
-- [CLI Documentation](cli/README.md) - Detailed CLI reference
-- [Core Library](core/README.md) - SDK API documentation
-- [Architecture](docs/architecture.md) - System design
-- [Testing Guide](docs/testing.md) - Testing workflows
-- [Workflows](docs/workflows.md) - CI/CD and automation
-- [Polkadot SDK Docs](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
+### Documentation
+
+- **[Documentation Hub](docs/README.md)** - Complete documentation organized by role
+- **[Getting Started Guide](docs/getting-started/)** - Installation and first recipe tutorial
+- **[Contributor Guide](docs/contributors/)** - Workflow, guidelines, and best practices
+- **[Recipe Development](docs/contributors/recipe-development.md)** - Advanced development techniques
+- **[Testing Recipes](docs/contributors/testing-recipes.md)** - Comprehensive testing guide
+- **[Troubleshooting](docs/contributors/troubleshooting.md)** - Common issues and solutions
+
+### Technical Reference
+
+- **[CLI Reference](docs/developers/cli-reference.md)** - Complete CLI command reference
+- **[SDK Guide](docs/developers/sdk-guide.md)** - Using the SDK programmatically
+- **[Architecture](docs/developers/architecture.md)** - System design and internals
+- **[Recipe Config Schema](docs/reference/recipe-config-schema.md)** - Configuration file format
+- **[Version Management](docs/maintainers/version-management.md)** - Dependency version system
+
+### External Resources
+
+- **[Polkadot SDK Docs](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)** - Official Polkadot SDK documentation
+- **[Polkadot Wiki](https://wiki.polkadot.network/)** - Comprehensive Polkadot network guide
 
 <hr />
 
