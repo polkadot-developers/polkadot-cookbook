@@ -29,7 +29,6 @@ Before contributing, ensure you have:
 
 **Check your setup:**
 ```bash
-dot setup
 ```
 
 ---

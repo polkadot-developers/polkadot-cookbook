@@ -772,7 +772,6 @@ Study these well-structured recipes:
 
 Browse all recipes:
 ```bash
-dot recipe list
 ```
 
 ---

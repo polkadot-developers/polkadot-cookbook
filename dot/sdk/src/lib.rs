@@ -95,6 +95,9 @@ pub mod scaffold;
 /// Metadata extraction and recipe detection
 pub mod metadata;
 
+/// Dependency checking for recipe pathways
+pub mod dependencies;
+
 // Internal prelude for convenience
 pub(crate) mod prelude {}
 

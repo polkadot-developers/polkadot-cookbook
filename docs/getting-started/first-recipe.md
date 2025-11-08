@@ -17,13 +17,11 @@ By the end of this tutorial, you'll know how to:
 Before starting, ensure you have:
 
 1. **CLI Installed** - See [Installation Guide](installation.md)
-2. **Development Environment** - Run `dot setup` to verify
 3. **Git Configured** - Name and email set
 4. **GitHub Account** - For submitting your recipe
 
 **Verify your setup:**
 ```bash
-dot setup
 ```
 
 You should see all checks passing.
@@ -485,7 +483,6 @@ Congratulations! You've created your first recipe. Here's what to explore next:
 **Solution:**
 ```bash
 # Check setup
-dot setup
 
 # Fix any missing dependencies
 ```
@@ -613,8 +610,6 @@ Want to see a complete example? Check out these recipes:
 - **Basic Pallet** - `recipes/basic-pallet/` - Simple pallet structure
 - **Storage Operations** - `recipes/storage-operations/` - Working with storage
 - **Events and Errors** - `recipes/events-and-errors/` - Error handling
-
-Browse all recipes: `dot recipe list`
 
 ---
 

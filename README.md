@@ -172,21 +172,11 @@ curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbo
 #### Use the CLI
 
 ```bash
-# Setup and verify your environment
-dot setup
-dot doctor
-
 # Create a new recipe (interactive mode)
 dot recipe create
 
 # Test your recipe
 dot recipe test my-pallet
-
-# Run linting checks
-dot recipe lint my-pallet
-
-# List all recipes
-dot recipe list
 
 # Submit your recipe as a pull request
 dot recipe submit my-pallet

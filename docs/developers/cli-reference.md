@@ -165,36 +165,6 @@ git config --global user.email "your.email@example.com"
 
 ---
 
-### `recipe list`
-
-List all recipes in the repository.
-
-**Usage:**
-```bash
-dot recipe list
-```
-
-**Output:**
-```
-📚 Available recipes:
-
-Runtime Recipes:
-  • basic-pallet (beginner)
-  • custom-runtime (intermediate)
-
-Contract Recipes:
-  • simple-contract (beginner)
-
-XCM Recipes:
-  • teleport-assets (intermediate)
-```
-
-**Exit Codes:**
-- `0` - Success
-- `1` - Error (repository not found)
-
----
-
 ### `recipe test`
 
 Run tests for a recipe.
@@ -227,107 +197,6 @@ dot recipe test .
 
 ---
 
-### `recipe lint`
-
-Run linting checks on a recipe.
-
-**Usage:**
-```bash
-dot recipe lint <SLUG>
-```
-
-**Arguments:**
-- `SLUG` - Recipe slug to lint
-
-**What it Checks:**
-- Code formatting (Rust: `cargo fmt`, TypeScript: `prettier`)
-- Code quality (Rust: `cargo clippy`, TypeScript: `eslint`)
-- Documentation quality
-
-**Exit Codes:**
-- `0` - Lint checks passed
-- `1` - Lint issues found
-
----
-
-### `setup`
-
-Check and setup your development environment.
-
-**Usage:**
-```bash
-dot setup
-```
-
-**What it Checks:**
-- Rust toolchain installed
-- cargo available
-- Node.js and npm installed
-- Git configured
-- GitHub CLI installed (optional)
-
-**Output:**
-```
-🔍 Checking development environment...
-
-✓ Rust toolchain: 1.86.0
-✓ cargo: 1.86.0
-✓ Node.js: 20.10.0
-✓ npm: 10.2.3
-✓ Git: 2.42.0
-✓ GitHub CLI: 2.40.0
-
-✅ Environment ready!
-```
-
-**Exit Codes:**
-- `0` - Environment ready
-- `1` - Missing dependencies
-
----
-
-### `doctor`
-
-Run comprehensive health checks.
-
-**Usage:**
-```bash
-dot doctor
-```
-
-**What it Checks:**
-- All `setup` checks
-- Repository structure validity
-- Configuration files syntax
-- Dependencies up-to-date
-- Common issues
-
-**Output:**
-```
-🏥 Running health checks...
-
-Repository:
-  ✓ Valid git repository
-  ✓ On branch: main
-  ✓ No uncommitted changes
-
-Configuration:
-  ✓ All recipe configs valid
-
-Dependencies:
-  ⚠ Rust 1.85.0 (1.86.0 available)
-  ✓ Node.js up to date
-
-✅ Overall health: Good
-⚠ 1 warning
-```
-
-**Exit Codes:**
-- `0` - All checks passed
-- `1` - Critical issues found
-
----
-
 ## Environment Variables
 
 The CLI respects these environment variables:
@@ -348,7 +217,6 @@ RUST_LOG=debug dot recipe create
 GITHUB_TOKEN=ghp_xxx dot recipe submit
 
 # Disable colors
-NO_COLOR=1 dot doctor
 ```
 
 ---

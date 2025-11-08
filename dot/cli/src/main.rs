@@ -9,9 +9,10 @@ use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, s
 use colored::Colorize;
 use polkadot_cookbook_sdk::{
     config::{ProjectConfig, RecipePathway, RecipeType},
+    dependencies::check_pathway_dependencies,
     Scaffold,
 };
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Polkadot brand pink color (#E6007A)
 trait PolkadotColor {
@@ -66,10 +67,6 @@ enum Commands {
         #[command(subcommand)]
         command: RecipeCommands,
     },
-    /// Setup development environment
-    Setup,
-    /// Check environment and diagnose issues
-    Doctor,
 }
 
 #[derive(Subcommand)]
@@ -82,14 +79,6 @@ enum RecipeCommands {
         #[arg(value_name = "SLUG")]
         slug: Option<String>,
     },
-    /// Run linters (clippy, fmt)
-    Lint {
-        /// Recipe slug (defaults to current directory)
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
-    },
-    /// List all recipes
-    List,
     /// Submit a recipe as a pull request
     Submit {
         /// Recipe slug (defaults to current directory)
@@ -135,22 +124,10 @@ async fn main() -> Result<()> {
             RecipeCommands::Test { slug } => {
                 handle_recipe_test(slug).await?;
             }
-            RecipeCommands::Lint { slug } => {
-                handle_recipe_lint(slug).await?;
-            }
-            RecipeCommands::List => {
-                handle_recipe_list().await?;
-            }
             RecipeCommands::Submit { slug, title, body } => {
                 handle_recipe_submit(slug, title, body).await?;
             }
         },
-        Commands::Setup => {
-            handle_setup().await?;
-        }
-        Commands::Doctor => {
-            handle_doctor().await?;
-        }
     }
 
     Ok(())
@@ -268,6 +245,9 @@ async fn handle_create(
             unreachable!("RequestNew pathway should have been handled before reaching here")
         }
     };
+
+    // Check dependencies for the selected pathway
+    check_dependencies_interactive(&pathway)?;
 
     // Step 2: Ask for title (now that user knows the pathway)
     let title_question = "What is your recipe title?".polkadot_pink().to_string();
@@ -622,190 +602,6 @@ async fn run_non_interactive(
     Ok(())
 }
 
-async fn handle_setup() -> Result<()> {
-    clear_screen()?;
-    intro(
-        "🔧 Setup Development Environment"
-            .polkadot_pink()
-            .to_string(),
-    )?;
-
-    note(
-        "Checking Dependencies",
-        "Verifying your development environment...",
-    )?;
-
-    let sp = spinner();
-    sp.start("Checking Rust installation...");
-
-    // Check Rust
-    let rust_check = std::process::Command::new("rustc")
-        .arg("--version")
-        .output();
-
-    match rust_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("❌ Rust not found");
-            note("Install Rust", "Visit https://rustup.rs to install Rust")?;
-            outro_cancel("Setup incomplete")?;
-            std::process::exit(1);
-        }
-    }
-
-    // Check Cargo
-    sp.start("Checking Cargo...");
-    let cargo_check = std::process::Command::new("cargo")
-        .arg("--version")
-        .output();
-
-    match cargo_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("❌ Cargo not found");
-            outro_cancel("Setup incomplete")?;
-            std::process::exit(1);
-        }
-    }
-
-    // Check Just (optional)
-    sp.start("Checking Just...");
-    let just_check = std::process::Command::new("just").arg("--version").output();
-
-    match just_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("⚠️  Just not found (optional)");
-            note(
-                "Install Just",
-                "Just is recommended for running recipe commands.\nInstall: cargo install just",
-            )?;
-        }
-    }
-
-    // Check Git
-    sp.start("Checking Git...");
-    let git_check = std::process::Command::new("git").arg("--version").output();
-
-    match git_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("❌ Git not found");
-            note(
-                "Install Git",
-                "Git is required for version control.\nVisit https://git-scm.com",
-            )?;
-            outro_cancel("Setup incomplete")?;
-            std::process::exit(1);
-        }
-    }
-
-    outro("✅ Setup complete! You're ready to create recipes.")?;
-    Ok(())
-}
-
-async fn handle_doctor() -> Result<()> {
-    clear_screen()?;
-    intro("🩺 Environment Diagnostics".polkadot_pink().to_string())?;
-
-    let mut issues = Vec::new();
-    let mut warnings = Vec::new();
-
-    // Check Rust version
-    if let Ok(output) = std::process::Command::new("rustc")
-        .arg("--version")
-        .output()
-    {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            if let Some(version_part) = version_str.split_whitespace().nth(1) {
-                note("✅ Rust", format!("Version: {version_part}"))?;
-            }
-        }
-    } else {
-        issues.push("Rust is not installed");
-    }
-
-    // Check Cargo
-    if let Ok(output) = std::process::Command::new("cargo")
-        .arg("--version")
-        .output()
-    {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            if let Some(version_part) = version_str.split_whitespace().nth(1) {
-                note("✅ Cargo", format!("Version: {version_part}"))?;
-            }
-        }
-    } else {
-        issues.push("Cargo is not installed");
-    }
-
-    // Check Git
-    if let Ok(output) = std::process::Command::new("git").arg("--version").output() {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            note("✅ Git", version_str.trim())?;
-        }
-    } else {
-        issues.push("Git is not installed");
-    }
-
-    // Check Just (optional)
-    if let Ok(output) = std::process::Command::new("just").arg("--version").output() {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            note("✅ Just", version_str.trim())?;
-        }
-    } else {
-        warnings.push("Just is not installed (optional but recommended)");
-    }
-
-    // Check if we're in a git repository
-    if let Ok(output) = std::process::Command::new("git")
-        .args(["rev-parse", "--git-dir"])
-        .output()
-    {
-        if output.status.success() {
-            note("✅ Git Repository", "You're in a git repository")?;
-        } else {
-            warnings.push("Not in a git repository");
-        }
-    }
-
-    // Check if recipes directory exists
-    if Path::new("recipes").exists() {
-        note("✅ Recipes Directory", "Found recipes/ directory")?;
-    } else {
-        warnings.push("recipes/ directory not found - you may not be in the repository root");
-    }
-
-    if !issues.is_empty() {
-        note("❌ Issues Found", issues.join("\n"))?;
-        outro_cancel("Please fix the issues above")?;
-        std::process::exit(1);
-    }
-
-    if !warnings.is_empty() {
-        note("⚠️  Warnings", warnings.join("\n"))?;
-    }
-
-    outro("✅ All checks passed!")?;
-    Ok(())
-}
-
 async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     let recipe_path = get_recipe_path(slug)?;
 
@@ -884,136 +680,6 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     }
 
     outro("✅ Testing complete!")?;
-    Ok(())
-}
-
-async fn handle_recipe_lint(slug: Option<String>) -> Result<()> {
-    let recipe_path = get_recipe_path(slug)?;
-
-    intro(format!(
-        "🔧 Linting Recipe: {}",
-        recipe_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .polkadot_pink()
-    ))?;
-
-    // Check if it's a Rust project
-    let cargo_toml = recipe_path.join("Cargo.toml");
-    if !cargo_toml.exists() {
-        outro_cancel("Not a Rust project (Cargo.toml not found)")?;
-        std::process::exit(1);
-    }
-
-    // Run cargo fmt --check
-    let sp = spinner();
-    sp.start("Checking formatting (cargo fmt)...");
-
-    let fmt_output = std::process::Command::new("cargo")
-        .args(["fmt", "--all", "--", "--check"])
-        .current_dir(&recipe_path)
-        .output()?;
-
-    if fmt_output.status.success() {
-        sp.stop("✅ Formatting check passed");
-    } else {
-        sp.stop("❌ Formatting issues found");
-        note("Fix with", "cargo fmt --all")?;
-    }
-
-    // Run cargo clippy
-    sp.start("Running clippy...");
-
-    let clippy_output = std::process::Command::new("cargo")
-        .args([
-            "clippy",
-            "--all-features",
-            "--all-targets",
-            "--",
-            "-D",
-            "warnings",
-        ])
-        .current_dir(&recipe_path)
-        .output()?;
-
-    if clippy_output.status.success() {
-        sp.stop("✅ Clippy check passed");
-        outro("✅ All lints passed!")?;
-    } else {
-        sp.stop("❌ Clippy found issues");
-        let stderr = String::from_utf8_lossy(&clippy_output.stderr);
-        note("Clippy Output", &stderr)?;
-        outro_cancel("Linting failed")?;
-        std::process::exit(1);
-    }
-
-    Ok(())
-}
-
-async fn handle_recipe_list() -> Result<()> {
-    intro("📚 Available Recipes".polkadot_pink().to_string())?;
-
-    let recipes_dir = Path::new("recipes");
-    if !recipes_dir.exists() {
-        outro_cancel("recipes/ directory not found")?;
-        std::process::exit(1);
-    }
-
-    let mut recipes = Vec::new();
-
-    if let Ok(entries) = std::fs::read_dir(recipes_dir) {
-        for entry in entries.flatten() {
-            if entry.path().is_dir() {
-                let name = entry.file_name();
-                let name_str = name.to_string_lossy().to_string();
-
-                // Auto-detect recipe type
-                let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(
-                    &entry.path(),
-                )
-                .await
-                {
-                    Ok(t) => match t {
-                        polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => {
-                            "Polkadot SDK (Runtime Development)"
-                        }
-                        polkadot_cookbook_sdk::config::RecipeType::Solidity => {
-                            "Smart Contracts (Solidity)"
-                        }
-                        polkadot_cookbook_sdk::config::RecipeType::Xcm => {
-                            "XCM (Cross-Chain Messaging)"
-                        }
-                        polkadot_cookbook_sdk::config::RecipeType::BasicInteraction => {
-                            "Basic Interactions"
-                        }
-                        polkadot_cookbook_sdk::config::RecipeType::Testing => {
-                            "Testing Infrastructure"
-                        }
-                    },
-                    Err(_) => "Unknown",
-                };
-
-                recipes.push((name_str, recipe_type.to_string()));
-            }
-        }
-    }
-
-    if recipes.is_empty() {
-        note("No Recipes", "No recipes found in recipes/ directory")?;
-    } else {
-        recipes.sort_by(|a, b| a.0.cmp(&b.0));
-
-        let mut output = String::new();
-        for (name, recipe_type) in recipes {
-            output.push_str(&format!("• {} ({})\n", name.polkadot_pink(), recipe_type));
-        }
-
-        note("Recipes", output.trim())?;
-    }
-
-    outro("Done")?;
     Ok(())
 }
 
@@ -1336,6 +1002,50 @@ fn get_repo_info() -> Result<(String, String)> {
     }
 
     Ok((repo_parts[0].to_string(), repo_parts[1].to_string()))
+}
+
+/// Check dependencies for a pathway and prompt user if any are missing
+fn check_dependencies_interactive(pathway: &RecipePathway) -> Result<()> {
+    let results = check_pathway_dependencies(pathway);
+
+    let missing: Vec<_> = results.iter().filter(|r| !r.installed).collect();
+
+    if missing.is_empty() {
+        return Ok(());
+    }
+
+    // Show missing dependencies
+    let mut message = String::from("⚠️  Missing dependencies:\n\n");
+
+    for result in &missing {
+        let dep = &result.dependency;
+        message.push_str(&format!("  ✗ {}\n", dep.name.polkadot_pink()));
+    }
+
+    message.push_str("\nInstallation instructions:\n\n");
+
+    for result in &missing {
+        let dep = &result.dependency;
+        message.push_str(&format!("• {}\n", dep.name.bold()));
+        message.push_str(&format!("  {}\n", dep.install_instructions));
+        if !dep.install_url.is_empty() {
+            message.push_str(&format!("  More info: {}\n", dep.install_url.dimmed()));
+        }
+        message.push('\n');
+    }
+
+    note("Dependencies", message.trim())?;
+
+    let should_continue = confirm("Continue without all dependencies? (setup may fail)")
+        .initial_value(false)
+        .interact()?;
+
+    if !should_continue {
+        outro_cancel("Please install missing dependencies and try again")?;
+        std::process::exit(1);
+    }
+
+    Ok(())
 }
 
 fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {
