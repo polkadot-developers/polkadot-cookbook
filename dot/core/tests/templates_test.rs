@@ -23,22 +23,6 @@ fn test_all_templates_return_non_empty() {
         "TestTemplate should return non-empty content"
     );
     assert!(content.len() > 50, "TestTemplate content too short");
-
-    // RecipeYmlTemplate
-    use polkadot_cookbook_core::config::RecipeType;
-    let recipe_yml = RecipeYmlTemplate::new(
-        "test-recipe",
-        "Test Recipe",
-        "A test description",
-        RecipeType::PolkadotSdk,
-        "test-cat",
-    );
-    let content = recipe_yml.generate();
-    assert!(
-        !content.is_empty(),
-        "RecipeYmlTemplate should return non-empty content"
-    );
-    assert!(content.len() > 20, "RecipeYmlTemplate content too short");
 }
 
 #[test]
@@ -52,35 +36,15 @@ fn test_templates_contain_expected_markers() {
     let test = TestTemplate::new("my-test").generate();
     assert!(test.contains("describe"));
     assert!(test.contains("@polkadot/api"));
-
-    use polkadot_cookbook_core::config::RecipeType;
-    let recipe_yml = RecipeYmlTemplate::new(
-        "my-test",
-        "My Test",
-        "Description",
-        RecipeType::PolkadotSdk,
-        "test-cat",
-    )
-    .generate();
-    assert!(recipe_yml.contains("slug: my-test"));
-    assert!(recipe_yml.contains("name: My Test"));
 }
 
 #[test]
 fn test_template_trait_implemented() {
-    use polkadot_cookbook_core::config::RecipeType;
     // Verify all templates implement the Template trait
     fn assert_template<T: Template>(_t: &T) {}
 
     assert_template(&ReadmeTemplate::new("test"));
     assert_template(&TestTemplate::new("test"));
-    assert_template(&RecipeYmlTemplate::new(
-        "test",
-        "Test",
-        "Desc",
-        RecipeType::PolkadotSdk,
-        "cat",
-    ));
 }
 
 #[test]
@@ -122,36 +86,6 @@ fn test_test_template_with_different_slugs() {
         assert!(content.contains("describe"));
         assert!(content.contains("it("));
     }
-}
-
-#[test]
-fn test_recipe_yml_template_variations() {
-    use polkadot_cookbook_core::config::RecipeType;
-    // Test with different inputs
-    let template1 = RecipeYmlTemplate::new(
-        "slug-1",
-        "Title 1",
-        "Desc 1",
-        RecipeType::PolkadotSdk,
-        "cat1",
-    );
-    let content1 = template1.generate();
-    assert!(content1.contains("slug-1"));
-    assert!(content1.contains("Title 1"));
-    assert!(content1.contains("Desc 1"));
-
-    let template2 = RecipeYmlTemplate::new(
-        "complex-slug",
-        "Complex Title",
-        "A longer description with multiple words",
-        RecipeType::Solidity,
-        "cat2",
-    );
-    let content2 = template2.generate();
-    assert!(content2.contains("complex-slug"));
-    assert!(content2.contains("Complex Title"));
-    assert!(content2.contains("A longer description"));
-    assert!(content2.contains("type: solidity"));
 }
 
 #[test]

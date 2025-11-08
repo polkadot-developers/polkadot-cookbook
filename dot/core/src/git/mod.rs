@@ -143,9 +143,9 @@ mod tests {
     async fn test_is_git_repo() {
         // This test will pass if run from within a git repo
         // It's a basic sanity check
-        let is_repo = GitOperations::is_git_repo().await;
+        let _is_repo = GitOperations::is_git_repo().await;
         // We don't assert a specific value as it depends on the environment
-        assert!(is_repo || !is_repo);
+        // Just verify the function runs without panicking
     }
 
     #[tokio::test]

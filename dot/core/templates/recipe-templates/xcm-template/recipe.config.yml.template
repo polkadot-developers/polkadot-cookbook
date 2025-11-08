@@ -1,7 +1,0 @@
-name: {{title}}
-slug: {{slug}}
-description: {{description}}
-type: xcm
-{{pathway}}
-{{content_type}}
-{{difficulty}}

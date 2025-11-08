@@ -1,13 +1,10 @@
 /// Template generation for recipe scaffolding
 /// README template for recipe documentation
 pub mod readme;
-/// Recipe configuration YAML template
-pub mod recipe_yml;
 /// Test file template
 pub mod test;
 
 pub use readme::ReadmeTemplate;
-pub use recipe_yml::RecipeYmlTemplate;
 pub use test::TestTemplate;
 
 /// Template trait for all template generators

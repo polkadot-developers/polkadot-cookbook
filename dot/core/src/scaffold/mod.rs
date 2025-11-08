@@ -541,7 +541,6 @@ impl Scaffold {
         let required_files = vec![
             project_path.join("package.json"),
             project_path.join("README.md"),
-            project_path.join("recipe.config.yml"),
         ];
 
         let mut missing = Vec::new();
@@ -630,7 +629,6 @@ mod tests {
 
         // Verify core files were created from templates
         assert!(project_path.join("README.md").exists());
-        assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join("Cargo.toml").exists());
         assert!(project_path.join("pallets").exists());
 
@@ -681,7 +679,6 @@ mod tests {
         assert!(project_path.join("package.json").exists());
         assert!(project_path.join("tsconfig.json").exists());
         assert!(project_path.join("vitest.config.ts").exists());
-        assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join("src").exists());
         assert!(project_path.join("tests").exists());
     }
@@ -707,7 +704,6 @@ mod tests {
         result.unwrap();
 
         // Verify testing infrastructure was created
-        assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join("configs").exists());
         assert!(project_path.join("tests").exists());
     }
@@ -734,87 +730,11 @@ mod tests {
         // Verify XCM/Chopsticks structure was created
         assert!(project_path.join("package.json").exists());
         assert!(project_path.join("chopsticks.yml").exists());
-        assert!(project_path.join("recipe.config.yml").exists());
 
         // Verify rust-toolchain.toml was NOT copied for TypeScript recipes
         assert!(
             !project_path.join("rust-toolchain.toml").exists(),
             "rust-toolchain.toml should NOT exist for XCM (TypeScript) recipes"
-        );
-    }
-
-    #[tokio::test]
-    async fn test_optional_fields_in_recipe_config() {
-        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
-        let original_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir(workspace_root).unwrap();
-
-        let temp_dir = TempDir::new().unwrap();
-        let project_path = temp_dir.path().join("optional-fields-test");
-        tokio::fs::create_dir_all(&project_path).await.unwrap();
-
-        let config = ProjectConfig::new("optional-fields-test")
-            .with_recipe_type(RecipeType::PolkadotSdk)
-            .with_pathway(RecipePathway::Runtime)
-            .with_content_type(ContentType::Tutorial)
-            .with_difficulty(Difficulty::Beginner);
-
-        let scaffold = Scaffold::new();
-        scaffold
-            .create_files(&project_path, &config, "1.86")
-            .await
-            .unwrap();
-
-        std::env::set_current_dir(original_dir).unwrap();
-
-        // Read the generated recipe.config.yml
-        let config_path = project_path.join("recipe.config.yml");
-        let content = tokio::fs::read_to_string(&config_path).await.unwrap();
-
-        // Verify optional fields are present
-        assert!(content.contains("pathway: runtime"));
-        assert!(content.contains("content_type: tutorial"));
-        assert!(content.contains("difficulty: beginner"));
-    }
-
-    #[tokio::test]
-    async fn test_optional_fields_empty_when_not_provided() {
-        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
-        let original_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir(workspace_root).unwrap();
-
-        let temp_dir = TempDir::new().unwrap();
-        let project_path = temp_dir.path().join("no-optional-fields-test");
-        tokio::fs::create_dir_all(&project_path).await.unwrap();
-
-        // Create config WITHOUT optional fields
-        let config =
-            ProjectConfig::new("no-optional-fields-test").with_recipe_type(RecipeType::PolkadotSdk);
-
-        let scaffold = Scaffold::new();
-        scaffold
-            .create_files(&project_path, &config, "1.86")
-            .await
-            .unwrap();
-
-        std::env::set_current_dir(original_dir).unwrap();
-
-        // Read the generated recipe.config.yml
-        let config_path = project_path.join("recipe.config.yml");
-        let content = tokio::fs::read_to_string(&config_path).await.unwrap();
-
-        // Verify optional fields are NOT present (or are empty lines)
-        // They should not have "pathway: ", "content_type: ", or "difficulty: " with values
-        let has_pathway_value = content.contains("pathway: runtime")
-            || content.contains("pathway: contracts")
-            || content.contains("pathway: basic-interaction")
-            || content.contains("pathway: xcm")
-            || content.contains("pathway: testing");
-        assert!(
-            !has_pathway_value,
-            "Should not have pathway value when not provided"
         );
     }
 

@@ -46,7 +46,6 @@ async fn test_create_project_end_to_end() {
 
     // Verify files were created
     assert!(project_path.join("README.md").exists());
-    assert!(project_path.join("recipe.config.yml").exists());
     assert!(project_path.join("Cargo.toml").exists());
     // Note: Polkadot SDK recipes don't have .gitignore or TypeScript test files
 
@@ -55,13 +54,10 @@ async fn test_create_project_end_to_end() {
         .await
         .unwrap();
     assert!(readme.contains("# Integration Test"));
-
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
-        .await
-        .unwrap();
-    assert!(recipe_config.contains("name: Integration Test"));
-    assert!(recipe_config.contains("slug: integration-test"));
-    assert!(recipe_config.contains("category: polkadot-sdk-cookbook"));
+    // Verify frontmatter exists
+    assert!(readme.contains("---"));
+    assert!(readme.contains("title: Integration Test"));
+    assert!(readme.contains("description:"));
 }
 
 #[tokio::test]
@@ -122,9 +118,7 @@ async fn test_slug_to_title() {
 
 #[tokio::test]
 async fn test_template_generation() {
-    use polkadot_cookbook_core::templates::{
-        ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
-    };
+    use polkadot_cookbook_core::templates::{ReadmeTemplate, Template, TestTemplate};
 
     // Test readme template
     let readme = ReadmeTemplate::new("my-tutorial");
@@ -137,20 +131,6 @@ async fn test_template_generation() {
     let content = test.generate();
     assert!(content.contains("my-tutorial e2e"));
     assert!(content.contains("@polkadot/api"));
-
-    // Test tutorial yml template
-    use polkadot_cookbook_core::config::RecipeType;
-    let yml = RecipeYmlTemplate::new(
-        "my-tutorial",
-        "My Tutorial",
-        "A test tutorial",
-        RecipeType::PolkadotSdk,
-        "test-category",
-    );
-    let content = yml.generate();
-    assert!(content.contains("name: My Tutorial"));
-    assert!(content.contains("slug: my-tutorial"));
-    assert!(content.contains("description: A test tutorial"));
 }
 
 #[tokio::test]
@@ -256,9 +236,8 @@ async fn test_git_is_repo() {
     use polkadot_cookbook_core::git::GitOperations;
 
     // Test if we can detect git repository
-    let is_repo = GitOperations::is_git_repo().await;
-    // Result depends on test environment, just verify function works
-    assert!(is_repo || !is_repo);
+    let _is_repo = GitOperations::is_git_repo().await;
+    // Result depends on test environment, just verify function works without panicking
 }
 
 #[tokio::test]
@@ -301,11 +280,14 @@ async fn test_sdk_recipe_creation() {
     scaffold.create_project(config).await.unwrap();
 
     let project_path = destination.join("sdk-recipe");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
-        .await
-        .unwrap();
 
-    assert!(recipe_config.contains("type: polkadot-sdk"));
+    // Verify recipe was created successfully
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+    assert!(project_path.join("Cargo.toml").exists());
+
+    // Verify it's a Polkadot SDK recipe by checking for Rust files
+    assert!(project_path.join("pallets").exists());
 }
 
 #[tokio::test]
@@ -326,11 +308,15 @@ async fn test_contracts_recipe_creation() {
     scaffold.create_project(config).await.unwrap();
 
     let project_path = destination.join("contracts-recipe");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
-        .await
-        .unwrap();
 
-    assert!(recipe_config.contains("type: solidity"));
+    // Verify recipe was created successfully
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+
+    // Verify it's a Solidity recipe by checking for contract structure
+    assert!(project_path.join("tests").exists());
+    assert!(project_path.join("scripts").exists());
+    assert!(project_path.join("src").exists());
 }
 
 #[tokio::test]
@@ -349,11 +335,10 @@ async fn test_recipe_categories() {
     scaffold.create_project(config).await.unwrap();
 
     let project_path = destination.join("category-test");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
-        .await
-        .unwrap();
 
-    assert!(recipe_config.contains("category: advanced-tutorials"));
+    // Verify recipe was created successfully
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
 }
 
 // ============================================================================
@@ -420,11 +405,16 @@ async fn test_description_with_special_characters() {
     scaffold.create_project(config).await.unwrap();
 
     let project_path = destination.join("special-desc");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+
+    // Verify recipe was created successfully
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+
+    // Verify frontmatter contains description
+    let readme = tokio::fs::read_to_string(project_path.join("README.md"))
         .await
         .unwrap();
-
-    assert!(recipe_config.contains(description));
+    assert!(readme.contains(description));
 }
 
 #[tokio::test]
@@ -464,11 +454,16 @@ async fn test_unicode_in_description() {
     scaffold.create_project(config).await.unwrap();
 
     let project_path = destination.join("unicode-test");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+
+    // Verify recipe was created successfully
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+
+    // Verify frontmatter contains description with unicode
+    let readme = tokio::fs::read_to_string(project_path.join("README.md"))
         .await
         .unwrap();
-
-    assert!(recipe_config.contains(description));
+    assert!(readme.contains(description));
 }
 
 #[tokio::test]
@@ -489,12 +484,17 @@ async fn test_multiline_description() {
     scaffold.create_project(config).await.unwrap();
 
     let project_path = destination.join("multiline-desc");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
+
+    // Verify recipe was created successfully
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+
+    // Verify frontmatter contains description
+    let readme = tokio::fs::read_to_string(project_path.join("README.md"))
         .await
         .unwrap();
-
-    // Description should be in the config
-    assert!(recipe_config.contains("Line 1"));
+    // Description should be in the frontmatter
+    assert!(readme.contains("Line 1"));
 }
 
 // ============================================================================
@@ -519,11 +519,11 @@ async fn test_skip_install_flag() {
     assert!(result.is_ok());
 
     // When skip_install is true, bootstrap is skipped entirely
-    // So package.json won't be created, but other files should exist
+    // So package.json won't be created for TypeScript recipes, but other files should exist
+    // Note: This is a Polkadot SDK recipe (default), so it has Cargo.toml instead
     let project_path = destination.join("skip-install");
     assert!(project_path.join("README.md").exists());
-    assert!(project_path.join("recipe.config.yml").exists());
-    assert!(!project_path.join("package.json").exists());
+    assert!(project_path.join("Cargo.toml").exists());
 }
 
 #[tokio::test]
@@ -577,9 +577,6 @@ async fn test_verify_setup() {
     tokio::fs::write(project_path.join("README.md"), "# Test")
         .await
         .unwrap();
-    tokio::fs::write(project_path.join("recipe.config.yml"), "name: test")
-        .await
-        .unwrap();
 
     let scaffold = Scaffold::new();
     let missing = scaffold.verify_setup(&project_path).await.unwrap();
@@ -604,7 +601,13 @@ async fn test_verify_setup_with_missing_files() {
     let missing = scaffold.verify_setup(&project_path).await.unwrap();
 
     // Should report missing files
-    assert!(missing.len() > 0);
-    assert!(missing.iter().any(|f| f.contains("package.json")));
-    assert!(missing.iter().any(|f| f.contains("README.md")));
+    assert!(missing.len() > 0, "Expected missing files, but found none");
+    assert!(
+        missing.iter().any(|f| f.contains("package.json")),
+        "Expected package.json to be missing"
+    );
+    assert!(
+        missing.iter().any(|f| f.contains("README.md")),
+        "Expected README.md to be missing"
+    );
 }

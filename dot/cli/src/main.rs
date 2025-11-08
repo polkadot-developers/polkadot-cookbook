@@ -431,9 +431,8 @@ async fn handle_create(
              {:<16} {}\n\
              {:<16} {}\n\n\
              Files to create:\n\
-             {} README.md\n\
-             {} recipe.config.yml\n\
-             {} Template files for {}",
+             {} README.md (with frontmatter)\n\
+             {} Template files",
             "Title:".polkadot_pink(),
             title.polkadot_pink().bold(),
             "Slug:".polkadot_pink(),
@@ -465,18 +464,7 @@ async fn handle_create(
             "Git Branch:".polkadot_pink(),
             branch_name,
             "•".polkadot_pink(),
-            "•".polkadot_pink(),
-            "•".polkadot_pink(),
-            match pathway {
-                RecipePathway::Runtime => "Polkadot SDK",
-                RecipePathway::Contracts => "Solidity",
-                RecipePathway::BasicInteraction => "Basic Interactions",
-                RecipePathway::Xcm => "XCM",
-                RecipePathway::Testing => "Testing",
-                RecipePathway::RequestNew => {
-                    unreachable!("RequestNew should have been handled before summary")
-                }
-            }
+            "•".polkadot_pink()
         ),
     )?;
 
@@ -542,8 +530,7 @@ async fn handle_create(
                     "{} Write recipe content\n   {} {}\n\n\
                      {} Add implementation\n   {} {}\n\n\
                      {} Write tests\n   {} {}\n\n\
-                     {} Run tests\n   {} {}\n\n\
-                     {} Update metadata\n   {} {}",
+                     {} Run tests\n   {} {}",
                     "1.".polkadot_pink().bold(),
                     "→".dimmed(),
                     format!("{}/README.md", project_info.project_path.display()).polkadot_pink(),
@@ -556,10 +543,6 @@ async fn handle_create(
                     "4.".polkadot_pink().bold(),
                     "→".dimmed(),
                     format!("cd {} && npm test", project_info.project_path.display())
-                        .polkadot_pink(),
-                    "5.".polkadot_pink().bold(),
-                    "→".dimmed(),
-                    format!("{}/recipe.config.yml", project_info.project_path.display())
                         .polkadot_pink()
                 ),
             )?;
@@ -956,15 +939,22 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
             .polkadot_pink()
     ))?;
 
-    // Check recipe type
-    let config_path = recipe_path.join("recipe.config.yml");
-    if !config_path.exists() {
-        outro_cancel("recipe.config.yml not found")?;
-        std::process::exit(1);
-    }
+    // Auto-detect recipe type from files
+    let recipe_config =
+        match polkadot_cookbook_core::config::RecipeConfig::from_recipe_directory(&recipe_path)
+            .await
+        {
+            Ok(config) => config,
+            Err(e) => {
+                outro_cancel(format!("Failed to detect recipe type: {e}"))?;
+                std::process::exit(1);
+            }
+        };
 
-    let config_content = std::fs::read_to_string(&config_path)?;
-    let is_polkadot_sdk = config_content.contains("type: polkadot-sdk");
+    let is_polkadot_sdk = matches!(
+        recipe_config.recipe_type,
+        polkadot_cookbook_core::config::RecipeType::PolkadotSdk
+    );
 
     if is_polkadot_sdk {
         note("Recipe Type", "Polkadot SDK (Rust)")?;
@@ -1032,33 +1022,37 @@ async fn handle_recipe_validate(slug: Option<String>) -> Result<()> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
 
-    // Check for required files
-    let required_files = vec!["README.md", "recipe.config.yml"];
-    for file in required_files {
-        let file_path = recipe_path.join(file);
-        if file_path.exists() {
-            note(format!("✅ {file}"), "Found")?;
-        } else {
-            errors.push(format!("Missing required file: {file}"));
-        }
-    }
+    // Check for README.md
+    let readme_path = recipe_path.join("README.md");
+    if readme_path.exists() {
+        note("✅ README.md", "Found")?;
 
-    // Check recipe.config.yml
-    let config_path = recipe_path.join("recipe.config.yml");
-    if config_path.exists() {
-        match std::fs::read_to_string(&config_path) {
-            Ok(content) => {
-                // Check for required fields
-                let required_fields = vec!["name:", "slug:", "type:", "description:"];
-                for field in required_fields {
-                    if !content.contains(field) {
-                        errors.push(format!("recipe.config.yml missing field: {field}"));
-                    }
-                }
+        // Try to parse frontmatter
+        match polkadot_cookbook_core::metadata::parse_frontmatter_from_file(&readme_path).await {
+            Ok(frontmatter) => {
+                note(
+                    "✅ Frontmatter",
+                    format!(
+                        "title: {}, description: {}",
+                        frontmatter.title, frontmatter.description
+                    ),
+                )?;
             }
             Err(e) => {
-                errors.push(format!("Could not read recipe.config.yml: {e}"));
+                errors.push(format!("README.md frontmatter parsing failed: {e}"));
             }
+        }
+    } else {
+        errors.push("Missing required file: README.md".to_string());
+    }
+
+    // Try to auto-detect recipe type
+    match polkadot_cookbook_core::metadata::detect_recipe_type(&recipe_path).await {
+        Ok(recipe_type) => {
+            note("✅ Recipe Type", format!("{:?}", recipe_type))?;
+        }
+        Err(e) => {
+            errors.push(format!("Could not detect recipe type: {e}"));
         }
     }
 
@@ -1178,21 +1172,29 @@ async fn handle_recipe_list() -> Result<()> {
                 let name = entry.file_name();
                 let name_str = name.to_string_lossy().to_string();
 
-                // Read recipe type from config
-                let config_path = entry.path().join("recipe.config.yml");
-                let recipe_type = if let Ok(content) = std::fs::read_to_string(&config_path) {
-                    if content.contains("type: polkadot-sdk") {
-                        "Polkadot SDK (Runtime Development)"
-                    } else if content.contains("type: solidity") {
-                        "Smart Contracts (Solidity)"
-                    } else if content.contains("type: xcm") {
-                        "Chain Interactions (Basic Interactions, Cross-Chain Interactions)"
-                    } else {
-                        "Unknown"
-                    }
-                } else {
-                    "Unknown"
-                };
+                // Auto-detect recipe type
+                let recipe_type =
+                    match polkadot_cookbook_core::metadata::detect_recipe_type(&entry.path()).await
+                    {
+                        Ok(t) => match t {
+                            polkadot_cookbook_core::config::RecipeType::PolkadotSdk => {
+                                "Polkadot SDK (Runtime Development)"
+                            }
+                            polkadot_cookbook_core::config::RecipeType::Solidity => {
+                                "Smart Contracts (Solidity)"
+                            }
+                            polkadot_cookbook_core::config::RecipeType::Xcm => {
+                                "XCM (Cross-Chain Messaging)"
+                            }
+                            polkadot_cookbook_core::config::RecipeType::BasicInteraction => {
+                                "Basic Interactions"
+                            }
+                            polkadot_cookbook_core::config::RecipeType::Testing => {
+                                "Testing Infrastructure"
+                            }
+                        },
+                        Err(_) => "Unknown",
+                    };
 
                 recipes.push((name_str, recipe_type.to_string()));
             }
@@ -1264,33 +1266,28 @@ async fn handle_recipe_submit(
         }
     };
 
-    // Read recipe metadata
-    let config_path = recipe_path.join("recipe.config.yml");
-    let config_content = std::fs::read_to_string(&config_path)?;
+    // Read recipe metadata from frontmatter
+    let readme_path = recipe_path.join("README.md");
+    let (recipe_name, recipe_desc) =
+        match polkadot_cookbook_core::metadata::parse_frontmatter_from_file(&readme_path).await {
+            Ok(frontmatter) => (frontmatter.title, frontmatter.description),
+            Err(_) => (
+                recipe_slug.clone(),
+                "A new Polkadot Cookbook recipe".to_string(),
+            ),
+        };
 
-    // Extract recipe name and description from config
-    let recipe_name = config_content
-        .lines()
-        .find(|l| l.starts_with("name:"))
-        .and_then(|l| l.split(':').nth(1))
-        .map(|s| s.trim())
-        .unwrap_or(&recipe_slug);
-
-    let recipe_desc = config_content
-        .lines()
-        .find(|l| l.starts_with("description:"))
-        .and_then(|l| l.split(':').nth(1))
-        .map(|s| s.trim())
-        .unwrap_or("A new Polkadot Cookbook recipe");
-
-    let recipe_type = if config_content.contains("type: polkadot-sdk") {
-        "Polkadot SDK"
-    } else if config_content.contains("type: solidity") {
-        "Solidity"
-    } else if config_content.contains("type: xcm") {
-        "XCM"
-    } else {
-        "Unknown"
+    // Auto-detect recipe type
+    let recipe_type = match polkadot_cookbook_core::metadata::detect_recipe_type(&recipe_path).await
+    {
+        Ok(t) => match t {
+            polkadot_cookbook_core::config::RecipeType::PolkadotSdk => "Polkadot SDK",
+            polkadot_cookbook_core::config::RecipeType::Solidity => "Solidity",
+            polkadot_cookbook_core::config::RecipeType::Xcm => "XCM",
+            polkadot_cookbook_core::config::RecipeType::BasicInteraction => "Basic Interactions",
+            polkadot_cookbook_core::config::RecipeType::Testing => "Testing Infrastructure",
+        },
+        Err(_) => "Unknown",
     };
 
     // Check git status

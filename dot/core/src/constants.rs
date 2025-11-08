@@ -2,6 +2,3 @@
 
 /// The directory name where recipes are stored
 pub const RECIPES_DIR: &str = "recipes";
-
-/// The filename for recipe configuration
-pub const RECIPE_CONFIG_FILE: &str = "recipe.config.yml";
