@@ -238,8 +238,8 @@ impl Scaffold {
     ) -> Result<()> {
         debug!("Creating Polkadot SDK template files");
 
-        // Copy template files from templates/recipe-templates/polkadot-sdk-template/
-        let template_dir = Path::new("templates/recipe-templates/polkadot-sdk-template");
+        // Copy template files from core/templates/recipe-templates/polkadot-sdk-template/
+        let template_dir = Path::new("core/templates/recipe-templates/polkadot-sdk-template");
 
         self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
@@ -256,8 +256,8 @@ impl Scaffold {
     ) -> Result<()> {
         debug!("Creating XCM template files");
 
-        // Copy template files from templates/recipe-templates/xcm-template/
-        let template_dir = Path::new("templates/recipe-templates/xcm-template");
+        // Copy template files from core/templates/recipe-templates/xcm-template/
+        let template_dir = Path::new("core/templates/recipe-templates/xcm-template");
 
         self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
@@ -273,7 +273,7 @@ impl Scaffold {
         rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Solidity template files");
-        let template_dir = Path::new("templates/recipe-templates/solidity-template");
+        let template_dir = Path::new("core/templates/recipe-templates/solidity-template");
         self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
         Ok(())
@@ -287,7 +287,7 @@ impl Scaffold {
         rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Basic Interaction template files");
-        let template_dir = Path::new("templates/recipe-templates/basic-interaction-template");
+        let template_dir = Path::new("core/templates/recipe-templates/basic-interaction-template");
         self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
         Ok(())
@@ -301,7 +301,7 @@ impl Scaffold {
         rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Testing Infrastructure template files");
-        let template_dir = Path::new("templates/recipe-templates/testing-template");
+        let template_dir = Path::new("core/templates/recipe-templates/testing-template");
         self.copy_template_dir(template_dir, project_path, config, rust_version)
             .await?;
         Ok(())

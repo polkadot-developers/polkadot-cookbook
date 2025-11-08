@@ -1,0 +1,7 @@
+name: NFT Project
+slug: nft-project
+description: Replace with a short description.
+type: solidity
+pathway: contracts
+content_type: tutorial
+difficulty: beginner
