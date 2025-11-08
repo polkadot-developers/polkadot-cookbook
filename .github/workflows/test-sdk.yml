@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - 'core/**'
-      - 'cli/**'
+      - 'dot/core/**'
+      - 'dot/cli/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/test-sdk.yml'
@@ -40,7 +40,7 @@ jobs:
           git fetch origin ${{ github.base_ref }}
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
-          if echo "$CHANGED_FILES" | grep -qE '^(core/|cli/|Cargo\.(toml|lock)|\.github/workflows/test-sdk\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(dot/core/|dot/cli/|Cargo\.(toml|lock)|\.github/workflows/test-sdk\.yml)'; then
             echo "sdk=true" >> $GITHUB_OUTPUT
             echo "SDK files changed, running tests"
           else

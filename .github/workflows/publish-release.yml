@@ -131,11 +131,11 @@ jobs:
             strip ${{ matrix.artifact_name }} || true
           fi
 
-          # Create archive in cli directory
+          # Create archive in dot/cli directory
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a "$GITHUB_WORKSPACE/cli/${{ matrix.asset_name }}.zip" ${{ matrix.artifact_name }}
+            7z a "$GITHUB_WORKSPACE/dot/cli/${{ matrix.asset_name }}.zip" ${{ matrix.artifact_name }}
           else
-            tar czf "$GITHUB_WORKSPACE/cli/${{ matrix.asset_name }}.tar.gz" ${{ matrix.artifact_name }}
+            tar czf "$GITHUB_WORKSPACE/dot/cli/${{ matrix.asset_name }}.tar.gz" ${{ matrix.artifact_name }}
           fi
 
       - name: Upload artifact
@@ -143,8 +143,8 @@ jobs:
         with:
           name: ${{ matrix.asset_name }}
           path: |
-            cli/${{ matrix.asset_name }}.tar.gz
-            cli/${{ matrix.asset_name }}.zip
+            dot/cli/${{ matrix.asset_name }}.tar.gz
+            dot/cli/${{ matrix.asset_name }}.zip
           if-no-files-found: error
 
   publish-release:

@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-For more information, see [`core/README.md`](../core/README.md).
+For more information, see [`dot/core/README.md`](../../dot/core/README.md).
 
 ## Polkadot Cookbook CLI
 
@@ -148,7 +148,7 @@ If you want to contribute to the SDK itself (not just recipes):
 
 ### Core Library Changes
 
-Changes go in `core/`:
+Changes go in `dot/core/`:
 - Add features to appropriate modules
 - Write comprehensive tests
 - Use structured logging (`tracing`)
@@ -156,7 +156,7 @@ Changes go in `core/`:
 
 ### CLI Changes
 
-Changes go in `cli/`:
+Changes go in `dot/cli/`:
 - Keep it thin (mostly UI/formatting)
 - Delegate logic to core library
 - Use interactive prompts for better UX

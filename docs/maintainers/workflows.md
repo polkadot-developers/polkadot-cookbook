@@ -19,7 +19,7 @@ The repository uses GitHub Actions for:
 Tests the core SDK library and CLI tool.
 
 **Triggers:**
-- Push to master (paths: `core/**`, `cli/**`, `Cargo.toml`, `Cargo.lock`)
+- Push to master (paths: `dot/core/**`, `dot/cli/**`, `Cargo.toml`, `Cargo.lock`)
 - Pull requests (always runs for branch protection, but skips work if no SDK changes)
 
 **Jobs:**
@@ -164,7 +164,7 @@ Automated weekly release of tested recipes.
 Triggers immediate release when breaking changes are merged to master.
 
 **Triggers:**
-- Push to master (paths: `cli/**`, `core/**`)
+- Push to master (paths: `dot/cli/**`, `dot/core/**`)
 
 **Jobs:**
 1. **detect-breaking-change** - Checks if merged PR has `semantic:major` label
@@ -284,8 +284,8 @@ Automatically labels PRs based on commit analysis and API breaking changes.
 
 **API Breaking Change Detection:**
 - Uses `cargo-semver-checks` to detect breaking changes in SDK public API
-- Only checks `core/` crate (SDK library)
-- Skips `cli/` crate (binary-only, no public API)
+- Only checks `dot/core/` crate (SDK library)
+- Skips `dot/cli/` crate (binary-only, no public API)
 
 **Files:** `.github/workflows/auto-label-semantic.yml`
 
@@ -424,7 +424,7 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 
 **Solution:**
 - Add tests to increase core library coverage
-- Coverage requirement only applies to `core/` package
+- Coverage requirement only applies to `dot/core/` package
 - CLI coverage is tracked but not enforced
 
 ## Best Practices

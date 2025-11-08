@@ -238,10 +238,11 @@ impl Scaffold {
     ) -> Result<()> {
         debug!("Creating Polkadot SDK template files");
 
-        // Copy template files from core/templates/recipe-templates/polkadot-sdk-template/
-        let template_dir = Path::new("core/templates/recipe-templates/polkadot-sdk-template");
+        // Build absolute path to template directory
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let template_dir = manifest_dir.join("templates/recipe-templates/polkadot-sdk-template");
 
-        self.copy_template_dir(template_dir, project_path, config, rust_version)
+        self.copy_template_dir(&template_dir, project_path, config, rust_version)
             .await?;
 
         Ok(())
@@ -256,10 +257,11 @@ impl Scaffold {
     ) -> Result<()> {
         debug!("Creating XCM template files");
 
-        // Copy template files from core/templates/recipe-templates/xcm-template/
-        let template_dir = Path::new("core/templates/recipe-templates/xcm-template");
+        // Build absolute path to template directory
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let template_dir = manifest_dir.join("templates/recipe-templates/xcm-template");
 
-        self.copy_template_dir(template_dir, project_path, config, rust_version)
+        self.copy_template_dir(&template_dir, project_path, config, rust_version)
             .await?;
 
         Ok(())
@@ -273,8 +275,12 @@ impl Scaffold {
         rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Solidity template files");
-        let template_dir = Path::new("core/templates/recipe-templates/solidity-template");
-        self.copy_template_dir(template_dir, project_path, config, rust_version)
+
+        // Build absolute path to template directory
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let template_dir = manifest_dir.join("templates/recipe-templates/solidity-template");
+
+        self.copy_template_dir(&template_dir, project_path, config, rust_version)
             .await?;
         Ok(())
     }
@@ -287,8 +293,13 @@ impl Scaffold {
         rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Basic Interaction template files");
-        let template_dir = Path::new("core/templates/recipe-templates/basic-interaction-template");
-        self.copy_template_dir(template_dir, project_path, config, rust_version)
+
+        // Build absolute path to template directory
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let template_dir =
+            manifest_dir.join("templates/recipe-templates/basic-interaction-template");
+
+        self.copy_template_dir(&template_dir, project_path, config, rust_version)
             .await?;
         Ok(())
     }
@@ -301,8 +312,12 @@ impl Scaffold {
         rust_version: &str,
     ) -> Result<()> {
         debug!("Creating Testing Infrastructure template files");
-        let template_dir = Path::new("core/templates/recipe-templates/testing-template");
-        self.copy_template_dir(template_dir, project_path, config, rust_version)
+
+        // Build absolute path to template directory
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let template_dir = manifest_dir.join("templates/recipe-templates/testing-template");
+
+        self.copy_template_dir(&template_dir, project_path, config, rust_version)
             .await?;
         Ok(())
     }
@@ -571,7 +586,7 @@ mod tests {
         // This test needs to run from workspace root where templates/ directory exists
         // Change to workspace root for this test
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap();
+        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(workspace_root).unwrap();
 
@@ -607,7 +622,7 @@ mod tests {
     #[tokio::test]
     async fn test_create_basic_interaction_recipe() {
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap();
+        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(workspace_root).unwrap();
 
@@ -636,7 +651,7 @@ mod tests {
     #[tokio::test]
     async fn test_create_testing_recipe() {
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap();
+        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(workspace_root).unwrap();
 
@@ -662,7 +677,7 @@ mod tests {
     #[tokio::test]
     async fn test_create_xcm_recipe() {
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap();
+        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(workspace_root).unwrap();
 
@@ -687,7 +702,7 @@ mod tests {
     #[tokio::test]
     async fn test_optional_fields_in_recipe_config() {
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap();
+        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(workspace_root).unwrap();
 
@@ -722,7 +737,7 @@ mod tests {
     #[tokio::test]
     async fn test_optional_fields_empty_when_not_provided() {
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let workspace_root = manifest_dir.parent().unwrap();
+        let workspace_root = manifest_dir.parent().unwrap().parent().unwrap();
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(workspace_root).unwrap();
 

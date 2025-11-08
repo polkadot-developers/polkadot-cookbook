@@ -92,8 +92,8 @@ docs/
 
 - **Main README**: See [../README.md](../README.md) for project overview and recipe catalog
 - **Contributing Guide**: See [../CONTRIBUTING.md](../CONTRIBUTING.md) for quick start workflow
-- **CLI Documentation**: See [../cli/README.md](../cli/README.md) for CLI usage
-- **SDK Documentation**: See [../core/README.md](../core/README.md) for SDK usage
+- **CLI Documentation**: See [../dot/cli/README.md](../dot/cli/README.md) for CLI usage
+- **SDK Documentation**: See [../dot/core/README.md](../dot/core/README.md) for SDK usage
 
 ## Need Help?
 

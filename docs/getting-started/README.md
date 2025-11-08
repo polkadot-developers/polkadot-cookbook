@@ -29,7 +29,7 @@ Once you've created your first recipe, explore:
 
 - **[Contributors Guide](../contributors/)** - Deep dive into recipe development
 - **[Recipe Catalog](../../README.md#-recipes)** - Browse existing recipes for inspiration
-- **[SDK Documentation](../../core/README.md)** - Learn about the SDK
+- **[SDK Documentation](../../dot/core/README.md)** - Learn about the SDK
 
 ## Need Help?
 

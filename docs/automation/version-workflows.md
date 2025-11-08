@@ -239,7 +239,7 @@ When adding new version-managed dependencies:
      new_tool: "1.0.0"  # New dependency
    ```
 
-2. **Update template** in `core/src/templates/versions_yml.rs`:
+2. **Update template** in `dot/core/src/templates/versions_yml.rs`:
    ```rust
    # new_tool: "1.0.0"
    ```

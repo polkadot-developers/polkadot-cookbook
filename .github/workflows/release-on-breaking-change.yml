@@ -4,8 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - 'cli/**'
-      - 'core/**'
+      - 'dot/cli/**'
+      - 'dot/core/**'
 
 jobs:
   detect-breaking-change:
@@ -83,8 +83,8 @@ jobs:
               });
 
               const changedFiles = files.data.map(f => f.filename);
-              const cliChanged = changedFiles.some(f => f.startsWith('cli/'));
-              const sdkChanged = changedFiles.some(f => f.startsWith('core/'));
+              const cliChanged = changedFiles.some(f => f.startsWith('dot/cli/'));
+              const sdkChanged = changedFiles.some(f => f.startsWith('dot/core/'));
 
               if (cliChanged || sdkChanged) {
                 core.setOutput('has_breaking', 'true');
@@ -122,7 +122,7 @@ jobs:
         id: version
         run: |
           # Extract version from Cargo.toml
-          CURRENT_VERSION=$(grep "^version" cli/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          CURRENT_VERSION=$(grep "^version" dot/cli/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
           echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           # Bump major version for breaking change
@@ -162,7 +162,7 @@ jobs:
         id: version
         run: |
           # Extract version from Cargo.toml
-          CURRENT_VERSION=$(grep "^version" core/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          CURRENT_VERSION=$(grep "^version" dot/core/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
           echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           # Bump major version
@@ -174,7 +174,7 @@ jobs:
 
       - name: Build and test SDK
         run: |
-          cd core
+          cd dot/core
           cargo build --release
           cargo test --release
 
