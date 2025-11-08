@@ -112,20 +112,32 @@ main() {
         exit 1
     fi
 
-    # Get latest release version
-    print_cyan "→ Fetching latest release..."
-    LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+    # Get latest CLI release (prefer cli-v* tags, fall back to v* tags)
+    print_cyan "→ Fetching latest CLI release..."
+
+    # First try to get latest cli-v* release
+    CLI_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases" | grep '"tag_name":' | grep 'cli-v' | head -n 1 | sed -E 's/.*"cli-v([^"]+)".*/\1/')
+
+    if [ -n "$CLI_RELEASE" ]; then
+        LATEST_RELEASE="$CLI_RELEASE"
+        TAG_PREFIX="cli-v"
+        print_green "✓ Latest CLI version: v$LATEST_RELEASE (CLI-specific release)"
+    else
+        # Fall back to latest v* release
+        LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+        TAG_PREFIX="v"
+        print_green "✓ Latest CLI version: v$LATEST_RELEASE (main release)"
+    fi
 
     if [ -z "$LATEST_RELEASE" ]; then
         print_red "✗ Could not determine latest release"
         exit 1
     fi
 
-    print_green "✓ Latest version: v$LATEST_RELEASE"
     echo ""
 
     # Download URL
-    DOWNLOAD_URL="https://github.com/$REPO/releases/download/v$LATEST_RELEASE/$BINARY_ARCHIVE"
+    DOWNLOAD_URL="https://github.com/$REPO/releases/download/${TAG_PREFIX}$LATEST_RELEASE/$BINARY_ARCHIVE"
     print_cyan "→ Downloading from: $DOWNLOAD_URL"
 
     # Create temp directory
