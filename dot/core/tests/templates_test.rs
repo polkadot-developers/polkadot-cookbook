@@ -6,15 +6,6 @@ use polkadot_cookbook_core::templates::*;
 
 #[test]
 fn test_all_templates_return_non_empty() {
-    // JustfileTemplate
-    let justfile = JustfileTemplate::new();
-    let content = justfile.generate();
-    assert!(
-        !content.is_empty(),
-        "JustfileTemplate should return non-empty content"
-    );
-    assert!(content.len() > 10, "JustfileTemplate content too short");
-
     // ReadmeTemplate
     let readme = ReadmeTemplate::new("test-recipe");
     let content = readme.generate();
@@ -54,10 +45,6 @@ fn test_all_templates_return_non_empty() {
 fn test_templates_contain_expected_markers() {
     // Each template should contain specific markers that identify them
 
-    let justfile = JustfileTemplate::new().generate();
-    assert!(justfile.contains("default:"));
-    assert!(justfile.contains("@just"));
-
     let readme = ReadmeTemplate::new("my-test").generate();
     assert!(readme.contains("# My Test"));
     assert!(readme.contains("Prerequisites"));
@@ -85,7 +72,6 @@ fn test_template_trait_implemented() {
     // Verify all templates implement the Template trait
     fn assert_template<T: Template>(_t: &T) {}
 
-    assert_template(&JustfileTemplate::new());
     assert_template(&ReadmeTemplate::new("test"));
     assert_template(&TestTemplate::new("test"));
     assert_template(&RecipeYmlTemplate::new(
@@ -169,16 +155,6 @@ fn test_recipe_yml_template_variations() {
 }
 
 #[test]
-fn test_justfile_contains_all_recipes() {
-    let justfile = JustfileTemplate::new().generate();
-
-    // Should contain basic recipes
-    assert!(justfile.contains("default"));
-    assert!(justfile.contains("say-hello"));
-    assert!(justfile.contains("@just --list"));
-}
-
-#[test]
 fn test_template_consistency() {
     // Generate same template multiple times, should get same output
     let slug = "consistency-test";
@@ -190,8 +166,4 @@ fn test_template_consistency() {
     let test1 = TestTemplate::new(slug).generate();
     let test2 = TestTemplate::new(slug).generate();
     assert_eq!(test1, test2);
-
-    let justfile1 = JustfileTemplate::new().generate();
-    let justfile2 = JustfileTemplate::new().generate();
-    assert_eq!(justfile1, justfile2);
 }

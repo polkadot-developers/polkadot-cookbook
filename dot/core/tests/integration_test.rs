@@ -47,7 +47,6 @@ async fn test_create_project_end_to_end() {
     // Verify files were created
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("recipe.config.yml").exists());
-    assert!(project_path.join("justfile").exists());
     assert!(project_path.join("Cargo.toml").exists());
     // Note: Polkadot SDK recipes don't have .gitignore or TypeScript test files
 
@@ -124,14 +123,8 @@ async fn test_slug_to_title() {
 #[tokio::test]
 async fn test_template_generation() {
     use polkadot_cookbook_core::templates::{
-        JustfileTemplate, ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
+        ReadmeTemplate, RecipeYmlTemplate, Template, TestTemplate,
     };
-
-    // Test justfile template
-    let justfile = JustfileTemplate::new();
-    let content = justfile.generate();
-    assert!(content.contains("default:"));
-    assert!(content.contains("@just --list"));
 
     // Test readme template
     let readme = ReadmeTemplate::new("my-tutorial");
@@ -153,7 +146,6 @@ async fn test_template_generation() {
         "A test tutorial",
         RecipeType::PolkadotSdk,
         "test-category",
-        true,
     );
     let content = yml.generate();
     assert!(content.contains("name: My Tutorial"));
@@ -195,8 +187,7 @@ async fn test_project_config_builder() {
         .with_git_init(false)
         .with_skip_install(true)
         .with_recipe_type(RecipeType::Solidity)
-        .with_category("advanced")
-        .with_needs_node(false);
+        .with_category("advanced");
 
     assert_eq!(config.slug, "builder-test");
     assert_eq!(config.title, "Builder Test");
@@ -205,7 +196,6 @@ async fn test_project_config_builder() {
     assert!(config.skip_install);
     assert_eq!(config.recipe_type, RecipeType::Solidity);
     assert_eq!(config.category, "advanced");
-    assert!(!config.needs_node);
 }
 
 #[tokio::test]

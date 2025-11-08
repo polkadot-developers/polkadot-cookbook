@@ -629,7 +629,6 @@ mod tests {
         result.unwrap();
 
         // Verify core files were created from templates
-        assert!(project_path.join("justfile").exists());
         assert!(project_path.join("README.md").exists());
         assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join("Cargo.toml").exists());

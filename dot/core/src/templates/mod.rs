@@ -1,6 +1,4 @@
 /// Template generation for recipe scaffolding
-/// Justfile template for task automation
-pub mod justfile;
 /// README template for recipe documentation
 pub mod readme;
 /// Recipe configuration YAML template
@@ -8,7 +6,6 @@ pub mod recipe_yml;
 /// Test file template
 pub mod test;
 
-pub use justfile::JustfileTemplate;
 pub use readme::ReadmeTemplate;
 pub use recipe_yml::RecipeYmlTemplate;
 pub use test::TestTemplate;
