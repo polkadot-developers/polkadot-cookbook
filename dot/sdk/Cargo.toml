@@ -1,16 +1,16 @@
 [package]
-name = "core"
+name = "sdk"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Core library for Polkadot Cookbook - programmatic access to tutorial scaffolding and testing"
+description = "SDK for Polkadot Cookbook - programmatic access to tutorial scaffolding and testing"
 keywords = ["polkadot", "substrate", "blockchain", "tutorial", "sdk"]
 categories = ["development-tools"]
 
 [lib]
-name = "polkadot_cookbook_core"
+name = "polkadot_cookbook_sdk"
 path = "src/lib.rs"
 
 [features]

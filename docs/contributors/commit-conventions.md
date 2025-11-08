@@ -85,7 +85,7 @@ Common scopes in the cookbook:
 
 - `recipe` - Recipe-related changes
 - `cli` - CLI tool changes
-- `sdk` / `core` - SDK/core library changes
+- `sdk` - SDK library changes
 - `ci` - CI/CD workflow changes
 - `docs` - Documentation changes
 - `deps` - Dependency updates

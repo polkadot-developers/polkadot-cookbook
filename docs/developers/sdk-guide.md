@@ -4,7 +4,7 @@ Guide to using the Polkadot Cookbook SDK programmatically.
 
 ## Overview
 
-The Polkadot Cookbook SDK (`polkadot-cookbook-core`) is a Rust library that provides:
+The Polkadot Cookbook SDK (`polkadot-cookbook-sdk`) is a Rust library that provides:
 
 - **Recipe Configuration** - Parse and validate `recipe.config.yml`
 - **Version Management** - Resolve dependency versions
@@ -19,7 +19,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-polkadot-cookbook-core = "0.3"
+polkadot-cookbook-sdk = "0.3"
 ```
 
 ### From Source
@@ -27,7 +27,7 @@ polkadot-cookbook-core = "0.3"
 ```bash
 git clone https://github.com/polkadot-developers/polkadot-cookbook.git
 cd polkadot-cookbook
-cargo build --release -p polkadot-cookbook-core
+cargo build --release -p polkadot-cookbook-sdk
 ```
 
 ---
@@ -37,7 +37,7 @@ cargo build --release -p polkadot-cookbook-core
 ### Parse Recipe Configuration
 
 ```rust
-use polkadot_cookbook_core::RecipeConfig;
+use polkadot_cookbook_sdk::RecipeConfig;
 use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Resolve Versions
 
 ```rust
-use polkadot_cookbook_core::VersionManager;
+use polkadot_cookbook_sdk::VersionManager;
 use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Create Recipe
 
 ```rust
-use polkadot_cookbook_core::RecipeScaffold;
+use polkadot_cookbook_sdk::RecipeScaffold;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let scaffold = RecipeScaffold::builder()
@@ -108,7 +108,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 Represents a recipe's metadata from `recipe.config.yml`.
 
 ```rust
-use polkadot_cookbook_core::RecipeConfig;
+use polkadot_cookbook_sdk::RecipeConfig;
 use std::path::Path;
 
 // Load from file
@@ -162,7 +162,7 @@ impl RecipeConfig {
 **Example: Create and save config**
 
 ```rust
-use polkadot_cookbook_core::RecipeConfig;
+use polkadot_cookbook_sdk::RecipeConfig;
 
 let config = RecipeConfig {
     title: "My Recipe".to_string(),
@@ -191,7 +191,7 @@ config.save("recipes/my-recipe/recipe.config.yml")?;
 Manages global and recipe-specific version resolution.
 
 ```rust
-use polkadot_cookbook_core::VersionManager;
+use polkadot_cookbook_sdk::VersionManager;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -246,7 +246,7 @@ pub enum VersionSource {
 **Example: Compare versions**
 
 ```rust
-use polkadot_cookbook_core::VersionManager;
+use polkadot_cookbook_sdk::VersionManager;
 use std::path::Path;
 
 let manager = VersionManager::new()?;
@@ -266,7 +266,7 @@ if versions1.get("rust") != versions2.get("rust") {
 **Example: Format for CI**
 
 ```rust
-use polkadot_cookbook_core::VersionManager;
+use polkadot_cookbook_sdk::VersionManager;
 
 let manager = VersionManager::new()?;
 let versions = manager.resolve_for_recipe("recipes/my-recipe")?;
@@ -292,7 +292,7 @@ for (key, value) in versions {
 Generate new recipe structures programmatically.
 
 ```rust
-use polkadot_cookbook_core::RecipeScaffold;
+use polkadot_cookbook_sdk::RecipeScaffold;
 
 // Build scaffold configuration
 let scaffold = RecipeScaffold::builder()
@@ -346,7 +346,7 @@ impl RecipeScaffold {
 **Example: Custom template**
 
 ```rust
-use polkadot_cookbook_core::RecipeScaffold;
+use polkadot_cookbook_sdk::RecipeScaffold;
 
 let scaffold = RecipeScaffold::builder()
     .title("Custom Recipe")
@@ -369,7 +369,7 @@ scaffold.generate_with_template("recipes/custom-recipe", template)?;
 Validate recipe structure and content.
 
 ```rust
-use polkadot_cookbook_core::RecipeValidator;
+use polkadot_cookbook_sdk::RecipeValidator;
 use std::path::Path;
 
 let recipe_path = Path::new("recipes/my-recipe");
@@ -416,7 +416,7 @@ pub enum ValidationError {
 **Example: Selective validation**
 
 ```rust
-use polkadot_cookbook_core::RecipeValidator;
+use polkadot_cookbook_sdk::RecipeValidator;
 
 let validator = RecipeValidator::new("recipes/my-recipe");
 
@@ -438,7 +438,7 @@ if let Err(e) = validator.validate_versions() {
 The SDK uses a custom `Error` type:
 
 ```rust
-use polkadot_cookbook_core::Error;
+use polkadot_cookbook_sdk::Error;
 
 pub enum Error {
     Io(std::io::Error),
@@ -451,7 +451,7 @@ pub enum Error {
 **Usage:**
 
 ```rust
-use polkadot_cookbook_core::{RecipeConfig, Error};
+use polkadot_cookbook_sdk::{RecipeConfig, Error};
 
 fn load_recipe(path: &str) -> Result<RecipeConfig, Error> {
     RecipeConfig::load(path)
@@ -476,7 +476,7 @@ fn main() {
 Process multiple recipes:
 
 ```rust
-use polkadot_cookbook_core::{RecipeConfig, VersionManager};
+use polkadot_cookbook_sdk::{RecipeConfig, VersionManager};
 use std::fs;
 use std::path::Path;
 
@@ -515,7 +515,7 @@ fn process_all_recipes() -> Result<(), Box<dyn std::error::Error>> {
 Create recipes with custom templates:
 
 ```rust
-use polkadot_cookbook_core::RecipeScaffold;
+use polkadot_cookbook_sdk::RecipeScaffold;
 use std::fs;
 
 fn create_custom_recipe() -> Result<(), Box<dyn std::error::Error>> {
@@ -542,7 +542,7 @@ fn create_custom_recipe() -> Result<(), Box<dyn std::error::Error>> {
 Compare versions across recipes:
 
 ```rust
-use polkadot_cookbook_core::VersionManager;
+use polkadot_cookbook_sdk::VersionManager;
 use std::collections::HashMap;
 use std::fs;
 
@@ -691,7 +691,7 @@ mod tests {
 How the CLI uses the SDK:
 
 ```rust
-use polkadot_cookbook_core::{RecipeScaffold, VersionManager};
+use polkadot_cookbook_sdk::{RecipeScaffold, VersionManager};
 use clap::Parser;
 
 #[derive(Parser)]

@@ -24,7 +24,6 @@ Ensure you have all required tools:
 
 ```bash
 # Verify environment
-dot setup
 
 # Expected output shows all tools installed
 ```
@@ -79,8 +78,6 @@ npm install  # or cargo build
 
 **1. Research Existing Content**
 ```bash
-# List all recipes
-dot recipe list
 
 # Check for similar topics
 grep -r "your topic" recipes/*/README.md

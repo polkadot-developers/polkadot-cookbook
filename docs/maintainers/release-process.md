@@ -112,7 +112,7 @@ git commit -m "docs: fix typo in README"
 
 **Process:**
 1. Detects `semantic:major` label on merged PR
-2. Checks if CLI (`dot/cli/**`) or SDK (`dot/core/**`) changed
+2. Checks if CLI (`dot/cli/**`) or SDK (`dot/sdk/**`) changed
 3. Releases new CLI/SDK version
 4. Tests all recipes with new tooling
 5. Creates immediate recipe release if tests pass

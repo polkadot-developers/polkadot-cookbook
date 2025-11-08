@@ -2,7 +2,7 @@
 //!
 //! This tests the Template trait and all template implementations
 
-use polkadot_cookbook_core::templates::*;
+use polkadot_cookbook_sdk::templates::*;
 
 #[test]
 fn test_all_templates_return_non_empty() {

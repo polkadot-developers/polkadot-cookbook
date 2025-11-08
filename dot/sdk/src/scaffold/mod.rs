@@ -23,7 +23,7 @@ impl Scaffold {
     ///
     /// # Example
     /// ```
-    /// use polkadot_cookbook_core::scaffold::Scaffold;
+    /// use polkadot_cookbook_sdk::scaffold::Scaffold;
     ///
     /// let scaffold = Scaffold::new();
     /// ```
@@ -78,7 +78,7 @@ impl Scaffold {
     ///
     /// # Example
     /// ```no_run
-    /// use polkadot_cookbook_core::{
+    /// use polkadot_cookbook_sdk::{
     ///     config::ProjectConfig,
     ///     scaffold::Scaffold,
     /// };
@@ -386,31 +386,6 @@ impl Scaffold {
                     })
                     .unwrap_or_default();
 
-                let content_type_line = config
-                    .content_type
-                    .as_ref()
-                    .map(|ct| {
-                        let value = match ct {
-                            crate::config::ContentType::Tutorial => "tutorial",
-                            crate::config::ContentType::Guide => "guide",
-                        };
-                        format!("content_type: {value}")
-                    })
-                    .unwrap_or_default();
-
-                let difficulty_line = config
-                    .difficulty
-                    .as_ref()
-                    .map(|d| {
-                        let value = match d {
-                            crate::config::Difficulty::Beginner => "beginner",
-                            crate::config::Difficulty::Intermediate => "intermediate",
-                            crate::config::Difficulty::Advanced => "advanced",
-                        };
-                        format!("difficulty: {value}")
-                    })
-                    .unwrap_or_default();
-
                 content
                     .replace("{{slug}}", &config.slug)
                     .replace("{{title}}", &config.title)
@@ -418,8 +393,6 @@ impl Scaffold {
                     .replace("{{category}}", &config.category)
                     .replace("{{rust_version}}", rust_version)
                     .replace("{{pathway}}", &pathway_line)
-                    .replace("{{content_type}}", &content_type_line)
-                    .replace("{{difficulty}}", &difficulty_line)
             };
 
             // Recursive copy function
@@ -448,23 +421,8 @@ impl Scaffold {
                     continue;
                 }
 
-                // Handle content-type-specific README templates
-                if file_name_str == "README.tutorial.md.template"
-                    || file_name_str == "README.guide.md.template"
-                {
-                    let is_tutorial = file_name_str == "README.tutorial.md.template";
-                    let config_is_tutorial = config
-                        .content_type
-                        .as_ref()
-                        .map(|ct| matches!(ct, crate::config::ContentType::Tutorial))
-                        .unwrap_or(true); // Default to tutorial if not specified
-
-                    // Skip if content type doesn't match
-                    if is_tutorial != config_is_tutorial {
-                        continue;
-                    }
-
-                    // Use matching template as README.md
+                // Handle README templates - use tutorial version by default
+                if file_name_str == "README.tutorial.md.template" {
                     let dest_path = dest_dir.join("README.md");
                     let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
                         CookbookError::FileSystemError {
@@ -474,6 +432,11 @@ impl Scaffold {
                     })?;
                     let processed_content = process_content(content, config, rust_version);
                     self.write_file(&dest_path, &processed_content).await?;
+                    continue;
+                }
+
+                // Skip guide version since we default to tutorial
+                if file_name_str == "README.guide.md.template" {
                     continue;
                 }
 

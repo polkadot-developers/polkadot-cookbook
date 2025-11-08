@@ -44,28 +44,6 @@ pub enum RecipePathway {
     RequestNew,
 }
 
-/// Content type classification
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ContentType {
-    /// Tutorial - Complete journey from zero to working solution
-    Tutorial,
-    /// Guide - Focused, actionable steps for specific tasks
-    Guide,
-}
-
-/// Difficulty level
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Difficulty {
-    /// Beginner level
-    Beginner,
-    /// Intermediate level
-    Intermediate,
-    /// Advanced level
-    Advanced,
-}
-
 /// Recipe metadata from recipe.config.yml
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecipeConfig {
@@ -83,14 +61,6 @@ pub struct RecipeConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pathway: Option<RecipePathway>,
 
-    /// Content type (tutorial or guide)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub content_type: Option<ContentType>,
-
-    /// Difficulty level
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub difficulty: Option<Difficulty>,
-
     /// Recipe description
     pub description: String,
 
@@ -107,31 +77,7 @@ impl RecipeConfig {
             slug: slug.into(),
             category: None,
             pathway: None,
-            content_type: None,
-            difficulty: None,
             description: "Replace with a short description.".to_string(),
-            recipe_type,
-        }
-    }
-
-    /// Create a new recipe configuration with full details
-    pub fn new_with_details(
-        name: impl Into<String>,
-        slug: impl Into<String>,
-        recipe_type: RecipeType,
-        pathway: RecipePathway,
-        content_type: ContentType,
-        difficulty: Difficulty,
-        description: impl Into<String>,
-    ) -> Self {
-        Self {
-            name: name.into(),
-            slug: slug.into(),
-            category: None,
-            pathway: Some(pathway),
-            content_type: Some(content_type),
-            difficulty: Some(difficulty),
-            description: description.into(),
             recipe_type,
         }
     }
@@ -199,8 +145,6 @@ impl RecipeConfig {
             slug,
             category: None, // Category field is deprecated
             pathway,
-            content_type: None, // No longer using this field
-            difficulty: None,   // No longer using this field
             description: frontmatter.description,
             recipe_type,
         })
@@ -240,28 +184,6 @@ mod tests {
         assert_eq!(config.slug, "my-recipe");
         assert_eq!(config.recipe_type, RecipeType::PolkadotSdk);
         assert_eq!(config.pathway, None);
-        assert_eq!(config.content_type, None);
-        assert_eq!(config.difficulty, None);
-    }
-
-    #[test]
-    fn test_recipe_config_new_with_details() {
-        let config = RecipeConfig::new_with_details(
-            "My Recipe",
-            "my-recipe",
-            RecipeType::PolkadotSdk,
-            RecipePathway::Runtime,
-            ContentType::Tutorial,
-            Difficulty::Beginner,
-            "A comprehensive tutorial",
-        );
-        assert_eq!(config.name, "My Recipe");
-        assert_eq!(config.slug, "my-recipe");
-        assert_eq!(config.recipe_type, RecipeType::PolkadotSdk);
-        assert_eq!(config.pathway, Some(RecipePathway::Runtime));
-        assert_eq!(config.content_type, Some(ContentType::Tutorial));
-        assert_eq!(config.difficulty, Some(Difficulty::Beginner));
-        assert_eq!(config.description, "A comprehensive tutorial");
     }
 
     #[test]
@@ -308,31 +230,5 @@ mod tests {
         let testing = RecipePathway::Testing;
         let json = serde_json::to_string(&testing).unwrap();
         assert_eq!(json, "\"testing\"");
-    }
-
-    #[test]
-    fn test_content_type_serialization() {
-        let tutorial = ContentType::Tutorial;
-        let json = serde_json::to_string(&tutorial).unwrap();
-        assert_eq!(json, "\"tutorial\"");
-
-        let guide = ContentType::Guide;
-        let json = serde_json::to_string(&guide).unwrap();
-        assert_eq!(json, "\"guide\"");
-    }
-
-    #[test]
-    fn test_difficulty_serialization() {
-        let beginner = Difficulty::Beginner;
-        let json = serde_json::to_string(&beginner).unwrap();
-        assert_eq!(json, "\"beginner\"");
-
-        let intermediate = Difficulty::Intermediate;
-        let json = serde_json::to_string(&intermediate).unwrap();
-        assert_eq!(json, "\"intermediate\"");
-
-        let advanced = Difficulty::Advanced;
-        let json = serde_json::to_string(&advanced).unwrap();
-        assert_eq!(json, "\"advanced\"");
     }
 }

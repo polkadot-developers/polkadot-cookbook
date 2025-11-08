@@ -13,7 +13,7 @@ impl GitOperations {
     ///
     /// # Example
     /// ```no_run
-    /// use polkadot_cookbook_core::git::GitOperations;
+    /// use polkadot_cookbook_sdk::git::GitOperations;
     ///
     /// # async fn example() {
     /// let result = GitOperations::create_branch("my-tutorial").await;

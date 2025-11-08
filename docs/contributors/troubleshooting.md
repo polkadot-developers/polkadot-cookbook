@@ -59,7 +59,6 @@ export PATH="$PATH:$HOME/.cargo/bin"
 
 **Symptom:**
 ```bash
-$ dot setup
 ❌ Rust toolchain: Not found
 ❌ Node.js: Not found
 ```
@@ -97,7 +96,6 @@ sudo dnf install git
 
 **Verify installation:**
 ```bash
-dot setup
 ```
 
 ---
