@@ -13,19 +13,25 @@ fn setup_test_repo() -> TempDir {
     // Create recipes directory
     fs::create_dir_all(temp_dir.path().join("recipes")).unwrap();
 
-    // Create a proper versions.yml with the correct structure
-    let versions_content = r#"# Global versions for all recipes
-versions:
-  rust: "1.83.0"
-  polkadot_omni_node: "1.16.0"
-  chain_spec_builder: "0.0.0"
-  frame_omni_bencher: "0.0.0"
-
-metadata:
-  schema_version: "1.0"
-  last_updated: "2025-01-15"
+    // Create Cargo.toml workspace file
+    let cargo_content = r#"[workspace]
+members = ["dot/core", "dot/cli"]
+default-members = ["dot/cli"]
+resolver = "2"
 "#;
-    fs::write(temp_dir.path().join("versions.yml"), versions_content).unwrap();
+    fs::write(temp_dir.path().join("Cargo.toml"), cargo_content).unwrap();
+
+    // Create rust-toolchain.toml
+    let toolchain_content = r#"[toolchain]
+channel = "1.86"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
+"#;
+    fs::write(
+        temp_dir.path().join("rust-toolchain.toml"),
+        toolchain_content,
+    )
+    .unwrap();
 
     // Copy templates directory from workspace root to temp directory
     let workspace_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -105,7 +111,6 @@ fn test_create_recipe_non_interactive() {
         .join("custom-pallet-storage/recipe.config.yml")
         .exists());
     assert!(recipes_dir.join("custom-pallet-storage/justfile").exists());
-    // Note: Polkadot SDK recipes don't have .gitignore or local versions.yml
     assert!(recipes_dir.join("custom-pallet-storage/pallets").exists());
 }
 
@@ -239,7 +244,7 @@ fn test_gitignore_content() {
 }
 
 #[test]
-fn test_versions_yml_exists() {
+fn test_create_recipe_with_toolchain() {
     let temp_dir = setup_test_repo();
     let recipes_dir = temp_dir.path().join("recipes");
 
@@ -255,9 +260,7 @@ fn test_versions_yml_exists() {
 
     cmd.assert().success();
 
-    // versions.yml is at the repository root level, not in individual recipe directories
-    // Recipes inherit from the global versions.yml
-    // Just verify the project was created successfully
+    // Verify the project was created successfully
     assert!(recipes_dir.join("version-test").exists());
     assert!(recipes_dir.join("version-test/recipe.config.yml").exists());
 }

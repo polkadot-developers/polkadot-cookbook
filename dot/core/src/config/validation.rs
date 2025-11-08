@@ -178,13 +178,13 @@ pub fn validate_title(title: &str) -> Result<()> {
 pub fn validate_working_directory() -> Result<()> {
     if !Path::new("recipes").exists() {
         return Err(CookbookError::WorkingDirectoryError(
-            "This must be run from the repository root! Expected directory structure: ./recipes/, ./versions.yml, etc.".to_string()
+            "This must be run from the repository root! Expected directory structure: ./recipes/, ./Cargo.toml, etc.".to_string()
         ));
     }
 
-    if !Path::new("versions.yml").exists() {
+    if !Path::new("Cargo.toml").exists() {
         return Err(CookbookError::WorkingDirectoryError(
-            "versions.yml not found. Are you in the correct repository?".to_string(),
+            "Cargo.toml not found. Are you in the correct repository?".to_string(),
         ));
     }
 

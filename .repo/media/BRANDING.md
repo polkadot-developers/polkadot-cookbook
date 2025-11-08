@@ -68,7 +68,7 @@ All custom icons in `.media/icons/` with dark/light variants:
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-11116B.svg)](LICENSE)
 [![SDK Status](https://img.shields.io/github/actions/workflow/status/polkadot-developers/polkadot-cookbook/test-sdk.yml?label=Polkadot%20Cookbook%20SDK&color=E6007A)](workflows)
 [![CLI](https://img.shields.io/badge/CLI-dot%20v0.1.0-E6007A?logo=rust&logoColor=white)](cli/)
-[![Rust](https://img.shields.io/badge/dynamic/yaml?url=raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/versions.yml&query=$.versions.rust&prefix=v&label=rust&color=11116B)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.86-11116B?logo=rust&logoColor=white)](https://www.rust-lang.org/)
 ```
 
 ## Dividers

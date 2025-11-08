@@ -88,57 +88,6 @@ recipes/my-recipe/
 ```
 Note: Structure varies by recipe type (Runtime, Solidity, XCM, etc.).
 
-### `versions`
-
-View and manage dependency versions for recipes.
-
-**Usage:**
-```bash
-dot versions [OPTIONS] [SLUG]
-```
-
-**Arguments:**
-- `SLUG` - Recipe slug. Omit to show global versions.
-
-**Options:**
-- `--ci` - Output in CI format (KEY=VALUE pairs)
-- `--show-source` - Show version sources (global vs recipe override)
-- `--validate` - Validate version keys
-
-**Examples:**
-```bash
-# View global versions
-dot versions
-
-# View recipe versions
-dot versions zero-to-hero
-
-# Debug version resolution
-dot versions my-recipe --show-source
-
-# CI usage
-eval $(dot versions my-recipe --ci)
-echo "Using Rust $RUST"
-
-# Validate configuration
-dot versions my-recipe --validate
-```
-
-**Version Resolution:**
-
-
-Example:
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.5.0"
-
-versions:
-  polkadot_omni_node: "0.6.0"  # Override
-
-# Resolved: rust=1.86, polkadot_omni_node=0.6.0
-```
-
 ## Common Workflows
 
 ### Contributing a Recipe
@@ -166,34 +115,7 @@ git commit -m "feat(recipe): add my awesome recipe"
 git push origin recipe/my-awesome-recipe
 ```
 
-### Testing with Custom Versions
-
-```bash
-# Create recipe
-dot recipe create --title "Test New Version"
-
-# Edit versions
-cd recipes/test-new-version
-versions:
-  polkadot_omni_node: "0.7.0"
-metadata:
-  schema_version: "1.0"
-EOF
-
-# Verify resolution
-dot versions test-new-version --show-source
-
-# Test
-npm test
-```
-
 ## Configuration
-
-### Global Versions
-
-
-### Recipe Versions
-
 
 ### Recipe Metadata
 
@@ -224,18 +146,6 @@ dot recipe create --title "My Recipe"
 
 ```bash
 dot recipe create --title "My Recipe" --non-interactive
-```
-
-### "Failed to resolve versions"
-
-
-**Solution:** Validate YAML
-
-```bash
-# Check syntax
-
-# Use validation flag
-dot versions my-recipe --validate
 ```
 
 ## Development
