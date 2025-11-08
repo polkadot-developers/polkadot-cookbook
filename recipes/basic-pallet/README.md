@@ -1,3 +1,8 @@
+---
+title: Basic Pallet
+description: Replace with a short description.
+---
+
 # Basic Pallet
 
 > Replace this with a one-sentence description of what this recipe teaches.

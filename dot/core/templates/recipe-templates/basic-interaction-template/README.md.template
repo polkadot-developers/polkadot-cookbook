@@ -1,0 +1,70 @@
+---
+title: {{title}}
+description: {{description}}
+
+---
+
+# {{title}}
+
+{{description}}
+
+## Overview
+
+This recipe demonstrates basic chain interactions using:
+- **Polkadot API (PAPI)** - The modern, type-safe API for Polkadot
+- **TypeScript** - For type-safe development
+
+This template follows best practices using modern PAPI patterns for chain interactions.
+
+## Prerequisites
+
+- Node.js 20+
+- npm or yarn
+- Basic understanding of blockchain transactions
+- Familiarity with Polkadot chains
+
+## Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+## Running Tests
+
+This recipe includes tests for chain interactions:
+
+```bash
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+## What You'll Learn
+
+- How to connect to a Polkadot chain
+- How to query chain state
+- How to construct and submit transactions
+- How to handle transaction results
+
+## Implementation
+
+The recipe includes:
+
+- `src/chain-client.ts` - Chain connection and interaction utilities
+- `tests/interaction.test.ts` - Test suite for chain interactions
+
+## Next Steps
+
+- Explore different extrinsics
+- Implement custom transaction logic
+- Add error handling and retry logic
+
+## Resources
+
+- [Polkadot API (PAPI) Documentation](https://papi.how/)
+- [Polkadot SDK Docs](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
+- [Polkadot Documentation](https://docs.polkadot.com/)

@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "core",
-    "cli",
+    "dot/core",
+    "dot/cli",
 ]
-default-members = ["cli"]
+default-members = ["dot/cli"]
 resolver = "2"
 
 [workspace.package]

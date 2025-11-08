@@ -1,0 +1,773 @@
+---
+title: {{title}}
+description: {{description}}
+
+---
+
+# {{title}}
+
+{{description}}
+
+## Overview
+
+This tutorial teaches you how to test blockchain applications using **Chopsticks** and **Zombienet** - the essential tools for local blockchain development. You'll learn to fork live chains, create custom networks, write comprehensive tests, and debug blockchain interactions without spending real tokens.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Node.js 20+ installed
+- Docker (for Zombienet)
+- Basic understanding of blockchain testing concepts
+- Familiarity with Vitest or similar testing frameworks
+
+## What You'll Learn
+
+By completing this tutorial, you will understand:
+
+- How to fork live chains with Chopsticks for local testing
+- How to spawn multi-chain networks with Zombienet
+- How to write comprehensive blockchain tests
+- How to manipulate chain state for testing scenarios
+- How to test cross-chain interactions locally
+- How to debug and troubleshoot chain issues
+
+## Testing Tools Overview
+
+### Chopsticks
+
+**Chopsticks** is a tool for forking Substrate-based chains locally:
+- Fork any Substrate chain at any block
+- Fast execution (no block time)
+- State manipulation capabilities
+- Perfect for integration testing
+- Multi-chain support for XCM testing
+
+### Zombienet
+
+**Zombienet** spawns temporary blockchain networks:
+- Launch relay chains and parachains
+- Configure custom chain specs
+- Test production-like environments
+- End-to-end testing
+- Network behavior testing
+
+## Step-by-Step Implementation
+
+### Step 1: Project Setup
+
+Install all dependencies:
+
+```bash
+cd recipes/{{slug}}
+npm install
+```
+
+**What's installed:**
+- **@acala-network/chopsticks** - Chain forking tool
+- **@acala-network/chopsticks-testing** - Testing utilities
+- **Vitest** - Testing framework
+- **TypeScript** - Type safety
+
+### Step 2: Understanding the Project Structure
+
+```
+configs/
+├── chopsticks.yml        # Chopsticks configuration
+├── network.toml          # Zombienet network spec
+scripts/
+├── setup-chains.ts       # Chain setup utilities
+tests/
+├── chopsticks.test.ts    # Chopsticks-based tests
+├── zombienet.test.ts     # Zombienet-based tests
+├── integration.test.ts   # Integration test suite
+```
+
+**Key components:**
+- **configs/** - Network and chain configurations
+- **scripts/** - Setup and utility scripts
+- **tests/** - Test suites for different scenarios
+
+### Step 3: Configuring Chopsticks
+
+The `configs/chopsticks.yml` file configures your test chains:
+
+```yaml
+# Relay chain configuration
+relay_chain:
+  endpoint: wss://westend-rpc.polkadot.io
+  block: latest  # Or specific block number
+  port: 8000
+
+# Parachain configurations
+parachains:
+  # Asset Hub (parachain 1000)
+  - id: 1000
+    endpoint: wss://westend-asset-hub-rpc.polkadot.io
+    block: latest
+    port: 8001
+
+  # Collectives (parachain 1002)
+  - id: 1002
+    endpoint: wss://westend-collectives-rpc.polkadot.io
+    block: latest
+    port: 8002
+```
+
+**Configuration options:**
+- **endpoint** - Source chain to fork
+- **block** - Block height to fork at (use numbers for consistency)
+- **port** - Local port for the forked chain
+- **db** - Optional: Path to cache database
+
+**Why specific blocks?** Using `latest` can cause inconsistencies between test runs. In production tests, use specific block numbers.
+
+### Step 4: Starting Chopsticks
+
+Launch your local test chains:
+
+```bash
+# Start all configured chains
+npm run chopsticks
+
+# Start with custom config
+npx chopsticks --config=configs/custom.yml
+
+# Start single chain
+npx chopsticks --endpoint=wss://rpc.polkadot.io --block=12345678
+```
+
+**What happens:**
+1. Downloads chain state at specified block
+2. Creates local node with forked state
+3. Exposes RPC endpoint (default: ws://localhost:8000)
+4. Ready to accept transactions
+
+**Pro tip:** Chopsticks caches state in `.chopsticks/` for faster startup. Clear cache if needed:
+```bash
+rm -rf .chopsticks
+```
+
+### Step 5: Basic Chopsticks Testing
+
+Write your first test in `tests/chopsticks.test.ts`:
+
+```typescript
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { setupChains } from "@acala-network/chopsticks-testing";
+import { createClient } from "polkadot-api";
+import { getWsProvider } from "polkadot-api/ws-provider/web";
+
+describe("Chopsticks Basic Tests", () => {
+  let chain, client, api;
+
+  beforeAll(async () => {
+    // Setup forked chain
+    chain = await setupChains({
+      endpoint: "wss://westend-rpc.polkadot.io",
+      block: 12345678
+    });
+
+    // Connect client
+    const provider = getWsProvider(chain.wsUrl);
+    client = createClient(provider);
+    api = client.getTypedApi(descriptor);
+  });
+
+  afterAll(async () => {
+    await client.destroy();
+  });
+
+  it("reads chain state", async () => {
+    const blockNumber = await api.query.System.Number.getValue();
+    expect(blockNumber).toBe(12345678);
+  });
+
+  it("queries account balance", async () => {
+    const account = await api.query.System.Account.getValue(testAddress);
+    expect(account.data.free).toBeGreaterThan(0n);
+  });
+});
+```
+
+**Test structure:**
+1. **beforeAll** - Setup chains and connections
+2. **Test cases** - Individual test scenarios
+3. **afterAll** - Cleanup connections
+
+### Step 6: State Manipulation
+
+Chopsticks allows manipulating chain state for testing:
+
+```typescript
+import { setStorage } from "@acala-network/chopsticks-testing";
+
+describe("State Manipulation", () => {
+  it("sets account balance", async () => {
+    // Set balance to specific value
+    await setStorage(chain, {
+      System: {
+        Account: [
+          [testAddress, {
+            data: {
+              free: 1000000000000n,
+              reserved: 0n,
+              frozen: 0n
+            },
+            nonce: 0,
+            consumers: 0,
+            providers: 1,
+            sufficients: 0
+          }]
+        ]
+      }
+    });
+
+    // Verify balance was set
+    const account = await api.query.System.Account.getValue(testAddress);
+    expect(account.data.free).toBe(1000000000000n);
+  });
+
+  it("manipulates custom pallet storage", async () => {
+    await setStorage(chain, {
+      CustomPallet: {
+        SomeValue: 42
+      }
+    });
+
+    const value = await api.query.CustomPallet.SomeValue.getValue();
+    expect(value).toBe(42);
+  });
+});
+```
+
+**State manipulation use cases:**
+- Set up test accounts with specific balances
+- Configure governance settings
+- Pre-populate storage for tests
+- Reset state between tests
+
+### Step 7: Testing Transactions
+
+Test transaction execution on forked chains:
+
+```typescript
+describe("Transaction Testing", () => {
+  it("submits balance transfer", async () => {
+    const initialBalance = await getBalance(api, recipient);
+
+    // Create and submit transaction
+    const tx = api.tx.Balances.transfer_allow_death({
+      dest: recipient,
+      value: 1_000_000_000n
+    });
+
+    await tx.signAndSubmit(signer);
+
+    // Advance chain state
+    await chain.newBlock();
+
+    // Verify transfer
+    const finalBalance = await getBalance(api, recipient);
+    expect(finalBalance).toBe(initialBalance + 1_000_000_000n);
+  });
+
+  it("handles transaction failure", async () => {
+    // Create transaction with insufficient balance
+    const tx = api.tx.Balances.transfer_allow_death({
+      dest: recipient,
+      value: 999_999_999_999_999n  // More than balance
+    });
+
+    // Expect failure
+    await expect(
+      tx.signAndSubmit(signer)
+    ).rejects.toThrow();
+  });
+});
+```
+
+**Key patterns:**
+- Check initial state
+- Execute transaction
+- Advance blocks with `chain.newBlock()`
+- Verify final state
+- Test error conditions
+
+### Step 8: Multi-Chain Testing (XCM)
+
+Test cross-chain interactions:
+
+```typescript
+describe("XCM Testing", () => {
+  let relayChain, assetHub;
+
+  beforeAll(async () => {
+    const chains = await setupChains({
+      relaychain: {
+        endpoint: "wss://westend-rpc.polkadot.io",
+        block: 12345678
+      },
+      parachains: [
+        {
+          paraId: 1000,
+          endpoint: "wss://westend-asset-hub-rpc.polkadot.io",
+          block: 12345678
+        }
+      ]
+    });
+
+    relayChain = chains.relaychain;
+    assetHub = chains.parachains[0];
+  });
+
+  it("transfers assets to relay chain", async () => {
+    const initialBalance = await getBalance(relayChain, account);
+
+    // Execute XCM transfer from Asset Hub
+    await executeXcmTransfer(assetHub, {
+      dest: relayChain,
+      amount: 1_000_000_000n,
+      beneficiary: account
+    });
+
+    // Progress both chains
+    await assetHub.newBlock();
+    await relayChain.newBlock();
+
+    // Verify assets arrived
+    const finalBalance = await getBalance(relayChain, account);
+    expect(finalBalance).toBeGreaterThan(initialBalance);
+  });
+
+  it("handles failed XCM", async () => {
+    // Test XCM failure scenarios
+    await executeXcmTransfer(assetHub, {
+      dest: relayChain,
+      amount: 1n, // Too small, fees will exceed
+      beneficiary: account
+    });
+
+    await assetHub.newBlock();
+    await relayChain.newBlock();
+
+    // Check for trapped assets
+    const trapped = await assetHub.api.query.PolkadotXcm.AssetTraps.getEntries();
+    expect(trapped.length).toBeGreaterThan(0);
+  });
+});
+```
+
+**XCM testing tips:**
+- Fork both source and destination chains
+- Use same block height for consistency
+- Progress both chains after XCM
+- Test success and failure scenarios
+- Check trapped assets
+
+### Step 9: Configuring Zombienet
+
+Create a network configuration in `configs/network.toml`:
+
+```toml
+[relaychain]
+chain = "rococo-local"
+default_command = "polkadot"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+
+[[parachains]]
+id = 1000
+chain = "asset-hub-rococo-local"
+default_command = "polkadot-parachain"
+
+[[parachains.collators]]
+name = "asset-hub-collator-1"
+command = "polkadot-parachain"
+
+[[parachains]]
+id = 2000
+chain = "custom-parachain"
+default_command = "./target/release/parachain-node"
+
+[[parachains.collators]]
+name = "custom-collator-1"
+```
+
+**Configuration sections:**
+- **relaychain** - Relay chain configuration
+- **relaychain.nodes** - Validator nodes
+- **parachains** - Parachain configurations
+- **parachains.collators** - Collator nodes
+
+### Step 10: Launching Zombienet
+
+Start your network:
+
+```bash
+# Launch network
+npm run zombienet
+
+# Launch with custom config
+zombienet spawn ./configs/custom.toml
+
+# Specify binaries
+zombienet spawn --provider native ./configs/network.toml \
+  --relaychain-bin=/path/to/polkadot \
+  --parachain-bin=/path/to/parachain
+```
+
+**What happens:**
+1. Downloads or uses specified binaries
+2. Generates chain specs
+3. Starts relay chain validators
+4. Registers and starts parachains
+5. Exposes RPC endpoints
+
+**Network endpoints:**
+- Relay Alice: `ws://127.0.0.1:9944`
+- Relay Bob: `ws://127.0.0.1:9945`
+- Parachain: `ws://127.0.0.1:9946`
+
+### Step 11: Testing with Zombienet
+
+Write integration tests against Zombienet:
+
+```typescript
+describe("Zombienet Integration Tests", () => {
+  it("connects to network", async () => {
+    // Connect to relay chain
+    const relayProvider = getWsProvider("ws://127.0.0.1:9944");
+    const relayClient = createClient(relayProvider);
+    const relayApi = relayClient.getTypedApi(relayDescriptor);
+
+    // Verify network is running
+    const blockNumber = await relayApi.query.System.Number.getValue();
+    expect(blockNumber).toBeGreaterThan(0);
+
+    // Connect to parachain
+    const paraProvider = getWsProvider("ws://127.0.0.1:9946");
+    const paraClient = createClient(paraProvider);
+    const paraApi = paraClient.getTypedApi(paraDescriptor);
+
+    // Verify parachain is producing blocks
+    const paraBlock = await paraApi.query.System.Number.getValue();
+    expect(paraBlock).toBeGreaterThan(0);
+  });
+
+  it("tests cross-chain transfer", async () => {
+    // Test XCM transfer in Zombienet environment
+    // ... implementation
+  });
+});
+```
+
+### Step 12: Advanced Testing Patterns
+
+#### Time Travel Testing
+
+```typescript
+it("advances time to test time-dependent logic", async () => {
+  // Current timestamp
+  const now = await api.query.Timestamp.Now.getValue();
+
+  // Advance time by 1 hour
+  await chain.setTimestamp(now + 3600000);
+  await chain.newBlock();
+
+  // Test time-dependent functionality
+  const canExecute = await api.query.Scheduler.Agenda.getValue(nextBlock);
+  expect(canExecute.length).toBeGreaterThan(0);
+});
+```
+
+#### Block Production Testing
+
+```typescript
+it("produces multiple blocks", async () => {
+  const startBlock = await api.query.System.Number.getValue();
+
+  // Produce 10 blocks
+  for (let i = 0; i < 10; i++) {
+    await chain.newBlock();
+  }
+
+  const endBlock = await api.query.System.Number.getValue();
+  expect(endBlock).toBe(startBlock + 10);
+});
+```
+
+#### Event Filtering Tests
+
+```typescript
+it("filters and validates events", async () => {
+  // Execute transaction
+  await tx.signAndSubmit(signer);
+  await chain.newBlock();
+
+  // Get events from last block
+  const events = await api.query.System.Events.getValue();
+
+  // Filter specific events
+  const transfers = events.filter(e => e.type === "Balances.Transfer");
+  expect(transfers).toHaveLength(1);
+
+  const [transfer] = transfers;
+  expect(transfer.data.from).toBe(sender);
+  expect(transfer.data.to).toBe(recipient);
+  expect(transfer.data.amount).toBe(expectedAmount);
+});
+```
+
+#### Runtime Upgrade Testing
+
+```typescript
+it("tests runtime upgrade", async () => {
+  // Current version
+  const beforeVersion = await api.constants.System.Version();
+
+  // Upload new runtime
+  const upgradeCode = fs.readFileSync("./new-runtime.wasm");
+  const upgradeTx = api.tx.System.set_code({
+    code: Array.from(upgradeCode)
+  });
+
+  await upgradeTx.signAndSubmit(rootSigner);
+  await chain.newBlock();
+
+  // Verify upgrade
+  const afterVersion = await api.constants.System.Version();
+  expect(afterVersion.spec_version).toBeGreaterThan(beforeVersion.spec_version);
+});
+```
+
+## Testing Best Practices
+
+### 1. Deterministic Tests
+
+```typescript
+// Good: Use specific block numbers
+const chain = await setupChains({
+  endpoint: "wss://...",
+  block: 12345678  // Deterministic
+});
+
+// Bad: Use latest
+const chain = await setupChains({
+  endpoint: "wss://...",
+  block: "latest"  // Non-deterministic
+});
+```
+
+### 2. Isolated Tests
+
+```typescript
+describe("Isolated Tests", () => {
+  beforeEach(async () => {
+    // Reset chain state before each test
+    await chain.resetState();
+  });
+
+  it("test 1", async () => {
+    // This test won't affect test 2
+  });
+
+  it("test 2", async () => {
+    // Clean slate
+  });
+});
+```
+
+### 3. Cleanup Resources
+
+```typescript
+afterAll(async () => {
+  // Always cleanup
+  await client.destroy();
+  await chain.stop();
+});
+```
+
+### 4. Test Error Cases
+
+```typescript
+it("handles errors properly", async () => {
+  // Test insufficient balance
+  await expect(
+    transfer(999_999_999_999n)
+  ).rejects.toThrow("Insufficient balance");
+
+  // Test invalid address
+  await expect(
+    transfer(1000n, "invalid")
+  ).rejects.toThrow("Invalid address");
+});
+```
+
+## Debugging Techniques
+
+### Enable Debug Logging
+
+```typescript
+// Chopsticks with debug logs
+await setupChains({
+  endpoint: "wss://...",
+  logLevel: "debug"
+});
+```
+
+### Inspect Storage
+
+```typescript
+// Dump entire storage key
+const storage = await chain.api.query.System.Account.getEntries();
+console.log("All accounts:", storage);
+```
+
+### Trace Transactions
+
+```typescript
+// Get detailed transaction result
+const result = await tx.signAndSubmit(signer, {
+  at: "best",
+  waitFor: "InBlock"
+});
+
+console.log("Tx hash:", result.txHash);
+console.log("Block hash:", result.blockHash);
+console.log("Events:", result.events);
+```
+
+## Performance Optimization
+
+### Parallel Test Execution
+
+```typescript
+// Run independent tests in parallel
+describe.concurrent("Parallel Tests", () => {
+  it("test 1", async () => { /* ... */ });
+  it("test 2", async () => { /* ... */ });
+  it("test 3", async () => { /* ... */ });
+});
+```
+
+### Reuse Chain Instances
+
+```typescript
+// Setup once for entire suite
+let sharedChain;
+
+beforeAll(async () => {
+  sharedChain = await setupChains(config);
+});
+
+// Reuse in all tests
+it("test 1", async () => {
+  await sharedChain.newBlock();
+});
+```
+
+### Cache Chain State
+
+```bash
+# Chopsticks caches in .chopsticks/
+# Reuse between test runs
+npm run chopsticks  # First run: downloads state
+npm test            # Uses cached state
+```
+
+## Next Steps
+
+Now that you've completed this tutorial, try:
+
+1. **Advanced Scenarios**
+   - Test governance proposals
+   - Simulate network conditions
+   - Test cross-chain message failures
+
+2. **Custom Networks**
+   - Build custom Zombienet configurations
+   - Test with your own parachains
+   - Simulate validator behavior
+
+3. **Continuous Integration**
+   - Integrate tests into CI/CD
+   - Automate network spawning
+   - Generate test reports
+
+4. **Production Testing**
+   - Fork mainnet for issue reproduction
+   - Test upgrades before deployment
+   - Validate migrations
+
+## Resources
+
+- [Chopsticks Documentation](https://github.com/AcalaNetwork/chopsticks)
+- [Zombienet Documentation](https://github.com/paritytech/zombienet)
+- [Substrate Testing Guide](https://docs.substrate.io/test/)
+- [Vitest Documentation](https://vitest.dev/)
+
+## Troubleshooting
+
+### Chopsticks Issues
+
+**Chain fails to start:**
+- Verify endpoint is accessible
+- Check port is not in use
+- Try specific block instead of "latest"
+- Clear cache: `rm -rf .chopsticks`
+
+**State inconsistencies:**
+- Use specific block numbers
+- Reset state between tests
+- Check for async timing issues
+
+**Memory issues:**
+- Limit number of chains
+- Clear cache regularly
+- Use shorter test suites
+
+### Zombienet Issues
+
+**Network doesn't start:**
+- Verify binaries are correct
+- Check Docker is running (if using Docker provider)
+- Ensure ports are available
+- Check logs in temp directory
+
+**Parachains not producing blocks:**
+- Verify relay chain is running
+- Check collator configuration
+- Ensure parachain ID is registered
+
+**Connection failures:**
+- Wait for network initialization
+- Use health checks before tests
+- Verify RPC endpoints
+
+### Test Failures
+
+**Flaky tests:**
+- Use deterministic block numbers
+- Add proper wait conditions
+- Avoid timing assumptions
+
+**Slow tests:**
+- Run tests in parallel
+- Reuse chain instances
+- Cache chain state
+
+**Memory leaks:**
+- Always cleanup connections
+- Stop chains after tests
+- Clear event subscriptions
+
+## License
+
+MIT OR Apache-2.0

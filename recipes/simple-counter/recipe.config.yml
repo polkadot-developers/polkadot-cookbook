@@ -1,8 +1,0 @@
-name: Simple Counter
-slug: simple-counter
-version: 0.1.0  # Semantic version for this recipe
-category: smart-contracts
-needs_node: true
-description: A simple counter smart contract using pallet-revive
-type: solidity
-difficulty: beginner

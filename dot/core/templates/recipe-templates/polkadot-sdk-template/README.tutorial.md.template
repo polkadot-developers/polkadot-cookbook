@@ -1,0 +1,304 @@
+---
+title: {{title}}
+description: {{description}}
+
+---
+
+# {{title}}
+
+> Replace this with a one-sentence description of what this tutorial teaches.
+
+## Overview
+
+<!-- Replace with 2-3 paragraphs explaining:
+- What problem this tutorial solves
+- Who should take this tutorial
+- What they will learn and build
+-->
+
+This tutorial guides you through building a complete FRAME pallet from scratch. You'll learn fundamental concepts while implementing a working solution that you can extend and customize.
+
+## Prerequisites
+
+Before starting this tutorial, ensure you have:
+
+- Rust {{rust_version}} or later
+- Basic understanding of Rust programming
+- Familiarity with blockchain concepts
+- Node.js 20+ for testing (optional)
+
+## What You'll Learn
+
+By the end of this tutorial, you will understand:
+
+- How to structure a FRAME pallet
+- How to implement storage items and their types
+- How to create dispatchable functions (extrinsics)
+- How to emit events and handle errors
+- How to write comprehensive tests with a mock runtime
+- How to integrate your pallet into a runtime
+
+## Step-by-Step Implementation
+
+### Step 1: Understanding the Pallet Structure
+
+The pallet is located in `pallets/template/` and follows the FRAME architecture:
+
+```
+pallets/template/
+├── src/
+│   ├── lib.rs           # Main pallet logic
+│   ├── benchmarking.rs  # Performance benchmarks
+│   └── tests.rs         # Unit tests
+└── Cargo.toml           # Dependencies
+```
+
+**Key Components:**
+- **Storage**: Persistent data stored on-chain
+- **Events**: Notifications emitted when state changes
+- **Errors**: Custom error types for better error handling
+- **Dispatchable functions**: Callable extrinsics that users can invoke
+
+### Step 2: Defining Storage
+
+Storage items persist data on-chain. Here's how to define them:
+
+```rust
+#[pallet::storage]
+pub type Something<T> = StorageValue<_, u32>;
+```
+
+**Why this matters:** Storage is how your pallet remembers state between blocks. Each storage item has a cost, so design carefully.
+
+### Step 3: Creating Dispatchable Functions
+
+Dispatchable functions are the public API of your pallet:
+
+```rust
+#[pallet::call]
+impl<T: Config> Pallet<T> {
+    pub fn store_something(origin: OriginFor<T>, value: u32) -> DispatchResult {
+        let who = ensure_signed(origin)?;
+        <Something<T>>::put(value);
+        Self::deposit_event(Event::SomethingStored { value, who });
+        Ok(())
+    }
+}
+```
+
+**Breaking it down:**
+1. `ensure_signed(origin)?` - Verifies the caller is a signed account
+2. `<Something<T>>::put(value)` - Writes to storage
+3. `Self::deposit_event(...)` - Emits an event for indexers and UIs
+
+### Step 4: Emitting Events
+
+Events notify external systems about state changes:
+
+```rust
+#[pallet::event]
+#[pallet::generate_deposit(pub(super) fn deposit_event)]
+pub enum Event<T: Config> {
+    SomethingStored { value: u32, who: T::AccountId },
+}
+```
+
+**Best practice:** Always emit events when storage changes. This helps users track what happened and enables off-chain indexing.
+
+### Step 5: Handling Errors
+
+Define custom errors for better debugging:
+
+```rust
+#[pallet::error]
+pub enum Error<T> {
+    NoneValue,
+    StorageOverflow,
+}
+```
+
+Use errors in your code:
+```rust
+let current = Something::<T>::get().ok_or(Error::<T>::NoneValue)?;
+```
+
+## Testing Your Pallet
+
+The tutorial includes comprehensive tests demonstrating best practices:
+
+### Running Tests
+
+```bash
+# Run all tests
+just test
+
+# Run with detailed output
+just test-verbose
+
+# Run a specific test
+cargo test it_works_for_default_value
+```
+
+### Understanding the Test Structure
+
+The tests use a mock runtime to simulate blockchain behavior:
+
+```rust
+#[test]
+fn it_works_for_default_value() {
+    new_test_ext().execute_with(|| {
+        // Test your pallet logic here
+    });
+}
+```
+
+**What's happening:**
+1. `new_test_ext()` - Creates a test environment
+2. `execute_with()` - Executes code in the test context
+3. Inside, you can call your pallet functions and assert results
+
+### Test Coverage
+
+The included tests demonstrate:
+- Basic storage operations
+- Event emission verification
+- Error handling scenarios
+- Permission checks (signed vs root origin)
+
+## Benchmarking (Optional)
+
+Benchmarking measures the computational cost of your extrinsics for weight calculation.
+
+### Understanding Weights
+
+In Substrate, every extrinsic has a "weight" representing computational cost. Accurate weights ensure:
+- Fair transaction fees
+- Prevention of DOS attacks
+- Predictable block production times
+
+### Running Benchmarks
+
+```bash
+# Build with benchmarking feature
+cargo build --release --features runtime-benchmarks
+```
+
+**Note:** Full benchmark execution requires integrating the pallet into a runtime. The provided code serves as a template.
+
+## Building and Deploying
+
+### Development Build
+
+```bash
+# Check code compiles
+just check
+
+# Build the pallet
+just build
+
+# Run all checks (format, clippy, tests)
+just ci
+```
+
+### Production Build
+
+```bash
+# Build optimized release version
+cargo build --release
+
+# Run tests in release mode
+cargo test --release
+```
+
+## Integrating Into a Runtime
+
+Once your pallet works, integrate it into a Substrate runtime:
+
+### Step 1: Add Dependency
+
+In your runtime's `Cargo.toml`:
+```toml
+[dependencies]
+pallet-template = { path = "../pallets/template", default-features = false }
+
+[features]
+std = [
+    "pallet-template/std",
+]
+```
+
+### Step 2: Configure the Pallet
+
+In your runtime's `lib.rs`:
+```rust
+impl pallet_template::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
+}
+```
+
+### Step 3: Add to Runtime
+
+```rust
+construct_runtime!(
+    pub enum Runtime {
+        System: frame_system,
+        // ... other pallets
+        TemplateModule: pallet_template,
+    }
+);
+```
+
+## Next Steps
+
+Now that you've completed this tutorial, try:
+
+1. **Extend the Pallet**
+   - Add more storage items
+   - Create additional dispatchable functions
+   - Implement access control logic
+
+2. **Advanced Features**
+   - Add hooks (on_initialize, on_finalize)
+   - Implement off-chain workers
+   - Create signed extensions
+
+3. **Testing & Deployment**
+   - Write integration tests
+   - Deploy to a local testnet
+   - Connect a frontend using Polkadot.js
+
+4. **Learn More**
+   - Explore other pallets in the FRAME system
+   - Study production pallets in the Polkadot SDK
+   - Join the Substrate developer community
+
+## Resources
+
+- [FRAME Documentation](https://docs.substrate.io/reference/frame-pallets/)
+- [Pallet Development Guide](https://docs.substrate.io/build/custom-pallets/)
+- [Substrate Tutorials](https://docs.substrate.io/tutorials/)
+- [Polkadot SDK Reference](https://paritytech.github.io/polkadot-sdk/)
+
+## Troubleshooting
+
+### Common Issues
+
+**Build Errors:**
+- Ensure Rust version matches {{rust_version}}+
+- Run `cargo clean` and rebuild
+- Check that all dependencies are compatible
+
+**Test Failures:**
+- Verify mock runtime configuration
+- Check storage initialization
+- Ensure events are emitted correctly
+
+**Integration Issues:**
+- Confirm pallet is in `construct_runtime!` macro
+- Verify `Config` trait implementation
+- Check feature flags match runtime
+
+## License
+
+MIT OR Apache-2.0

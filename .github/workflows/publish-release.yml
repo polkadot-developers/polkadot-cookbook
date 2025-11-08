@@ -4,8 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - 'releases/v*/manifest.yml'
-      - 'releases/v*/RELEASE_NOTES.md'
+      - '.github/releases/v*/manifest.yml'
+      - '.github/releases/v*/RELEASE_NOTES.md'
 
 jobs:
   detect-version:
@@ -26,7 +26,7 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
 
           # Find release version from changed manifest
-          VERSION=$(echo "$CHANGED_FILES" | grep -oP 'releases/\K(v[0-9]+\.[0-9]+\.[0-9]+)' | head -1)
+          VERSION=$(echo "$CHANGED_FILES" | grep -oP '\.github/releases/\K(v[0-9]+\.[0-9]+\.[0-9]+)' | head -1)
 
           if [ -z "$VERSION" ]; then
             echo "No release version detected"
@@ -86,14 +86,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           targets: ${{ matrix.target }}
 
       - name: Install cross (for cross-compilation)
         if: matrix.cross
         run: |
-          cargo install cross --git https://github.com/cross-rs/cross
+          cargo install cross --git https://github.com/cross-rs/cross --locked
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -105,9 +105,9 @@ jobs:
         run: |
           cd cli
           if [ "${{ matrix.cross }}" = "true" ]; then
-            cross build --release --target ${{ matrix.target }}
+            cross build --release --locked --target ${{ matrix.target }}
           else
-            cargo build --release --target ${{ matrix.target }}
+            cargo build --release --locked --target ${{ matrix.target }}
           fi
 
       - name: Prepare binary
@@ -131,11 +131,11 @@ jobs:
             strip ${{ matrix.artifact_name }} || true
           fi
 
-          # Create archive in cli directory
+          # Create archive in dot/cli directory
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a "$GITHUB_WORKSPACE/cli/${{ matrix.asset_name }}.zip" ${{ matrix.artifact_name }}
+            7z a "$GITHUB_WORKSPACE/dot/cli/${{ matrix.asset_name }}.zip" ${{ matrix.artifact_name }}
           else
-            tar czf "$GITHUB_WORKSPACE/cli/${{ matrix.asset_name }}.tar.gz" ${{ matrix.artifact_name }}
+            tar czf "$GITHUB_WORKSPACE/dot/cli/${{ matrix.asset_name }}.tar.gz" ${{ matrix.artifact_name }}
           fi
 
       - name: Upload artifact
@@ -143,8 +143,8 @@ jobs:
         with:
           name: ${{ matrix.asset_name }}
           path: |
-            cli/${{ matrix.asset_name }}.tar.gz
-            cli/${{ matrix.asset_name }}.zip
+            dot/cli/${{ matrix.asset_name }}.tar.gz
+            dot/cli/${{ matrix.asset_name }}.zip
           if-no-files-found: error
 
   publish-release:
@@ -209,8 +209,8 @@ jobs:
           # Create release with manifest and CLI binaries
           gh release create $VERSION \
             --title "$TITLE" \
-            --notes-file "releases/$VERSION/RELEASE_NOTES.md" \
-            "releases/$VERSION/manifest.yml" \
+            --notes-file ".github/releases/$VERSION/RELEASE_NOTES.md" \
+            ".github/releases/$VERSION/manifest.yml" \
             $CLI_ASSETS
 
           echo "✅ Created GitHub Release $VERSION with CLI binaries"
