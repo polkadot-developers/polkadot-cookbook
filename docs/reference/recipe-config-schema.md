@@ -507,7 +507,6 @@ type: "polkadot-sdk"  # Added
 ## Related Documentation
 
 - **[Recipe Guidelines](../contributors/recipe-guidelines.md)** - Recipe structure standards
-- **[Versions Schema](versions-schema.md)** - Version override format
 - **[Manifest Schema](manifest-schema.md)** - Release manifest format
 - **[SDK Guide](../developers/sdk-guide.md)** - Programmatic config access
 

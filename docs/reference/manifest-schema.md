@@ -603,7 +603,6 @@ Manifests are automatically validated during generation:
 ## Related Documentation
 
 - **[Recipe Config Schema](recipe-config-schema.md)** - Recipe metadata format
-- **[Versions Schema](versions-schema.md)** - Version configuration
 - **[Release Process](../maintainers/release-process.md)** - How releases work
 - **[Workflows Guide](../maintainers/workflows.md)** - CI/CD workflows
 

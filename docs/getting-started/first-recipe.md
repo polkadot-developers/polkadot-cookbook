@@ -119,7 +119,6 @@ cd recipes/my-first-pallet
 recipes/my-first-pallet/
 ├── README.md              # Recipe content and documentation
 ├── recipe.config.yml      # Metadata and configuration
-├── versions.yml           # Dependency version overrides (optional)
 ├── package.json           # npm dependencies (TypeScript recipes)
 ├── tsconfig.json          # TypeScript configuration
 ├── vitest.config.ts       # Test configuration
@@ -162,7 +161,6 @@ type: "polkadot-sdk"
 - `pathway`: Category for organization
 - `difficulty`: Helps users find appropriate content
 
-#### `versions.yml` (Optional)
 Override global dependency versions for this recipe:
 
 ```yaml
@@ -173,7 +171,6 @@ versions:
 
 Only include if your recipe needs different versions than the global defaults.
 
-For more on version management, see [Version Management Guide](../maintainers/version-management.md).
 
 ---
 
@@ -317,7 +314,6 @@ dot recipe validate my-first-pallet
 **This checks:**
 - `recipe.config.yml` exists and is valid
 - `README.md` exists
-- `versions.yml` is valid (if present)
 - All version keys are recognized
 
 **Expected output:**
@@ -327,7 +323,6 @@ dot recipe validate my-first-pallet
 Checks:
   ✓ recipe.config.yml exists
   ✓ README.md exists
-  ✓ versions.yml is valid
   ✓ All version keys are known
 ```
 

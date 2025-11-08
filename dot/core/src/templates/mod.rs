@@ -7,14 +7,11 @@ pub mod readme;
 pub mod recipe_yml;
 /// Test file template
 pub mod test;
-/// Versions YAML template for dependency management
-pub mod versions_yml;
 
 pub use justfile::JustfileTemplate;
 pub use readme::ReadmeTemplate;
 pub use recipe_yml::RecipeYmlTemplate;
 pub use test::TestTemplate;
-pub use versions_yml::VersionsYmlTemplate;
 
 /// Template trait for all template generators
 pub trait Template {

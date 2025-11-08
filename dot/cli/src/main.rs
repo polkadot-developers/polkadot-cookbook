@@ -9,7 +9,6 @@ use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, s
 use colored::Colorize;
 use polkadot_cookbook_core::{
     config::{ContentType, Difficulty, ProjectConfig, RecipePathway, RecipeType},
-    version::{load_global_versions, resolve_recipe_versions, VersionSource},
     Scaffold,
 };
 use std::path::{Path, PathBuf};
@@ -79,24 +78,6 @@ enum Commands {
     Setup,
     /// Check environment and diagnose issues
     Doctor,
-    /// Manage and view dependency versions
-    Versions {
-        /// Recipe slug to resolve versions for (omit for global versions only)
-        #[arg(value_name = "SLUG")]
-        recipe_slug: Option<String>,
-
-        /// Output format for CI/automation (key=value pairs)
-        #[arg(long, default_value = "false")]
-        ci: bool,
-
-        /// Show version sources (global vs recipe override)
-        #[arg(long, default_value = "false")]
-        show_source: bool,
-
-        /// Validate versions.yml syntax and warn about unknown keys
-        #[arg(long, default_value = "false")]
-        validate: bool,
-    },
 }
 
 #[derive(Subcommand)]
@@ -188,14 +169,6 @@ async fn main() -> Result<()> {
         }
         Commands::Doctor => {
             handle_doctor().await?;
-        }
-        Commands::Versions {
-            recipe_slug,
-            ci,
-            show_source,
-            validate,
-        } => {
-            handle_versions(recipe_slug, ci, show_source, validate).await?;
         }
     }
 
@@ -781,163 +754,6 @@ async fn run_non_interactive(
             eprintln!("❌ Failed to create recipe: {e}");
             std::process::exit(1);
         }
-    }
-
-    Ok(())
-}
-
-async fn handle_versions(
-    recipe_slug: Option<String>,
-    ci_format: bool,
-    show_source: bool,
-    validate: bool,
-) -> Result<()> {
-    let repo_root = Path::new(".");
-
-    // Validate working directory
-    if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
-        if !ci_format {
-            eprintln!("❌ Invalid working directory: {e}");
-            eprintln!("Please run this command from the repository root.");
-        } else {
-            eprintln!("Error: {e}");
-        }
-        std::process::exit(1);
-    }
-
-    // Resolve versions with better error handling
-    let resolved = match &recipe_slug {
-        Some(slug) => match resolve_recipe_versions(repo_root, slug).await {
-            Ok(v) => v,
-            Err(e) => {
-                if !ci_format {
-                    eprintln!("❌ Failed to resolve versions: {e}");
-                    eprintln!();
-                    eprintln!("Possible causes:");
-                    eprintln!("  • Recipe directory doesn't exist");
-                    eprintln!("  • versions.yml has invalid YAML syntax");
-                    eprintln!("  • Global versions.yml is missing or invalid");
-                    eprintln!();
-                    eprintln!("Tip: Validate YAML syntax:");
-                    eprintln!("  yq eval recipes/{slug}/versions.yml");
-                } else {
-                    eprintln!("Error resolving versions: {e}");
-                }
-                std::process::exit(1);
-            }
-        },
-        None => match load_global_versions(repo_root).await {
-            Ok(v) => v,
-            Err(e) => {
-                if !ci_format {
-                    eprintln!("❌ Failed to load global versions: {e}");
-                    eprintln!();
-                    eprintln!("Possible causes:");
-                    eprintln!("  • Global versions.yml is missing");
-                    eprintln!("  • versions.yml has invalid YAML syntax");
-                    eprintln!();
-                    eprintln!("Tip: Validate YAML syntax:");
-                    eprintln!("  yq eval versions.yml");
-                } else {
-                    eprintln!("Error loading global versions: {e}");
-                }
-                std::process::exit(1);
-            }
-        },
-    };
-
-    // Validation mode
-    if validate {
-        let known_keys = vec![
-            "rust",
-            "polkadot_omni_node",
-            "chain_spec_builder",
-            "frame_omni_bencher",
-        ];
-
-        let mut has_warnings = false;
-        let mut unknown_keys = Vec::new();
-
-        for key in resolved.versions.keys() {
-            if !known_keys.contains(&key.as_str()) {
-                unknown_keys.push(key.clone());
-                has_warnings = true;
-            }
-        }
-
-        if !has_warnings {
-            intro("Validation Result")?;
-
-            let mut valid_keys = String::new();
-            valid_keys.push_str(&format!(
-                "Found {} valid version keys:\n\n",
-                resolved.versions.len()
-            ));
-            for key in resolved.versions.keys() {
-                valid_keys.push_str(&format!("• {}\n", key.polkadot_pink()));
-            }
-
-            note("✅", valid_keys.trim_end())?;
-            outro("All version keys are valid!")?;
-        } else {
-            intro("Validation Warnings")?;
-
-            let mut warnings_text = String::new();
-            warnings_text.push_str("Unknown keys:\n\n");
-            for key in &unknown_keys {
-                warnings_text.push_str(&format!("• {}\n", key.yellow()));
-            }
-            warnings_text.push_str("\nKnown keys:\n\n");
-            for key in &known_keys {
-                warnings_text.push_str(&format!("• {}\n", key.polkadot_pink()));
-            }
-            warnings_text.push_str("\nNote: Unknown keys will be ignored by the workflow.");
-
-            note("⚠️", warnings_text.trim_end())?;
-            outro("Validation complete with warnings")?;
-        }
-
-        return Ok(());
-    }
-
-    if ci_format {
-        // Output in CI-friendly format: KEY=VALUE
-        for (name, version) in &resolved.versions {
-            // Convert to SCREAMING_SNAKE_CASE for environment variables
-            let env_name = name.to_uppercase();
-            println!("{env_name}={version}");
-        }
-    } else {
-        // Human-readable format with Polkadot colors using cliclack
-        if let Some(slug) = &recipe_slug {
-            let title = format!("Versions for recipe: {}", slug.polkadot_pink());
-            intro(&title)?;
-        } else {
-            intro("Global versions")?;
-        }
-
-        // Build the versions content
-        let mut versions_text = String::new();
-        for (name, version) in &resolved.versions {
-            if show_source {
-                let source = match resolved.get_source(name) {
-                    Some(VersionSource::Global) => "global".dimmed().to_string(),
-                    Some(VersionSource::Recipe) => "recipe".polkadot_pink().to_string(),
-                    None => "unknown".dimmed().to_string(),
-                };
-                versions_text.push_str(&format!(
-                    "{}  {}  ({})\n",
-                    name.polkadot_pink(),
-                    version,
-                    source
-                ));
-            } else {
-                versions_text.push_str(&format!("{}  {}\n", name.polkadot_pink(), version));
-            }
-        }
-
-        note("📦", versions_text.trim_end())?;
-        outro("Done")?;
     }
 
     Ok(())

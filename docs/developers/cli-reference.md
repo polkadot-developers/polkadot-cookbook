@@ -101,7 +101,7 @@ dot recipe create --title "Quick Test" --skip-install --non-interactive
 recipes/my-recipe/
 ├── README.md              # Recipe content and documentation
 ├── recipe.config.yml      # Metadata and configuration
-├── versions.yml           # Dependency version overrides
+├── rust-toolchain.toml    # Rust version specification (Polkadot SDK recipes)
 ├── package.json           # npm dependencies (TypeScript recipes)
 ├── tsconfig.json          # TypeScript configuration
 ├── vitest.config.ts       # Test configuration
@@ -115,100 +115,6 @@ Note: Structure varies by recipe type (Runtime, Solidity, XCM, etc.)
 **Exit Codes:**
 - `0` - Success
 - `1` - Error (invalid input, file system error, etc.)
-
----
-
-### `versions`
-
-View and manage dependency versions for recipes.
-
-**Usage:**
-```bash
-dot versions [OPTIONS] [SLUG]
-```
-
-**Arguments:**
-
-- `SLUG` - Recipe slug. Omit to show global versions.
-
-**Options:**
-
-| Flag | Description | Output Format |
-|------|-------------|---------------|
-| `--ci` | Output in CI format (KEY=VALUE pairs) | Shell variables |
-| `--show-source` | Show version sources (global vs recipe) | Human-readable |
-| `--validate` | Validate version keys | Validation report |
-
-**Examples:**
-
-```bash
-# View global versions
-dot versions
-
-# View recipe-specific versions
-dot versions zero-to-hero
-
-# Debug version resolution (show sources)
-dot versions my-recipe --show-source
-
-# CI usage (export as environment variables)
-eval $(dot versions my-recipe --ci)
-echo "Using Rust $RUST"
-
-# Validate configuration
-dot versions my-recipe --validate
-```
-
-**Output Formats:**
-
-**Default (human-readable):**
-```
-📦 Versions for recipe: my-recipe
-
-  rust                1.86
-  polkadot_omni_node  0.5.0
-  chain_spec_builder  10.0.0
-  frame_omni_bencher  0.13.0
-```
-
-**With `--show-source`:**
-```
-📦 Versions for recipe: my-recipe
-
-  rust                1.86   (global)
-  polkadot_omni_node  0.6.0  (recipe)
-  chain_spec_builder  10.0.0 (global)
-  frame_omni_bencher  0.13.0 (global)
-```
-
-**With `--ci` (shell variables):**
-```
-RUST=1.86
-POLKADOT_OMNI_NODE=0.6.0
-CHAIN_SPEC_BUILDER=10.0.0
-FRAME_OMNI_BENCHER=0.13.0
-```
-
-**With `--validate`:**
-```
-✅ All version keys are valid!
-
-Found 4 valid version keys:
-  • rust
-  • polkadot_omni_node
-  • chain_spec_builder
-  • frame_omni_bencher
-```
-
-**Version Resolution:**
-
-The CLI merges global versions (`versions.yml` at repo root) with recipe-specific versions (`recipes/<slug>/versions.yml`). Recipe versions override global versions on a per-key basis.
-
-See [Version Management Guide](../maintainers/version-management.md) for details.
-
-**Exit Codes:**
-- `0` - Success
-- `1` - Error (file not found, invalid YAML, etc.)
 
 ---
 
@@ -314,8 +220,7 @@ dot recipe validate <SLUG>
 Checks:
   ✓ recipe.config.yml exists
   ✓ README.md exists
-  ✓ versions.yml is valid
-  ✓ All version keys are known
+  ✓ All configuration files are valid
 ```
 
 **Exit Codes:**
@@ -441,7 +346,6 @@ Repository:
   ✓ No uncommitted changes
 
 Configuration:
-  ✓ versions.yml valid
   ✓ All recipe configs valid
 
 Dependencies:
@@ -478,7 +382,7 @@ RUST_LOG=debug dot recipe create
 GITHUB_TOKEN=ghp_xxx dot recipe submit
 
 # Disable colors
-NO_COLOR=1 dot versions
+NO_COLOR=1 dot doctor
 ```
 
 ---
@@ -497,9 +401,8 @@ Future configuration options:
 
 ### Repository Configuration
 
-**versions.yml** (repository root)
-- Global dependency versions
-- See [Version Management](../maintainers/version-management.md)
+**rust-toolchain.toml** (repository root and per recipe)
+- Rust version specification
 
 **recipe.config.yml** (per recipe)
 - Recipe metadata
@@ -568,7 +471,6 @@ dot recipe validate my-recipe
 
 - [Getting Started](../getting-started/) - Installation and first recipe
 - [Contributors Guide](../contributors/) - Contributing recipes
-- [Version Management](../maintainers/version-management.md) - Managing versions
 - [SDK Guide](sdk-guide.md) - Using the SDK programmatically
 
 ---

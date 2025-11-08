@@ -335,7 +335,6 @@ The Polkadot Cookbook uses a flexible version management system that allows reci
 - **Global versions** (`versions.yml`) - Default versions for all recipes
 - **Recipe overrides** (`recipes/<slug>/versions.yml`) - Per-recipe customization
 - **Automatic merging** - Recipe versions take precedence over global versions
-- **CLI commands** - `dot versions` for viewing and validation
 - **CI integration** - Automated version resolution in workflows
 
 ### Example
@@ -365,7 +364,6 @@ For complete version management documentation including:
 - SDK usage
 - Best practices and troubleshooting
 
-**See:** [Version Management Guide](version-management.md)
 
 ## Troubleshooting
 

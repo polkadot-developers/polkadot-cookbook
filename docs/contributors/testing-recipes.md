@@ -1000,7 +1000,6 @@ async function connectWithRetry(endpoint: string, retries = 3): Promise<ApiPromi
 
 - **[Recipe Development Guide](recipe-development.md)** - Development best practices
 - **[Recipe Guidelines](recipe-guidelines.md)** - Structure requirements
-- **[Version Workflows](../automation/version-workflows.md)** - CI testing details
 - **[Workflows Guide](../maintainers/workflows.md)** - Complete CI/CD reference
 
 ---

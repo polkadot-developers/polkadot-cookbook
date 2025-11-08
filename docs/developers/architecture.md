@@ -100,19 +100,14 @@ dot recipe create --title "My Recipe" --skip-install --no-git --non-interactive
 dot recipe create --title "My Recipe" --non-interactive
 
 # View global dependency versions
-dot versions
 
 # View recipe-specific versions
-dot versions my-recipe
 
 # Show version sources (global vs recipe override)
-dot versions my-recipe --show-source
 
 # CI-friendly output (KEY=VALUE format)
-dot versions my-recipe --ci
 
 # Validate version keys
-dot versions --validate
 
 # Show help
 dot --help

@@ -36,6 +36,44 @@ impl Scaffold {
         Self { dry_run: true }
     }
 
+    /// Read Rust version from rust-toolchain.toml file
+    ///
+    /// Attempts to read the Rust toolchain version from the repository's
+    /// rust-toolchain.toml file. Falls back to "1.86" if the file cannot
+    /// be read or parsed.
+    async fn read_rust_version() -> String {
+        let toolchain_path = Path::new("rust-toolchain.toml");
+
+        match tokio::fs::read_to_string(toolchain_path).await {
+            Ok(content) => {
+                // Simple parser: find line with channel = "X.XX"
+                for line in content.lines() {
+                    let line = line.trim();
+                    if line.starts_with("channel") {
+                        // Extract version from: channel = "1.86"
+                        if let Some(version) = line
+                            .split('=')
+                            .nth(1)
+                            .and_then(|v| v.trim().trim_matches('"').split_whitespace().next())
+                        {
+                            debug!("Read Rust version from rust-toolchain.toml: {}", version);
+                            return version.to_string();
+                        }
+                    }
+                }
+                warn!("Could not parse Rust version from rust-toolchain.toml, using default");
+                "1.86".to_string()
+            }
+            Err(e) => {
+                warn!(
+                    "Failed to read rust-toolchain.toml: {}, using default rust version",
+                    e
+                );
+                "1.86".to_string()
+            }
+        }
+    }
+
     /// Create a complete project from configuration
     ///
     /// # Example
@@ -66,21 +104,8 @@ impl Scaffold {
             warn!("{}", warning);
         }
 
-        // Load global versions to get rust version for templates
-        let rust_version = match crate::version::load_global_versions(Path::new(".")).await {
-            Ok(versions) => versions
-                .get("rust")
-                .map(|v| v.as_str())
-                .unwrap_or("1.81.0")
-                .to_string(),
-            Err(e) => {
-                warn!(
-                    "Failed to load versions.yml, using default rust version: {}",
-                    e
-                );
-                "1.81.0".to_string()
-            }
-        };
+        // Read rust version from rust-toolchain.toml for templates
+        let rust_version = Self::read_rust_version().await;
         debug!("Using rust version: {}", rust_version);
 
         let project_path = config.project_path();

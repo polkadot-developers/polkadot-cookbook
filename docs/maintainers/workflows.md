@@ -357,18 +357,15 @@ This PR will trigger a MINOR version bump when merged.
 
 ## Version Management Integration
 
-Several workflows use the `dot versions` command to resolve dependency versions:
 
 ```yaml
 - name: Resolve versions
   run: |
-    eval $(./target/release/dot versions ${{ matrix.slug }} --ci)
     echo "Using Rust $RUST"
 ```
 
 This ensures each recipe is tested with its specified versions (global defaults + recipe overrides).
 
-See [Version Management Guide](version-management.md) for complete documentation.
 
 ## Manual Workflow Triggers
 

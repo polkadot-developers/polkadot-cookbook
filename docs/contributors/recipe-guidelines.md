@@ -34,7 +34,6 @@ Include when appropriate:
 
 ```
 recipes/your-recipe/
-├── versions.yml           # Version overrides
 ├── package.json           # npm dependencies (TypeScript)
 ├── tsconfig.json          # TypeScript config
 ├── vitest.config.ts       # Test config
@@ -622,7 +621,6 @@ type: "polkadot-sdk"  # polkadot-sdk, xcm, solidity, typescript
 - `solidity` - Solidity contracts
 - `typescript` - TypeScript interactions
 
-### versions.yml (Optional)
 
 Only include if you need different versions than global defaults:
 
@@ -632,7 +630,6 @@ versions:
   polkadot_omni_node: "0.6.0"
 ```
 
-**See:** [Version Management Guide](../maintainers/version-management.md)
 
 ---
 
@@ -729,7 +726,6 @@ Before submitting your recipe, verify:
 - [ ] recipe.config.yml with all required fields
 - [ ] src/ directory with implementation
 - [ ] tests/ directory with comprehensive tests
-- [ ] versions.yml only if needed
 
 ### Content
 - [ ] Clear title and description

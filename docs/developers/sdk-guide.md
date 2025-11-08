@@ -240,8 +240,6 @@ impl VersionManager {
 
 ```rust
 pub enum VersionSource {
-    Global,   // Version from global versions.yml
-    Recipe,   // Version from recipe's versions.yml
 }
 ```
 
@@ -758,7 +756,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 - **[CLI Reference](cli-reference.md)** - Command-line interface
 - **[Architecture](architecture.md)** - System design
-- **[Version Management](../maintainers/version-management.md)** - Version system details
 - **[API Reference](api-reference.md)** - Complete API documentation
 
 ---

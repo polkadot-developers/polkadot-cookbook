@@ -131,7 +131,6 @@ Your recipe directory should contain:
 recipes/your-recipe/
 ├── README.md              # Main content (required)
 ├── recipe.config.yml      # Metadata (required)
-├── versions.yml           # Version overrides (optional)
 ├── src/                   # Source code
 ├── tests/                 # Tests
 └── ...                    # Type-specific files
@@ -157,7 +156,6 @@ See [Recipe Guidelines](recipe-guidelines.md) for detailed structure requirement
 If your recipe needs different dependency versions:
 
 ```yaml
-# recipes/your-recipe/versions.yml
 versions:
   rust: "1.86"
   polkadot_omni_node: "0.6.0"
@@ -165,7 +163,6 @@ versions:
 
 Only include versions that differ from global defaults.
 
-**See:** [Version Management Guide](../maintainers/version-management.md)
 
 ---
 
@@ -414,7 +411,6 @@ git push --force-with-lease
 
 **"Update version references"**
 ```
-Action: Check versions.yml and update if needed
 ```
 
 ---

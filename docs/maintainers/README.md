@@ -8,7 +8,6 @@ This section contains documentation for repository maintainers managing releases
 
 - **[Release Process](release-process.md)** - Semantic versioning and automated releases
 - **[Workflows](workflows.md)** - GitHub Actions workflows and automation
-- **[Version Management](version-management.md)** - Dependency version system
 
 ### Governance
 
@@ -35,16 +34,6 @@ All CI/CD is handled through GitHub Actions:
 - **Automation Workflows** - Semantic labeling and quality checks
 
 [→ Complete Workflows Documentation](workflows.md)
-
-### Version Management
-
-The cookbook uses a flexible version management system:
-
-- **Global versions** - Default versions for all recipes
-- **Recipe overrides** - Per-recipe version customization
-- **CI integration** - Automated version resolution in workflows
-
-[→ Version Management Guide](version-management.md)
 
 ## Maintainer Responsibilities
 

@@ -10,8 +10,6 @@ This section covers automation setup, pre-commit hooks, and continuous integrati
 
 ### CI/CD Workflows
 
-- **[Version Workflows](version-workflows.md)** - Testing version management in CI
-
 For complete GitHub Actions documentation, see [../maintainers/workflows.md](../maintainers/workflows.md).
 
 ## Quick Start
@@ -62,17 +60,6 @@ The repository uses GitHub Actions for:
 - **Quality Control** - Code coverage, formatting, linting
 
 For complete CI/CD documentation, see [Maintainers Guide](../maintainers/).
-
-## Version Management Testing
-
-The cookbook has a sophisticated version management system that requires testing:
-
-- Global version defaults
-- Recipe-specific overrides
-- CI integration
-- Version resolution
-
-[→ Version Workflows Guide](version-workflows.md)
 
 ---
 

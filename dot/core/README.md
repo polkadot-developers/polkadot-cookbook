@@ -157,8 +157,6 @@ pub struct ResolvedVersions {
 }
 
 pub enum VersionSource {
-    Global,    // From global versions.yml
-    Recipe,  // From recipe versions.yml
 }
 ```
 
@@ -196,7 +194,6 @@ The SDK provides a powerful version management system that allows recipes to spe
 
 ### Global Versions
 
-Defined in `versions.yml` at repository root:
 
 ```yaml
 versions:
@@ -211,7 +208,6 @@ metadata:
 
 ### Recipe Overrides
 
-Each recipe can override versions in `recipes/<slug>/versions.yml`:
 
 ```yaml
 versions:

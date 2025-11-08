@@ -8,7 +8,6 @@ This section contains reference material, schemas, and specifications.
 
 - **[Manifest Schema](manifest-schema.md)** - Release manifest format
 - **[Recipe Config Schema](recipe-config-schema.md)** - `recipe.config.yml` specification
-- **[Versions Schema](versions-schema.md)** - `versions.yml` format
 
 ### Security
 
@@ -50,21 +49,6 @@ difficulty: beginner
 ```
 
 [→ Complete Recipe Config Schema](recipe-config-schema.md)
-
-### Versions File
-
-Control dependency versions:
-
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.5.0"
-
-metadata:
-  schema_version: "1.0"
-```
-
-[→ Complete Versions Schema](versions-schema.md)
 
 ## Security Guidelines
 

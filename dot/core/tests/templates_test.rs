@@ -49,15 +49,6 @@ fn test_all_templates_return_non_empty() {
         "RecipeYmlTemplate should return non-empty content"
     );
     assert!(content.len() > 20, "RecipeYmlTemplate content too short");
-
-    // VersionsYmlTemplate
-    let versions_yml = VersionsYmlTemplate;
-    let content = versions_yml.generate();
-    assert!(
-        !content.is_empty(),
-        "VersionsYmlTemplate should return non-empty content"
-    );
-    assert!(content.len() > 20, "VersionsYmlTemplate content too short");
 }
 
 #[test]
@@ -88,10 +79,6 @@ fn test_templates_contain_expected_markers() {
     .generate();
     assert!(recipe_yml.contains("slug: my-test"));
     assert!(recipe_yml.contains("name: My Test"));
-
-    let versions_yml = VersionsYmlTemplate.generate();
-    assert!(versions_yml.contains("versions:"));
-    assert!(versions_yml.contains("metadata:"));
 }
 
 #[test]
@@ -111,7 +98,6 @@ fn test_template_trait_implemented() {
         "cat",
         true,
     ));
-    assert_template(&VersionsYmlTemplate);
 }
 
 #[test]
@@ -196,20 +182,6 @@ fn test_justfile_contains_all_recipes() {
     assert!(justfile.contains("default"));
     assert!(justfile.contains("say-hello"));
     assert!(justfile.contains("@just --list"));
-}
-
-#[test]
-fn test_versions_yml_structure() {
-    let versions_yml = VersionsYmlTemplate.generate();
-
-    // Should be valid YAML structure
-    assert!(versions_yml.contains("versions:"));
-    assert!(versions_yml.contains("metadata:"));
-    assert!(versions_yml.contains("schema_version"));
-
-    // Should contain commented examples
-    assert!(versions_yml.contains("# rust:"));
-    assert!(versions_yml.contains("# polkadot_omni_node:"));
 }
 
 #[test]

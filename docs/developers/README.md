@@ -51,7 +51,6 @@ The `dot` CLI provides commands for creating and managing recipes:
 dot recipe create --title "My Recipe"
 
 # View versions
-dot versions my-recipe --show-source
 
 # Submit recipe for review
 dot recipe submit

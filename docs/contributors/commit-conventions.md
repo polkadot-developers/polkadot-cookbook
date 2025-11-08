@@ -144,7 +144,6 @@ git commit -m "feat(sdk): add version source tracking"
 git commit -m "fix(recipe): correct storage operations in basic-pallet"
 
 # CLI bug fix
-git commit -m "fix(cli): handle missing versions.yml gracefully"
 
 # SDK bug fix
 git commit -m "fix(core): validate YAML syntax before parsing"

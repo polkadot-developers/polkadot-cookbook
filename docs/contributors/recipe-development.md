@@ -117,10 +117,8 @@ Outline the recipe flow:
 Determine what versions you need:
 ```bash
 # Check global versions
-dot versions
 
 # Create recipe-specific versions if needed
-# recipes/your-recipe/versions.yml
 ```
 
 ---

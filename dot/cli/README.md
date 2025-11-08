@@ -92,7 +92,6 @@ dot recipe create --title "My Recipe" --pathway runtime --difficulty beginner --
 recipes/my-recipe/
 ├── README.md              # Recipe content
 ├── recipe.config.yml    # Metadata
-├── versions.yml           # Dependency versions
 ├── package.json           # npm dependencies (TypeScript recipes)
 ├── tsconfig.json          # TypeScript config
 ├── vitest.config.ts       # Test config
@@ -140,16 +139,13 @@ dot versions my-recipe --validate
 
 **Version Resolution:**
 
-The CLI merges global versions (`versions.yml` at repo root) with recipe-specific versions (`recipes/<slug>/versions.yml`). Recipe versions override global versions on a per-key basis.
 
 Example:
 ```yaml
-# Global versions.yml
 versions:
   rust: "1.86"
   polkadot_omni_node: "0.5.0"
 
-# Recipe versions.yml
 versions:
   polkadot_omni_node: "0.6.0"  # Override
 
@@ -191,7 +187,6 @@ dot recipe create --title "Test New Version"
 
 # Edit versions
 cd recipes/test-new-version
-cat > versions.yml <<EOF
 versions:
   polkadot_omni_node: "0.7.0"
 metadata:
@@ -209,11 +204,9 @@ npm test
 
 ### Global Versions
 
-Edit `versions.yml` at repository root to change default versions for all recipes.
 
 ### Recipe Versions
 
-Each recipe can override versions by editing its `recipes/<slug>/versions.yml` file.
 
 ### Recipe Metadata
 
@@ -248,13 +241,11 @@ dot recipe create --title "My Recipe" --non-interactive
 
 ### "Failed to resolve versions"
 
-**Problem:** Invalid YAML syntax in versions.yml
 
 **Solution:** Validate YAML
 
 ```bash
 # Check syntax
-yq eval recipes/my-recipe/versions.yml
 
 # Use validation flag
 dot versions my-recipe --validate
