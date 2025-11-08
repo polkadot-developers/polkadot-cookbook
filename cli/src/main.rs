@@ -1653,7 +1653,7 @@ async fn handle_recipe_submit(
     Ok(())
 }
 
-/// Get GitHub token from environment variable or gh CLI config
+/// Get GitHub token from environment variable or gh CLI
 fn get_github_token() -> Result<String> {
     // First try environment variable
     if let Ok(token) = std::env::var("GITHUB_TOKEN") {
@@ -1662,22 +1662,16 @@ fn get_github_token() -> Result<String> {
         }
     }
 
-    // Try gh CLI config file
-    if let Some(home) = std::env::var_os("HOME") {
-        let gh_config_path = PathBuf::from(home).join(".config/gh/hosts.yml");
-        if gh_config_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(&gh_config_path) {
-                // Parse the YAML to find oauth_token
-                for line in content.lines() {
-                    if line.trim().starts_with("oauth_token:") {
-                        if let Some(token) = line.split(':').nth(1) {
-                            let token = token.trim().to_string();
-                            if !token.is_empty() {
-                                return Ok(token);
-                            }
-                        }
-                    }
-                }
+    // Try gh CLI auth token command
+    let gh_output = std::process::Command::new("gh")
+        .args(["auth", "token"])
+        .output();
+
+    if let Ok(output) = gh_output {
+        if output.status.success() {
+            let token = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !token.is_empty() {
+                return Ok(token);
             }
         }
     }
