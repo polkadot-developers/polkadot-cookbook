@@ -66,13 +66,11 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 
 - `recipe create` - Create a new recipe with interactive prompts
 - `recipe test` - Test a recipe
-- `recipe validate` - Validate recipe structure
 - `recipe lint` - Run linting checks
 - `recipe list` - List all recipes
 - `recipe submit` - Submit recipe as pull request
 - `setup` - Setup development environment
 - `doctor` - Check environment and diagnose issues
-- `versions` - View and manage dependency versions
 
 ### Features
 
