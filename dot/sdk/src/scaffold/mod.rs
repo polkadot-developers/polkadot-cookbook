@@ -23,7 +23,7 @@ impl Scaffold {
     ///
     /// # Example
     /// ```
-    /// use polkadot_cookbook_core::scaffold::Scaffold;
+    /// use polkadot_cookbook_sdk::scaffold::Scaffold;
     ///
     /// let scaffold = Scaffold::new();
     /// ```
@@ -78,7 +78,7 @@ impl Scaffold {
     ///
     /// # Example
     /// ```no_run
-    /// use polkadot_cookbook_core::{
+    /// use polkadot_cookbook_sdk::{
     ///     config::ProjectConfig,
     ///     scaffold::Scaffold,
     /// };

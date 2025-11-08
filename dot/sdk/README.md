@@ -1,10 +1,10 @@
-# Polkadot Cookbook Core
+# Polkadot Cookbook SDK
 
 SDK library for programmatic recipe creation and management.
 
 ## Overview
 
-`core` is a Rust library that provides the business logic for creating and managing Polkadot Cookbook recipes. It can be used programmatically by other tools, CLIs, or IDE extensions.
+`sdk` is a Rust library that provides the business logic for creating and managing Polkadot Cookbook recipes. It can be used programmatically by other tools, CLIs, or IDE extensions.
 
 **Key Features:**
 - Recipe scaffolding with templates
@@ -20,7 +20,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-core = { path = "../core" }
+sdk = { path = "../sdk" }
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -29,7 +29,7 @@ tokio = { version = "1", features = ["full"] }
 ### Create a Recipe
 
 ```rust
-use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
+use polkadot_cookbook_sdk::{config::ProjectConfig, Scaffold};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Manage Versions
 
 ```rust
-use polkadot_cookbook_core::version::{
+use polkadot_cookbook_sdk::version::{
     load_global_versions,
     resolve_recipe_versions,
     VersionSource,
@@ -185,7 +185,7 @@ Run examples to see the SDK in action:
 
 ```bash
 # Recipe creation example (coming soon)
-cargo run --package core --example create_recipe
+cargo run --package sdk --example create_recipe
 ```
 
 ## Version Management
@@ -246,7 +246,7 @@ For complete version management documentation, see [Release Process - Dependency
 ### Module Structure
 
 ```
-core/
+sdk/
 ├── src/
 │   ├── lib.rs              # Public API
 │   ├── config/             # Configuration types
@@ -269,13 +269,13 @@ core/
 
 ```bash
 # Run all tests
-cargo test --package core
+cargo test --package sdk
 
 # Run with logging
-RUST_LOG=debug cargo test --package core
+RUST_LOG=debug cargo test --package sdk
 
 # Run specific test
-cargo test --package core version::
+cargo test --package sdk version::
 ```
 
 ## Error Handling
@@ -283,7 +283,7 @@ cargo test --package core version::
 The SDK uses a comprehensive error type:
 
 ```rust
-use polkadot_cookbook_core::error::CookbookError;
+use polkadot_cookbook_sdk::error::CookbookError;
 
 match scaffold.create_project(config).await {
     Ok(info) => println!("Created: {}", info.project_path.display()),
@@ -310,7 +310,7 @@ See the [Contributing Guide](../CONTRIBUTING.md) for details.
 
 ## Documentation
 
-- **API Docs** - Run `cargo doc --package core --open`
+- **API Docs** - Run `cargo doc --package sdk --open`
 - **Version Management** - See [Release Process - Dependency Version Management](../docs/RELEASE_PROCESS.md#dependency-version-management)
 - **Examples** - Check `examples/` directory
 

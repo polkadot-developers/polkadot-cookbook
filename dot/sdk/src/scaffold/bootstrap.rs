@@ -20,7 +20,7 @@ impl Bootstrap {
     ///
     /// # Example
     /// ```
-    /// use polkadot_cookbook_core::scaffold::Bootstrap;
+    /// use polkadot_cookbook_sdk::scaffold::Bootstrap;
     /// use std::path::PathBuf;
     ///
     /// let bootstrap = Bootstrap::new(PathBuf::from("./tutorials/my-tutorial"));
@@ -33,7 +33,7 @@ impl Bootstrap {
     ///
     /// # Example
     /// ```no_run
-    /// use polkadot_cookbook_core::scaffold::Bootstrap;
+    /// use polkadot_cookbook_sdk::scaffold::Bootstrap;
     /// use std::path::PathBuf;
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {

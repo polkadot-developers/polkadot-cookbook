@@ -24,7 +24,7 @@ This section is for developers building tools or extensions using the Polkadot C
 The Polkadot Cookbook SDK is a Rust library for programmatically creating and managing recipes.
 
 ```rust
-use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
+use polkadot_cookbook_sdk::{config::ProjectConfig, Scaffold};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -82,7 +82,7 @@ The Polkadot Cookbook consists of two main components:
 
 ```rust
 // Use the SDK to build your own CLI
-use polkadot_cookbook_core::Scaffold;
+use polkadot_cookbook_sdk::Scaffold;
 
 // Your custom CLI logic here
 ```
@@ -91,7 +91,7 @@ use polkadot_cookbook_core::Scaffold;
 
 ```rust
 // Use the SDK to build an IDE extension
-use polkadot_cookbook_core::version::resolve_recipe_versions;
+use polkadot_cookbook_sdk::version::resolve_recipe_versions;
 
 // Extension logic here
 ```
@@ -100,7 +100,7 @@ use polkadot_cookbook_core::version::resolve_recipe_versions;
 
 ```rust
 // Use the SDK for automation scripts
-use polkadot_cookbook_core::config::ProjectConfig;
+use polkadot_cookbook_sdk::config::ProjectConfig;
 
 // Automation logic here
 ```
@@ -110,7 +110,7 @@ use polkadot_cookbook_core::config::ProjectConfig;
 For complete API documentation, run:
 
 ```bash
-cargo doc --package core --open
+cargo doc --package sdk --open
 ```
 
 Or see [api-reference.md](api-reference.md) for curated examples.

@@ -84,7 +84,7 @@ jobs:
 
               const changedFiles = files.data.map(f => f.filename);
               const cliChanged = changedFiles.some(f => f.startsWith('dot/cli/'));
-              const sdkChanged = changedFiles.some(f => f.startsWith('dot/core/'));
+              const sdkChanged = changedFiles.some(f => f.startsWith('dot/sdk/'));
 
               if (cliChanged || sdkChanged) {
                 core.setOutput('has_breaking', 'true');
@@ -162,7 +162,7 @@ jobs:
         id: version
         run: |
           # Extract version from Cargo.toml
-          CURRENT_VERSION=$(grep "^version" dot/core/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          CURRENT_VERSION=$(grep "^version" dot/sdk/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
           echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           # Bump major version

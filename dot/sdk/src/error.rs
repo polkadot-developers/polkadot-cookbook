@@ -1,4 +1,4 @@
-/// Error types for the Polkadot Cookbook Core library
+/// Error types for the Polkadot Cookbook SDK library
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use thiserror::Error;

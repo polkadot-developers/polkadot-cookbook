@@ -39,7 +39,7 @@ cargo fmt --all
 cargo clippy --all-targets --all-features
 
 # Run tests
-cargo test --package core
+cargo test --package sdk
 ```
 
 ### Skipping Hooks

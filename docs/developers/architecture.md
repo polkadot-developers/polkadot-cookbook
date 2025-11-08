@@ -4,16 +4,16 @@ The Polkadot Cookbook uses a modular SDK architecture consisting of two main com
 
 ## Table of Contents
 
-- [Polkadot Cookbook Core](#core)
+- [Polkadot Cookbook SDK](#sdk)
 - [Polkadot Cookbook CLI](#cli)
 - [Why This Architecture?](#why-this-architecture)
 - [Contributing to the SDK](#contributing-to-the-sdk)
 
-## Polkadot Cookbook Core
+## Polkadot Cookbook SDK
 
-**Package**: `core`
+**Package**: `sdk`
 
-The core library provides the business logic for recipe creation and management. It can be used programmatically by other tools.
+The SDK library provides the business logic for recipe creation and management. It can be used programmatically by other tools.
 
 ### Key Modules
 
@@ -36,7 +36,7 @@ The core library provides the business logic for recipe creation and management.
 ### Example Programmatic Usage
 
 ```rust
-use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
+use polkadot_cookbook_sdk::{config::ProjectConfig, Scaffold};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -118,12 +118,12 @@ dot --help
 The SDK architecture provides several benefits:
 
 ### 1. Separation of Concerns
-- Core library has zero UI/terminal dependencies
+- SDK library has zero UI/terminal dependencies
 - CLI is a thin presentation layer
 - Business logic is testable and reusable
 
 ### 2. Programmatic Access
-- Other tools can use the core library directly
+- Other tools can use the SDK library directly
 - IDE extensions can integrate the functionality
 - CI/CD pipelines can automate recipe creation
 
@@ -141,7 +141,7 @@ The SDK architecture provides several benefits:
 
 If you want to contribute to the SDK itself (not just recipes):
 
-### Core Library Changes
+### SDK Library Changes
 
 Changes go in `dot/sdk/`:
 - Add features to appropriate modules
@@ -153,14 +153,14 @@ Changes go in `dot/sdk/`:
 
 Changes go in `dot/cli/`:
 - Keep it thin (mostly UI/formatting)
-- Delegate logic to core library
+- Delegate logic to SDK library
 - Use interactive prompts for better UX
 
 ### Testing
 
 ```bash
 # Test core library
-cargo test --package core
+cargo test --package sdk
 
 # Test CLI
 cargo run --package cli -- test-project --skip-install --no-git

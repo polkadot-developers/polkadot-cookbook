@@ -1,4 +1,4 @@
-//! Integration tests for polkadot-cookbook-core
+//! Integration tests for polkadot-cookbook-sdk
 //!
 //! These tests verify end-to-end functionality of the core library.
 

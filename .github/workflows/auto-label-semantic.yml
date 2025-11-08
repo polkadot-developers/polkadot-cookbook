@@ -38,25 +38,25 @@ jobs:
           HAS_BREAKING=false
 
           # Note: CLI crate is skipped - it's binary-only with no public library API
-          # Only check core/SDK crate which has a public library API
+          # Only check SDK crate which has a public library API
 
-          if [ -d "core" ]; then
-            echo "Checking core/SDK crate for API breaking changes..."
+          if [ -d "dot/sdk" ]; then
+            echo "Checking SDK crate for API breaking changes..."
             echo "Comparing current code against base branch: ${{ github.base_ref }}"
 
-            cd core
+            cd dot/sdk
 
             # Use --baseline-rev to compare against base branch (works for unpublished crates)
             if ! cargo semver-checks check-release \
                 --baseline-rev origin/${{ github.base_ref }} \
-                2>&1 | tee /tmp/core-semver.log; then
+                2>&1 | tee /tmp/sdk-semver.log; then
               echo "⚠️ API breaking changes detected in SDK"
               HAS_BREAKING=true
             else
               echo "✓ No API breaking changes detected in SDK"
             fi
 
-            cd ..
+            cd ../..
           fi
 
           echo "has_breaking=$HAS_BREAKING" >> $GITHUB_OUTPUT
@@ -64,7 +64,7 @@ jobs:
           # Save logs for comment
           if [ "$HAS_BREAKING" = "true" ]; then
             echo "SEMVER_BREAKING=true" >> $GITHUB_ENV
-            cp /tmp/core-semver.log /tmp/semver-report.log 2>/dev/null || true
+            cp /tmp/sdk-semver.log /tmp/semver-report.log 2>/dev/null || true
           fi
 
       - name: Analyze commits and apply label
@@ -214,7 +214,7 @@ jobs:
               : 'No version bump required';
 
             const apiBreakingNote = semverBreaking
-              ? '\n\n⚠️ **API Breaking Changes Detected**\n\nThe `cargo-semver-checks` tool detected breaking changes in the SDK public API. This will trigger a MAJOR version bump (or MINOR in alpha v0.x.x).\n\n**Note:** Only the SDK/core library is checked for API breaking changes. The CLI is binary-only and has no public library API to check.\n'
+              ? '\n\n⚠️ **API Breaking Changes Detected**\n\nThe `cargo-semver-checks` tool detected breaking changes in the SDK public API. This will trigger a MAJOR version bump (or MINOR in alpha v0.x.x).\n\n**Note:** Only the SDK library is checked for API breaking changes. The CLI is binary-only and has no public library API to check.\n'
               : '';
 
             const commentBody = `## 🤖 Semantic Version Analysis

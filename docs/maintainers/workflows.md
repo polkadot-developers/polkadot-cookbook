@@ -24,13 +24,13 @@ Tests the core SDK library and CLI tool.
 
 **Jobs:**
 1. **check-changes** - Detects if SDK files changed
-2. **test-core** - Tests core library
+2. **test-sdk** - Tests SDK library
    - Formatting check (`cargo fmt`)
    - Clippy lints (`cargo clippy`)
    - Unit tests
    - Integration tests
    - Doc tests
-   - Coverage report (80% threshold for core library)
+   - Coverage report (80% threshold for SDK library)
    - Posts coverage comment on PRs
 3. **test-cli** - Tests CLI tool
    - Valid recipe creation test
@@ -38,7 +38,7 @@ Tests the core SDK library and CLI tool.
    - Help command test
 4. **build-workspace** - Verifies full workspace builds
 
-**Coverage Threshold:** 80% for core library (CLI coverage tracked but not enforced)
+**Coverage Threshold:** 80% for SDK library (CLI coverage tracked but not enforced)
 
 **Files:** `.github/workflows/test-sdk.yml`
 
@@ -351,7 +351,7 @@ This PR will trigger a MINOR version bump when merged.
    ↓
 3. SDK changes also trigger:
    └─ test-sdk.yml
-      ├─ Tests core library (coverage threshold: 80%)
+      ├─ Tests SDK library (coverage threshold: 80%)
       └─ Tests CLI tool
 ```
 
@@ -420,7 +420,7 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 **Symptom:** `test-sdk.yml` fails with "coverage below 80%"
 
 **Solution:**
-- Add tests to increase core library coverage
+- Add tests to increase SDK library coverage
 - Coverage requirement only applies to `dot/sdk/` package
 - CLI coverage is tracked but not enforced
 

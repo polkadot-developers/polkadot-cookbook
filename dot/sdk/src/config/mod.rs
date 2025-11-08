@@ -49,7 +49,7 @@ impl ProjectConfig {
     ///
     /// # Example
     /// ```
-    /// use polkadot_cookbook_core::config::ProjectConfig;
+    /// use polkadot_cookbook_sdk::config::ProjectConfig;
     ///
     /// let config = ProjectConfig::new("my-recipe");
     /// assert_eq!(config.slug, "my-recipe");
