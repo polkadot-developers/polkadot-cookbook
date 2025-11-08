@@ -15,7 +15,7 @@ fn setup_test_repo() -> TempDir {
 
     // Create Cargo.toml workspace file
     let cargo_content = r#"[workspace]
-members = ["dot/core", "dot/cli"]
+members = ["dot/sdk", "dot/cli"]
 default-members = ["dot/cli"]
 resolver = "2"
 "#;

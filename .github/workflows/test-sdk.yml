@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'dot/core/**'
+      - 'dot/sdk/**'
       - 'dot/cli/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
@@ -37,7 +37,7 @@ jobs:
           git fetch origin ${{ github.base_ref }}
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
-          if echo "$CHANGED_FILES" | grep -qE '^(dot/core/|dot/cli/|Cargo\.(toml|lock)|\.github/workflows/test-sdk\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(dot/sdk/|dot/cli/|Cargo\.(toml|lock)|\.github/workflows/test-sdk\.yml)'; then
             echo "sdk=true" >> $GITHUB_OUTPUT
             echo "SDK files changed, running tests"
           else
@@ -45,15 +45,15 @@ jobs:
             echo "No SDK files changed, skipping tests"
           fi
 
-  test-core:
-    name: Core Library
+  test-sdk:
+    name: SDK Library
     needs: check-changes
     runs-on: ubuntu-latest
     steps:
       - name: Skip if no SDK changes
         if: needs.check-changes.outputs.sdk_changed == 'false'
         run: |
-          echo "No SDK-related files changed, skipping Core Library tests"
+          echo "No SDK-related files changed, skipping SDK Library tests"
           exit 0
 
       - name: Checkout code
@@ -93,27 +93,27 @@ jobs:
 
       - name: Check formatting
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo fmt --check --package core
+        run: cargo fmt --check --package sdk
 
       - name: Run clippy
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo clippy --package core --locked -- -D warnings
+        run: cargo clippy --package sdk --locked -- -D warnings
 
-      - name: Build core library
+      - name: Build SDK library
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo build --package core --locked --verbose
+        run: cargo build --package sdk --locked --verbose
 
       - name: Run unit tests
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo test --package core --lib --locked --verbose -- --test-threads=1
+        run: cargo test --package sdk --lib --locked --verbose -- --test-threads=1
 
       - name: Run integration tests
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo test --package core --test integration_test --locked --verbose -- --test-threads=1
+        run: cargo test --package sdk --test integration_test --locked --verbose -- --test-threads=1
 
       - name: Run doc tests
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo test --package core --doc --locked --verbose
+        run: cargo test --package sdk --doc --locked --verbose
 
       - name: Install cargo-llvm-cov
         if: needs.check-changes.outputs.sdk_changed == 'true'
@@ -125,8 +125,8 @@ jobs:
           # Generate workspace coverage (for informational purposes)
           cargo llvm-cov --workspace --locked --summary-only -- --test-threads=1 > coverage-workspace.txt
 
-          # Generate core package coverage (for threshold check)
-          cargo llvm-cov --package core --locked --summary-only -- --test-threads=1 > coverage-core.txt
+          # Generate SDK package coverage (for threshold check)
+          cargo llvm-cov --package sdk --locked --summary-only -- --test-threads=1 > coverage-sdk.txt
 
           # Generate JSON report
           cargo llvm-cov --workspace --locked --json --output-path coverage.json -- --test-threads=1
@@ -134,29 +134,29 @@ jobs:
           echo "=== Workspace Coverage ==="
           cat coverage-workspace.txt
           echo ""
-          echo "=== Core Library Coverage (used for threshold) ==="
-          cat coverage-core.txt
+          echo "=== SDK Library Coverage (used for threshold) ==="
+          cat coverage-sdk.txt
 
       - name: Extract coverage percentage
         if: needs.check-changes.outputs.sdk_changed == 'true'
         id: coverage
         run: |
-          # Extract core package coverage for threshold check
-          CORE_COVERAGE=$(cat coverage-core.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
+          # Extract SDK package coverage for threshold check
+          SDK_COVERAGE=$(cat coverage-sdk.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
 
           # Extract workspace coverage for badge
           WORKSPACE_COVERAGE=$(cat coverage-workspace.txt | grep "TOTAL" | awk '{print $10}' | sed 's/%//')
 
-          echo "core_percentage=$CORE_COVERAGE" >> $GITHUB_OUTPUT
+          echo "sdk_percentage=$SDK_COVERAGE" >> $GITHUB_OUTPUT
           echo "workspace_percentage=$WORKSPACE_COVERAGE" >> $GITHUB_OUTPUT
-          echo "Core Library Coverage: $CORE_COVERAGE%"
+          echo "SDK Library Coverage: $SDK_COVERAGE%"
           echo "Workspace Coverage: $WORKSPACE_COVERAGE%"
 
       - name: Generate coverage badge
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          # Use core library coverage for badge (displayed in PR comments only)
-          COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
+          # Use SDK library coverage for badge (displayed in PR comments only)
+          COVERAGE="${{ steps.coverage.outputs.sdk_percentage }}"
           if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
             COLOR="brightgreen"
           elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
@@ -173,26 +173,26 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const coreSummary = fs.readFileSync('coverage-core.txt', 'utf8');
+            const sdkSummary = fs.readFileSync('coverage-sdk.txt', 'utf8');
             const workspaceSummary = fs.readFileSync('coverage-workspace.txt', 'utf8');
-            const coreCoverage = '${{ steps.coverage.outputs.core_percentage }}';
+            const sdkCoverage = '${{ steps.coverage.outputs.sdk_percentage }}';
             const workspaceCoverage = '${{ steps.coverage.outputs.workspace_percentage }}';
 
             let emoji = '✅';
-            if (parseFloat(coreCoverage) < 80) {
+            if (parseFloat(sdkCoverage) < 80) {
               emoji = '⚠️';
             }
 
             const body = `## ${emoji} Coverage Report
 
-            **Core Library Coverage: ${coreCoverage}%** (threshold: 80%)
+            **SDK Library Coverage: ${sdkCoverage}%** (threshold: 80%)
             **Workspace Coverage: ${workspaceCoverage}%** (informational)
 
             <details>
-            <summary>Core library coverage details</summary>
+            <summary>SDK library coverage details</summary>
 
             \`\`\`
-            ${coreSummary}
+            ${sdkSummary}
             \`\`\`
 
             </details>
@@ -206,9 +206,9 @@ jobs:
 
             </details>
 
-            ${parseFloat(coreCoverage) < 80 ? '⚠️ **Warning**: Core library coverage is below the 80% threshold.' : '✅ Core library coverage meets the 80% threshold.'}
+            ${parseFloat(sdkCoverage) < 80 ? '⚠️ **Warning**: SDK library coverage is below the 80% threshold.' : '✅ SDK library coverage meets the 80% threshold.'}
 
-            **Note:** Only the core library is required to meet the 80% threshold. CLI coverage is tracked but not enforced due to interactive prompts.
+            **Note:** Only the SDK library is required to meet the 80% threshold. CLI coverage is tracked but not enforced due to interactive prompts.
             `;
 
             // Find existing comment
@@ -244,22 +244,22 @@ jobs:
       - name: Check coverage threshold
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          CORE_COVERAGE="${{ steps.coverage.outputs.core_percentage }}"
+          SDK_COVERAGE="${{ steps.coverage.outputs.sdk_percentage }}"
           WORKSPACE_COVERAGE="${{ steps.coverage.outputs.workspace_percentage }}"
 
-          echo "Core Library Coverage: ${CORE_COVERAGE}%"
+          echo "SDK Library Coverage: ${SDK_COVERAGE}%"
           echo "Workspace Coverage: ${WORKSPACE_COVERAGE}%"
 
-          if (( $(echo "$CORE_COVERAGE < 80" | bc -l) )); then
-            echo "❌ Core library coverage ${CORE_COVERAGE}% is below threshold of 80%"
+          if (( $(echo "$SDK_COVERAGE < 80" | bc -l) )); then
+            echo "❌ SDK library coverage ${SDK_COVERAGE}% is below threshold of 80%"
             exit 1
           fi
-          echo "✅ Core library coverage ${CORE_COVERAGE}% meets threshold of 80%"
+          echo "✅ SDK library coverage ${SDK_COVERAGE}% meets threshold of 80%"
 
   test-cli:
     name: CLI
     runs-on: ubuntu-latest
-    needs: [check-changes, test-core]
+    needs: [check-changes, test-sdk]
     steps:
       - name: Skip if no SDK changes
         if: needs.check-changes.outputs.sdk_changed == 'false'

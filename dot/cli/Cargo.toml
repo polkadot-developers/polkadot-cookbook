@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "CLI wrapper for Polkadot Cookbook Core library"
+description = "CLI wrapper for Polkadot Cookbook SDK"
 keywords = ["polkadot", "substrate", "blockchain", "recipe", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 
@@ -14,8 +14,8 @@ name = "dot"
 path = "src/main.rs"
 
 [dependencies]
-# Core library
-core = { path = "../core" }
+# SDK library
+sdk = { path = "../sdk" }
 
 # Async runtime
 tokio.workspace = true

@@ -224,7 +224,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 ### For Tool Users
 - [CLI Tool](dot/cli/) - Command-line tool for creating recipes
-- [SDK Library](dot/core/) - Programmatic API for tool developers
+- [SDK Library](dot/sdk/) - Programmatic API for tool developers
 
 ### For Maintainers
 - [Architecture](docs/architecture.md) - System design and architecture

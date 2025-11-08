@@ -5,7 +5,7 @@ on:
     branches: [master]
     paths:
       - 'dot/cli/**'
-      - 'dot/core/**'
+      - 'dot/sdk/**'
 
 jobs:
   detect-breaking-change:

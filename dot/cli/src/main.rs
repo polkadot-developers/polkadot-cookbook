@@ -1,13 +1,13 @@
-//! CLI wrapper for Polkadot Cookbook Core library
+//! CLI wrapper for Polkadot Cookbook SDK
 //!
-//! This is a thin wrapper around the polkadot-cookbook-core library that provides
+//! This is a thin wrapper around the polkadot-cookbook-sdk library that provides
 //! a command-line interface for creating and managing Polkadot Cookbook recipes.
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, select, spinner};
 use colored::Colorize;
-use polkadot_cookbook_core::{
+use polkadot_cookbook_sdk::{
     config::{ContentType, Difficulty, ProjectConfig, RecipePathway, RecipeType},
     Scaffold,
 };
@@ -128,7 +128,7 @@ async fn main() -> Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "polkadot_cookbook_core=info".to_string()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "polkadot_cookbook_sdk=info".to_string()),
         )
         .init();
 
@@ -204,7 +204,7 @@ async fn handle_create(
     clear_screen()?;
 
     // Validate working directory first
-    if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_working_directory() {
         outro_cancel(format!(
             "❌ Invalid working directory: {e}\n\nPlease run this command from the repository root."
         ))?;
@@ -308,7 +308,7 @@ async fn handle_create(
         .validate(|input: &String| {
             if input.trim().is_empty() {
                 Err("Title cannot be empty")
-            } else if let Err(e) = polkadot_cookbook_core::config::validate_title(input) {
+            } else if let Err(e) = polkadot_cookbook_sdk::config::validate_title(input) {
                 Err(Box::leak(e.to_string().into_boxed_str()) as &str)
             } else {
                 Ok(())
@@ -317,7 +317,7 @@ async fn handle_create(
         .interact()?;
 
     // Generate suggested slug from title
-    let suggested_slug = polkadot_cookbook_core::config::title_to_slug(&title);
+    let suggested_slug = polkadot_cookbook_sdk::config::title_to_slug(&title);
 
     // Prompt for slug with suggestion pre-filled
     let slug_question = "Recipe slug".polkadot_pink().to_string();
@@ -327,7 +327,7 @@ async fn handle_create(
         .validate(|input: &String| {
             if input.is_empty() {
                 Err("Slug cannot be empty")
-            } else if let Err(e) = polkadot_cookbook_core::config::validate_slug(input) {
+            } else if let Err(e) = polkadot_cookbook_sdk::config::validate_slug(input) {
                 Err(Box::leak(e.to_string().into_boxed_str()) as &str)
             } else {
                 Ok(())
@@ -597,17 +597,17 @@ async fn run_non_interactive(
     no_git: bool,
 ) -> Result<()> {
     // Validate title
-    if let Err(e) = polkadot_cookbook_core::config::validate_title(title) {
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_title(title) {
         eprintln!("❌ Invalid recipe title: {e}");
         eprintln!("Title must be properly formatted.");
         std::process::exit(1);
     }
 
     // Generate slug from title
-    let slug = polkadot_cookbook_core::config::title_to_slug(title);
+    let slug = polkadot_cookbook_sdk::config::title_to_slug(title);
 
     // Validate working directory
-    if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_working_directory() {
         eprintln!("❌ Invalid working directory: {e}");
         eprintln!("Please run this command from the repository root.");
         std::process::exit(1);
@@ -940,20 +940,21 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     ))?;
 
     // Auto-detect recipe type from files
-    let recipe_config =
-        match polkadot_cookbook_core::config::RecipeConfig::from_recipe_directory(&recipe_path)
-            .await
-        {
-            Ok(config) => config,
-            Err(e) => {
-                outro_cancel(format!("Failed to detect recipe type: {e}"))?;
-                std::process::exit(1);
-            }
-        };
+    let recipe_config = match polkadot_cookbook_sdk::config::RecipeConfig::from_recipe_directory(
+        &recipe_path,
+    )
+    .await
+    {
+        Ok(config) => config,
+        Err(e) => {
+            outro_cancel(format!("Failed to detect recipe type: {e}"))?;
+            std::process::exit(1);
+        }
+    };
 
     let is_polkadot_sdk = matches!(
         recipe_config.recipe_type,
-        polkadot_cookbook_core::config::RecipeType::PolkadotSdk
+        polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk
     );
 
     if is_polkadot_sdk {
@@ -1028,7 +1029,7 @@ async fn handle_recipe_validate(slug: Option<String>) -> Result<()> {
         note("✅ README.md", "Found")?;
 
         // Try to parse frontmatter
-        match polkadot_cookbook_core::metadata::parse_frontmatter_from_file(&readme_path).await {
+        match polkadot_cookbook_sdk::metadata::parse_frontmatter_from_file(&readme_path).await {
             Ok(frontmatter) => {
                 note(
                     "✅ Frontmatter",
@@ -1047,7 +1048,7 @@ async fn handle_recipe_validate(slug: Option<String>) -> Result<()> {
     }
 
     // Try to auto-detect recipe type
-    match polkadot_cookbook_core::metadata::detect_recipe_type(&recipe_path).await {
+    match polkadot_cookbook_sdk::metadata::detect_recipe_type(&recipe_path).await {
         Ok(recipe_type) => {
             note("✅ Recipe Type", format!("{:?}", recipe_type))?;
         }
@@ -1173,28 +1174,30 @@ async fn handle_recipe_list() -> Result<()> {
                 let name_str = name.to_string_lossy().to_string();
 
                 // Auto-detect recipe type
-                let recipe_type =
-                    match polkadot_cookbook_core::metadata::detect_recipe_type(&entry.path()).await
-                    {
-                        Ok(t) => match t {
-                            polkadot_cookbook_core::config::RecipeType::PolkadotSdk => {
-                                "Polkadot SDK (Runtime Development)"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::Solidity => {
-                                "Smart Contracts (Solidity)"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::Xcm => {
-                                "XCM (Cross-Chain Messaging)"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::BasicInteraction => {
-                                "Basic Interactions"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::Testing => {
-                                "Testing Infrastructure"
-                            }
-                        },
-                        Err(_) => "Unknown",
-                    };
+                let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(
+                    &entry.path(),
+                )
+                .await
+                {
+                    Ok(t) => match t {
+                        polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => {
+                            "Polkadot SDK (Runtime Development)"
+                        }
+                        polkadot_cookbook_sdk::config::RecipeType::Solidity => {
+                            "Smart Contracts (Solidity)"
+                        }
+                        polkadot_cookbook_sdk::config::RecipeType::Xcm => {
+                            "XCM (Cross-Chain Messaging)"
+                        }
+                        polkadot_cookbook_sdk::config::RecipeType::BasicInteraction => {
+                            "Basic Interactions"
+                        }
+                        polkadot_cookbook_sdk::config::RecipeType::Testing => {
+                            "Testing Infrastructure"
+                        }
+                    },
+                    Err(_) => "Unknown",
+                };
 
                 recipes.push((name_str, recipe_type.to_string()));
             }
@@ -1269,7 +1272,7 @@ async fn handle_recipe_submit(
     // Read recipe metadata from frontmatter
     let readme_path = recipe_path.join("README.md");
     let (recipe_name, recipe_desc) =
-        match polkadot_cookbook_core::metadata::parse_frontmatter_from_file(&readme_path).await {
+        match polkadot_cookbook_sdk::metadata::parse_frontmatter_from_file(&readme_path).await {
             Ok(frontmatter) => (frontmatter.title, frontmatter.description),
             Err(_) => (
                 recipe_slug.clone(),
@@ -1278,14 +1281,14 @@ async fn handle_recipe_submit(
         };
 
     // Auto-detect recipe type
-    let recipe_type = match polkadot_cookbook_core::metadata::detect_recipe_type(&recipe_path).await
+    let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(&recipe_path).await
     {
         Ok(t) => match t {
-            polkadot_cookbook_core::config::RecipeType::PolkadotSdk => "Polkadot SDK",
-            polkadot_cookbook_core::config::RecipeType::Solidity => "Solidity",
-            polkadot_cookbook_core::config::RecipeType::Xcm => "XCM",
-            polkadot_cookbook_core::config::RecipeType::BasicInteraction => "Basic Interactions",
-            polkadot_cookbook_core::config::RecipeType::Testing => "Testing Infrastructure",
+            polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => "Polkadot SDK",
+            polkadot_cookbook_sdk::config::RecipeType::Solidity => "Solidity",
+            polkadot_cookbook_sdk::config::RecipeType::Xcm => "XCM",
+            polkadot_cookbook_sdk::config::RecipeType::BasicInteraction => "Basic Interactions",
+            polkadot_cookbook_sdk::config::RecipeType::Testing => "Testing Infrastructure",
         },
         Err(_) => "Unknown",
     };

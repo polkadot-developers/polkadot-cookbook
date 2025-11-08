@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "dot/core",
+    "dot/sdk",
     "dot/cli",
 ]
 default-members = ["dot/cli"]
