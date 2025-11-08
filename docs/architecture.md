@@ -23,7 +23,7 @@ The core library provides the business logic for recipe creation and management.
 - `templates` - Template generation for scaffolding
 - `scaffold` - Project creation and directory structure
 - `bootstrap` - Test environment setup (npm, dependencies, config files)
-- `version` - Version management for recipe dependencies (see [VERSION_MANAGEMENT.md](../core/VERSION_MANAGEMENT.md))
+- `version` - Version management for recipe dependencies (see [Release Process - Dependency Version Management](RELEASE_PROCESS.md#dependency-version-management))
 
 ### Features
 

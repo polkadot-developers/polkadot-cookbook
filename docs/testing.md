@@ -2,6 +2,41 @@
 
 This guide explains how to test the GitHub Actions workflows, particularly the version management integration.
 
+## Understanding Version Management in CI
+
+The Polkadot Cookbook uses a flexible version management system that ensures each recipe is tested with its specified dependency versions.
+
+### How Versions Work in CI
+
+1. **Global Defaults**: Repository root `versions.yml` defines default versions for all recipes
+2. **Recipe Overrides**: Each recipe can override specific versions in `recipes/<slug>/versions.yml`
+3. **Version Resolution**: The CLI merges global and recipe versions (recipe takes precedence)
+4. **CI Integration**: Workflows use `dot versions <slug> --ci` to get resolved versions
+5. **Environment Variables**: Resolved versions are exported as env vars for CI steps
+
+### Example Version Resolution
+
+**Global versions.yml:**
+```yaml
+versions:
+  rust: "1.86"
+  polkadot_omni_node: "0.5.0"
+  chain_spec_builder: "10.0.0"
+```
+
+**Recipe versions.yml:**
+```yaml
+versions:
+  polkadot_omni_node: "0.6.0"  # Override
+```
+
+**Resolved for recipe:**
+- `rust`: `1.86` (from global)
+- `polkadot_omni_node`: `0.6.0` (from recipe override)
+- `chain_spec_builder`: `10.0.0` (from global)
+
+See [Release Process](RELEASE_PROCESS.md#dependency-version-management) for complete version management documentation.
+
 ## Testing the Version Resolution Workflow
 
 The `test-recipes.yml` workflow uses the polkadot-cookbook CLI to resolve versions. Here's how to test it:
@@ -257,5 +292,5 @@ dot versions test-version-workflow --ci
 ## Further Reading
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Version Management Documentation](../core/VERSION_MANAGEMENT.md)
-- [Workflow File](../.github/workflows/test-recipes.yml)
+- [Version Management Documentation](RELEASE_PROCESS.md#dependency-version-management)
+- [Workflow Documentation](workflows.md)

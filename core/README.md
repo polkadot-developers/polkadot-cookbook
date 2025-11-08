@@ -186,9 +186,6 @@ impl ResolvedVersions {
 Run examples to see the SDK in action:
 
 ```bash
-# Version resolution example
-cargo run --package core --example version_resolution
-
 # Recipe creation example (coming soon)
 cargo run --package core --example create_recipe
 ```
@@ -238,7 +235,7 @@ let resolved = resolve_recipe_versions(repo_root, "my-recipe").await?;
 // - frame_omni_bencher: "0.13.0" (from global)
 ```
 
-For complete version management documentation, see [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md).
+For complete version management documentation, see [Release Process - Dependency Version Management](../docs/RELEASE_PROCESS.md#dependency-version-management).
 
 ## Architecture
 
@@ -318,7 +315,7 @@ See the [Contributing Guide](../CONTRIBUTING.md) for details.
 ## Documentation
 
 - **API Docs** - Run `cargo doc --package core --open`
-- **Version Management** - See [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md)
+- **Version Management** - See [Release Process - Dependency Version Management](../docs/RELEASE_PROCESS.md#dependency-version-management)
 - **Examples** - Check `examples/` directory
 
 ## License
