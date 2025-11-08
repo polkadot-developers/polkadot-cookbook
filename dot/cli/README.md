@@ -39,19 +39,6 @@ This launches an interactive prompt that guides you through recipe creation.
 dot recipe create --title "My Awesome Recipe" --non-interactive
 ```
 
-### View Versions
-
-```bash
-# View global dependency versions
-dot versions
-
-# View recipe-specific versions
-dot versions my-recipe
-
-# Show where each version comes from
-dot versions my-recipe --show-source
-```
-
 ## Commands
 
 ### `recipe create`

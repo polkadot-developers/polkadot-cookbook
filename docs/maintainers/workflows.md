@@ -396,7 +396,7 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 
 **Check:**
 - Ensure all dependencies are committed
-- Verify version compatibility (check recipe `versions.yml`)
+- Verify Rust toolchain compatibility (check recipe `rust-toolchain.toml`)
 - Check for environment-specific issues (CI runs Ubuntu)
 
 ### Release Didn't Trigger

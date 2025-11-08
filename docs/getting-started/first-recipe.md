@@ -334,12 +334,6 @@ Checks:
 ```
 Fix: Check YAML indentation and syntax
 
-**Unknown version key:**
-```
-❌ Unknown version key: my_custom_tool
-```
-Fix: Use only recognized version keys (see `dot versions --validate`)
-
 **Missing required files:**
 ```
 ❌ README.md not found

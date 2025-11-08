@@ -328,41 +328,38 @@ difficulty: beginner
 
 ## Dependency Version Management
 
-The Polkadot Cookbook uses a flexible version management system that allows recipes to specify dependency versions while inheriting defaults from a global configuration.
+Recipes manage dependencies using standard tooling files:
 
-### Quick Overview
+### Rust Recipes (Polkadot SDK)
 
-- **Global versions** (`versions.yml`) - Default versions for all recipes
-- **Recipe overrides** (`recipes/<slug>/versions.yml`) - Per-recipe customization
-- **Automatic merging** - Recipe versions take precedence over global versions
-- **CI integration** - Automated version resolution in workflows
+**Rust version:**
+- `rust-toolchain.toml` (per recipe) - Specifies Rust toolchain version
+- Automatically respected by `rustup`, `cargo`, and IDEs
 
-### Example
+**Dependencies:**
+- `Cargo.toml` - Specifies crate dependencies with exact versions
 
-**Global:**
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.5.0"
+**Example `rust-toolchain.toml`:**
+```toml
+[toolchain]
+channel = "1.86"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
 ```
 
-**Recipe override:**
-```yaml
-versions:
-  polkadot_omni_node: "0.6.0"  # Override
-```
+### TypeScript Recipes
 
-**Result:** Recipe uses Rust 1.86 (global) and omni-node 0.6.0 (override)
+**Node/npm versions:**
+- `package.json` - Specifies npm package versions
 
-### Complete Documentation
-
-For complete version management documentation including:
-- File format and schema
-- Merge behavior and resolution algorithm
-- All CLI commands and options
-- CI integration examples
-- SDK usage
-- Best practices and troubleshooting
+**Example:**
+```json
+{
+  "dependencies": {
+    "polkadot-api": "^1.20.0",
+    "vitest": "^2.0.0"
+  }
+}
 
 
 ## Troubleshooting
