@@ -93,13 +93,14 @@ recipes/my-recipe/
 ├── README.md              # Recipe content
 ├── recipe.config.yml    # Metadata
 ├── versions.yml           # Dependency versions
-├── package.json           # npm dependencies
+├── package.json           # npm dependencies (TypeScript recipes)
 ├── tsconfig.json          # TypeScript config
 ├── vitest.config.ts       # Test config
 ├── src/                   # Implementation code
 ├── tests/                 # Test files
-└── scripts/               # Helper scripts
+└── scripts/               # Deployment scripts (Solidity recipes)
 ```
+Note: Structure varies by recipe type (Runtime, Solidity, XCM, etc.).
 
 ### `versions`
 

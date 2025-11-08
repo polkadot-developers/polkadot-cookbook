@@ -167,7 +167,7 @@ git commit
 
 **Old approach (Python pre-commit):**
 - ❌ Requires Python installation
-- ❌ Manual setup: `./scripts/setup-pre-commit.sh`
+- ❌ Manual setup required
 - ❌ Extra dependency for Rust project
 - ✅ Large ecosystem of hooks
 
