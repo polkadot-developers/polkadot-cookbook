@@ -757,7 +757,6 @@ Before submitting your recipe, verify:
 - [ ] No broken links
 
 ### Validation
-- [ ] `dot recipe validate` passes
 - [ ] Pre-commit hooks pass
 - [ ] CI tests pass
 

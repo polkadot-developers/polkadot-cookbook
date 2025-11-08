@@ -82,12 +82,6 @@ enum RecipeCommands {
         #[arg(value_name = "SLUG")]
         slug: Option<String>,
     },
-    /// Validate recipe structure
-    Validate {
-        /// Recipe slug (defaults to current directory)
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
-    },
     /// Run linters (clippy, fmt)
     Lint {
         /// Recipe slug (defaults to current directory)
@@ -140,9 +134,6 @@ async fn main() -> Result<()> {
             }
             RecipeCommands::Test { slug } => {
                 handle_recipe_test(slug).await?;
-            }
-            RecipeCommands::Validate { slug } => {
-                handle_recipe_validate(slug).await?;
             }
             RecipeCommands::Lint { slug } => {
                 handle_recipe_lint(slug).await?;
@@ -893,90 +884,6 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     }
 
     outro("✅ Testing complete!")?;
-    Ok(())
-}
-
-async fn handle_recipe_validate(slug: Option<String>) -> Result<()> {
-    let recipe_path = get_recipe_path(slug)?;
-
-    intro(format!(
-        "🔍 Validating Recipe: {}",
-        recipe_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .polkadot_pink()
-    ))?;
-
-    let mut errors = Vec::new();
-    let mut warnings = Vec::new();
-
-    // Check for README.md
-    let readme_path = recipe_path.join("README.md");
-    if readme_path.exists() {
-        note("✅ README.md", "Found")?;
-
-        // Try to parse frontmatter
-        match polkadot_cookbook_sdk::metadata::parse_frontmatter_from_file(&readme_path).await {
-            Ok(frontmatter) => {
-                note(
-                    "✅ Frontmatter",
-                    format!(
-                        "title: {}, description: {}",
-                        frontmatter.title, frontmatter.description
-                    ),
-                )?;
-            }
-            Err(e) => {
-                errors.push(format!("README.md frontmatter parsing failed: {e}"));
-            }
-        }
-    } else {
-        errors.push("Missing required file: README.md".to_string());
-    }
-
-    // Try to auto-detect recipe type
-    match polkadot_cookbook_sdk::metadata::detect_recipe_type(&recipe_path).await {
-        Ok(recipe_type) => {
-            note("✅ Recipe Type", format!("{:?}", recipe_type))?;
-        }
-        Err(e) => {
-            errors.push(format!("Could not detect recipe type: {e}"));
-        }
-    }
-
-    // Check for test directory
-    let tests_path = recipe_path.join("tests");
-    if !tests_path.exists() {
-        warnings.push("No tests/ directory found");
-    } else {
-        note("✅ tests/", "Found")?;
-    }
-
-    // Check for Cargo.toml or package.json
-    let has_cargo = recipe_path.join("Cargo.toml").exists();
-    let has_package = recipe_path.join("package.json").exists();
-
-    if !has_cargo && !has_package {
-        errors.push("Neither Cargo.toml nor package.json found".to_string());
-    } else if has_cargo {
-        note("✅ Cargo.toml", "Found (Rust project)")?;
-    } else if has_package {
-        note("✅ package.json", "Found (TypeScript project)")?;
-    }
-
-    if !errors.is_empty() {
-        note("❌ Errors", errors.join("\n"))?;
-        outro_cancel("Validation failed")?;
-        std::process::exit(1);
-    }
-
-    if !warnings.is_empty() {
-        note("⚠️  Warnings", warnings.join("\n"))?;
-    }
-
-    outro("✅ Validation passed!")?;
     Ok(())
 }
 

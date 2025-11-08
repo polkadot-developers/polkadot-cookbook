@@ -182,9 +182,6 @@ dot recipe create
 # Test your recipe
 dot recipe test my-pallet
 
-# Validate recipe structure
-dot recipe validate my-pallet
-
 # Run linting checks
 dot recipe lint my-pallet
 

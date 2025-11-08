@@ -83,9 +83,6 @@ Edit the generated files:
 # Test your recipe
 dot recipe test my-recipe-name
 
-# Validate structure
-dot recipe validate my-recipe-name
-
 # Run linting
 dot recipe lint my-recipe-name
 ```
@@ -140,7 +137,6 @@ dot doctor         # Run comprehensive health checks
 dot recipe create   # Create recipe (interactive)
 dot recipe list     # List all recipes
 dot recipe test     # Test a recipe
-dot recipe validate # Validate recipe structure
 dot recipe lint     # Run linting checks
 dot recipe submit   # Submit as pull request
 

@@ -195,40 +195,6 @@ XCM Recipes:
 
 ---
 
-### `recipe validate`
-
-Validate recipe structure and configuration.
-
-**Usage:**
-```bash
-dot recipe validate <SLUG>
-```
-
-**Arguments:**
-- `SLUG` - Recipe slug to validate
-
-**What it Checks:**
-- `recipe.config.yml` exists and is valid
-- Required files present (README.md, etc.)
-- YAML syntax correctness
-- Version keys validity
-
-**Output:**
-```
-✅ Recipe validation passed!
-
-Checks:
-  ✓ recipe.config.yml exists
-  ✓ README.md exists
-  ✓ All configuration files are valid
-```
-
-**Exit Codes:**
-- `0` - Validation passed
-- `1` - Validation failed
-
----
-
 ### `recipe test`
 
 Run tests for a recipe.
@@ -449,20 +415,6 @@ gh auth login
 
 # Verify token
 gh auth token
-```
-
-### Invalid Recipe Structure
-
-**Symptom:** `dot recipe validate` fails
-
-**Solution:**
-```bash
-# Check what's wrong
-dot recipe validate my-recipe
-
-# Fix issues reported
-# Re-validate
-dot recipe validate my-recipe
 ```
 
 ---

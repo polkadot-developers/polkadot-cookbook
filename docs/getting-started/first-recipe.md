@@ -308,7 +308,6 @@ Before submitting, validate your recipe structure:
 
 ```bash
 # From repository root
-dot recipe validate my-first-pallet
 ```
 
 **This checks:**
@@ -535,7 +534,6 @@ git add .
 git commit -m "feat(recipe): complete implementation"
 
 # Validate recipe
-dot recipe validate my-first-pallet
 ```
 
 ### Merge Conflicts

@@ -194,7 +194,6 @@ npm test  # Includes Chopsticks setup
 
 ```bash
 # From repository root
-dot recipe validate your-recipe
 ```
 
 **This checks:**
@@ -601,7 +600,6 @@ dot recipe create
 # Test
 npm test                 # TypeScript
 cargo test              # Rust
-dot recipe validate slug
 
 # Commit
 git add .
