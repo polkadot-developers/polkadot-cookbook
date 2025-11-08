@@ -263,6 +263,22 @@ fn test_create_recipe_with_toolchain() {
     // Verify the project was created successfully
     assert!(recipes_dir.join("version-test").exists());
     assert!(recipes_dir.join("version-test/recipe.config.yml").exists());
+
+    // Verify rust-toolchain.toml was created for Polkadot SDK recipe
+    let toolchain_path = recipes_dir.join("version-test/rust-toolchain.toml");
+    assert!(
+        toolchain_path.exists(),
+        "rust-toolchain.toml should be created for Polkadot SDK recipes"
+    );
+
+    // Verify content matches expected format
+    let content = fs::read_to_string(&toolchain_path).unwrap();
+    assert!(
+        content.contains("channel = \"1.86\""),
+        "rust-toolchain.toml should specify Rust 1.86 for Polkadot SDK"
+    );
+    assert!(content.contains("components = [\"rustfmt\", \"clippy\"]"));
+    assert!(content.contains("profile = \"minimal\""));
 }
 
 #[test]

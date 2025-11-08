@@ -633,9 +633,23 @@ mod tests {
         assert!(project_path.join("README.md").exists());
         assert!(project_path.join("recipe.config.yml").exists());
         assert!(project_path.join("Cargo.toml").exists());
-        // Note: Polkadot SDK recipes don't have .gitignore or separate TypeScript test files
-        // They use Cargo's built-in gitignore and have Rust unit tests in the pallet code
         assert!(project_path.join("pallets").exists());
+
+        // Verify rust-toolchain.toml was copied for Polkadot SDK recipes
+        assert!(
+            project_path.join("rust-toolchain.toml").exists(),
+            "rust-toolchain.toml should be copied for Polkadot SDK recipes"
+        );
+
+        // Verify content of rust-toolchain.toml
+        let toolchain_content =
+            std::fs::read_to_string(project_path.join("rust-toolchain.toml")).unwrap();
+        assert!(
+            toolchain_content.contains("channel = \"1.86\""),
+            "rust-toolchain.toml should specify Rust 1.86"
+        );
+        assert!(toolchain_content.contains("components = [\"rustfmt\", \"clippy\"]"));
+        assert!(toolchain_content.contains("profile = \"minimal\""));
     }
 
     #[test]
@@ -722,6 +736,12 @@ mod tests {
         assert!(project_path.join("package.json").exists());
         assert!(project_path.join("chopsticks.yml").exists());
         assert!(project_path.join("recipe.config.yml").exists());
+
+        // Verify rust-toolchain.toml was NOT copied for TypeScript recipes
+        assert!(
+            !project_path.join("rust-toolchain.toml").exists(),
+            "rust-toolchain.toml should NOT exist for XCM (TypeScript) recipes"
+        );
     }
 
     #[tokio::test]
@@ -797,5 +817,105 @@ mod tests {
             !has_pathway_value,
             "Should not have pathway value when not provided"
         );
+    }
+
+    #[tokio::test]
+    async fn test_read_rust_version_scenarios() {
+        use tempfile::TempDir;
+
+        // Run all scenarios sequentially in one test to avoid parallel directory changes
+        let original_dir = std::env::current_dir().unwrap();
+
+        // Scenario 1: Valid file with version 1.85
+        {
+            let temp_dir = TempDir::new().unwrap();
+            std::env::set_current_dir(temp_dir.path()).unwrap();
+
+            let toolchain_content = r#"[toolchain]
+channel = "1.85"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
+"#;
+            tokio::fs::write("rust-toolchain.toml", toolchain_content)
+                .await
+                .unwrap();
+
+            let version = Scaffold::read_rust_version().await;
+            assert_eq!(
+                version, "1.85",
+                "Should read version 1.85 from rust-toolchain.toml"
+            );
+        }
+
+        // Scenario 2: Missing file should fallback to 1.86
+        {
+            let temp_dir = TempDir::new().unwrap();
+            std::env::set_current_dir(temp_dir.path()).unwrap();
+
+            // No rust-toolchain.toml exists
+            let version = Scaffold::read_rust_version().await;
+            assert_eq!(
+                version, "1.86",
+                "Should fallback to 1.86 when file is missing"
+            );
+        }
+
+        // Scenario 3: Invalid format should fallback to 1.86
+        {
+            let temp_dir = TempDir::new().unwrap();
+            std::env::set_current_dir(temp_dir.path()).unwrap();
+
+            let toolchain_content = r#"[toolchain]
+invalid = "1.85"
+components = ["rustfmt", "clippy"]
+"#;
+            tokio::fs::write("rust-toolchain.toml", toolchain_content)
+                .await
+                .unwrap();
+
+            let version = Scaffold::read_rust_version().await;
+            assert_eq!(
+                version, "1.86",
+                "Should fallback to 1.86 when format is invalid"
+            );
+        }
+
+        // Scenario 4: Different spacing around equals
+        {
+            let temp_dir = TempDir::new().unwrap();
+            std::env::set_current_dir(temp_dir.path()).unwrap();
+
+            let toolchain_content = r#"[toolchain]
+channel   =   "1.87"
+components = ["rustfmt", "clippy"]
+"#;
+            tokio::fs::write("rust-toolchain.toml", toolchain_content)
+                .await
+                .unwrap();
+
+            let version = Scaffold::read_rust_version().await;
+            assert_eq!(version, "1.87", "Should handle spaces around equals sign");
+        }
+
+        // Scenario 5: Stable channel
+        {
+            let temp_dir = TempDir::new().unwrap();
+            std::env::set_current_dir(temp_dir.path()).unwrap();
+
+            let toolchain_content = r#"[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
+"#;
+            tokio::fs::write("rust-toolchain.toml", toolchain_content)
+                .await
+                .unwrap();
+
+            let version = Scaffold::read_rust_version().await;
+            assert_eq!(version, "stable", "Should correctly read 'stable' channel");
+        }
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
     }
 }
