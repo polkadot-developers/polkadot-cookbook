@@ -101,16 +101,31 @@ cargo build --release
 
 #### Install the CLI Tool
 
-**Quick install (recommended):**
+**macOS / Linux:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash
 ```
 
-<details>
-<summary>Other installation methods</summary>
+**Windows (PowerShell):**
 
-**Download pre-built binary manually:**
+```powershell
+irm https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.ps1 | iex
+```
+
+> **Note:** On Windows, you may need to run PowerShell as Administrator or adjust your [execution policy](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies).
+
+See [Advanced Installation Options](#advanced-installation) for alternative methods.
+
+<a id="advanced-installation"></a>
+<details>
+<summary><b>Advanced Installation Options</b></summary>
+
+<br/>
+
+**Manual download (all platforms):**
+
+Download pre-built binaries from [GitHub Releases](https://github.com/polkadot-developers/polkadot-cookbook/releases/latest):
 
 ```bash
 # Linux (x86_64)
@@ -124,15 +139,28 @@ sudo mv dot /usr/local/bin/
 # macOS (Intel)
 curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-intel.tar.gz | tar xz
 sudo mv dot /usr/local/bin/
+
+# Windows
+# Download dot-windows-amd64.exe.zip from releases, extract, and add to PATH
 ```
 
 **Build from source:**
+
+Requires [Rust](https://rustup.rs/) installed.
 
 ```bash
 git clone https://github.com/polkadot-developers/polkadot-cookbook.git
 cd polkadot-cookbook
 cargo build --release --bin dot
-# Binary will be at ./target/release/dot
+# Binary will be at ./target/release/dot (or dot.exe on Windows)
+```
+
+**Custom install location:**
+
+```bash
+# Set INSTALL_DIR before running the installer
+export INSTALL_DIR="$HOME/bin"
+curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash
 ```
 
 </details>
