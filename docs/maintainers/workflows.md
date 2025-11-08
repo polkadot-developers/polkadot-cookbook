@@ -154,8 +154,8 @@ Automated weekly release of tested recipes.
 **Files:** `.github/workflows/release-weekly.yml`
 
 **Artifacts:**
-- `.repo/releases/v<version>/manifest.yml`
-- `.repo/releases/v<version>/RELEASE_NOTES.md`
+- `.github/releases/v<version>/manifest.yml`
+- `.github/releases/v<version>/RELEASE_NOTES.md`
 
 ---
 
@@ -233,7 +233,7 @@ Reusable workflow for building and releasing CLI binaries across platforms.
 Publishes final GitHub Release when manifest is merged to master.
 
 **Triggers:**
-- Push to master (paths: `.repo/releases/v*/manifest.yml`, `.repo/releases/v*/RELEASE_NOTES.md`)
+- Push to master (paths: `.github/releases/v*/manifest.yml`, `.github/releases/v*/RELEASE_NOTES.md`)
 
 **Jobs:**
 1. **detect-version** - Extracts version from changed files

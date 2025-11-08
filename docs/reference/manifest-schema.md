@@ -4,7 +4,7 @@ Complete schema reference for release `manifest.yml` files.
 
 ## Overview
 
-The manifest file is an automatically generated inventory of all recipes included in a release. It is created by the release workflow and stored in `.repo/releases/v<version>/manifest.yml`.
+The manifest file is an automatically generated inventory of all recipes included in a release. It is created by the release workflow and stored in `.github/releases/v<version>/manifest.yml`.
 
 **Purpose:**
 - Track which recipes are included in each release
@@ -17,13 +17,13 @@ The manifest file is an automatically generated inventory of all recipes include
 ## File Location
 
 ```
-.repo/releases/v<version>/manifest.yml
+.github/releases/v<version>/manifest.yml
 ```
 
 **Examples:**
 ```
-.repo/releases/v0.3.0/manifest.yml
-.repo/releases/v1.0.0/manifest.yml
+.github/releases/v0.3.0/manifest.yml
+.github/releases/v1.0.0/manifest.yml
 ```
 
 ---
@@ -276,7 +276,7 @@ path: "recipes/basic-pallet"
    - Reads each `recipe.config.yml`
    - Validates recipe structure
    - Compiles into manifest
-   - Saves to `.repo/releases/v<version>/manifest.yml`
+   - Saves to `.github/releases/v<version>/manifest.yml`
 3. **Included recipes:** Only recipes with valid configuration
 
 ### Workflow
@@ -329,7 +329,7 @@ struct Recipe {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let manifest_data = fs::read_to_string(".repo/releases/v0.3.0/manifest.yml")?;
+    let manifest_data = fs::read_to_string(".github/releases/v0.3.0/manifest.yml")?;
     let manifest: Manifest = serde_yaml::from_str(&manifest_data)?;
 
     println!("Release: v{}", manifest.version);
@@ -367,7 +367,7 @@ interface Recipe {
   path: string;
 }
 
-const manifestData = fs.readFileSync('.repo/releases/v0.3.0/manifest.yml', 'utf8');
+const manifestData = fs.readFileSync('.github/releases/v0.3.0/manifest.yml', 'utf8');
 const manifest = yaml.load(manifestData) as Manifest;
 
 console.log(`Release: v${manifest.version}`);

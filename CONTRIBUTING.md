@@ -5,8 +5,8 @@
 
 <div align="center">
 
-<img src=".repo/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="60" height="60" />
-<img src=".repo/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="60" height="60" />
+<img src=".github/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="60" height="60" />
+<img src=".github/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="60" height="60" />
 
 <br/>
 
@@ -226,8 +226,8 @@ test(my-recipe): add integration tests
 
 <div align="center">
 
-<img src=".repo/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="40" height="40" />
-<img src=".repo/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="40" height="40" />
+<img src=".github/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="40" height="40" />
+<img src=".github/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="40" height="40" />
 
 <br/>
 
