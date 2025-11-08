@@ -1,7 +1,6 @@
 name: {{title}}
 slug: {{slug}}
 category: {{category}}
-needs_node: false
 description: {{description}}
 type: polkadot-sdk
 {{pathway}}

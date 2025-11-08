@@ -9,7 +9,6 @@ pub struct RecipeYmlTemplate {
     description: String,
     recipe_type: RecipeType,
     category: String,
-    needs_node: bool,
 }
 
 impl RecipeYmlTemplate {
@@ -20,7 +19,6 @@ impl RecipeYmlTemplate {
         description: impl Into<String>,
         recipe_type: RecipeType,
         category: impl Into<String>,
-        needs_node: bool,
     ) -> Self {
         Self {
             slug: slug.into(),
@@ -28,7 +26,6 @@ impl RecipeYmlTemplate {
             description: description.into(),
             recipe_type,
             category: category.into(),
-            needs_node,
         }
     }
 }
@@ -47,11 +44,10 @@ impl Template for RecipeYmlTemplate {
             r#"name: {}
 slug: {}
 category: {}
-needs_node: {}
 description: {}
 type: {}
 "#,
-            self.title, self.slug, self.category, self.needs_node, self.description, type_str
+            self.title, self.slug, self.category, self.description, type_str
         )
     }
 }
@@ -69,7 +65,6 @@ mod tests {
             "A test recipe",
             RecipeType::PolkadotSdk,
             "test-category",
-            true,
         );
         let yml = template.generate();
         assert!(yml.contains("name: My Recipe"));
@@ -86,11 +81,9 @@ mod tests {
             "Test description",
             RecipeType::PolkadotSdk,
             "test-cat",
-            true,
         );
         let yml = template.generate();
         assert!(yml.contains("category:"));
-        assert!(yml.contains("needs_node:"));
         assert!(yml.contains("description:"));
         assert!(yml.contains("type:"));
     }

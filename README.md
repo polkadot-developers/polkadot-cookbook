@@ -83,18 +83,31 @@ Zombienet and Chopsticks configurations for network testing.
 
 ### Run a Recipe
 
-Each recipe is self-contained with working code and tests:
+Each recipe is self-contained with working code and tests. Commands vary by recipe type:
 
+**Polkadot SDK (Rust)**
 ```bash
-git clone https://github.com/polkadot-developers/polkadot-cookbook.git
 cd polkadot-cookbook/recipes/basic-pallet
-
-# Run tests
-cargo test
-
-# Build the pallet
-cargo build --release
+cargo test              # Run tests
+cargo build --release   # Build the pallet
 ```
+
+**Smart Contracts (Solidity)**
+```bash
+cd polkadot-cookbook/recipes/simple-counter
+npm install            # Install dependencies
+npm run compile        # Compile contracts
+npm test              # Run tests
+```
+
+**Cross-Chain (XCM)**
+```bash
+cd polkadot-cookbook/recipes/teleport-assets
+npm install           # Install dependencies
+npm test             # Run tests with Chopsticks
+```
+
+> **Tip:** Check each recipe's README.md for specific instructions.
 
 ### Contribute a Recipe
 

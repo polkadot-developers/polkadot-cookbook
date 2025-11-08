@@ -91,10 +91,6 @@ pub struct RecipeConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub difficulty: Option<Difficulty>,
 
-    /// Whether recipe needs a running node
-    #[serde(default)]
-    pub needs_node: bool,
-
     /// Recipe description
     pub description: String,
 
@@ -113,7 +109,6 @@ impl RecipeConfig {
             pathway: None,
             content_type: None,
             difficulty: None,
-            needs_node: false,
             description: "Replace with a short description.".to_string(),
             recipe_type,
         }
@@ -136,7 +131,6 @@ impl RecipeConfig {
             pathway: Some(pathway),
             content_type: Some(content_type),
             difficulty: Some(difficulty),
-            needs_node: false,
             description: description.into(),
             recipe_type,
         }

@@ -122,7 +122,6 @@ git push origin recipe/my-awesome-recipe
 Edit `recipes/<slug>/recipe.config.yml` to configure:
 - Recipe name and description
 - Category (polkadot-sdk-cookbook or contracts-cookbook)
-- Whether a node is required (`needs_node`)
 - Build and runtime settings
 
 ## Troubleshooting

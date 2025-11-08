@@ -37,9 +37,6 @@ pub struct ProjectConfig {
     /// Recipe category
     pub category: String,
 
-    /// Whether the recipe needs a running node
-    pub needs_node: bool,
-
     /// Recipe description
     pub description: String,
 
@@ -76,7 +73,6 @@ impl ProjectConfig {
             skip_install: false,
             recipe_type: RecipeType::PolkadotSdk,
             category: "polkadot-sdk-cookbook".to_string(),
-            needs_node: true,
             description: "Replace with a short description.".to_string(),
             pathway: None,
             content_type: None,
@@ -117,12 +113,6 @@ impl ProjectConfig {
     /// Set recipe category
     pub fn with_category(mut self, category: impl Into<String>) -> Self {
         self.category = category.into();
-        self
-    }
-
-    /// Set needs_node flag
-    pub fn with_needs_node(mut self, needs_node: bool) -> Self {
-        self.needs_node = needs_node;
         self
     }
 
@@ -197,7 +187,6 @@ mod tests {
             .with_skip_install(true)
             .with_recipe_type(RecipeType::Solidity)
             .with_category("advanced")
-            .with_needs_node(false)
             .with_pathway(RecipePathway::Contracts)
             .with_content_type(ContentType::Tutorial)
             .with_difficulty(Difficulty::Beginner);
@@ -208,7 +197,6 @@ mod tests {
         assert!(config.skip_install);
         assert!(matches!(config.recipe_type, RecipeType::Solidity));
         assert_eq!(config.category, "advanced");
-        assert!(!config.needs_node);
         assert_eq!(config.pathway, Some(RecipePathway::Contracts));
         assert_eq!(config.content_type, Some(ContentType::Tutorial));
         assert_eq!(config.difficulty, Some(Difficulty::Beginner));

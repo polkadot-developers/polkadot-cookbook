@@ -41,7 +41,6 @@ fn test_all_templates_return_non_empty() {
         "A test description",
         RecipeType::PolkadotSdk,
         "test-cat",
-        true,
     );
     let content = recipe_yml.generate();
     assert!(
@@ -74,7 +73,6 @@ fn test_templates_contain_expected_markers() {
         "Description",
         RecipeType::PolkadotSdk,
         "test-cat",
-        true,
     )
     .generate();
     assert!(recipe_yml.contains("slug: my-test"));
@@ -96,7 +94,6 @@ fn test_template_trait_implemented() {
         "Desc",
         RecipeType::PolkadotSdk,
         "cat",
-        true,
     ));
 }
 
@@ -151,7 +148,6 @@ fn test_recipe_yml_template_variations() {
         "Desc 1",
         RecipeType::PolkadotSdk,
         "cat1",
-        true,
     );
     let content1 = template1.generate();
     assert!(content1.contains("slug-1"));
@@ -164,14 +160,12 @@ fn test_recipe_yml_template_variations() {
         "A longer description with multiple words",
         RecipeType::Solidity,
         "cat2",
-        false,
     );
     let content2 = template2.generate();
     assert!(content2.contains("complex-slug"));
     assert!(content2.contains("Complex Title"));
     assert!(content2.contains("A longer description"));
     assert!(content2.contains("type: solidity"));
-    assert!(content2.contains("needs_node: false"));
 }
 
 #[test]

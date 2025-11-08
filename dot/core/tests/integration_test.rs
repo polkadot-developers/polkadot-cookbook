@@ -366,29 +366,6 @@ async fn test_recipe_categories() {
     assert!(recipe_config.contains("category: advanced-tutorials"));
 }
 
-#[tokio::test]
-async fn test_needs_node_configuration() {
-    ensure_workspace_root();
-    let temp_dir = TempDir::new().unwrap();
-    let destination = temp_dir.path().to_path_buf();
-
-    let config = ProjectConfig::new("node-test")
-        .with_destination(destination.clone())
-        .with_needs_node(false)
-        .with_git_init(false)
-        .with_skip_install(true);
-
-    let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
-
-    let project_path = destination.join("node-test");
-    let recipe_config = tokio::fs::read_to_string(project_path.join("recipe.config.yml"))
-        .await
-        .unwrap();
-
-    assert!(recipe_config.contains("needs_node: false"));
-}
-
 // ============================================================================
 // Edge Cases Tests
 // ============================================================================
