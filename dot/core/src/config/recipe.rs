@@ -139,7 +139,7 @@ impl RecipeConfig {
     /// Load recipe config from a recipe directory
     ///
     /// This method:
-    /// - Reads frontmatter from README.md for title, description, categories
+    /// - Reads frontmatter from README.md for title and description
     /// - Auto-detects recipe type from file presence
     /// - Derives slug from directory name
     ///
@@ -197,7 +197,7 @@ impl RecipeConfig {
         Ok(Self {
             name: frontmatter.title,
             slug,
-            category: Some(frontmatter.categories),
+            category: None, // Category field is deprecated
             pathway,
             content_type: None, // No longer using this field
             difficulty: None,   // No longer using this field

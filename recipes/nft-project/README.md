@@ -1,3 +1,8 @@
+---
+title: NFT Project
+description: Replace with a short description.
+---
+
 # NFT Project
 
 Replace with a short description.

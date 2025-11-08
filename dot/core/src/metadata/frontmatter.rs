@@ -9,8 +9,6 @@ pub struct FrontmatterData {
     pub title: String,
     /// Recipe description
     pub description: String,
-    /// Recipe category
-    pub categories: String,
 }
 
 /// Parse frontmatter from a markdown file
@@ -20,7 +18,6 @@ pub struct FrontmatterData {
 /// ---
 /// title: Recipe Title
 /// description: Recipe description
-/// categories: category-name
 /// ---
 ///
 /// # Rest of markdown...
@@ -84,7 +81,6 @@ mod tests {
         let markdown = r#"---
 title: Validator Key Management
 description: Learn how to generate and manage validator keys
-categories: Infrastructure
 ---
 
 # Validator Key Management
@@ -98,7 +94,6 @@ Rest of the content...
             result.description,
             "Learn how to generate and manage validator keys"
         );
-        assert_eq!(result.categories, "Infrastructure");
     }
 
     #[test]
