@@ -136,21 +136,94 @@ impl RecipeConfig {
         }
     }
 
-    /// Load recipe config from YAML file
+    /// Load recipe config from a recipe directory
+    ///
+    /// This method:
+    /// - Reads frontmatter from README.md for title, description, categories
+    /// - Auto-detects recipe type from file presence
+    /// - Derives slug from directory name
+    ///
+    /// # Arguments
+    ///
+    /// * `recipe_path` - Path to the recipe directory
+    ///
+    /// # Returns
+    ///
+    /// RecipeConfig loaded from the recipe directory
+    pub async fn from_recipe_directory(
+        recipe_path: impl AsRef<std::path::Path>,
+    ) -> crate::error::Result<Self> {
+        use crate::metadata::{detect_recipe_type, parse_frontmatter_from_file};
+
+        let path = recipe_path.as_ref();
+
+        // Get slug from directory name
+        let slug = path
+            .file_name()
+            .ok_or_else(|| {
+                crate::CookbookError::ValidationError("Invalid recipe path".to_string())
+            })?
+            .to_str()
+            .ok_or_else(|| {
+                crate::CookbookError::ValidationError("Invalid UTF-8 in path".to_string())
+            })?
+            .to_string();
+
+        // Auto-detect recipe type
+        let recipe_type = detect_recipe_type(path).await.map_err(|e| {
+            crate::CookbookError::ValidationError(format!("Failed to detect recipe type: {}", e))
+        })?;
+
+        // Read frontmatter from README.md
+        let readme_path = path.join("README.md");
+        let frontmatter = parse_frontmatter_from_file(&readme_path)
+            .await
+            .map_err(|e| {
+                crate::CookbookError::ValidationError(format!(
+                    "Failed to parse README frontmatter: {}",
+                    e
+                ))
+            })?;
+
+        // Map recipe type to pathway
+        let pathway = Some(match recipe_type {
+            RecipeType::PolkadotSdk => RecipePathway::Runtime,
+            RecipeType::Solidity => RecipePathway::Contracts,
+            RecipeType::Xcm => RecipePathway::Xcm,
+            RecipeType::BasicInteraction => RecipePathway::BasicInteraction,
+            RecipeType::Testing => RecipePathway::Testing,
+        });
+
+        Ok(Self {
+            name: frontmatter.title,
+            slug,
+            category: Some(frontmatter.categories),
+            pathway,
+            content_type: None, // No longer using this field
+            difficulty: None,   // No longer using this field
+            description: frontmatter.description,
+            recipe_type,
+        })
+    }
+
+    /// Load recipe config from YAML file (deprecated, kept for backward compatibility)
+    #[deprecated(note = "Use from_recipe_directory instead")]
     pub fn from_file(path: &PathBuf) -> crate::error::Result<Self> {
         let content = std::fs::read_to_string(path)?;
         let config: RecipeConfig = serde_yaml::from_str(&content)?;
         Ok(config)
     }
 
-    /// Save recipe config to YAML file
+    /// Save recipe config to YAML file (deprecated)
+    #[deprecated(note = "recipe.config.yml is deprecated, use README frontmatter instead")]
     pub fn to_file(&self, path: &PathBuf) -> crate::error::Result<()> {
         let yaml = serde_yaml::to_string(self)?;
         std::fs::write(path, yaml)?;
         Ok(())
     }
 
-    /// Generate YAML content as string
+    /// Generate YAML content as string (deprecated)
+    #[deprecated(note = "recipe.config.yml is deprecated, use README frontmatter instead")]
     pub fn to_yaml(&self) -> crate::error::Result<String> {
         Ok(serde_yaml::to_string(self)?)
     }

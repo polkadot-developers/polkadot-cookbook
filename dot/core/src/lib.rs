@@ -92,6 +92,9 @@ pub mod templates;
 /// Project scaffolding logic
 pub mod scaffold;
 
+/// Metadata extraction and recipe detection
+pub mod metadata;
+
 // Internal prelude for convenience
 pub(crate) mod prelude {}
 

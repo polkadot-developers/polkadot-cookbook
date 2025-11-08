@@ -1,3 +1,9 @@
+---
+title: {{title}}
+description: {{description}}
+categories: {{category}}
+---
+
 # {{title}}
 
 > A focused guide for implementing [specific functionality] in a FRAME pallet.
