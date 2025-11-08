@@ -1,6 +1,6 @@
-//! # Polkadot Cookbook Core
+//! # Polkadot Cookbook SDK
 //!
-//! Core library for Polkadot Cookbook - programmatic access to recipe scaffolding,
+//! SDK library for Polkadot Cookbook - programmatic access to recipe scaffolding,
 //! configuration management, and testing utilities.
 //!
 //! ## Lint Configuration
@@ -22,7 +22,7 @@
 //! ### Creating a New Project
 //!
 //! ```no_run
-//! use polkadot_cookbook_core::config::ProjectConfig;
+//! use polkadot_cookbook_sdk::config::ProjectConfig;
 //! use std::path::PathBuf;
 //!
 //! #[tokio::main]
@@ -41,7 +41,7 @@
 //! ### Validating Configuration
 //!
 //! ```
-//! use polkadot_cookbook_core::config::{ProjectConfig, validate_slug};
+//! use polkadot_cookbook_sdk::config::{ProjectConfig, validate_slug};
 //!
 //! let config = ProjectConfig::new("my-tutorial");
 //! assert!(validate_slug(&config.slug).is_ok());
@@ -52,7 +52,7 @@
 //! All operations return `Result<T, CookbookError>` with structured error types:
 //!
 //! ```
-//! use polkadot_cookbook_core::error::CookbookError;
+//! use polkadot_cookbook_sdk::error::CookbookError;
 //!
 //! fn handle_error(error: CookbookError) {
 //!     match error {
@@ -94,6 +94,9 @@ pub mod scaffold;
 
 /// Metadata extraction and recipe detection
 pub mod metadata;
+
+/// Dependency checking for recipe pathways
+pub mod dependencies;
 
 // Internal prelude for convenience
 pub(crate) mod prelude {}

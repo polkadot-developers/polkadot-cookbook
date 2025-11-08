@@ -43,14 +43,7 @@ cargo build --release --bin dot
 # Use ./target/release/dot
 ```
 
-### 2. Setup Your Environment
-
-```bash
-# Verify your setup
-dot setup
-```
-
-### 3. Create a Recipe
+### 2. Create a Recipe
 
 ```bash
 # Interactive mode (recommended)
@@ -70,27 +63,21 @@ The CLI automatically:
 - Installs dependencies
 - Creates a git branch
 
-### 4. Write Your Recipe
+### 3. Write Your Recipe
 
 Edit the generated files:
 - `README.md` - Your recipe content (the CLI provides a template)
 - `src/` or `pallets/` - Your implementation
 - `tests/` - Test your code
 
-### 5. Test Your Recipe
+### 4. Test Your Recipe
 
 ```bash
 # Test your recipe
 dot recipe test my-recipe-name
-
-# Validate structure
-dot recipe validate my-recipe-name
-
-# Run linting
-dot recipe lint my-recipe-name
 ```
 
-### 6. Submit Your Recipe
+### 5. Submit Your Recipe
 
 ```bash
 # Submit as a pull request
@@ -132,16 +119,9 @@ Documentation fixes are welcome! Submit changes via pull request.
 ## CLI Commands Reference
 
 ```bash
-# Setup and diagnostics
-dot setup          # Check and setup your environment
-dot doctor         # Run comprehensive health checks
-
 # Recipe management
 dot recipe create   # Create recipe (interactive)
-dot recipe list     # List all recipes
 dot recipe test     # Test a recipe
-dot recipe validate # Validate recipe structure
-dot recipe lint     # Run linting checks
 dot recipe submit   # Submit as pull request
 
 # Non-interactive mode

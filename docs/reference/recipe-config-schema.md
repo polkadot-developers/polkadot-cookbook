@@ -304,7 +304,6 @@ The CLI automatically generates slugs from titles:
 
 ```bash
 # Validate recipe config
-dot recipe validate your-recipe-slug
 ```
 
 ### Validation Rules
@@ -500,7 +499,6 @@ type: "polkadot-sdk"  # Added
 1. Rename fields as needed
 2. Add missing required fields
 3. Update enum values to match allowed values
-4. Validate with `dot recipe validate`
 
 ---
 

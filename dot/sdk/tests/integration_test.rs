@@ -1,8 +1,8 @@
-//! Integration tests for polkadot-cookbook-core
+//! Integration tests for polkadot-cookbook-sdk
 //!
 //! These tests verify end-to-end functionality of the core library.
 
-use polkadot_cookbook_core::{config::ProjectConfig, Scaffold};
+use polkadot_cookbook_sdk::{config::ProjectConfig, Scaffold};
 use std::path::PathBuf;
 use tempfile::TempDir;
 
@@ -81,7 +81,7 @@ async fn test_create_project_with_existing_directory_fails() {
 
     // Verify it's the correct error type
     match result {
-        Err(polkadot_cookbook_core::CookbookError::ProjectExistsError(_)) => {
+        Err(polkadot_cookbook_sdk::CookbookError::ProjectExistsError(_)) => {
             // Expected error
         }
         _ => panic!("Expected ProjectExistsError"),
@@ -90,7 +90,7 @@ async fn test_create_project_with_existing_directory_fails() {
 
 #[tokio::test]
 async fn test_validate_slug() {
-    use polkadot_cookbook_core::config::validate_slug;
+    use polkadot_cookbook_sdk::config::validate_slug;
 
     // Valid slugs
     assert!(validate_slug("my-tutorial").is_ok());
@@ -108,7 +108,7 @@ async fn test_validate_slug() {
 
 #[tokio::test]
 async fn test_slug_to_title() {
-    use polkadot_cookbook_core::config::slug_to_title;
+    use polkadot_cookbook_sdk::config::slug_to_title;
 
     assert_eq!(slug_to_title("my-tutorial"), "My Tutorial");
     assert_eq!(slug_to_title("zero-to-hero"), "Zero To Hero");
@@ -118,7 +118,7 @@ async fn test_slug_to_title() {
 
 #[tokio::test]
 async fn test_template_generation() {
-    use polkadot_cookbook_core::templates::{ReadmeTemplate, Template, TestTemplate};
+    use polkadot_cookbook_sdk::templates::{ReadmeTemplate, Template, TestTemplate};
 
     // Test readme template
     let readme = ReadmeTemplate::new("my-tutorial");
@@ -160,7 +160,7 @@ async fn test_dry_run_mode() {
 
 #[tokio::test]
 async fn test_project_config_builder() {
-    use polkadot_cookbook_core::config::RecipeType;
+    use polkadot_cookbook_sdk::config::RecipeType;
 
     let config = ProjectConfig::new("builder-test")
         .with_destination(PathBuf::from("/tmp/test"))
@@ -180,7 +180,7 @@ async fn test_project_config_builder() {
 
 #[tokio::test]
 async fn test_error_serialization() {
-    use polkadot_cookbook_core::CookbookError;
+    use polkadot_cookbook_sdk::CookbookError;
 
     let error = CookbookError::ValidationError("test error".to_string());
 
@@ -204,7 +204,7 @@ async fn test_error_serialization() {
 #[tokio::test]
 async fn test_create_project_with_git_branch() {
     ensure_workspace_root();
-    use polkadot_cookbook_core::git::GitOperations;
+    use polkadot_cookbook_sdk::git::GitOperations;
 
     // Skip if not in a git repo
     if !GitOperations::is_git_repo().await {
@@ -233,7 +233,7 @@ async fn test_create_project_with_git_branch() {
 
 #[tokio::test]
 async fn test_git_is_repo() {
-    use polkadot_cookbook_core::git::GitOperations;
+    use polkadot_cookbook_sdk::git::GitOperations;
 
     // Test if we can detect git repository
     let _is_repo = GitOperations::is_git_repo().await;
@@ -265,7 +265,7 @@ async fn test_project_without_git() {
 #[tokio::test]
 async fn test_sdk_recipe_creation() {
     ensure_workspace_root();
-    use polkadot_cookbook_core::config::RecipeType;
+    use polkadot_cookbook_sdk::config::RecipeType;
 
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
@@ -293,7 +293,7 @@ async fn test_sdk_recipe_creation() {
 #[tokio::test]
 async fn test_contracts_recipe_creation() {
     ensure_workspace_root();
-    use polkadot_cookbook_core::config::RecipeType;
+    use polkadot_cookbook_sdk::config::RecipeType;
 
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
@@ -368,7 +368,7 @@ async fn test_long_slug() {
 
 #[tokio::test]
 async fn test_slug_with_numbers() {
-    use polkadot_cookbook_core::config::validate_slug;
+    use polkadot_cookbook_sdk::config::validate_slug;
 
     // Slugs with numbers should be valid
     assert!(validate_slug("test-123").is_ok());
@@ -379,7 +379,7 @@ async fn test_slug_with_numbers() {
 
 #[tokio::test]
 async fn test_single_word_slug() {
-    use polkadot_cookbook_core::config::validate_slug;
+    use polkadot_cookbook_sdk::config::validate_slug;
 
     // Single word slugs should be valid
     assert!(validate_slug("hello").is_ok());
@@ -528,7 +528,7 @@ async fn test_skip_install_flag() {
 
 #[tokio::test]
 async fn test_bootstrap_new() {
-    use polkadot_cookbook_core::scaffold::Bootstrap;
+    use polkadot_cookbook_sdk::scaffold::Bootstrap;
 
     let temp_dir = TempDir::new().unwrap();
     let project_path = temp_dir.path().join("test-bootstrap");

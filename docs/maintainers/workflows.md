@@ -19,18 +19,18 @@ The repository uses GitHub Actions for:
 Tests the core SDK library and CLI tool.
 
 **Triggers:**
-- Push to master (paths: `dot/core/**`, `dot/cli/**`, `Cargo.toml`, `Cargo.lock`)
+- Push to master (paths: `dot/sdk/**`, `dot/cli/**`, `Cargo.toml`, `Cargo.lock`)
 - Pull requests (always runs for branch protection, but skips work if no SDK changes)
 
 **Jobs:**
 1. **check-changes** - Detects if SDK files changed
-2. **test-core** - Tests core library
+2. **test-sdk** - Tests SDK library
    - Formatting check (`cargo fmt`)
    - Clippy lints (`cargo clippy`)
    - Unit tests
    - Integration tests
    - Doc tests
-   - Coverage report (80% threshold for core library)
+   - Coverage report (80% threshold for SDK library)
    - Posts coverage comment on PRs
 3. **test-cli** - Tests CLI tool
    - Valid recipe creation test
@@ -38,7 +38,7 @@ Tests the core SDK library and CLI tool.
    - Help command test
 4. **build-workspace** - Verifies full workspace builds
 
-**Coverage Threshold:** 80% for core library (CLI coverage tracked but not enforced)
+**Coverage Threshold:** 80% for SDK library (CLI coverage tracked but not enforced)
 
 **Files:** `.github/workflows/test-sdk.yml`
 
@@ -164,7 +164,7 @@ Automated weekly release of tested recipes.
 Triggers immediate release when breaking changes are merged to master.
 
 **Triggers:**
-- Push to master (paths: `dot/cli/**`, `dot/core/**`)
+- Push to master (paths: `dot/cli/**`, `dot/sdk/**`)
 
 **Jobs:**
 1. **detect-breaking-change** - Checks if merged PR has `semantic:major` label
@@ -284,7 +284,7 @@ Automatically labels PRs based on commit analysis and API breaking changes.
 
 **API Breaking Change Detection:**
 - Uses `cargo-semver-checks` to detect breaking changes in SDK public API
-- Only checks `dot/core/` crate (SDK library)
+- Only checks `dot/sdk/` crate (SDK library)
 - Skips `dot/cli/` crate (binary-only, no public API)
 
 **Files:** `.github/workflows/auto-label-semantic.yml`
@@ -351,7 +351,7 @@ This PR will trigger a MINOR version bump when merged.
    ↓
 3. SDK changes also trigger:
    └─ test-sdk.yml
-      ├─ Tests core library (coverage threshold: 80%)
+      ├─ Tests SDK library (coverage threshold: 80%)
       └─ Tests CLI tool
 ```
 
@@ -420,8 +420,8 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 **Symptom:** `test-sdk.yml` fails with "coverage below 80%"
 
 **Solution:**
-- Add tests to increase core library coverage
-- Coverage requirement only applies to `dot/core/` package
+- Add tests to increase SDK library coverage
+- Coverage requirement only applies to `dot/sdk/` package
 - CLI coverage is tracked but not enforced
 
 ## Best Practices

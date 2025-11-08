@@ -172,24 +172,11 @@ curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbo
 #### Use the CLI
 
 ```bash
-# Setup and verify your environment
-dot setup
-dot doctor
-
 # Create a new recipe (interactive mode)
 dot recipe create
 
 # Test your recipe
 dot recipe test my-pallet
-
-# Validate recipe structure
-dot recipe validate my-pallet
-
-# Run linting checks
-dot recipe lint my-pallet
-
-# List all recipes
-dot recipe list
 
 # Submit your recipe as a pull request
 dot recipe submit my-pallet
@@ -201,15 +188,6 @@ The CLI supports five recipe pathways:
 - **Basic Interactions** - Single-chain transactions with PAPI (TypeScript)
 - **XCM** - Cross-chain messaging with Chopsticks (TypeScript)
 - **Testing Infrastructure** - Zombienet and Chopsticks configurations
-
-**Interactive CLI Features:**
-- <img src=".github/media/icons/target-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".github/media/icons/target-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Title-first workflow (auto-generates slugs)
-- <img src=".github/media/icons/chart-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".github/media/icons/chart-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Difficulty levels (Beginner/Intermediate/Advanced)
-- <img src=".github/media/icons/docs-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".github/media/icons/docs-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Content types (Tutorial/Guide)
-- <img src=".github/media/icons/refresh-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".github/media/icons/refresh-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Automatic git branch creation
-- <img src=".github/media/icons/package-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".github/media/icons/package-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Automatic dependency installation
-
-**New:** No proposal required! Submit recipes directly via PR using the `dot recipe submit` command.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
@@ -224,7 +202,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 ### For Tool Users
 - [CLI Tool](dot/cli/) - Command-line tool for creating recipes
-- [SDK Library](dot/core/) - Programmatic API for tool developers
+- [SDK Library](dot/sdk/) - Programmatic API for tool developers
 
 ### For Maintainers
 - [Architecture](docs/architecture.md) - System design and architecture

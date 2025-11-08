@@ -1,17 +1,18 @@
-//! CLI wrapper for Polkadot Cookbook Core library
+//! CLI wrapper for Polkadot Cookbook SDK
 //!
-//! This is a thin wrapper around the polkadot-cookbook-core library that provides
+//! This is a thin wrapper around the polkadot-cookbook-sdk library that provides
 //! a command-line interface for creating and managing Polkadot Cookbook recipes.
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, select, spinner};
 use colored::Colorize;
-use polkadot_cookbook_core::{
-    config::{ContentType, Difficulty, ProjectConfig, RecipePathway, RecipeType},
+use polkadot_cookbook_sdk::{
+    config::{ProjectConfig, RecipePathway, RecipeType},
+    dependencies::check_pathway_dependencies,
     Scaffold,
 };
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Polkadot brand pink color (#E6007A)
 trait PolkadotColor {
@@ -46,14 +47,6 @@ struct Cli {
     #[arg(long, global = true)]
     pathway: Option<String>,
 
-    /// Difficulty level (for non-interactive mode): beginner, intermediate, advanced
-    #[arg(long, global = true)]
-    difficulty: Option<String>,
-
-    /// Content type (for non-interactive mode): tutorial, guide
-    #[arg(long, name = "content-type", global = true)]
-    content_type: Option<String>,
-
     /// Skip npm install
     #[arg(long, default_value = "false", global = true)]
     skip_install: bool,
@@ -74,10 +67,6 @@ enum Commands {
         #[command(subcommand)]
         command: RecipeCommands,
     },
-    /// Setup development environment
-    Setup,
-    /// Check environment and diagnose issues
-    Doctor,
 }
 
 #[derive(Subcommand)]
@@ -90,20 +79,6 @@ enum RecipeCommands {
         #[arg(value_name = "SLUG")]
         slug: Option<String>,
     },
-    /// Validate recipe structure
-    Validate {
-        /// Recipe slug (defaults to current directory)
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
-    },
-    /// Run linters (clippy, fmt)
-    Lint {
-        /// Recipe slug (defaults to current directory)
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
-    },
-    /// List all recipes
-    List,
     /// Submit a recipe as a pull request
     Submit {
         /// Recipe slug (defaults to current directory)
@@ -128,7 +103,7 @@ async fn main() -> Result<()> {
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "polkadot_cookbook_core=info".to_string()),
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "polkadot_cookbook_sdk=info".to_string()),
         )
         .init();
 
@@ -140,8 +115,6 @@ async fn main() -> Result<()> {
                 handle_create(
                     cli.title,
                     cli.pathway,
-                    cli.difficulty,
-                    cli.content_type,
                     cli.skip_install,
                     cli.no_git,
                     cli.non_interactive,
@@ -151,25 +124,10 @@ async fn main() -> Result<()> {
             RecipeCommands::Test { slug } => {
                 handle_recipe_test(slug).await?;
             }
-            RecipeCommands::Validate { slug } => {
-                handle_recipe_validate(slug).await?;
-            }
-            RecipeCommands::Lint { slug } => {
-                handle_recipe_lint(slug).await?;
-            }
-            RecipeCommands::List => {
-                handle_recipe_list().await?;
-            }
             RecipeCommands::Submit { slug, title, body } => {
                 handle_recipe_submit(slug, title, body).await?;
             }
         },
-        Commands::Setup => {
-            handle_setup().await?;
-        }
-        Commands::Doctor => {
-            handle_doctor().await?;
-        }
     }
 
     Ok(())
@@ -178,8 +136,6 @@ async fn main() -> Result<()> {
 async fn handle_create(
     title: Option<String>,
     pathway: Option<String>,
-    difficulty: Option<String>,
-    content_type: Option<String>,
     skip_install: bool,
     no_git: bool,
     non_interactive: bool,
@@ -189,22 +145,14 @@ async fn handle_create(
         let title = title.ok_or_else(|| {
             anyhow::anyhow!("Title argument (--title) is required in non-interactive mode")
         })?;
-        return run_non_interactive(
-            &title,
-            pathway,
-            difficulty,
-            content_type,
-            skip_install,
-            no_git,
-        )
-        .await;
+        return run_non_interactive(&title, pathway, skip_install, no_git).await;
     }
 
     // Interactive mode with cliclack
     clear_screen()?;
 
     // Validate working directory first
-    if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_working_directory() {
         outro_cancel(format!(
             "❌ Invalid working directory: {e}\n\nPlease run this command from the repository root."
         ))?;
@@ -298,6 +246,9 @@ async fn handle_create(
         }
     };
 
+    // Check dependencies for the selected pathway
+    check_dependencies_interactive(&pathway)?;
+
     // Step 2: Ask for title (now that user knows the pathway)
     let title_question = "What is your recipe title?".polkadot_pink().to_string();
     let hint_text = "(e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')"
@@ -308,7 +259,7 @@ async fn handle_create(
         .validate(|input: &String| {
             if input.trim().is_empty() {
                 Err("Title cannot be empty")
-            } else if let Err(e) = polkadot_cookbook_core::config::validate_title(input) {
+            } else if let Err(e) = polkadot_cookbook_sdk::config::validate_title(input) {
                 Err(Box::leak(e.to_string().into_boxed_str()) as &str)
             } else {
                 Ok(())
@@ -317,7 +268,7 @@ async fn handle_create(
         .interact()?;
 
     // Generate suggested slug from title
-    let suggested_slug = polkadot_cookbook_core::config::title_to_slug(&title);
+    let suggested_slug = polkadot_cookbook_sdk::config::title_to_slug(&title);
 
     // Prompt for slug with suggestion pre-filled
     let slug_question = "Recipe slug".polkadot_pink().to_string();
@@ -327,7 +278,7 @@ async fn handle_create(
         .validate(|input: &String| {
             if input.is_empty() {
                 Err("Slug cannot be empty")
-            } else if let Err(e) = polkadot_cookbook_core::config::validate_slug(input) {
+            } else if let Err(e) = polkadot_cookbook_sdk::config::validate_slug(input) {
                 Err(Box::leak(e.to_string().into_boxed_str()) as &str)
             } else {
                 Ok(())
@@ -337,44 +288,7 @@ async fn handle_create(
 
     let title = title.trim().to_string();
 
-    // Step 3: Prompt for difficulty level
-    let difficulty_question = "What's the difficulty level?".polkadot_pink().to_string();
-    let difficulty: Difficulty = select(&difficulty_question)
-        .item(
-            Difficulty::Beginner,
-            "Beginner",
-            "New to Polkadot or blockchain development",
-        )
-        .item(
-            Difficulty::Intermediate,
-            "Intermediate",
-            "Familiar with Polkadot concepts and basic development",
-        )
-        .item(
-            Difficulty::Advanced,
-            "Advanced",
-            "Expert-level topics and complex implementations",
-        )
-        .interact()?;
-
-    // Step 4: Prompt for content type
-    let content_type_question = "What type of content will this recipe include?"
-        .polkadot_pink()
-        .to_string();
-    let content_type: ContentType = select(&content_type_question)
-        .item(
-            ContentType::Tutorial,
-            "Tutorial",
-            "Step-by-step guide from zero to working solution",
-        )
-        .item(
-            ContentType::Guide,
-            "Guide",
-            "Focused, actionable steps for a specific task",
-        )
-        .interact()?;
-
-    // Step 5: Prompt for description
+    // Step 3: Prompt for description
     let description_question = "Brief description".polkadot_pink().to_string();
     let hint_text = "(1-2 sentences, 120-160 characters for SEO)"
         .dimmed()
@@ -427,8 +341,6 @@ async fn handle_create(
              {:<16} {}\n\
              {:<16} {}\n\
              {:<16} {}\n\
-             {:<16} {}\n\
-             {:<16} {}\n\
              {:<16} {}\n\n\
              Files to create:\n\
              {} README.md (with frontmatter)\n\
@@ -447,17 +359,6 @@ async fn handle_create(
                 RecipePathway::RequestNew => {
                     unreachable!("RequestNew should have been handled before summary")
                 }
-            },
-            "Difficulty:".polkadot_pink(),
-            match difficulty {
-                Difficulty::Beginner => "Beginner",
-                Difficulty::Intermediate => "Intermediate",
-                Difficulty::Advanced => "Advanced",
-            },
-            "Content Type:".polkadot_pink(),
-            match content_type {
-                ContentType::Tutorial => "Tutorial",
-                ContentType::Guide => "Guide",
             },
             "Location:".polkadot_pink(),
             project_path.display(),
@@ -484,9 +385,7 @@ async fn handle_create(
         .with_skip_install(skip_install)
         .with_recipe_type(recipe_type)
         .with_description(description)
-        .with_pathway(pathway)
-        .with_content_type(content_type)
-        .with_difficulty(difficulty);
+        .with_pathway(pathway);
 
     // Create the project with spinner
     let sp = spinner();
@@ -591,23 +490,21 @@ async fn handle_create(
 async fn run_non_interactive(
     title: &str,
     pathway: Option<String>,
-    difficulty: Option<String>,
-    content_type: Option<String>,
     skip_install: bool,
     no_git: bool,
 ) -> Result<()> {
     // Validate title
-    if let Err(e) = polkadot_cookbook_core::config::validate_title(title) {
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_title(title) {
         eprintln!("❌ Invalid recipe title: {e}");
         eprintln!("Title must be properly formatted.");
         std::process::exit(1);
     }
 
     // Generate slug from title
-    let slug = polkadot_cookbook_core::config::title_to_slug(title);
+    let slug = polkadot_cookbook_sdk::config::title_to_slug(title);
 
     // Validate working directory
-    if let Err(e) = polkadot_cookbook_core::config::validate_working_directory() {
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_working_directory() {
         eprintln!("❌ Invalid working directory: {e}");
         eprintln!("Please run this command from the repository root.");
         std::process::exit(1);
@@ -649,37 +546,6 @@ async fn run_non_interactive(
 
     // Title is already provided as input parameter
 
-    // Parse difficulty
-    let difficulty_level = if let Some(d) = difficulty {
-        match d.as_str() {
-            "beginner" => Some(Difficulty::Beginner),
-            "intermediate" => Some(Difficulty::Intermediate),
-            "advanced" => Some(Difficulty::Advanced),
-            _ => {
-                eprintln!("❌ Invalid difficulty: {d}");
-                eprintln!("Valid difficulties: beginner, intermediate, advanced");
-                std::process::exit(1);
-            }
-        }
-    } else {
-        None
-    };
-
-    // Parse content type
-    let content_type_value = if let Some(ct) = content_type {
-        match ct.as_str() {
-            "tutorial" => Some(ContentType::Tutorial),
-            "guide" => Some(ContentType::Guide),
-            _ => {
-                eprintln!("❌ Invalid content type: {ct}");
-                eprintln!("Valid content types: tutorial, guide");
-                std::process::exit(1);
-            }
-        }
-    } else {
-        None
-    };
-
     // Determine pathway from recipe type
     let pathway_value = match recipe_type {
         RecipeType::PolkadotSdk => Some(RecipePathway::Runtime),
@@ -709,12 +575,6 @@ async fn run_non_interactive(
     if let Some(p) = pathway_value {
         config = config.with_pathway(p);
     }
-    if let Some(ct) = content_type_value {
-        config = config.with_content_type(ct);
-    }
-    if let Some(d) = difficulty_level {
-        config = config.with_difficulty(d);
-    }
 
     // Create the project
     let scaffold = Scaffold::new();
@@ -742,190 +602,6 @@ async fn run_non_interactive(
     Ok(())
 }
 
-async fn handle_setup() -> Result<()> {
-    clear_screen()?;
-    intro(
-        "🔧 Setup Development Environment"
-            .polkadot_pink()
-            .to_string(),
-    )?;
-
-    note(
-        "Checking Dependencies",
-        "Verifying your development environment...",
-    )?;
-
-    let sp = spinner();
-    sp.start("Checking Rust installation...");
-
-    // Check Rust
-    let rust_check = std::process::Command::new("rustc")
-        .arg("--version")
-        .output();
-
-    match rust_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("❌ Rust not found");
-            note("Install Rust", "Visit https://rustup.rs to install Rust")?;
-            outro_cancel("Setup incomplete")?;
-            std::process::exit(1);
-        }
-    }
-
-    // Check Cargo
-    sp.start("Checking Cargo...");
-    let cargo_check = std::process::Command::new("cargo")
-        .arg("--version")
-        .output();
-
-    match cargo_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("❌ Cargo not found");
-            outro_cancel("Setup incomplete")?;
-            std::process::exit(1);
-        }
-    }
-
-    // Check Just (optional)
-    sp.start("Checking Just...");
-    let just_check = std::process::Command::new("just").arg("--version").output();
-
-    match just_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("⚠️  Just not found (optional)");
-            note(
-                "Install Just",
-                "Just is recommended for running recipe commands.\nInstall: cargo install just",
-            )?;
-        }
-    }
-
-    // Check Git
-    sp.start("Checking Git...");
-    let git_check = std::process::Command::new("git").arg("--version").output();
-
-    match git_check {
-        Ok(output) if output.status.success() => {
-            let version = String::from_utf8_lossy(&output.stdout);
-            sp.stop(format!("✅ {}", version.trim()));
-        }
-        _ => {
-            sp.stop("❌ Git not found");
-            note(
-                "Install Git",
-                "Git is required for version control.\nVisit https://git-scm.com",
-            )?;
-            outro_cancel("Setup incomplete")?;
-            std::process::exit(1);
-        }
-    }
-
-    outro("✅ Setup complete! You're ready to create recipes.")?;
-    Ok(())
-}
-
-async fn handle_doctor() -> Result<()> {
-    clear_screen()?;
-    intro("🩺 Environment Diagnostics".polkadot_pink().to_string())?;
-
-    let mut issues = Vec::new();
-    let mut warnings = Vec::new();
-
-    // Check Rust version
-    if let Ok(output) = std::process::Command::new("rustc")
-        .arg("--version")
-        .output()
-    {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            if let Some(version_part) = version_str.split_whitespace().nth(1) {
-                note("✅ Rust", format!("Version: {version_part}"))?;
-            }
-        }
-    } else {
-        issues.push("Rust is not installed");
-    }
-
-    // Check Cargo
-    if let Ok(output) = std::process::Command::new("cargo")
-        .arg("--version")
-        .output()
-    {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            if let Some(version_part) = version_str.split_whitespace().nth(1) {
-                note("✅ Cargo", format!("Version: {version_part}"))?;
-            }
-        }
-    } else {
-        issues.push("Cargo is not installed");
-    }
-
-    // Check Git
-    if let Ok(output) = std::process::Command::new("git").arg("--version").output() {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            note("✅ Git", version_str.trim())?;
-        }
-    } else {
-        issues.push("Git is not installed");
-    }
-
-    // Check Just (optional)
-    if let Ok(output) = std::process::Command::new("just").arg("--version").output() {
-        if output.status.success() {
-            let version_str = String::from_utf8_lossy(&output.stdout);
-            note("✅ Just", version_str.trim())?;
-        }
-    } else {
-        warnings.push("Just is not installed (optional but recommended)");
-    }
-
-    // Check if we're in a git repository
-    if let Ok(output) = std::process::Command::new("git")
-        .args(["rev-parse", "--git-dir"])
-        .output()
-    {
-        if output.status.success() {
-            note("✅ Git Repository", "You're in a git repository")?;
-        } else {
-            warnings.push("Not in a git repository");
-        }
-    }
-
-    // Check if recipes directory exists
-    if Path::new("recipes").exists() {
-        note("✅ Recipes Directory", "Found recipes/ directory")?;
-    } else {
-        warnings.push("recipes/ directory not found - you may not be in the repository root");
-    }
-
-    if !issues.is_empty() {
-        note("❌ Issues Found", issues.join("\n"))?;
-        outro_cancel("Please fix the issues above")?;
-        std::process::exit(1);
-    }
-
-    if !warnings.is_empty() {
-        note("⚠️  Warnings", warnings.join("\n"))?;
-    }
-
-    outro("✅ All checks passed!")?;
-    Ok(())
-}
-
 async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     let recipe_path = get_recipe_path(slug)?;
 
@@ -940,20 +616,21 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     ))?;
 
     // Auto-detect recipe type from files
-    let recipe_config =
-        match polkadot_cookbook_core::config::RecipeConfig::from_recipe_directory(&recipe_path)
-            .await
-        {
-            Ok(config) => config,
-            Err(e) => {
-                outro_cancel(format!("Failed to detect recipe type: {e}"))?;
-                std::process::exit(1);
-            }
-        };
+    let recipe_config = match polkadot_cookbook_sdk::config::RecipeConfig::from_recipe_directory(
+        &recipe_path,
+    )
+    .await
+    {
+        Ok(config) => config,
+        Err(e) => {
+            outro_cancel(format!("Failed to detect recipe type: {e}"))?;
+            std::process::exit(1);
+        }
+    };
 
     let is_polkadot_sdk = matches!(
         recipe_config.recipe_type,
-        polkadot_cookbook_core::config::RecipeType::PolkadotSdk
+        polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk
     );
 
     if is_polkadot_sdk {
@@ -1003,218 +680,6 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     }
 
     outro("✅ Testing complete!")?;
-    Ok(())
-}
-
-async fn handle_recipe_validate(slug: Option<String>) -> Result<()> {
-    let recipe_path = get_recipe_path(slug)?;
-
-    intro(format!(
-        "🔍 Validating Recipe: {}",
-        recipe_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .polkadot_pink()
-    ))?;
-
-    let mut errors = Vec::new();
-    let mut warnings = Vec::new();
-
-    // Check for README.md
-    let readme_path = recipe_path.join("README.md");
-    if readme_path.exists() {
-        note("✅ README.md", "Found")?;
-
-        // Try to parse frontmatter
-        match polkadot_cookbook_core::metadata::parse_frontmatter_from_file(&readme_path).await {
-            Ok(frontmatter) => {
-                note(
-                    "✅ Frontmatter",
-                    format!(
-                        "title: {}, description: {}",
-                        frontmatter.title, frontmatter.description
-                    ),
-                )?;
-            }
-            Err(e) => {
-                errors.push(format!("README.md frontmatter parsing failed: {e}"));
-            }
-        }
-    } else {
-        errors.push("Missing required file: README.md".to_string());
-    }
-
-    // Try to auto-detect recipe type
-    match polkadot_cookbook_core::metadata::detect_recipe_type(&recipe_path).await {
-        Ok(recipe_type) => {
-            note("✅ Recipe Type", format!("{:?}", recipe_type))?;
-        }
-        Err(e) => {
-            errors.push(format!("Could not detect recipe type: {e}"));
-        }
-    }
-
-    // Check for test directory
-    let tests_path = recipe_path.join("tests");
-    if !tests_path.exists() {
-        warnings.push("No tests/ directory found");
-    } else {
-        note("✅ tests/", "Found")?;
-    }
-
-    // Check for Cargo.toml or package.json
-    let has_cargo = recipe_path.join("Cargo.toml").exists();
-    let has_package = recipe_path.join("package.json").exists();
-
-    if !has_cargo && !has_package {
-        errors.push("Neither Cargo.toml nor package.json found".to_string());
-    } else if has_cargo {
-        note("✅ Cargo.toml", "Found (Rust project)")?;
-    } else if has_package {
-        note("✅ package.json", "Found (TypeScript project)")?;
-    }
-
-    if !errors.is_empty() {
-        note("❌ Errors", errors.join("\n"))?;
-        outro_cancel("Validation failed")?;
-        std::process::exit(1);
-    }
-
-    if !warnings.is_empty() {
-        note("⚠️  Warnings", warnings.join("\n"))?;
-    }
-
-    outro("✅ Validation passed!")?;
-    Ok(())
-}
-
-async fn handle_recipe_lint(slug: Option<String>) -> Result<()> {
-    let recipe_path = get_recipe_path(slug)?;
-
-    intro(format!(
-        "🔧 Linting Recipe: {}",
-        recipe_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .polkadot_pink()
-    ))?;
-
-    // Check if it's a Rust project
-    let cargo_toml = recipe_path.join("Cargo.toml");
-    if !cargo_toml.exists() {
-        outro_cancel("Not a Rust project (Cargo.toml not found)")?;
-        std::process::exit(1);
-    }
-
-    // Run cargo fmt --check
-    let sp = spinner();
-    sp.start("Checking formatting (cargo fmt)...");
-
-    let fmt_output = std::process::Command::new("cargo")
-        .args(["fmt", "--all", "--", "--check"])
-        .current_dir(&recipe_path)
-        .output()?;
-
-    if fmt_output.status.success() {
-        sp.stop("✅ Formatting check passed");
-    } else {
-        sp.stop("❌ Formatting issues found");
-        note("Fix with", "cargo fmt --all")?;
-    }
-
-    // Run cargo clippy
-    sp.start("Running clippy...");
-
-    let clippy_output = std::process::Command::new("cargo")
-        .args([
-            "clippy",
-            "--all-features",
-            "--all-targets",
-            "--",
-            "-D",
-            "warnings",
-        ])
-        .current_dir(&recipe_path)
-        .output()?;
-
-    if clippy_output.status.success() {
-        sp.stop("✅ Clippy check passed");
-        outro("✅ All lints passed!")?;
-    } else {
-        sp.stop("❌ Clippy found issues");
-        let stderr = String::from_utf8_lossy(&clippy_output.stderr);
-        note("Clippy Output", &stderr)?;
-        outro_cancel("Linting failed")?;
-        std::process::exit(1);
-    }
-
-    Ok(())
-}
-
-async fn handle_recipe_list() -> Result<()> {
-    intro("📚 Available Recipes".polkadot_pink().to_string())?;
-
-    let recipes_dir = Path::new("recipes");
-    if !recipes_dir.exists() {
-        outro_cancel("recipes/ directory not found")?;
-        std::process::exit(1);
-    }
-
-    let mut recipes = Vec::new();
-
-    if let Ok(entries) = std::fs::read_dir(recipes_dir) {
-        for entry in entries.flatten() {
-            if entry.path().is_dir() {
-                let name = entry.file_name();
-                let name_str = name.to_string_lossy().to_string();
-
-                // Auto-detect recipe type
-                let recipe_type =
-                    match polkadot_cookbook_core::metadata::detect_recipe_type(&entry.path()).await
-                    {
-                        Ok(t) => match t {
-                            polkadot_cookbook_core::config::RecipeType::PolkadotSdk => {
-                                "Polkadot SDK (Runtime Development)"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::Solidity => {
-                                "Smart Contracts (Solidity)"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::Xcm => {
-                                "XCM (Cross-Chain Messaging)"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::BasicInteraction => {
-                                "Basic Interactions"
-                            }
-                            polkadot_cookbook_core::config::RecipeType::Testing => {
-                                "Testing Infrastructure"
-                            }
-                        },
-                        Err(_) => "Unknown",
-                    };
-
-                recipes.push((name_str, recipe_type.to_string()));
-            }
-        }
-    }
-
-    if recipes.is_empty() {
-        note("No Recipes", "No recipes found in recipes/ directory")?;
-    } else {
-        recipes.sort_by(|a, b| a.0.cmp(&b.0));
-
-        let mut output = String::new();
-        for (name, recipe_type) in recipes {
-            output.push_str(&format!("• {} ({})\n", name.polkadot_pink(), recipe_type));
-        }
-
-        note("Recipes", output.trim())?;
-    }
-
-    outro("Done")?;
     Ok(())
 }
 
@@ -1269,7 +734,7 @@ async fn handle_recipe_submit(
     // Read recipe metadata from frontmatter
     let readme_path = recipe_path.join("README.md");
     let (recipe_name, recipe_desc) =
-        match polkadot_cookbook_core::metadata::parse_frontmatter_from_file(&readme_path).await {
+        match polkadot_cookbook_sdk::metadata::parse_frontmatter_from_file(&readme_path).await {
             Ok(frontmatter) => (frontmatter.title, frontmatter.description),
             Err(_) => (
                 recipe_slug.clone(),
@@ -1278,14 +743,14 @@ async fn handle_recipe_submit(
         };
 
     // Auto-detect recipe type
-    let recipe_type = match polkadot_cookbook_core::metadata::detect_recipe_type(&recipe_path).await
+    let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(&recipe_path).await
     {
         Ok(t) => match t {
-            polkadot_cookbook_core::config::RecipeType::PolkadotSdk => "Polkadot SDK",
-            polkadot_cookbook_core::config::RecipeType::Solidity => "Solidity",
-            polkadot_cookbook_core::config::RecipeType::Xcm => "XCM",
-            polkadot_cookbook_core::config::RecipeType::BasicInteraction => "Basic Interactions",
-            polkadot_cookbook_core::config::RecipeType::Testing => "Testing Infrastructure",
+            polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => "Polkadot SDK",
+            polkadot_cookbook_sdk::config::RecipeType::Solidity => "Solidity",
+            polkadot_cookbook_sdk::config::RecipeType::Xcm => "XCM",
+            polkadot_cookbook_sdk::config::RecipeType::BasicInteraction => "Basic Interactions",
+            polkadot_cookbook_sdk::config::RecipeType::Testing => "Testing Infrastructure",
         },
         Err(_) => "Unknown",
     };
@@ -1537,6 +1002,50 @@ fn get_repo_info() -> Result<(String, String)> {
     }
 
     Ok((repo_parts[0].to_string(), repo_parts[1].to_string()))
+}
+
+/// Check dependencies for a pathway and prompt user if any are missing
+fn check_dependencies_interactive(pathway: &RecipePathway) -> Result<()> {
+    let results = check_pathway_dependencies(pathway);
+
+    let missing: Vec<_> = results.iter().filter(|r| !r.installed).collect();
+
+    if missing.is_empty() {
+        return Ok(());
+    }
+
+    // Show missing dependencies
+    let mut message = String::from("⚠️  Missing dependencies:\n\n");
+
+    for result in &missing {
+        let dep = &result.dependency;
+        message.push_str(&format!("  ✗ {}\n", dep.name.polkadot_pink()));
+    }
+
+    message.push_str("\nInstallation instructions:\n\n");
+
+    for result in &missing {
+        let dep = &result.dependency;
+        message.push_str(&format!("• {}\n", dep.name.bold()));
+        message.push_str(&format!("  {}\n", dep.install_instructions));
+        if !dep.install_url.is_empty() {
+            message.push_str(&format!("  More info: {}\n", dep.install_url.dimmed()));
+        }
+        message.push('\n');
+    }
+
+    note("Dependencies", message.trim())?;
+
+    let should_continue = confirm("Continue without all dependencies? (setup may fail)")
+        .initial_value(false)
+        .interact()?;
+
+    if !should_continue {
+        outro_cancel("Please install missing dependencies and try again")?;
+        std::process::exit(1);
+    }
+
+    Ok(())
 }
 
 fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {

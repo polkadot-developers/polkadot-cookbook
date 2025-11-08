@@ -27,7 +27,7 @@ Releases are created automatically every **Wednesday at 9:00 AM Bangkok time** (
 
 1. **Recipe Releases** (`v0.x.x`) - Versioned collections of tested recipes
 2. **CLI Releases** (`cli-v0.x.x`) - User-installable `dot` binary
-3. **SDK Releases** (`sdk-v0.x.x`) - Core library for external tools
+3. **SDK Releases** (`sdk-v0.x.x`) - SDK library for external tools
 
 ### Versioning
 
