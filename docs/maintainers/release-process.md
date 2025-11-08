@@ -330,104 +330,42 @@ difficulty: beginner
 
 The Polkadot Cookbook uses a flexible version management system that allows recipes to specify dependency versions while inheriting defaults from a global configuration.
 
-### How It Works
+### Quick Overview
 
-**Global Configuration**: Default versions defined in `versions.yml` at repository root
+- **Global versions** (`versions.yml`) - Default versions for all recipes
+- **Recipe overrides** (`recipes/<slug>/versions.yml`) - Per-recipe customization
+- **Automatic merging** - Recipe versions take precedence over global versions
+- **CLI commands** - `dot versions` for viewing and validation
+- **CI integration** - Automated version resolution in workflows
 
+### Example
+
+**Global:**
 ```yaml
 versions:
   rust: "1.86"
   polkadot_omni_node: "0.5.0"
-  chain_spec_builder: "10.0.0"
-  frame_omni_bencher: "0.13.0"
-
-metadata:
-  schema_version: "1.0"
 ```
 
-**Recipe Overrides**: Each recipe can override specific versions in its `recipes/<slug>/versions.yml`
-
+**Recipe override:**
 ```yaml
-# Recipe-specific version overrides
 versions:
-  polkadot_omni_node: "0.6.0"  # Override global version
-  chain_spec_builder: "11.0.0"
-
-metadata:
-  schema_version: "1.0"
+  polkadot_omni_node: "0.6.0"  # Override
 ```
 
-### Merge Behavior
+**Result:** Recipe uses Rust 1.86 (global) and omni-node 0.6.0 (override)
 
-The system automatically merges global and recipe-specific versions:
+### Complete Documentation
 
-1. Start with all global versions
-2. Override with recipe-specific versions on a per-key basis
-3. Result: Recipe gets custom versions where specified, global versions elsewhere
+For complete version management documentation including:
+- File format and schema
+- Merge behavior and resolution algorithm
+- All CLI commands and options
+- CI integration examples
+- SDK usage
+- Best practices and troubleshooting
 
-**Example Resolution:**
-- `rust`: `"1.86"` (from global - not overridden)
-- `polkadot_omni_node`: `"0.6.0"` (from recipe - overridden)
-- `chain_spec_builder`: `"11.0.0"` (from recipe - overridden)
-- `frame_omni_bencher`: `"0.13.0"` (from global - not overridden)
-
-### CLI Commands
-
-**View global versions:**
-```bash
-dot versions
-```
-
-**View recipe-specific versions:**
-```bash
-dot versions my-recipe
-```
-
-**Show version sources (debug):**
-```bash
-dot versions my-recipe --show-source
-```
-
-Output:
-```
-📦 Versions for recipe: my-recipe
-
-  rust                1.86   (global)
-  polkadot_omni_node  0.6.0  (recipe)
-  chain_spec_builder  11.0.0 (recipe)
-  frame_omni_bencher  0.13.0 (global)
-```
-
-**CI/automation format:**
-```bash
-eval $(dot versions my-recipe --ci)
-echo "Using Rust $RUST"
-```
-
-**Validate version keys:**
-```bash
-dot versions my-recipe --validate
-```
-
-### Integration with CI
-
-CI workflows use the `dot versions` command to resolve versions before running tests:
-
-```yaml
-- name: Resolve tool versions
-  id: resolve
-  run: |
-    eval $(./target/release/dot versions ${{ matrix.slug }} --ci)
-    echo "rust=$RUST" >> $GITHUB_OUTPUT
-    echo "omni-node=$POLKADOT_OMNI_NODE" >> $GITHUB_OUTPUT
-
-- name: Setup Rust
-  uses: dtolnay/rust-toolchain@stable
-  with:
-    toolchain: ${{ steps.resolve.outputs.rust }}
-```
-
-This ensures each recipe is tested with its specified dependency versions.
+**See:** [Version Management Guide](version-management.md)
 
 ## Troubleshooting
 

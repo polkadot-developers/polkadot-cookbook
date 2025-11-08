@@ -21,7 +21,6 @@ The Polkadot Cookbook uses a flexible version management system that ensures eac
 versions:
   rust: "1.86"
   polkadot_omni_node: "0.5.0"
-  chain_spec_builder: "10.0.0"
 ```
 
 **Recipe versions.yml:**
@@ -33,9 +32,8 @@ versions:
 **Resolved for recipe:**
 - `rust`: `1.86` (from global)
 - `polkadot_omni_node`: `0.6.0` (from recipe override)
-- `chain_spec_builder`: `10.0.0` (from global)
 
-See [Release Process](RELEASE_PROCESS.md#dependency-version-management) for complete version management documentation.
+For complete version management documentation, see: [Version Management Guide](../maintainers/version-management.md)
 
 ## Testing the Version Resolution Workflow
 

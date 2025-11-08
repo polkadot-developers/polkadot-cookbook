@@ -368,7 +368,7 @@ Several workflows use the `dot versions` command to resolve dependency versions:
 
 This ensures each recipe is tested with its specified versions (global defaults + recipe overrides).
 
-See [Release Process](RELEASE_PROCESS.md#dependency-version-management) for details.
+See [Version Management Guide](version-management.md) for complete documentation.
 
 ## Manual Workflow Triggers
 

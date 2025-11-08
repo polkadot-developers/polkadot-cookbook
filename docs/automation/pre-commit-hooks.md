@@ -38,14 +38,12 @@ Validates commit message format (**non-blocking**):
    - Valid types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`, `style`
    - Shows warning if format doesn't match
    - **Non-blocking**: commit always proceeds
-   - Examples:
-     - `feat(cli): add recipe type selection`
-     - `fix(core): handle missing versions.yml`
-     - `docs: update contributing guidelines`
 
 2. **Auto-Skips**
    - Merge commits
    - Revert commits
+
+For complete conventional commits documentation, see: [Commit Conventions Guide](../contributors/commit-conventions.md)
 
 ## Hook Scripts
 
