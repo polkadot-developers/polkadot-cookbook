@@ -8,7 +8,7 @@ use clap::{Parser, Subcommand};
 use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, select, spinner};
 use colored::Colorize;
 use polkadot_cookbook_sdk::{
-    config::{ContentType, Difficulty, ProjectConfig, RecipePathway, RecipeType},
+    config::{ProjectConfig, RecipePathway, RecipeType},
     Scaffold,
 };
 use std::path::{Path, PathBuf};
@@ -45,14 +45,6 @@ struct Cli {
     /// Recipe pathway (for non-interactive mode): runtime, contracts, basic-interaction, xcm, testing, request-new
     #[arg(long, global = true)]
     pathway: Option<String>,
-
-    /// Difficulty level (for non-interactive mode): beginner, intermediate, advanced
-    #[arg(long, global = true)]
-    difficulty: Option<String>,
-
-    /// Content type (for non-interactive mode): tutorial, guide
-    #[arg(long, name = "content-type", global = true)]
-    content_type: Option<String>,
 
     /// Skip npm install
     #[arg(long, default_value = "false", global = true)]
@@ -140,8 +132,6 @@ async fn main() -> Result<()> {
                 handle_create(
                     cli.title,
                     cli.pathway,
-                    cli.difficulty,
-                    cli.content_type,
                     cli.skip_install,
                     cli.no_git,
                     cli.non_interactive,
@@ -178,8 +168,6 @@ async fn main() -> Result<()> {
 async fn handle_create(
     title: Option<String>,
     pathway: Option<String>,
-    difficulty: Option<String>,
-    content_type: Option<String>,
     skip_install: bool,
     no_git: bool,
     non_interactive: bool,
@@ -189,15 +177,7 @@ async fn handle_create(
         let title = title.ok_or_else(|| {
             anyhow::anyhow!("Title argument (--title) is required in non-interactive mode")
         })?;
-        return run_non_interactive(
-            &title,
-            pathway,
-            difficulty,
-            content_type,
-            skip_install,
-            no_git,
-        )
-        .await;
+        return run_non_interactive(&title, pathway, skip_install, no_git).await;
     }
 
     // Interactive mode with cliclack
@@ -337,44 +317,7 @@ async fn handle_create(
 
     let title = title.trim().to_string();
 
-    // Step 3: Prompt for difficulty level
-    let difficulty_question = "What's the difficulty level?".polkadot_pink().to_string();
-    let difficulty: Difficulty = select(&difficulty_question)
-        .item(
-            Difficulty::Beginner,
-            "Beginner",
-            "New to Polkadot or blockchain development",
-        )
-        .item(
-            Difficulty::Intermediate,
-            "Intermediate",
-            "Familiar with Polkadot concepts and basic development",
-        )
-        .item(
-            Difficulty::Advanced,
-            "Advanced",
-            "Expert-level topics and complex implementations",
-        )
-        .interact()?;
-
-    // Step 4: Prompt for content type
-    let content_type_question = "What type of content will this recipe include?"
-        .polkadot_pink()
-        .to_string();
-    let content_type: ContentType = select(&content_type_question)
-        .item(
-            ContentType::Tutorial,
-            "Tutorial",
-            "Step-by-step guide from zero to working solution",
-        )
-        .item(
-            ContentType::Guide,
-            "Guide",
-            "Focused, actionable steps for a specific task",
-        )
-        .interact()?;
-
-    // Step 5: Prompt for description
+    // Step 3: Prompt for description
     let description_question = "Brief description".polkadot_pink().to_string();
     let hint_text = "(1-2 sentences, 120-160 characters for SEO)"
         .dimmed()
@@ -427,8 +370,6 @@ async fn handle_create(
              {:<16} {}\n\
              {:<16} {}\n\
              {:<16} {}\n\
-             {:<16} {}\n\
-             {:<16} {}\n\
              {:<16} {}\n\n\
              Files to create:\n\
              {} README.md (with frontmatter)\n\
@@ -447,17 +388,6 @@ async fn handle_create(
                 RecipePathway::RequestNew => {
                     unreachable!("RequestNew should have been handled before summary")
                 }
-            },
-            "Difficulty:".polkadot_pink(),
-            match difficulty {
-                Difficulty::Beginner => "Beginner",
-                Difficulty::Intermediate => "Intermediate",
-                Difficulty::Advanced => "Advanced",
-            },
-            "Content Type:".polkadot_pink(),
-            match content_type {
-                ContentType::Tutorial => "Tutorial",
-                ContentType::Guide => "Guide",
             },
             "Location:".polkadot_pink(),
             project_path.display(),
@@ -484,9 +414,7 @@ async fn handle_create(
         .with_skip_install(skip_install)
         .with_recipe_type(recipe_type)
         .with_description(description)
-        .with_pathway(pathway)
-        .with_content_type(content_type)
-        .with_difficulty(difficulty);
+        .with_pathway(pathway);
 
     // Create the project with spinner
     let sp = spinner();
@@ -591,8 +519,6 @@ async fn handle_create(
 async fn run_non_interactive(
     title: &str,
     pathway: Option<String>,
-    difficulty: Option<String>,
-    content_type: Option<String>,
     skip_install: bool,
     no_git: bool,
 ) -> Result<()> {
@@ -649,37 +575,6 @@ async fn run_non_interactive(
 
     // Title is already provided as input parameter
 
-    // Parse difficulty
-    let difficulty_level = if let Some(d) = difficulty {
-        match d.as_str() {
-            "beginner" => Some(Difficulty::Beginner),
-            "intermediate" => Some(Difficulty::Intermediate),
-            "advanced" => Some(Difficulty::Advanced),
-            _ => {
-                eprintln!("❌ Invalid difficulty: {d}");
-                eprintln!("Valid difficulties: beginner, intermediate, advanced");
-                std::process::exit(1);
-            }
-        }
-    } else {
-        None
-    };
-
-    // Parse content type
-    let content_type_value = if let Some(ct) = content_type {
-        match ct.as_str() {
-            "tutorial" => Some(ContentType::Tutorial),
-            "guide" => Some(ContentType::Guide),
-            _ => {
-                eprintln!("❌ Invalid content type: {ct}");
-                eprintln!("Valid content types: tutorial, guide");
-                std::process::exit(1);
-            }
-        }
-    } else {
-        None
-    };
-
     // Determine pathway from recipe type
     let pathway_value = match recipe_type {
         RecipeType::PolkadotSdk => Some(RecipePathway::Runtime),
@@ -708,12 +603,6 @@ async fn run_non_interactive(
     // Add optional fields if provided
     if let Some(p) = pathway_value {
         config = config.with_pathway(p);
-    }
-    if let Some(ct) = content_type_value {
-        config = config.with_content_type(ct);
-    }
-    if let Some(d) = difficulty_level {
-        config = config.with_difficulty(d);
     }
 
     // Create the project

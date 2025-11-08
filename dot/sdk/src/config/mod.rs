@@ -7,7 +7,7 @@ pub mod recipe;
 /// Recipe validation utilities
 pub mod validation;
 
-pub use recipe::{ContentType, Difficulty, RecipeConfig, RecipePathway, RecipeType};
+pub use recipe::{RecipeConfig, RecipePathway, RecipeType};
 pub use validation::{
     is_valid_slug, slug_to_title, title_to_slug, validate_project_config, validate_slug,
     validate_title, validate_working_directory,
@@ -42,12 +42,6 @@ pub struct ProjectConfig {
 
     /// Recipe pathway (optional)
     pub pathway: Option<RecipePathway>,
-
-    /// Content type (optional)
-    pub content_type: Option<ContentType>,
-
-    /// Difficulty level (optional)
-    pub difficulty: Option<Difficulty>,
 }
 
 impl ProjectConfig {
@@ -75,8 +69,6 @@ impl ProjectConfig {
             category: "polkadot-sdk-cookbook".to_string(),
             description: "Replace with a short description.".to_string(),
             pathway: None,
-            content_type: None,
-            difficulty: None,
         }
     }
 
@@ -128,18 +120,6 @@ impl ProjectConfig {
         self
     }
 
-    /// Set content type
-    pub fn with_content_type(mut self, content_type: ContentType) -> Self {
-        self.content_type = Some(content_type);
-        self
-    }
-
-    /// Set difficulty level
-    pub fn with_difficulty(mut self, difficulty: Difficulty) -> Self {
-        self.difficulty = Some(difficulty);
-        self
-    }
-
     /// Get the full project path
     pub fn project_path(&self) -> PathBuf {
         self.destination.join(&self.slug)
@@ -175,8 +155,6 @@ mod tests {
         assert!(config.git_init);
         assert!(!config.skip_install);
         assert_eq!(config.pathway, None);
-        assert_eq!(config.content_type, None);
-        assert_eq!(config.difficulty, None);
     }
 
     #[test]
@@ -187,9 +165,7 @@ mod tests {
             .with_skip_install(true)
             .with_recipe_type(RecipeType::Solidity)
             .with_category("advanced")
-            .with_pathway(RecipePathway::Contracts)
-            .with_content_type(ContentType::Tutorial)
-            .with_difficulty(Difficulty::Beginner);
+            .with_pathway(RecipePathway::Contracts);
 
         assert_eq!(config.slug, "test-recipe");
         assert_eq!(config.destination, PathBuf::from("/tmp/recipes"));
@@ -198,8 +174,6 @@ mod tests {
         assert!(matches!(config.recipe_type, RecipeType::Solidity));
         assert_eq!(config.category, "advanced");
         assert_eq!(config.pathway, Some(RecipePathway::Contracts));
-        assert_eq!(config.content_type, Some(ContentType::Tutorial));
-        assert_eq!(config.difficulty, Some(Difficulty::Beginner));
     }
 
     #[test]
