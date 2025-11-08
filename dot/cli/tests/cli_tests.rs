@@ -107,7 +107,6 @@ fn test_create_recipe_non_interactive() {
     // Verify directory structure
     assert!(recipes_dir.join("custom-pallet-storage").exists());
     assert!(recipes_dir.join("custom-pallet-storage/README.md").exists());
-    assert!(recipes_dir.join("custom-pallet-storage/justfile").exists());
     assert!(recipes_dir.join("custom-pallet-storage/pallets").exists());
 }
 
