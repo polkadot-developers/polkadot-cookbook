@@ -97,7 +97,7 @@ jobs:
 
       - name: Setup Rust toolchain
         if: steps.recipe-type.outputs.type == 'polkadot-sdk'
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
 
@@ -115,17 +115,17 @@ jobs:
       - name: Run clippy
         if: steps.recipe-type.outputs.type == 'polkadot-sdk'
         working-directory: recipes/${{ matrix.slug }}
-        run: cargo clippy --all-features --all-targets -- -D warnings
+        run: cargo clippy --all-features --all-targets --locked -- -D warnings
 
       - name: Build
         if: steps.recipe-type.outputs.type == 'polkadot-sdk'
         working-directory: recipes/${{ matrix.slug }}
-        run: cargo build --release
+        run: cargo build --release --locked
 
       - name: Run tests
         if: steps.recipe-type.outputs.type == 'polkadot-sdk'
         working-directory: recipes/${{ matrix.slug }}
-        run: cargo test --all-features
+        run: cargo test --all-features --locked
 
       - name: Skip non-Polkadot SDK recipes
         if: steps.recipe-type.outputs.type != 'polkadot-sdk'

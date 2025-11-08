@@ -13,9 +13,6 @@ on:
   pull_request:
     # Always run on PRs to satisfy branch protection, but skip work conditionally
 
-env:
-  RUST_VERSION: 1.86
-
 jobs:
   check-changes:
     name: Detect SDK Changes
@@ -71,7 +68,6 @@ jobs:
         if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: ${{ env.RUST_VERSION }}
           components: rustfmt, clippy
 
       - name: Cache cargo registry
@@ -101,23 +97,23 @@ jobs:
 
       - name: Run clippy
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo clippy --package core -- -D warnings
+        run: cargo clippy --package core --locked -- -D warnings
 
       - name: Build core library
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo build --package core --verbose
+        run: cargo build --package core --locked --verbose
 
       - name: Run unit tests
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo test --package core --lib --verbose -- --test-threads=1
+        run: cargo test --package core --lib --locked --verbose -- --test-threads=1
 
       - name: Run integration tests
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo test --package core --test integration_test --verbose -- --test-threads=1
+        run: cargo test --package core --test integration_test --locked --verbose -- --test-threads=1
 
       - name: Run doc tests
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo test --package core --doc --verbose
+        run: cargo test --package core --doc --locked --verbose
 
       - name: Install cargo-llvm-cov
         if: needs.check-changes.outputs.sdk_changed == 'true'
@@ -127,13 +123,13 @@ jobs:
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           # Generate workspace coverage (for informational purposes)
-          cargo llvm-cov --workspace --summary-only -- --test-threads=1 > coverage-workspace.txt
+          cargo llvm-cov --workspace --locked --summary-only -- --test-threads=1 > coverage-workspace.txt
 
           # Generate core package coverage (for threshold check)
-          cargo llvm-cov --package core --summary-only -- --test-threads=1 > coverage-core.txt
+          cargo llvm-cov --package core --locked --summary-only -- --test-threads=1 > coverage-core.txt
 
           # Generate JSON report
-          cargo llvm-cov --workspace --json --output-path coverage.json -- --test-threads=1
+          cargo llvm-cov --workspace --locked --json --output-path coverage.json -- --test-threads=1
 
           echo "=== Workspace Coverage ==="
           cat coverage-workspace.txt
@@ -278,8 +274,6 @@ jobs:
       - name: Setup Rust
         if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Setup Node.js
         if: needs.check-changes.outputs.sdk_changed == 'true'
@@ -299,12 +293,12 @@ jobs:
 
       - name: Build CLI
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo build --package cli --verbose
+        run: cargo build --package cli --locked --verbose
 
       - name: Test CLI - Valid recipe creation
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          cargo run --package cli -- recipe create --title "Testing CLI Validation" --skip-install --no-git --non-interactive
+          cargo run --package cli --locked -- recipe create --title "Testing CLI Validation" --skip-install --no-git --non-interactive
           if [ ! -f "recipes/testing-cli-validation/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
@@ -314,7 +308,7 @@ jobs:
       - name: Test CLI - Missing required title
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          if cargo run --package cli -- recipe create --non-interactive 2>&1 | grep -q "Title argument"; then
+          if cargo run --package cli --locked -- recipe create --non-interactive 2>&1 | grep -q "Title argument"; then
             echo "✓ Missing title error message found"
             exit 0
           else
@@ -324,7 +318,7 @@ jobs:
 
       - name: Test CLI - Help
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo run --package cli -- --help
+        run: cargo run --package cli --locked -- --help
 
   build-workspace:
     name: Build Workspace
@@ -344,8 +338,6 @@ jobs:
       - name: Setup Rust
         if: needs.check-changes.outputs.sdk_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Cache cargo
         if: needs.check-changes.outputs.sdk_changed == 'true'
@@ -359,8 +351,8 @@ jobs:
 
       - name: Build workspace
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo build --workspace --verbose
+        run: cargo build --workspace --locked --verbose
 
       - name: Check workspace
         if: needs.check-changes.outputs.sdk_changed == 'true'
-        run: cargo check --workspace --verbose
+        run: cargo check --workspace --locked --verbose

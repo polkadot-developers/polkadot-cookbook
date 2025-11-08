@@ -142,7 +142,7 @@ jobs:
 
       - name: Setup Rust
         if: ${{ github.event.inputs.skip_tests != 'true' }}
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
 
@@ -168,7 +168,7 @@ jobs:
             # Check if recipe has tests
             if [ -f "$recipe/Cargo.toml" ]; then
               cd "$recipe"
-              cargo test --all-features || exit 1
+              cargo test --all-features --locked || exit 1
               cd ../..
             elif [ -f "$recipe/package.json" ]; then
               cd "$recipe"
@@ -234,7 +234,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Generate release manifest
         env:
