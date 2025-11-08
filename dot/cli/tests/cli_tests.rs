@@ -107,9 +107,6 @@ fn test_create_recipe_non_interactive() {
     // Verify directory structure
     assert!(recipes_dir.join("custom-pallet-storage").exists());
     assert!(recipes_dir.join("custom-pallet-storage/README.md").exists());
-    assert!(recipes_dir
-        .join("custom-pallet-storage/recipe.config.yml")
-        .exists());
     assert!(recipes_dir.join("custom-pallet-storage/justfile").exists());
     assert!(recipes_dir.join("custom-pallet-storage/pallets").exists());
 }
@@ -185,14 +182,13 @@ fn test_recipe_config_content() {
 
     cmd.assert().success();
 
-    let config_content =
-        fs::read_to_string(recipes_dir.join("advanced-pallet-configuration/recipe.config.yml"))
-            .unwrap();
+    // Verify README.md frontmatter instead of recipe.config.yml
+    let readme_content =
+        fs::read_to_string(recipes_dir.join("advanced-pallet-configuration/README.md")).unwrap();
 
-    assert!(config_content.contains("name: Advanced Pallet Configuration"));
-    assert!(config_content.contains("slug: advanced-pallet-configuration"));
-    assert!(config_content.contains("type: polkadot-sdk"));
-    assert!(config_content.contains("description: Replace with a short description."));
+    // Check frontmatter contains expected fields
+    assert!(readme_content.contains("title: Advanced Pallet Configuration"));
+    assert!(readme_content.contains("description: Replace with a short description."));
 }
 
 #[test]
@@ -262,7 +258,6 @@ fn test_create_recipe_with_toolchain() {
 
     // Verify the project was created successfully
     assert!(recipes_dir.join("version-test").exists());
-    assert!(recipes_dir.join("version-test/recipe.config.yml").exists());
 
     // Verify rust-toolchain.toml was created for Polkadot SDK recipe
     let toolchain_path = recipes_dir.join("version-test/rust-toolchain.toml");
