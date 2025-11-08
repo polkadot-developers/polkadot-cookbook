@@ -6,8 +6,8 @@
 <div align="center">
 
 <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-  <img src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="80" height="80" />
-  <img src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="80" height="80" />
+  <img src=".repo/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="80" height="80" />
+  <img src=".repo/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="80" height="80" />
   <div>
     <h1 style="font-size: 2.5em; font-weight: bold; margin: 0; line-height: 1;">Polkadot Cookbook</h1>
   </div>
@@ -30,27 +30,27 @@
 
 <a id="recipes"></a>
 
-## <img src=".media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Recipes
+## <img src=".repo/media/icons/recipes-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/recipes-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Recipes
 
 The Polkadot Cookbook provides recipes across 5 pathways of Polkadot development:
 
-### <img src=".media/icons/runtime-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/runtime-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Runtime Development (Polkadot SDK)
+### <img src=".repo/media/icons/runtime-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/runtime-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Runtime Development (Polkadot SDK)
 
 Build custom FRAME pallets and runtime logic with Rust.
 
 | Recipe | Description | Difficulty |
 |----------|-------------|------------|
-| [**Basic Pallet**](recipes/basic-pallet) | Create a custom FRAME pallet with storage and events | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| [**Basic Pallet**](recipes/basic-pallet) | Create a custom FRAME pallet with storage and events | <img src=".repo/media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".repo/media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
-### <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Smart Contracts (Solidity)
+### <img src=".repo/media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Smart Contracts (Solidity)
 
 Deploy and interact with Solidity contracts.
 
 | Recipe | Description | Difficulty |
 |----------|-------------|------------|
-| [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract in Solidity | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract in Solidity | <img src=".repo/media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".repo/media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
-### <img src=".media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Basic Interactions
+### <img src=".repo/media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Basic Interactions
 
 Single-chain transaction submission and state queries with PAPI.
 
@@ -58,15 +58,15 @@ Single-chain transaction submission and state queries with PAPI.
 |----------|-------------|------------|
 | *Coming soon* | Balance transfers, batch operations, proxy calls | - |
 
-### <img src=".media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> XCM (Cross-Chain Messaging)
+### <img src=".repo/media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> XCM (Cross-Chain Messaging)
 
 Asset transfers and cross-chain communication with Chopsticks.
 
 | Recipe | Description | Difficulty |
 |----------|-------------|------------|
-| [**Teleport Assets**](recipes/teleport-assets) | Teleport assets between parachains using XCM v5 and PAPI | <img src=".media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| [**Teleport Assets**](recipes/teleport-assets) | Teleport assets between parachains using XCM v5 and PAPI | <img src=".repo/media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".repo/media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
 
-### <img src=".media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Testing Infrastructure
+### <img src=".repo/media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Testing Infrastructure
 
 Zombienet and Chopsticks configurations for network testing.
 
@@ -74,13 +74,13 @@ Zombienet and Chopsticks configurations for network testing.
 |----------|-------------|------------|
 | *Coming soon* | Parachain test network, fork testing setups | - |
 
-> <img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="18" height="18" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
+> <img src=".repo/media/icons/idea-dark.svg#gh-dark-mode-only" width="18" height="18" alt="" /> <img src=".repo/media/icons/idea-light.svg#gh-light-mode-only" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
 <hr />
 
 <a id="quick-start"></a>
 
-## <img src=".media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Quick Start
+## <img src=".repo/media/icons/rocket-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/rocket-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Quick Start
 
 ### Run a Recipe
 
@@ -199,11 +199,11 @@ The CLI supports five recipe pathways:
 - **Testing Infrastructure** - Zombienet and Chopsticks configurations
 
 **Interactive CLI Features:**
-- <img src=".media/icons/target-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/target-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Title-first workflow (auto-generates slugs)
-- <img src=".media/icons/chart-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/chart-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Difficulty levels (Beginner/Intermediate/Advanced)
-- <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Content types (Tutorial/Guide)
-- <img src=".media/icons/refresh-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/refresh-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Automatic git branch creation
-- <img src=".media/icons/package-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/package-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Automatic dependency installation
+- <img src=".repo/media/icons/target-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/target-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Title-first workflow (auto-generates slugs)
+- <img src=".repo/media/icons/chart-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/chart-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Difficulty levels (Beginner/Intermediate/Advanced)
+- <img src=".repo/media/icons/docs-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/docs-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Content types (Tutorial/Guide)
+- <img src=".repo/media/icons/refresh-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/refresh-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Automatic git branch creation
+- <img src=".repo/media/icons/package-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/package-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Automatic dependency installation
 
 **New:** No proposal required! Submit recipes directly via PR using the `dot recipe submit` command.
 
@@ -213,7 +213,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 <a id="documentation"></a>
 
-## <img src=".media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Documentation
+## <img src=".repo/media/icons/docs-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/docs-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Documentation
 
 ### For Recipe Contributors
 - [Contributing Guide](CONTRIBUTING.md) - How to create and submit recipes
@@ -231,14 +231,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 <a id="contributing"></a>
 
-## <img src=".media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Contributing
+## <img src=".repo/media/icons/contributing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/contributing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Contributing
 
 We welcome all contributions:
 
-- **<img src=".media/icons/book-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/book-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Recipe** - Share your Polkadot knowledge (most welcome!)
-- **<img src=".media/icons/bug-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/bug-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Bug Report** - Help us improve
-- **<img src=".media/icons/idea-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/idea-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Feature** - Suggest tooling improvements
-- **<img src=".media/icons/memo-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".media/icons/memo-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Documentation** - Make things clearer
+- **<img src=".repo/media/icons/book-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/book-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Recipe** - Share your Polkadot knowledge (most welcome!)
+- **<img src=".repo/media/icons/bug-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/bug-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Bug Report** - Help us improve
+- **<img src=".repo/media/icons/idea-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/idea-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Feature** - Suggest tooling improvements
+- **<img src=".repo/media/icons/memo-dark.svg#gh-dark-mode-only" width="16" height="16" alt="" /> <img src=".repo/media/icons/memo-light.svg#gh-light-mode-only" width="16" height="16" alt="" /> Documentation** - Make things clearer
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
@@ -246,7 +246,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 <a id="license"></a>
 
-## <img src=".media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> License
+## <img src=".repo/media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".repo/media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> License
 
 MIT OR Apache-2.0
 
@@ -254,8 +254,8 @@ MIT OR Apache-2.0
 
 <div align="center">
 
-<img src=".media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="40" height="40" />
-<img src=".media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="40" height="40" />
+<img src=".repo/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="40" height="40" />
+<img src=".repo/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="40" height="40" />
 
 <br/>
 

@@ -211,7 +211,7 @@ When PR is squash-merged:
 
 Each recipe release includes:
 
-### Manifest (`releases/v0.x.x/manifest.yml`)
+### Manifest (`.repo/releases/v0.x.x/manifest.yml`)
 
 Machine-readable inventory of all recipes:
 
@@ -237,7 +237,7 @@ recipes:
     description: "Create a custom FRAME pallet"
 ```
 
-### Release Notes (`releases/v0.x.x/RELEASE_NOTES.md`)
+### Release Notes (`.repo/releases/v0.x.x/RELEASE_NOTES.md`)
 
 Human-readable changelog:
 
@@ -422,6 +422,6 @@ Planned improvements to the release process:
 
 ## Questions?
 
-- See [releases/README.md](../releases/README.md) for manifest format details
+- See [.repo/releases/README.md](../.repo/releases/README.md) for manifest format details
 - See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution workflow
 - Open an issue for release process questions

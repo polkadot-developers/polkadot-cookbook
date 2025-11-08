@@ -4,8 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - 'releases/v*/manifest.yml'
-      - 'releases/v*/RELEASE_NOTES.md'
+      - '.repo/releases/v*/manifest.yml'
+      - '.repo/releases/v*/RELEASE_NOTES.md'
 
 jobs:
   detect-version:
@@ -26,7 +26,7 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
 
           # Find release version from changed manifest
-          VERSION=$(echo "$CHANGED_FILES" | grep -oP 'releases/\K(v[0-9]+\.[0-9]+\.[0-9]+)' | head -1)
+          VERSION=$(echo "$CHANGED_FILES" | grep -oP '\.repo/releases/\K(v[0-9]+\.[0-9]+\.[0-9]+)' | head -1)
 
           if [ -z "$VERSION" ]; then
             echo "No release version detected"
@@ -209,8 +209,8 @@ jobs:
           # Create release with manifest and CLI binaries
           gh release create $VERSION \
             --title "$TITLE" \
-            --notes-file "releases/$VERSION/RELEASE_NOTES.md" \
-            "releases/$VERSION/manifest.yml" \
+            --notes-file ".repo/releases/$VERSION/RELEASE_NOTES.md" \
+            ".repo/releases/$VERSION/manifest.yml" \
             $CLI_ASSETS
 
           echo "✅ Created GitHub Release $VERSION with CLI binaries"

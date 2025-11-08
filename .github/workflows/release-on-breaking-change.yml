@@ -365,10 +365,10 @@ jobs:
           NEW_VERSION: ${{ steps.new_version.outputs.new_version }}
           COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
         run: |
-          mkdir -p releases/$NEW_VERSION
+          mkdir -p .repo/releases/$NEW_VERSION
 
           # Generate manifest (similar to weekly release)
-          cat > releases/$NEW_VERSION/manifest.yml <<EOF
+          cat > .repo/releases/$NEW_VERSION/manifest.yml <<EOF
           release: $NEW_VERSION
           release_date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
           status: alpha
@@ -394,7 +394,7 @@ jobs:
               description=$(grep "^description:" "$config_file" | sed 's/^description: //' || echo "No description")
               commit_hash=$(git log -1 --format="%H" -- "$recipe_dir" | head -c 10)
 
-              cat >> releases/$NEW_VERSION/manifest.yml <<EOF
+              cat >> .repo/releases/$NEW_VERSION/manifest.yml <<EOF
             $recipe_name:
               version: "$version"
               path: "recipes/$recipe_name"
@@ -412,7 +412,7 @@ jobs:
           COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
           PR_NUMBER: ${{ needs.detect-breaking-change.outputs.pr_number }}
         run: |
-          cat > releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
+          cat > .repo/releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
           # Release $NEW_VERSION
 
           **⚠️ Breaking Change Release**
@@ -458,7 +458,7 @@ jobs:
           git checkout -b $BRANCH_NAME
 
           # Commit release files
-          git add releases/$NEW_VERSION/
+          git add .repo/releases/$NEW_VERSION/
           git commit -m "chore(release): $NEW_VERSION triggered by breaking change"
 
           # Push branch
