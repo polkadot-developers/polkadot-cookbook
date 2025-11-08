@@ -1,3 +1,8 @@
+---
+title: Simple Counter
+description: A simple counter smart contract using pallet-revive
+---
+
 # Simple Counter
 
 A simple counter smart contract in Solidity

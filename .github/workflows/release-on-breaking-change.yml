@@ -4,8 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - 'cli/**'
-      - 'core/**'
+      - 'dot/cli/**'
+      - 'dot/core/**'
 
 jobs:
   detect-breaking-change:
@@ -83,8 +83,8 @@ jobs:
               });
 
               const changedFiles = files.data.map(f => f.filename);
-              const cliChanged = changedFiles.some(f => f.startsWith('cli/'));
-              const sdkChanged = changedFiles.some(f => f.startsWith('core/'));
+              const cliChanged = changedFiles.some(f => f.startsWith('dot/cli/'));
+              const sdkChanged = changedFiles.some(f => f.startsWith('dot/core/'));
 
               if (cliChanged || sdkChanged) {
                 core.setOutput('has_breaking', 'true');
@@ -122,7 +122,7 @@ jobs:
         id: version
         run: |
           # Extract version from Cargo.toml
-          CURRENT_VERSION=$(grep "^version" cli/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          CURRENT_VERSION=$(grep "^version" dot/cli/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
           echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           # Bump major version for breaking change
@@ -156,13 +156,13 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Get current SDK version
         id: version
         run: |
           # Extract version from Cargo.toml
-          CURRENT_VERSION=$(grep "^version" core/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
+          CURRENT_VERSION=$(grep "^version" dot/core/Cargo.toml | head -1 | awk '{print $3}' | tr -d '"')
           echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           # Bump major version
@@ -174,9 +174,9 @@ jobs:
 
       - name: Build and test SDK
         run: |
-          cd core
-          cargo build --release
-          cargo test --release
+          cd dot/core
+          cargo build --release --locked
+          cargo test --release --locked
 
       - name: Create SDK release
         env:
@@ -257,7 +257,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
 
@@ -281,7 +281,7 @@ jobs:
 
             if [ -f "$recipe/Cargo.toml" ]; then
               cd "$recipe"
-              cargo test --all-features || exit 1
+              cargo test --all-features --locked || exit 1
               cd ../..
             elif [ -f "$recipe/package.json" ]; then
               cd "$recipe"
@@ -365,10 +365,10 @@ jobs:
           NEW_VERSION: ${{ steps.new_version.outputs.new_version }}
           COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
         run: |
-          mkdir -p releases/$NEW_VERSION
+          mkdir -p .github/releases/$NEW_VERSION
 
           # Generate manifest (similar to weekly release)
-          cat > releases/$NEW_VERSION/manifest.yml <<EOF
+          cat > .github/releases/$NEW_VERSION/manifest.yml <<EOF
           release: $NEW_VERSION
           release_date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
           status: alpha
@@ -394,7 +394,7 @@ jobs:
               description=$(grep "^description:" "$config_file" | sed 's/^description: //' || echo "No description")
               commit_hash=$(git log -1 --format="%H" -- "$recipe_dir" | head -c 10)
 
-              cat >> releases/$NEW_VERSION/manifest.yml <<EOF
+              cat >> .github/releases/$NEW_VERSION/manifest.yml <<EOF
             $recipe_name:
               version: "$version"
               path: "recipes/$recipe_name"
@@ -412,7 +412,7 @@ jobs:
           COMPONENT: ${{ needs.detect-breaking-change.outputs.component }}
           PR_NUMBER: ${{ needs.detect-breaking-change.outputs.pr_number }}
         run: |
-          cat > releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
+          cat > .github/releases/$NEW_VERSION/RELEASE_NOTES.md <<EOF
           # Release $NEW_VERSION
 
           **⚠️ Breaking Change Release**
@@ -458,7 +458,7 @@ jobs:
           git checkout -b $BRANCH_NAME
 
           # Commit release files
-          git add releases/$NEW_VERSION/
+          git add .github/releases/$NEW_VERSION/
           git commit -m "chore(release): $NEW_VERSION triggered by breaking change"
 
           # Push branch

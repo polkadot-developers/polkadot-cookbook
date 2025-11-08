@@ -1,0 +1,360 @@
+---
+title: {{title}}
+description: {{description}}
+
+---
+
+# {{title}}
+
+{{description}}
+
+## Overview
+
+This tutorial teaches you Solidity smart contract development. You'll learn to write, test, deploy, and interact with Solidity contracts.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Node.js 20+ installed
+- Basic understanding of Solidity programming
+- Familiarity with Ethereum development concepts
+- Understanding of smart contract security principles
+
+## What You'll Learn
+
+By completing this tutorial, you will understand:
+
+- How to set up a Solidity development environment
+- How to write EVM-compatible contracts
+- How to compile contracts and generate TypeScript types
+- How to write comprehensive tests for your contracts
+- How to deploy contracts to local and remote networks
+- How to interact with deployed contracts using Ethers.js
+
+## Step-by-Step Implementation
+
+### Step 1: Project Setup
+
+Install all dependencies:
+
+```bash
+cd recipes/{{slug}}
+npm install
+```
+
+**What's installed:**
+- **Ethers.js** - Library for blockchain interactions
+- **TypeScript** - Type-safe contract interactions
+- **Testing libraries** - Chai assertions and testing utilities
+
+### Step 2: Understanding the Contract Structure
+
+Your project structure:
+
+```
+contracts/          # Solidity smart contracts
+├── Contract.sol    # Main contract implementation
+scripts/            # Deployment scripts
+├── deploy.ts       # Automated deployment
+test/               # Contract tests
+├── Contract.test.ts # Test suite
+```
+
+### Step 3: Writing Your Contract
+
+Smart contracts in `contracts/` use Solidity:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract MyContract {
+    uint256 public value;
+
+    event ValueUpdated(uint256 newValue);
+
+    function setValue(uint256 _value) public {
+        value = _value;
+        emit ValueUpdated(_value);
+    }
+}
+```
+
+**Key concepts:**
+- **Storage variables** - Persistent on-chain data
+- **Functions** - Callable contract methods
+- **Events** - Logs for off-chain tracking
+- **Visibility** - public, private, internal, external
+
+### Step 4: Compiling Contracts
+
+Compile your contracts:
+
+```bash
+npm run compile
+```
+
+**What happens:**
+1. Solidity compiler generates bytecode
+2. ABI (Application Binary Interface) is created
+3. TypeScript types are auto-generated
+4. Artifacts are saved to `artifacts/` directory
+
+**Output location:** `artifacts/contracts/Contract.sol/Contract.json`
+
+### Step 5: Writing Tests
+
+Write tests for your contracts:
+
+```typescript
+import { expect } from "chai";
+import { ethers } from "hardhat";
+
+describe("MyContract", function () {
+  it("Should set and get value", async function () {
+    const Contract = await ethers.getContractFactory("MyContract");
+    const contract = await Contract.deploy();
+
+    await contract.setValue(42);
+    expect(await contract.value()).to.equal(42);
+  });
+});
+```
+
+**Testing best practices:**
+- Test happy paths and edge cases
+- Verify event emission
+- Test access control
+- Check error conditions
+
+### Step 6: Running Tests
+
+Execute your test suite:
+
+```bash
+npm test
+```
+
+**What's tested:**
+- Contract deployment
+- Function calls
+- State changes
+- Event emissions
+- Error handling
+
+### Step 7: Deploying Contracts
+
+Deploy to a local development node:
+
+```bash
+npm run deploy:local
+```
+
+Deploy to a testnet:
+
+```bash
+npm run deploy:testnet
+```
+
+**Deployment process:**
+1. Contract bytecode is submitted
+2. Constructor runs (if present)
+3. Contract address is returned
+4. Address is saved for future interactions
+
+### Step 8: Interacting With Contracts
+
+Use the deployment script as a template:
+
+```typescript
+const Contract = await ethers.getContractFactory("MyContract");
+const contract = await Contract.attach(contractAddress);
+
+// Call a function
+const tx = await contract.setValue(100);
+await tx.wait();
+
+// Read state
+const value = await contract.value();
+console.log("Value:", value);
+```
+
+## Testing in Depth
+
+### Unit Tests
+
+Test individual functions in isolation:
+
+```typescript
+it("should update value correctly", async () => {
+  await contract.setValue(42);
+  expect(await contract.value()).to.equal(42);
+});
+```
+
+### Integration Tests
+
+Test multiple contract interactions:
+
+```typescript
+it("should handle multiple updates", async () => {
+  await contract.setValue(1);
+  await contract.setValue(2);
+  expect(await contract.value()).to.equal(2);
+});
+```
+
+### Event Testing
+
+Verify events are emitted:
+
+```typescript
+it("should emit ValueUpdated event", async () => {
+  await expect(contract.setValue(42))
+    .to.emit(contract, "ValueUpdated")
+    .withArgs(42);
+});
+```
+
+## Deployment Strategies
+
+### Local Development
+
+```bash
+npm run deploy:local
+```
+
+### Testnet Deployment
+
+1. Fund your account with test tokens
+2. Deploy: `npm run deploy:testnet`
+3. Verify deployment on block explorer
+
+### Production Deployment
+
+**Security checklist:**
+- ✅ Audit contracts
+- ✅ Test thoroughly
+- ✅ Use multi-sig wallets
+- ✅ Implement upgradability (if needed)
+- ✅ Monitor events and state
+
+## Gas Optimization
+
+Reduce transaction costs:
+
+```solidity
+// Bad: Multiple storage writes
+function badUpdate(uint256 a, uint256 b) public {
+    value1 = a;
+    value2 = b;
+}
+
+// Good: Minimize storage operations
+function goodUpdate(uint256 a, uint256 b) public {
+    uint256 tempA = a;
+    uint256 tempB = b;
+    value1 = tempA;
+    value2 = tempB;
+}
+```
+
+**Optimization tips:**
+- Use memory instead of storage when possible
+- Batch operations
+- Use appropriate data types (uint8 vs uint256)
+- Avoid unnecessary computations
+
+## Security Best Practices
+
+### Reentrancy Protection
+
+```solidity
+bool private locked;
+
+modifier nonReentrant() {
+    require(!locked, "Reentrant call");
+    locked = true;
+    _;
+    locked = false;
+}
+```
+
+### Access Control
+
+```solidity
+address public owner;
+
+modifier onlyOwner() {
+    require(msg.sender == owner, "Not owner");
+    _;
+}
+```
+
+### Input Validation
+
+```solidity
+function transfer(address to, uint256 amount) public {
+    require(to != address(0), "Invalid address");
+    require(amount > 0, "Invalid amount");
+    // ... transfer logic
+}
+```
+
+## Next Steps
+
+Extend your knowledge:
+
+1. **Advanced Patterns**
+   - Implement proxy contracts for upgradability
+   - Use OpenZeppelin libraries
+   - Implement complex access control
+
+2. **Frontend Integration**
+   - Build a React/Vue frontend
+   - Connect with MetaMask or Polkadot wallets
+   - Display contract state in real-time
+
+3. **Cross-Chain Integration**
+   - Interact with FRAME pallets
+   - Use XCM for cross-chain calls
+   - Bridge assets between chains
+
+## Troubleshooting
+
+### Compilation Errors
+
+**Error:** `Source file requires different compiler version`
+- **Solution:** Update pragma statement in contract
+
+**Error:** `Identifier not found`
+- **Solution:** Import missing contracts or interfaces
+
+### Deployment Issues
+
+**Error:** `Insufficient funds for gas`
+- **Solution:** Fund your account with native tokens
+
+**Error:** `Transaction reverted`
+- **Solution:** Check constructor requirements and parameters
+
+### Testing Failures
+
+**Error:** `Expected X but got Y`
+- **Solution:** Verify contract state before assertions
+
+**Error:** `Timeout waiting for transaction`
+- **Solution:** Increase gas limit or check node connection
+
+## Resources
+
+- [Polkadot SDK Documentation](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
+- [Solidity Documentation](https://docs.soliditylang.org/)
+- [Ethers.js Documentation](https://docs.ethers.org/)
+- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
+- [Ethereum Security Best Practices](https://consensys.github.io/smart-contract-best-practices/)
+
+## License
+
+MIT OR Apache-2.0
