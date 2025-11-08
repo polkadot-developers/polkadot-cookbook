@@ -108,8 +108,6 @@ curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbo
 
 > **Windows users:** Download pre-built binaries from [GitHub Releases](https://github.com/polkadot-developers/polkadot-cookbook/releases/latest). See [Advanced Installation Options](#advanced-installation) for details.
 
-See [Advanced Installation Options](#advanced-installation) for alternative methods.
-
 <a id="advanced-installation"></a>
 <details>
 <summary><b>Advanced Installation Options</b></summary>
