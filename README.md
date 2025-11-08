@@ -101,7 +101,16 @@ cargo build --release
 
 #### Install the CLI Tool
 
-**Download pre-built binary (Recommended):**
+**Quick install (recommended):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash
+```
+
+<details>
+<summary>Other installation methods</summary>
+
+**Download pre-built binary manually:**
 
 ```bash
 # Linux (x86_64)
@@ -111,14 +120,22 @@ sudo mv dot /usr/local/bin/
 # macOS (Apple Silicon)
 curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-apple-silicon.tar.gz | tar xz
 sudo mv dot /usr/local/bin/
+
+# macOS (Intel)
+curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-macos-intel.tar.gz | tar xz
+sudo mv dot /usr/local/bin/
 ```
 
-**Or build from source:**
+**Build from source:**
 
 ```bash
+git clone https://github.com/polkadot-developers/polkadot-cookbook.git
+cd polkadot-cookbook
 cargo build --release --bin dot
 # Binary will be at ./target/release/dot
 ```
+
+</details>
 
 #### Use the CLI
 
