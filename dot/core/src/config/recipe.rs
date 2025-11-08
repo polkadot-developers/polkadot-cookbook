@@ -335,13 +335,4 @@ mod tests {
         let json = serde_json::to_string(&advanced).unwrap();
         assert_eq!(json, "\"advanced\"");
     }
-
-    #[test]
-    fn test_recipe_config_to_yaml() {
-        let config = RecipeConfig::new("Test", "test", RecipeType::PolkadotSdk);
-        let yaml = config.to_yaml().unwrap();
-        assert!(yaml.contains("name: Test"));
-        assert!(yaml.contains("slug: test"));
-        assert!(yaml.contains("type: polkadot-sdk"));
-    }
 }

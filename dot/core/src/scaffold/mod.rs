@@ -570,7 +570,7 @@ impl Default for Scaffold {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{ContentType, Difficulty, RecipePathway, RecipeType};
+    use crate::config::RecipeType;
     use tempfile::TempDir;
 
     #[tokio::test]
