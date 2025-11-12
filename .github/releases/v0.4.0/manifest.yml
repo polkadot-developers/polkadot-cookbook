@@ -1,0 +1,9 @@
+release: v0.4.0
+release_date: 2025-11-12T03:11:58Z
+status: alpha
+
+tooling:
+  rust: "1.91.1"
+  node: "v20.19.5"
+
+recipes:
