@@ -89,7 +89,7 @@ impl Scaffold {
     ///     .with_destination(PathBuf::from("./tutorials"));
     ///
     /// let scaffold = Scaffold::new();
-    /// let project_info = scaffold.create_project(config).await?;
+    /// let project_info = scaffold.create_project(config, None).await?;
     ///
     /// println!("Created project: {}", project_info.slug);
     /// # Ok(())
