@@ -51,7 +51,7 @@ dot recipe create
 ```
 
 The CLI will guide you through:
-- **Pathway** - Runtime Development, Smart Contracts, Basic Interactions, XCM, or Testing
+- **Pathway** - Parachain, Contracts, Basic Interactions, XCM, or Polkadot Infrastructure
 - **Title** - Clear, descriptive name (e.g., "NFT Pallet with Minting")
 - **Difficulty** - Beginner, Intermediate, or Advanced
 - **Content Type** - Tutorial (comprehensive) or Guide (focused task)
@@ -127,7 +127,7 @@ dot recipe submit   # Submit as pull request
 # Non-interactive mode
 dot recipe create \
   --title "My Recipe Title" \
-  --pathway runtime \
+  --pathway parachain \
   --difficulty beginner \
   --content-type tutorial \
   --non-interactive

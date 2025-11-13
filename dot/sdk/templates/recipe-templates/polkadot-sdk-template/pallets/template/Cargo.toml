@@ -1,34 +1,24 @@
 [package]
-name = "pallet-template"
+name = "pallet-{{slug}}"
+description = "FRAME pallet template for defining custom runtime logic."
 version = "0.1.0"
-edition = "2021"
-license = "MIT OR Apache-2.0"
-description = "FRAME pallet template"
+license = "Unlicense"
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
 publish = false
 
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.6.12", default-features = false, features = ["derive"] }
-scale-info = { version = "2.11.1", default-features = false, features = ["derive"] }
-
-# Polkadot SDK dependencies
-frame-support = { version = "43.0.0", default-features = false }
-frame-system = { version = "43.0.0", default-features = false }
-sp-runtime = { version = "44.0.0", default-features = false }
-
-[dev-dependencies]
-sp-core = { version = "38.0.0" }
-sp-io = { version = "43.0.0" }
+codec = { features = ["derive"], workspace = true }
+frame = { workspace = true, features = ["experimental", "runtime"], default-features = false }
+scale-info = { features = ["derive"], workspace = true }
 
 [features]
 default = ["std"]
-std = [
-    "codec/std",
-    "scale-info/std",
-    "frame-support/std",
-    "frame-system/std",
-    "sp-runtime/std",
-]
-try-runtime = [
-    "frame-support/try-runtime",
-    "frame-system/try-runtime",
-]
+runtime-benchmarks = ["frame/runtime-benchmarks"]
+std = ["codec/std", "frame/std", "scale-info/std"]
+try-runtime = ["frame/try-runtime"]

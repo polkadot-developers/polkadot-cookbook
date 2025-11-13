@@ -1,0 +1,28 @@
+{
+  "name": "contracts-example",
+  "version": "1.0.0",
+  "description": "Replace with a short description.",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy.ts --network testnet",
+    "node": "hardhat node",
+    "clean": "hardhat clean"
+  },
+  "keywords": [
+    "polkadot",
+    "solidity",
+    "smart-contracts"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/node": "^20.14.0",
+    "hardhat": "^2.22.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  }
+}

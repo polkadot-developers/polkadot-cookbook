@@ -7,9 +7,7 @@ A step-by-step tutorial for creating your first Polkadot Cookbook recipe.
 By the end of this tutorial, you'll know how to:
 - Create a new recipe using the CLI
 - Understand the generated file structure
-- Customize the recipe configuration
-- Write recipe content
-- Run tests
+- Run and test your recipe
 - Submit your recipe for review
 
 ## Prerequisites
@@ -17,14 +15,22 @@ By the end of this tutorial, you'll know how to:
 Before starting, ensure you have:
 
 1. **CLI Installed** - See [Installation Guide](installation.md)
-3. **Git Configured** - Name and email set
-4. **GitHub Account** - For submitting your recipe
+2. **Git Configured** - Name and email set
+3. **GitHub CLI** - For submitting your recipe: `gh auth login`
+4. **Development Tools** - Rust (for parachain recipes) or Node.js (for other recipes)
 
 **Verify your setup:**
 ```bash
-```
+# Check CLI is installed
+dot --version
 
-You should see all checks passing.
+# Check git configuration
+git config user.name
+git config user.email
+
+# Check GitHub CLI
+gh auth status
+```
 
 ---
 
@@ -38,67 +44,57 @@ The CLI provides an interactive mode that guides you through recipe creation.
 dot recipe create
 ```
 
-You'll be prompted for information about your recipe.
-
 ### Interactive Prompts
 
-**1. Recipe Title**
+**1. Select Pathway**
 ```
-? Enter recipe title: My First Pallet
-```
-
-Choose a clear, descriptive title. This will be used to generate the recipe slug (e.g., "My First Pallet" → `my-first-pallet`).
-
-**2. Select Pathway**
-```
-? Select pathway:
-  ❯ runtime - Polkadot SDK runtime development
-    contracts - Smart contract development
-    basic-interaction - Basic blockchain interactions
-    xcm - Cross-chain messaging
-    testing - Testing strategies and patterns
+? What would you like to build?
+  ❯ Custom Parachain (Polkadot SDK)
+    Smart Contract (Solidity)
+    Basic Interaction
+    Cross-chain Interaction (XCM)
+    Polkadot Network (Zombienet / Chopsticks)
+    None of these - Request new template
 ```
 
-For this tutorial, select **runtime** (Polkadot SDK development).
+For this tutorial, select **Custom Parachain (Polkadot SDK)**.
 
-**3. Select Difficulty**
+**2. Enter Recipe Title**
 ```
-? Select difficulty:
-  ❯ beginner - Introductory recipes
-    intermediate - Moderate complexity
-    advanced - Complex, production-ready examples
+? What is your recipe title? (e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')
 ```
 
-Select **beginner** for your first recipe.
-
-**4. Select Content Type**
-```
-? Select content type:
-  ❯ tutorial - Step-by-step learning content
-    guide - Reference/how-to guides
-```
-
-Select **tutorial** for step-by-step content.
+Enter a clear, descriptive title. This will be used to generate the recipe slug (e.g., "My First Parachain" → `my-first-parachain`).
 
 ### What Happens Next
 
 The CLI will:
-1. Create the recipe directory: `recipes/my-first-pallet/`
-2. Generate scaffolded files
-3. Install npm dependencies (TypeScript recipes)
-4. Create a git branch (if in a git repository)
+1. Check dependencies (Rust, Node.js, etc.)
+2. Create the recipe directory: `recipes/my-first-parachain/`
+3. Generate scaffolded files from the polkadot-sdk-parachain-template
+4. Install npm dependencies (for PAPI testing)
+5. Create a git branch
 
 **Output:**
 ```
 ✨ Recipe created successfully!
 
-📁 Location: recipes/my-first-pallet
-🌿 Branch: recipe/my-first-pallet
+📁 Location: recipes/my-first-parachain
+🌿 Branch: recipe/my-first-parachain
 
 Next steps:
-1. cd recipes/my-first-pallet
-2. Read the README.md for instructions
-3. Start coding!
+1. Customize your pallet
+   → recipes/my-first-parachain/pallets/template/src/lib.rs
+
+2. Configure runtime
+   → recipes/my-first-parachain/runtime/src/lib.rs
+
+3. Write PAPI tests
+   → recipes/my-first-parachain/tests/
+
+4. Build and test
+   → cd recipes/my-first-parachain && cargo build
+   → npm test
 ```
 
 ---
@@ -108,126 +104,56 @@ Next steps:
 Navigate to your new recipe directory:
 
 ```bash
-cd recipes/my-first-pallet
+cd recipes/my-first-parachain
 ```
 
 ### File Structure
 
+**Full Parachain Recipe:**
 ```
-recipes/my-first-pallet/
-├── README.md              # Recipe content and documentation
-├── recipe.config.yml      # Metadata and configuration
-├── package.json           # npm dependencies (TypeScript recipes)
-├── tsconfig.json          # TypeScript configuration
-├── vitest.config.ts       # Test configuration
-├── src/                   # Implementation code
-│   └── index.ts           # Main source file
-└── tests/                 # Test files
-    └── example.test.ts    # Example test
+recipes/my-first-parachain/
+├── README.md              # Tutorial documentation
+├── Cargo.toml             # Workspace configuration
+├── rust-toolchain.toml    # Rust version (e.g., 1.86)
+├── package.json           # PAPI dependencies
+├── pallets/               # Custom FRAME pallets
+│   └── template/
+│       ├── src/
+│       │   ├── lib.rs     # Your pallet logic
+│       │   ├── tests.rs   # Unit tests (mock runtime)
+│       │   └── benchmarking.rs
+│       └── Cargo.toml
+├── runtime/               # Parachain runtime
+│   ├── src/lib.rs         # Runtime configuration
+│   ├── Cargo.toml
+│   └── build.rs
+├── tests/                 # PAPI integration tests
+│   └── template-pallet.test.ts
+├── scripts/
+│   ├── generate-spec.sh   # Generate chain specification
+│   └── start-dev-node.sh  # Start development node
+├── zombienet.toml         # Single parachain config
+└── zombienet-xcm.toml     # Multi-parachain XCM testing
 ```
 
 ### Key Files Explained
 
 #### `README.md`
-This is the **main recipe content**. It contains:
-- Title and description
-- Prerequisites
-- Learning objectives
-- Step-by-step instructions
-- Code examples
-- Expected output
-- Troubleshooting
+This is the **main recipe content**. It's pre-filled with a comprehensive tutorial covering:
+- Overview and prerequisites
+- What you'll learn
+- Project structure
+- Quick start guide
+- Development workflow
+- PAPI testing
+- Zombienet multi-chain testing
 
-The README is pre-scaffolded with a template structure.
+**Your task:** Customize this for your specific use case.
 
-#### `recipe.config.yml`
-Recipe metadata used by the cookbook system:
+#### `pallets/template/src/lib.rs`
+Your custom pallet implementation:
 
-```yaml
-title: "My First Pallet"
-slug: "my-first-pallet"
-pathway: "runtime"
-difficulty: "beginner"
-content_type: "tutorial"
-description: "Learn to build your first custom pallet"
-repository: "https://github.com/polkadot-developers/polkadot-cookbook"
-type: "polkadot-sdk"
-```
-
-**Important fields:**
-- `type`: Recipe type (`polkadot-sdk`, `xcm`, `solidity`)
-- `pathway`: Category for organization
-- `difficulty`: Helps users find appropriate content
-
-Override global dependency versions for this recipe:
-
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.6.0"  # Override global version
-```
-
-Only include if your recipe needs different versions than the global defaults.
-
-
----
-
-## Step 3: Customize Your Recipe
-
-### Update the README
-
-Open `README.md` and fill in the template sections:
-
-```markdown
-# My First Pallet
-
-Learn how to build a custom pallet for the Polkadot SDK.
-
-## Prerequisites
-
-- Rust 1.86 or later
-- Polkadot SDK basics
-- Understanding of Substrate pallets
-
-## Learning Objectives
-
-By completing this recipe, you will learn:
-- How to create a custom pallet
-- How to define storage items
-- How to implement dispatchable functions
-- How to write pallet tests
-
-## Steps
-
-### 1. Create the Pallet Module
-
-First, create the basic pallet structure...
-
-[Continue with your content]
-```
-
-**Tips for good recipe content:**
-- Start with clear learning objectives
-- Break down complex tasks into small steps
-- Include code examples with explanations
-- Show expected output
-- Add troubleshooting for common issues
-
-### Update recipe.config.yml
-
-Customize the description:
-
-```yaml
-description: "Build your first custom Substrate pallet with storage and dispatchable functions"
-```
-
-### Add Your Implementation
-
-For a Polkadot SDK recipe, you might add:
-
-**Pallet code** (in your project structure):
 ```rust
-// Your pallet implementation
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
@@ -238,35 +164,163 @@ pub mod pallet {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
     }
 
-    #[pallet::pallet]
-    pub struct Pallet<T>(_);
-
     #[pallet::storage]
-    pub type MyStorage<T> = StorageValue<_, u32>;
+    pub type Something<T> = StorageValue<_, u32>;
 
-    // More pallet code...
+    // Add your storage items, events, errors, and dispatchable functions
 }
 ```
 
-**Test code** (in `tests/`):
-```typescript
-import { describe, it, expect } from 'vitest';
+#### `runtime/src/lib.rs`
+Runtime configuration with 12+ essential pallets:
+- System pallets (frame-system, cumulus-pallet-parachain-system)
+- Consensus (pallet-aura)
+- Accounts & tokens (pallet-balances, pallet-transaction-payment)
+- Governance (pallet-sudo - dev only)
+- Your custom pallet (pallet-template)
 
-describe('My First Pallet', () => {
-  it('should store and retrieve values', async () => {
-    // Your test implementation
-    expect(true).toBe(true);
+#### `tests/template-pallet.test.ts`
+PAPI integration tests:
+
+```typescript
+import { createClient } from 'polkadot-api';
+import { getWsProvider } from 'polkadot-api/ws-provider/node';
+
+// Tests run against a live node
+describe('Template Pallet', () => {
+  it('should query template pallet storage', async () => {
+    const something = await api.query.TemplatePallet.Something.getValue();
+    expect(something).toBeDefined();
   });
 });
 ```
 
 ---
 
-## Step 4: Run Tests
+## Step 3: Customize Your Recipe
 
-The recipe comes with a test setup. Run the tests to verify everything works:
+### Update Your Pallet
 
-### TypeScript/Vitest Tests
+Open `pallets/template/src/lib.rs` and customize the pallet:
+
+```rust
+#[pallet::storage]
+pub type MyCounter<T> = StorageValue<_, u32, ValueQuery>;
+
+#[pallet::call]
+impl<T: Config> Pallet<T> {
+    pub fn increment(origin: OriginFor<T>) -> DispatchResult {
+        let who = ensure_signed(origin)?;
+
+        MyCounter::<T>::mutate(|count| {
+            *count = count.saturating_add(1);
+        });
+
+        Self::deposit_event(Event::CounterIncremented {
+            value: MyCounter::<T>::get(),
+            who
+        });
+
+        Ok(())
+    }
+}
+
+#[pallet::event]
+#[pallet::generate_deposit(pub(super) fn deposit_event)]
+pub enum Event<T: Config> {
+    CounterIncremented { value: u32, who: T::AccountId },
+}
+```
+
+### Update the README
+
+Customize the tutorial in `README.md`:
+
+```markdown
+# My First Parachain
+
+> Learn to build a counter pallet with PAPI integration testing.
+
+## What You'll Build
+
+A simple counter pallet that:
+- Stores a counter value on-chain
+- Increments the counter via extrinsic
+- Emits events on counter updates
+- Includes comprehensive TypeScript tests
+
+[Continue with your specific content...]
+```
+
+**Tips for good recipe content:**
+- Start with clear learning objectives
+- Break down complex tasks into small steps
+- Include code examples with explanations
+- Show expected output
+- Add troubleshooting for common issues
+
+---
+
+## Step 4: Build and Test
+
+### 1. Run Unit Tests
+
+Test your pallet logic with the mock runtime:
+
+```bash
+cargo test --package pallet-my-first-parachain
+```
+
+**Expected output:**
+```
+running 3 tests
+test tests::it_works_for_default_value ... ok
+test tests::increment_works ... ok
+test tests::multiple_increments_work ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored
+```
+
+### 2. Build the Runtime
+
+Compile your runtime to WebAssembly:
+
+```bash
+npm run build:runtime
+# or: cargo build --release
+```
+
+This takes 10-15 minutes on first build. The runtime WASM will be at:
+```
+target/release/wbuild/my-first-parachain-runtime/my_first_parachain_runtime.compact.compressed.wasm
+```
+
+### 3. Generate Chain Specification
+
+Create a chain specification from your runtime:
+
+```bash
+npm run generate:spec
+```
+
+This creates `chain-spec.json` with your genesis state.
+
+### 4. Start Development Node
+
+Launch your parachain locally:
+
+```bash
+npm run start:node
+```
+
+The node will:
+- Start in development mode
+- Expose RPC at `ws://localhost:9944`
+- Use Alice as the sudo account
+
+### 5. Run PAPI Integration Tests
+
+In a new terminal, run the test suite:
 
 ```bash
 npm test
@@ -274,68 +328,72 @@ npm test
 
 **Expected output:**
 ```
-✓ tests/example.test.ts (1)
-  ✓ My First Pallet (1)
-    ✓ should store and retrieve values
+✓ tests/template-pallet.test.ts
+  ✓ should connect to the chain
+  ✓ should query template pallet storage
+  ✓ should increment counter
 
 Test Files  1 passed (1)
-Tests  1 passed (1)
+Tests  3 passed (3)
 ```
 
-### Rust Tests (if applicable)
+### Troubleshooting
 
-If your recipe includes Rust code:
-
+**Cargo build fails:**
 ```bash
-cargo test
+# Clear cache and rebuild
+cargo clean
+cargo build --release
 ```
 
-### Fix Failing Tests
+**Node won't start:**
+```bash
+# Kill existing node
+pkill -f polkadot-omni-node
 
-If tests fail:
-1. Read the error message carefully
-2. Check your implementation matches the test expectations
-3. Verify all dependencies are installed
-4. Check version compatibility
+# Ensure polkadot-omni-node is installed
+cargo install polkadot-omni-node
+```
+
+**PAPI tests fail:**
+```bash
+# Ensure node is running
+npm run start:node
+
+# In another terminal, regenerate types
+npm run generate:types
+
+# Run tests
+npm test
+```
 
 ---
 
-## Step 5: Validate Your Recipe
+## Step 5: Test Multi-Chain XCM (Optional)
 
-Before submitting, validate your recipe structure:
+Your recipe includes `zombienet-xcm.toml` for testing cross-chain messaging.
+
+### Setup Binaries (One-time)
 
 ```bash
-# From repository root
+npm run setup:zombienet
 ```
 
-**This checks:**
-- `recipe.config.yml` exists and is valid
-- `README.md` exists
-- All version keys are recognized
+This installs:
+- `polkadot` (relay chain)
+- `polkadot-omni-node` (parachains)
 
-**Expected output:**
-```
-✅ Recipe validation passed!
+### Launch Multi-Chain Network
 
-Checks:
-  ✓ recipe.config.yml exists
-  ✓ README.md exists
-  ✓ All version keys are known
+```bash
+npm run zombienet:xcm
 ```
 
-### Common Validation Issues
+This spawns:
+- 2 relay chain validators (Alice, Bob)
+- 2 parachains (IDs 1000 and 2000)
 
-**Invalid YAML syntax:**
-```
-❌ recipe.config.yml: YAML parse error
-```
-Fix: Check YAML indentation and syntax
-
-**Missing required files:**
-```
-❌ README.md not found
-```
-Fix: Ensure README.md exists in recipe directory
+Perfect for testing XCM patterns like asset transfers and remote execution.
 
 ---
 
@@ -351,15 +409,13 @@ git status
 git add .
 
 # Commit with conventional commit format
-git commit -m "feat(recipe): add my first pallet tutorial"
+git commit -m "feat(recipe): add my first parachain tutorial"
 ```
 
 **Important:** Use [conventional commit format](../contributors/commit-conventions.md):
 ```
 feat(recipe): <description>
 ```
-
-This ensures proper semantic versioning and changelog generation.
 
 ---
 
@@ -368,7 +424,7 @@ This ensures proper semantic versioning and changelog generation.
 Once your recipe is complete and tested, submit it for review:
 
 ```bash
-dot recipe submit
+dot recipe submit my-first-parachain
 ```
 
 ### What the Submit Command Does
@@ -378,31 +434,14 @@ dot recipe submit
 3. **Pushes** to your fork (creates fork if needed)
 4. **Creates** pull request on GitHub
 
-### Interactive Prompts
-
-```
-? Select recipe to submit: my-first-pallet
-? Recipe validated successfully!
-? Pushing to fork...
-? Creating pull request...
-
-✅ Pull request created!
-https://github.com/polkadot-developers/polkadot-cookbook/pull/123
-```
-
 ### Pull Request Checklist
 
-Your PR will include a checklist:
-- [ ] Recipe follows style guidelines
-- [ ] Tests pass locally
-- [ ] Documentation is clear
-- [ ] Examples work as expected
-
-Reviewers will check:
-- Code quality
-- Documentation clarity
-- Test coverage
-- Adherence to guidelines
+Your PR will be reviewed for:
+- ✅ Code quality and correctness
+- ✅ Documentation clarity
+- ✅ Test coverage
+- ✅ Working examples
+- ✅ Adherence to guidelines
 
 ---
 
@@ -431,7 +470,7 @@ The PR will automatically update with your changes.
 **"Add more explanation"**
 - Expand on complex concepts
 - Add intermediate steps
-- Include visual examples
+- Include troubleshooting
 
 **"Tests are failing"**
 - Run tests locally: `npm test`
@@ -440,8 +479,94 @@ The PR will automatically update with your changes.
 
 **"Fix formatting"**
 - Run `cargo fmt` (Rust)
-- Run `prettier` (TypeScript)
 - Check markdown formatting
+
+---
+
+## Other Recipe Types
+
+### Smart Contract (Solidity)
+
+```bash
+dot recipe create
+# Select: Smart Contract (Solidity)
+# Title: My First Contract
+```
+
+**Generated structure:**
+```
+recipes/my-first-contract/
+├── README.md
+├── package.json
+├── hardhat.config.ts
+├── contracts/          # Solidity contracts
+├── tests/              # Contract tests
+└── scripts/            # Deployment scripts
+```
+
+**Quick start:**
+```bash
+cd recipes/my-first-contract
+npm install
+npm run compile      # Compile contracts
+npm test            # Run tests
+```
+
+### Basic Interaction (PAPI)
+
+```bash
+dot recipe create
+# Select: Basic Interaction
+# Title: Query Chain State
+```
+
+**Generated structure:**
+```
+recipes/query-chain-state/
+├── README.md
+├── package.json
+├── src/               # Implementation
+└── tests/             # Tests
+```
+
+**Quick start:**
+```bash
+cd recipes/query-chain-state
+npm install
+npm test
+```
+
+---
+
+## Advanced: Pallet-Only Mode
+
+For advanced users building just a pallet (no runtime):
+
+```bash
+dot recipe create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+```
+
+**Generated structure:**
+```
+recipes/my-pallet/
+├── README.md
+├── Cargo.toml
+├── rust-toolchain.toml
+└── pallets/
+    └── template/
+        └── src/
+            ├── lib.rs
+            ├── mock.rs    # Mock runtime for testing
+            └── tests.rs   # Unit tests
+```
+
+**Testing:**
+```bash
+cd recipes/my-pallet
+cargo test
+```
+
+**Note:** Pallet-only mode excludes runtime, node, and PAPI tests.
 
 ---
 
@@ -449,23 +574,24 @@ The PR will automatically update with your changes.
 
 Congratulations! You've created your first recipe. Here's what to explore next:
 
-### Learn More About Recipes
+### Learn More
 
-- **[Recipe Development Guide](../contributors/recipe-development.md)** - Best practices
-- **[Recipe Guidelines](../contributors/recipe-guidelines.md)** - Style and structure
-- **[Testing Recipes](../contributors/testing-recipes.md)** - Testing strategies
-
-### Explore the Cookbook
-
-- **[Browse Existing Recipes](../../recipes/)** - Learn from examples
 - **[CLI Reference](../developers/cli-reference.md)** - All CLI commands
+- **[Contributing Guide](../../CONTRIBUTING.md)** - Contribution workflow
 - **[Architecture](../developers/architecture.md)** - How the cookbook works
+
+### Explore Examples
+
+- **[parachain-example](../../recipes/parachain-example/)** - Full parachain with XCM
+- **[contracts-example](../../recipes/contracts-example/)** - Solidity contracts
+- **[basic-interaction-example](../../recipes/basic-interaction-example/)** - PAPI interactions
+- **[xcm-example](../../recipes/xcm-example/)** - Cross-chain messaging
 
 ### Contribute More
 
-- **[Contributor Workflow](../contributors/workflow.md)** - Development process
-- **[Commit Conventions](../contributors/commit-conventions.md)** - Commit message format
-- **[Contributing Guide](../../CONTRIBUTING.md)** - General contribution guidelines
+- **[Recipe Guidelines](../contributors/recipe-guidelines.md)** - Style and structure
+- **[Testing Recipes](../contributors/testing-recipes.md)** - Testing strategies
+- **[Commit Conventions](../contributors/commit-conventions.md)** - Commit format
 
 ---
 
@@ -477,148 +603,81 @@ Congratulations! You've created your first recipe. Here's what to explore next:
 
 **Common causes:**
 - Git not configured
-- Node.js not installed
+- Missing dependencies (Rust, Node.js)
 - Insufficient disk space
 
 **Solution:**
 ```bash
-# Check setup
+# Check git configuration
+git config user.name
+git config user.email
 
-# Fix any missing dependencies
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install Node.js
+# Visit https://nodejs.org/
 ```
 
-### Tests Won't Run
+### Runtime Build Fails
 
-**Symptom:** `npm test` fails with error
+**Symptom:** `cargo build --release` fails
 
 **Common causes:**
-- Dependencies not installed
-- Vitest not configured
-- TypeScript errors
+- Rust version mismatch
+- Dependency conflicts
+- Out of memory
 
 **Solution:**
 ```bash
-# Reinstall dependencies
-rm -rf node_modules
-npm install
+# Use correct Rust version
+rustup update
 
-# Check TypeScript
-npx tsc --noEmit
+# Build with fewer parallel jobs (if memory limited)
+cargo build --release -j 1
 
-# Run tests verbosely
-npm test -- --reporter=verbose
+# Clear cache and retry
+cargo clean
+cargo build --release
 ```
 
-### Submit Command Fails
+### PAPI Tests Fail
 
-**Symptom:** `dot recipe submit` fails
+**Symptom:** `npm test` fails
 
 **Common causes:**
-- GitHub CLI not authenticated
-- Uncommitted changes
-- Invalid recipe structure
+- Node not running
+- Wrong metadata
+- Port already in use
 
 **Solution:**
 ```bash
-# Check gh authentication
+# Ensure node is running
+pkill -f polkadot-omni-node
+npm run start:node
+
+# Regenerate types
+npm run generate:types
+
+# Run tests
+npm test
+```
+
+### GitHub Authentication Failed
+
+**Symptom:** `dot recipe submit` fails with auth error
+
+**Solution:**
+```bash
+# Check authentication
 gh auth status
 
 # Login if needed
 gh auth login
 
-# Commit all changes
-git add .
-git commit -m "feat(recipe): complete implementation"
-
-# Validate recipe
+# Verify token
+gh auth token
 ```
-
-### Merge Conflicts
-
-**Symptom:** PR has merge conflicts
-
-**Solution:**
-```bash
-# Update your branch
-git fetch origin
-git merge origin/master
-
-# Resolve conflicts
-# Edit conflicting files
-git add .
-git commit -m "fix: resolve merge conflicts"
-
-# Push updates
-git push
-```
-
----
-
-## Tips for Success
-
-### Content Quality
-
-✅ **DO:**
-- Write clear, step-by-step instructions
-- Include code examples for every step
-- Show expected output
-- Add troubleshooting section
-- Test all examples yourself
-
-❌ **DON'T:**
-- Skip steps assuming prior knowledge
-- Use jargon without explanation
-- Include untested code
-- Leave TODOs in published content
-
-### Code Quality
-
-✅ **DO:**
-- Follow Rust/TypeScript style guides
-- Add comments for complex logic
-- Write comprehensive tests
-- Handle errors gracefully
-- Use meaningful variable names
-
-❌ **DON'T:**
-- Leave commented-out code
-- Use hardcoded values
-- Skip error handling
-- Write tests that always pass
-
-### Documentation
-
-✅ **DO:**
-- Explain why, not just what
-- Link to related resources
-- Include prerequisites
-- Show real-world use cases
-- Keep it up-to-date
-
-❌ **DON'T:**
-- Copy-paste without understanding
-- Use broken links
-- Reference outdated versions
-- Assume reader knowledge
-
----
-
-## Example Recipe
-
-Want to see a complete example? Check out these recipes:
-
-- **Basic Pallet** - `recipes/basic-pallet/` - Simple pallet structure
-- **Storage Operations** - `recipes/storage-operations/` - Working with storage
-- **Events and Errors** - `recipes/events-and-errors/` - Error handling
-
----
-
-## Need Help?
-
-- **[Troubleshooting Guide](../contributors/troubleshooting.md)** - Common issues and solutions
-- **[Discord Community](https://substrate.io/ecosystem/connect/)** - Ask questions
-- **[GitHub Discussions](https://github.com/polkadot-developers/polkadot-cookbook/discussions)** - Community help
-- **[GitHub Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)** - Report bugs
 
 ---
 
@@ -627,12 +686,11 @@ Want to see a complete example? Check out these recipes:
 You've learned how to:
 - ✅ Create a recipe with `dot recipe create`
 - ✅ Understand the generated file structure
-- ✅ Customize recipe content and configuration
-- ✅ Write and run tests
-- ✅ Validate your recipe
+- ✅ Build and test a parachain
+- ✅ Run PAPI integration tests
 - ✅ Submit a pull request
 
-**Next:** Dive deeper into [Recipe Development Guide](../contributors/recipe-development.md) to learn best practices and advanced techniques.
+**Ready for more?** Check out the [Recipe Development Guide](../contributors/recipe-development.md) for best practices and advanced techniques.
 
 ---
 

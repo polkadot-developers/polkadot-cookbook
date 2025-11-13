@@ -33,7 +33,7 @@ impl PolkadotColor for String {
 
 #[derive(Parser)]
 #[command(name = "dot")]
-#[command(about = "Polkadot Cookbook CLI - Create and manage recipes", long_about = None)]
+#[command(about = "dot CLI - a command-line tool for Polkadot development", long_about = None)]
 #[command(version)]
 struct Cli {
     #[command(subcommand)]
@@ -43,7 +43,7 @@ struct Cli {
     #[arg(long, global = true)]
     title: Option<String>,
 
-    /// Recipe pathway (for non-interactive mode): runtime, contracts, basic-interaction, xcm, testing, request-new
+    /// Recipe pathway (for non-interactive mode): parachain, contracts, basic-interaction, xcm, testing, request-new
     #[arg(long, global = true)]
     pathway: Option<String>,
 
@@ -54,6 +54,10 @@ struct Cli {
     /// Skip git branch creation
     #[arg(long, default_value = "false", global = true)]
     no_git: bool,
+
+    /// Pallet-only mode: no runtime, no PAPI (advanced users)
+    #[arg(long, default_value = "false", global = true)]
+    pallet_only: bool,
 
     /// Non-interactive mode (use defaults, require title argument)
     #[arg(long, default_value = "false", global = true)]
@@ -117,6 +121,7 @@ async fn main() -> Result<()> {
                     cli.pathway,
                     cli.skip_install,
                     cli.no_git,
+                    cli.pallet_only,
                     cli.non_interactive,
                 )
                 .await?;
@@ -138,6 +143,7 @@ async fn handle_create(
     pathway: Option<String>,
     skip_install: bool,
     no_git: bool,
+    pallet_only: bool,
     non_interactive: bool,
 ) -> Result<()> {
     // Non-interactive mode: require title argument
@@ -145,7 +151,7 @@ async fn handle_create(
         let title = title.ok_or_else(|| {
             anyhow::anyhow!("Title argument (--title) is required in non-interactive mode")
         })?;
-        return run_non_interactive(&title, pathway, skip_install, no_git).await;
+        return run_non_interactive(&title, pathway, skip_install, no_git, pallet_only).await;
     }
 
     // Interactive mode with cliclack
@@ -169,38 +175,36 @@ async fn handle_create(
     let note_title = "Recipe Setup".polkadot_pink().to_string();
     note(
         &note_title,
-        "Let's create your new recipe. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
+        "Let's create your new Polkadot recipe. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
     )?;
 
     // Step 1: Ask for pathway first (so users know what they can build)
-    let pathway_question = "What kind of recipe are you building?"
-        .polkadot_pink()
-        .to_string();
+    let pathway_question = "What would you like to build?".polkadot_pink().to_string();
     let pathway: RecipePathway = select(&pathway_question)
         .item(
-            RecipePathway::Runtime,
-            "Runtime Development (Polkadot SDK)",
-            "Build custom pallets and runtime logic with FRAME",
+            RecipePathway::Parachain,
+            "Custom Parachain (Polkadot SDK)",
+            "Build a custom parachain with PAPI integration",
         )
         .item(
             RecipePathway::Contracts,
-            "Smart Contracts (Solidity)",
-            "Deploy Solidity contracts",
+            "Smart Contract (Solidity)",
+            "Build, test, and run Solidity smart contracts",
         )
         .item(
             RecipePathway::BasicInteraction,
-            "Basic Interactions",
+            "Basic Interaction",
             "Single-chain transactions and state queries with PAPI",
         )
         .item(
             RecipePathway::Xcm,
-            "XCM (Cross-Chain Messaging)",
-            "Asset transfers and cross-chain calls with Chopsticks",
+            "Cross-chain Interaction (XCM)",
+            "Cross-chain asset transfers and cross-chain calls with Chopsticks",
         )
         .item(
             RecipePathway::Testing,
-            "Testing Infrastructure",
-            "Zombienet and Chopsticks network configurations",
+            "Polkadot Network (Zombienet / Chopsticks)",
+            "Run a Polkadot network locally",
         )
         .item(
             RecipePathway::RequestNew,
@@ -235,7 +239,7 @@ async fn handle_create(
 
     // Map pathway to recipe type (for template selection)
     let recipe_type = match pathway {
-        RecipePathway::Runtime => RecipeType::PolkadotSdk,
+        RecipePathway::Parachain => RecipeType::PolkadotSdk,
         RecipePathway::Contracts => RecipeType::Solidity,
         RecipePathway::BasicInteraction => RecipeType::BasicInteraction,
         RecipePathway::Xcm => RecipeType::Xcm,
@@ -245,6 +249,9 @@ async fn handle_create(
             unreachable!("RequestNew pathway should have been handled before reaching here")
         }
     };
+
+    // Interactive mode always creates full parachain
+    // (pallet-only mode is only available via --pallet-only flag)
 
     // Check dependencies for the selected pathway
     check_dependencies_interactive(&pathway)?;
@@ -332,6 +339,114 @@ async fn handle_create(
         "(none)".to_string()
     };
 
+    // Generate directory tree based on pathway
+    let tree_structure = match pathway {
+        RecipePathway::Parachain => {
+            if pallet_only {
+                format!(
+                    "recipes/{}/\n\
+                     ├── README.md               (Pallet development guide)\n\
+                     ├── Cargo.toml              (Workspace config)\n\
+                     ├── rust-toolchain.toml     (Rust version)\n\
+                     └── pallets/\n\
+                         └── template/\n\
+                             ├── Cargo.toml      (Pallet dependencies)\n\
+                             └── src/\n\
+                                 ├── lib.rs      (Main pallet logic)\n\
+                                 ├── mock.rs     (Test runtime)\n\
+                                 ├── tests.rs    (Unit tests)\n\
+                                 ├── benchmarking.rs\n\
+                                 └── weights.rs",
+                    slug
+                )
+            } else {
+                format!(
+                    "recipes/{}/\n\
+                     ├── README.md               (Full tutorial)\n\
+                     ├── Cargo.toml              (Workspace config)\n\
+                     ├── package.json            (PAPI dependencies)\n\
+                     ├── runtime/                (Parachain runtime)\n\
+                     │   ├── Cargo.toml\n\
+                     │   └── src/\n\
+                     ├── node/                   (Node implementation)\n\
+                     │   ├── Cargo.toml\n\
+                     │   └── src/\n\
+                     ├── pallets/                (Custom pallets)\n\
+                     │   └── template/\n\
+                     │       ├── Cargo.toml\n\
+                     │       └── src/\n\
+                     ├── scripts/                (Helper scripts)\n\
+                     │   ├── generate-spec.sh\n\
+                     │   └── start-dev-node.sh\n\
+                     └── tests/                  (PAPI integration tests)\n\
+                         └── template-pallet.test.ts",
+                    slug
+                )
+            }
+        }
+        RecipePathway::Contracts => {
+            format!(
+                "recipes/{}/\n\
+                 ├── README.md\n\
+                 ├── package.json\n\
+                 ├── hardhat.config.ts\n\
+                 ├── contracts/\n\
+                 │   └── Contract.sol\n\
+                 ├── scripts/\n\
+                 │   └── deploy.ts\n\
+                 ├── tests/\n\
+                 │   └── Contract.test.ts\n\
+                 └── src/",
+                slug
+            )
+        }
+        RecipePathway::BasicInteraction => {
+            format!(
+                "recipes/{}/\n\
+                 ├── README.md\n\
+                 ├── package.json\n\
+                 ├── tsconfig.json\n\
+                 ├── vitest.config.ts\n\
+                 ├── src/\n\
+                 │   └── example.ts\n\
+                 └── tests/\n\
+                     └── example.test.ts",
+                slug
+            )
+        }
+        RecipePathway::Xcm => {
+            format!(
+                "recipes/{}/\n\
+                 ├── README.md\n\
+                 ├── package.json\n\
+                 ├── chopsticks.yml\n\
+                 ├── tsconfig.json\n\
+                 ├── vitest.config.ts\n\
+                 ├── src/\n\
+                 │   └── xcm-helpers.ts\n\
+                 └── tests/\n\
+                     └── xcm.test.ts",
+                slug
+            )
+        }
+        RecipePathway::Testing => {
+            format!(
+                "recipes/{}/\n\
+                 ├── README.md\n\
+                 ├── package.json\n\
+                 ├── configs/\n\
+                 │   ├── chopsticks.yml\n\
+                 │   └── network.toml\n\
+                 └── tests/\n\
+                     └── network.test.ts",
+                slug
+            )
+        }
+        RecipePathway::RequestNew => {
+            unreachable!("RequestNew should have been handled before summary")
+        }
+    };
+
     // Show configuration summary and get confirmation
     let summary_title = "Configuration Summary".polkadot_pink().to_string();
     note(
@@ -342,20 +457,24 @@ async fn handle_create(
              {:<16} {}\n\
              {:<16} {}\n\
              {:<16} {}\n\n\
-             Files to create:\n\
-             {} README.md (with frontmatter)\n\
-             {} Template files",
+             Directory structure:\n\n{}",
             "Title:".polkadot_pink(),
             title.polkadot_pink().bold(),
             "Slug:".polkadot_pink(),
             slug.dimmed(),
             "Pathway:".polkadot_pink(),
             match pathway {
-                RecipePathway::Runtime => "Runtime Development",
-                RecipePathway::Contracts => "Smart Contracts",
-                RecipePathway::BasicInteraction => "Basic Interactions",
-                RecipePathway::Xcm => "XCM",
-                RecipePathway::Testing => "Testing Infrastructure",
+                RecipePathway::Parachain => {
+                    if pallet_only {
+                        "Custom Parachain (Pallet-only)"
+                    } else {
+                        "Custom Parachain"
+                    }
+                }
+                RecipePathway::Contracts => "Smart Contract",
+                RecipePathway::BasicInteraction => "Basic Interaction",
+                RecipePathway::Xcm => "Cross-chain Interaction",
+                RecipePathway::Testing => "Polkadot Network",
                 RecipePathway::RequestNew => {
                     unreachable!("RequestNew should have been handled before summary")
                 }
@@ -364,8 +483,7 @@ async fn handle_create(
             project_path.display(),
             "Git Branch:".polkadot_pink(),
             branch_name,
-            "•".polkadot_pink(),
-            "•".polkadot_pink()
+            tree_structure.dimmed()
         ),
     )?;
 
@@ -378,7 +496,7 @@ async fn handle_create(
     }
 
     // Create project configuration
-    let config = ProjectConfig::new(&slug)
+    let mut config = ProjectConfig::new(&slug)
         .with_title(&title)
         .with_destination(PathBuf::from("recipes"))
         .with_git_init(create_git_branch)
@@ -386,6 +504,9 @@ async fn handle_create(
         .with_recipe_type(recipe_type)
         .with_description(description)
         .with_pathway(pathway);
+
+    // Set parachain-specific flags
+    config.pallet_only = pallet_only;
 
     // Create the project with spinner
     let sp = spinner();
@@ -399,7 +520,19 @@ async fn handle_create(
     sp.start(&spinner_msg);
 
     let scaffold = Scaffold::new();
-    match scaffold.create_project(config).await {
+
+    // Create progress callback to update spinner
+    use polkadot_cookbook_sdk::scaffold::ProgressCallback;
+    let progress_callback: ProgressCallback = Box::new(move |msg: &str| {
+        // Note: cliclack spinners don't support live message updates,
+        // but we use debug logging instead of info to keep output clean
+        tracing::debug!("Progress: {}", msg);
+    });
+
+    match scaffold
+        .create_project(config, Some(&progress_callback))
+        .await
+    {
         Ok(project_info) => {
             sp.stop(format!(
                 "{}",
@@ -423,28 +556,79 @@ async fn handle_create(
             )?;
 
             let steps_title = "📝 Next Steps".polkadot_pink().to_string();
-            note(
-                &steps_title,
+
+            // Generate context-aware next steps based on recipe type and mode
+            let next_steps = if pallet_only {
                 format!(
-                    "{} Write recipe content\n   {} {}\n\n\
-                     {} Add implementation\n   {} {}\n\n\
-                     {} Write tests\n   {} {}\n\n\
-                     {} Run tests\n   {} {}",
+                    "{} Implement your pallet\n   {} {}\n\n\
+                     {} Write unit tests\n   {} {}\n\n\
+                     {} Build and test\n   {} {}",
                     "1.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/README.md", project_info.project_path.display()).polkadot_pink(),
+                    format!(
+                        "{}/pallets/template/src/lib.rs",
+                        project_info.project_path.display()
+                    )
+                    .polkadot_pink(),
                     "2.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/src/", project_info.project_path.display()).polkadot_pink(),
+                    format!(
+                        "{}/pallets/template/src/tests.rs",
+                        project_info.project_path.display()
+                    )
+                    .polkadot_pink(),
+                    "3.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    format!("cd {} && cargo test", project_info.project_path.display())
+                        .polkadot_pink()
+                )
+            } else if matches!(pathway, RecipePathway::Parachain) {
+                format!(
+                    "{} Customize your pallet\n   {} {}\n\n\
+                     {} Configure runtime\n   {} {}\n\n\
+                     {} Write PAPI tests\n   {} {}\n\n\
+                     {} Build and test\n   {} {}\n   {} {}",
+                    "1.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    format!(
+                        "{}/pallets/template/src/lib.rs",
+                        project_info.project_path.display()
+                    )
+                    .polkadot_pink(),
+                    "2.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    format!("{}/runtime/src/lib.rs", project_info.project_path.display())
+                        .polkadot_pink(),
                     "3.".polkadot_pink().bold(),
                     "→".dimmed(),
                     format!("{}/tests/", project_info.project_path.display()).polkadot_pink(),
                     "4.".polkadot_pink().bold(),
                     "→".dimmed(),
+                    format!("cd {} && cargo build", project_info.project_path.display())
+                        .polkadot_pink(),
+                    "→".dimmed(),
+                    "npm test".polkadot_pink()
+                )
+            } else {
+                // Default for other pathways
+                format!(
+                    "{} Add implementation\n   {} {}\n\n\
+                     {} Write tests\n   {} {}\n\n\
+                     {} Run tests\n   {} {}",
+                    "1.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    format!("{}/src/", project_info.project_path.display()).polkadot_pink(),
+                    "2.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    format!("{}/tests/", project_info.project_path.display()).polkadot_pink(),
+                    "3.".polkadot_pink().bold(),
+                    "→".dimmed(),
                     format!("cd {} && npm test", project_info.project_path.display())
                         .polkadot_pink()
-                ),
-            )?;
+                )
+            };
+
+            note(&steps_title, next_steps)?;
 
             if let Some(_branch) = project_info.git_branch {
                 let git_title = "🔀 Ready to Submit?".polkadot_pink().to_string();
@@ -492,6 +676,7 @@ async fn run_non_interactive(
     pathway: Option<String>,
     skip_install: bool,
     no_git: bool,
+    pallet_only: bool,
 ) -> Result<()> {
     // Validate title
     if let Err(e) = polkadot_cookbook_sdk::config::validate_title(title) {
@@ -513,7 +698,7 @@ async fn run_non_interactive(
     // Parse pathway to recipe type
     let recipe_type = if let Some(p) = pathway {
         match p.as_str() {
-            "runtime" => RecipeType::PolkadotSdk,
+            "parachain" => RecipeType::PolkadotSdk,
             "contracts" => RecipeType::Solidity,
             "basic-interaction" => RecipeType::BasicInteraction,
             "xcm" => RecipeType::Xcm,
@@ -535,7 +720,7 @@ async fn run_non_interactive(
             _ => {
                 eprintln!("❌ Invalid pathway: {p}");
                 eprintln!(
-                    "Valid pathways: runtime, contracts, basic-interaction, xcm, testing, request-new"
+                    "Valid pathways: parachain, contracts, basic-interaction, xcm, testing, request-new"
                 );
                 std::process::exit(1);
             }
@@ -548,7 +733,7 @@ async fn run_non_interactive(
 
     // Determine pathway from recipe type
     let pathway_value = match recipe_type {
-        RecipeType::PolkadotSdk => Some(RecipePathway::Runtime),
+        RecipeType::PolkadotSdk => Some(RecipePathway::Parachain),
         RecipeType::Solidity => Some(RecipePathway::Contracts),
         RecipeType::BasicInteraction => Some(RecipePathway::BasicInteraction),
         RecipeType::Xcm => Some(RecipePathway::Xcm),
@@ -576,9 +761,12 @@ async fn run_non_interactive(
         config = config.with_pathway(p);
     }
 
+    // Set parachain-specific flags (non-interactive mode)
+    config.pallet_only = pallet_only;
+
     // Create the project
     let scaffold = Scaffold::new();
-    match scaffold.create_project(config).await {
+    match scaffold.create_project(config, None).await {
         Ok(project_info) => {
             println!(
                 "{}",
@@ -636,44 +824,38 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     if is_polkadot_sdk {
         note("Recipe Type", "Polkadot SDK (Rust)")?;
 
-        let sp = spinner();
-        sp.start("Running cargo test...");
+        println!("\n{}\n", "Running cargo test...".polkadot_pink().bold());
 
-        let output = std::process::Command::new("cargo")
+        let status = std::process::Command::new("cargo")
             .args(["test", "--all-features"])
             .current_dir(&recipe_path)
-            .output()?;
+            .status()?;
 
-        if output.status.success() {
-            sp.stop("✅ All tests passed!");
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            if !stdout.is_empty() {
-                note("Test Output", &stdout)?;
-            }
+        println!(); // Add spacing after test output
+
+        if status.success() {
+            println!("{}", "✅ All tests passed!".polkadot_pink().bold());
         } else {
-            sp.stop("❌ Tests failed");
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            note("Error Output", &stderr)?;
+            eprintln!("{}", "❌ Tests failed".red().bold());
             outro_cancel("Tests failed")?;
             std::process::exit(1);
         }
     } else {
         note("Recipe Type", "TypeScript")?;
 
-        let sp = spinner();
-        sp.start("Running npm test...");
+        println!("\n{}\n", "Running npm test...".polkadot_pink().bold());
 
-        let output = std::process::Command::new("npm")
+        let status = std::process::Command::new("npm")
             .args(["test"])
             .current_dir(&recipe_path)
-            .output()?;
+            .status()?;
 
-        if output.status.success() {
-            sp.stop("✅ All tests passed!");
+        println!(); // Add spacing after test output
+
+        if status.success() {
+            println!("{}", "✅ All tests passed!".polkadot_pink().bold());
         } else {
-            sp.stop("❌ Tests failed");
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            note("Error Output", &stderr)?;
+            eprintln!("{}", "❌ Tests failed".red().bold());
             outro_cancel("Tests failed")?;
             std::process::exit(1);
         }

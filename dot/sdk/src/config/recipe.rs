@@ -24,9 +24,9 @@ pub enum RecipeType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RecipePathway {
-    /// Runtime development pathway
-    #[serde(rename = "runtime")]
-    Runtime,
+    /// Parachain development pathway
+    #[serde(rename = "parachain")]
+    Parachain,
     /// Smart contracts pathway
     #[serde(rename = "contracts")]
     Contracts,
@@ -133,7 +133,7 @@ impl RecipeConfig {
 
         // Map recipe type to pathway
         let pathway = Some(match recipe_type {
-            RecipeType::PolkadotSdk => RecipePathway::Runtime,
+            RecipeType::PolkadotSdk => RecipePathway::Parachain,
             RecipeType::Solidity => RecipePathway::Contracts,
             RecipeType::Xcm => RecipePathway::Xcm,
             RecipeType::BasicInteraction => RecipePathway::BasicInteraction,
@@ -211,9 +211,9 @@ mod tests {
 
     #[test]
     fn test_pathway_serialization() {
-        let runtime = RecipePathway::Runtime;
-        let json = serde_json::to_string(&runtime).unwrap();
-        assert_eq!(json, "\"runtime\"");
+        let parachain = RecipePathway::Parachain;
+        let json = serde_json::to_string(&parachain).unwrap();
+        assert_eq!(json, "\"parachain\"");
 
         let contracts = RecipePathway::Contracts;
         let json = serde_json::to_string(&contracts).unwrap();

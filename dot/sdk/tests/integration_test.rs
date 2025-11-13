@@ -28,7 +28,7 @@ async fn test_create_project_end_to_end() {
 
     // Create the project
     let scaffold = Scaffold::new();
-    let project_info = scaffold.create_project(config).await.unwrap();
+    let project_info = scaffold.create_project(config, None).await.unwrap();
 
     // Verify project info
     assert_eq!(project_info.slug, "integration-test");
@@ -73,10 +73,10 @@ async fn test_create_project_with_existing_directory_fails() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config.clone()).await.unwrap();
+    scaffold.create_project(config.clone(), None).await.unwrap();
 
     // Try to create the same project again - should fail
-    let result = scaffold.create_project(config).await;
+    let result = scaffold.create_project(config, None).await;
     assert!(result.is_err());
 
     // Verify it's the correct error type
@@ -149,7 +149,7 @@ async fn test_dry_run_mode() {
 
     // This creates the project successfully even in dry-run
     // because validation doesn't check for directory existence in dry-run
-    let result = scaffold.create_project(config).await;
+    let result = scaffold.create_project(config, None).await;
 
     // The operation succeeds, but no files are created
     assert!(result.is_ok());
@@ -221,7 +221,7 @@ async fn test_create_project_with_git_branch() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    let project_info = scaffold.create_project(config).await.unwrap();
+    let project_info = scaffold.create_project(config, None).await.unwrap();
 
     // Verify git branch was created (or attempted)
     // Note: Branch creation might fail if git is not configured, which is okay
@@ -252,7 +252,7 @@ async fn test_project_without_git() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    let project_info = scaffold.create_project(config).await.unwrap();
+    let project_info = scaffold.create_project(config, None).await.unwrap();
 
     // Verify no git branch was created
     assert!(project_info.git_branch.is_none());
@@ -277,7 +277,7 @@ async fn test_sdk_recipe_creation() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
+    scaffold.create_project(config, None).await.unwrap();
 
     let project_path = destination.join("sdk-recipe");
 
@@ -305,7 +305,7 @@ async fn test_contracts_recipe_creation() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
+    scaffold.create_project(config, None).await.unwrap();
 
     let project_path = destination.join("contracts-recipe");
 
@@ -332,7 +332,7 @@ async fn test_recipe_categories() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
+    scaffold.create_project(config, None).await.unwrap();
 
     let project_path = destination.join("category-test");
 
@@ -359,7 +359,7 @@ async fn test_long_slug() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    let result = scaffold.create_project(config).await;
+    let result = scaffold.create_project(config, None).await;
 
     // Should succeed
     assert!(result.is_ok());
@@ -402,7 +402,7 @@ async fn test_description_with_special_characters() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
+    scaffold.create_project(config, None).await.unwrap();
 
     let project_path = destination.join("special-desc");
 
@@ -430,7 +430,7 @@ async fn test_empty_description() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    let result = scaffold.create_project(config).await;
+    let result = scaffold.create_project(config, None).await;
 
     // Should succeed - empty descriptions are allowed
     assert!(result.is_ok());
@@ -451,7 +451,7 @@ async fn test_unicode_in_description() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
+    scaffold.create_project(config, None).await.unwrap();
 
     let project_path = destination.join("unicode-test");
 
@@ -481,7 +481,7 @@ async fn test_multiline_description() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    scaffold.create_project(config).await.unwrap();
+    scaffold.create_project(config, None).await.unwrap();
 
     let project_path = destination.join("multiline-desc");
 
@@ -513,7 +513,7 @@ async fn test_skip_install_flag() {
         .with_git_init(false);
 
     let scaffold = Scaffold::new();
-    let result = scaffold.create_project(config).await;
+    let result = scaffold.create_project(config, None).await;
 
     // Should succeed without npm install
     assert!(result.is_ok());
@@ -557,7 +557,7 @@ async fn test_nested_destination() {
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
-    let result = scaffold.create_project(config).await;
+    let result = scaffold.create_project(config, None).await;
 
     // Should succeed - scaffold creates parent directories
     assert!(result.is_ok());

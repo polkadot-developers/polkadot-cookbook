@@ -100,16 +100,16 @@ Chopsticks creates local chain forks for testing. Configuration in `chopsticks.y
 
 ```yaml
 relay_chain:
-  endpoint: wss://westend-rpc.polkadot.io
+  endpoint: wss://paseo-rpc.dwellir.com
   block: latest
 
 parachains:
   - id: 1000
-    endpoint: wss://westend-asset-hub-rpc.polkadot.io
+    endpoint: wss://paseo-asset-hub-rpc.dwellir.com
     block: latest
 
   - id: 1002
-    endpoint: wss://westend-bridge-hub-rpc.polkadot.io
+    endpoint: wss://paseo-bridge-hub-rpc.dwellir.com
     block: latest
 ```
 
@@ -512,9 +512,9 @@ describe("XCM Transfers", () => {
   beforeAll(async () => {
     // Setup test chains
     const chains = await setupChains({
-      relaychain: "westend",
+      relaychain: "paseo",
       parachains: [
-        { paraId: 1000, chain: "westend-asset-hub" },
+        { paraId: 1000, chain: "paseo-asset-hub" },
         { paraId: 1002, chain: "westend-collectives" }
       ]
     });
@@ -649,44 +649,6 @@ Now that you've completed this tutorial, try:
 - [XCM Format Specification](https://github.com/paritytech/xcm-format)
 - [Chopsticks Documentation](https://github.com/AcalaNetwork/chopsticks)
 - [Asset Transfer API](https://github.com/paritytech/asset-transfer-api)
-
-## Troubleshooting
-
-### Chopsticks Issues
-
-**Network doesn't start:**
-- Verify endpoint URLs are accessible
-- Check port 8000 is available
-- Try specifying explicit block numbers
-
-**State inconsistencies:**
-- Restart Chopsticks
-- Clear cache: `rm -rf .chopsticks`
-- Use specific block numbers instead of "latest"
-
-### XCM Transfer Failures
-
-**Assets not arriving:**
-- Check both chains support the asset
-- Verify fee payment asset is available
-- Ensure sufficient balance for fees
-- Check asset registration on destination
-
-**Trapped assets:**
-- Query trapped assets: `api.query.PolkadotXcm.AssetTraps`
-- Execute claim: `api.tx.PolkadotXcm.claim_assets`
-
-### Testing Issues
-
-**Tests timeout:**
-- Increase test timeout in vitest config
-- Ensure chains are producing blocks
-- Check for deadlocks in async code
-
-**Inconsistent results:**
-- Use specific block numbers in Chopsticks config
-- Reset chain state between tests
-- Avoid parallel tests on same chains
 
 ## License
 

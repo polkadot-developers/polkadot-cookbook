@@ -1,0 +1,149 @@
+name: Pathway Integration Tests
+
+on:
+  # Run weekly to catch dependency/Rust version issues
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at midnight UTC
+
+  # Run on releases
+  release:
+    types: [published]
+
+  # Run on PRs that touch critical files
+  pull_request:
+    paths:
+      - 'rust-toolchain.toml'
+      - 'dot/sdk/templates/**'
+      - 'dot/cli/tests/pathway_integration_tests.rs'
+      - '.github/workflows/test-pathway-integration.yml'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  test-pathways:
+    name: Test All Recipe Pathways
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # Integration tests can take a while
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt, clippy
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-integration-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-integration-
+            ${{ runner.os }}-cargo-
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            recipes/*/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Build CLI
+        run: cargo build --release --package cli --locked
+
+      - name: Add CLI to PATH
+        run: echo "${{ github.workspace }}/target/release" >> $GITHUB_PATH
+
+      - name: Run pathway integration tests
+        run: cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Upload parachain-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parachain-example
+          path: recipes/parachain-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload pallet-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pallet-example
+          path: recipes/pallet-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload contracts-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts-example
+          path: recipes/contracts-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload basic-interaction-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: basic-interaction-example
+          path: recipes/basic-interaction-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload xcm-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcm-example
+          path: recipes/xcm-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload infra-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: infra-example
+          path: recipes/infra-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Note: We keep the generated examples in the workspace
+      # These can be committed to keep examples fresh and up-to-date
+
+  test-summary:
+    name: Integration Test Summary
+    needs: test-pathways
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-pathways.result }}" == "success" ]; then
+            echo "✅ All pathway integration tests passed!"
+            echo "All recipe templates generate working code with passing tests."
+          else
+            echo "❌ Some pathway integration tests failed!"
+            echo "Check the logs above for details."
+            exit 1
+          fi

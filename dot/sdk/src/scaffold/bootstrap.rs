@@ -7,7 +7,10 @@ use crate::error::{CookbookError, Result};
 use std::path::PathBuf;
 use std::process::Stdio;
 use tokio::process::Command;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
+
+/// Progress callback function type
+pub type ProgressCallback = Box<dyn Fn(&str) + Send + Sync>;
 
 /// Bootstrap manager for test environment setup
 pub struct Bootstrap {
@@ -38,29 +41,44 @@ impl Bootstrap {
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let bootstrap = Bootstrap::new(PathBuf::from("./tutorials/my-tutorial"));
-    /// bootstrap.setup("my-tutorial").await?;
+    /// bootstrap.setup("my-tutorial", None).await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn setup(&self, slug: &str) -> Result<()> {
-        info!("Bootstrapping test environment for: {}", slug);
+    pub async fn setup(&self, slug: &str, progress: Option<&ProgressCallback>) -> Result<()> {
+        debug!("Bootstrapping test environment for: {}", slug);
 
         // Create package.json
+        if let Some(cb) = progress {
+            cb("Initializing package.json");
+        }
         self.create_package_json(slug).await?;
 
         // Install dev dependencies
+        if let Some(cb) = progress {
+            cb("Installing development dependencies");
+        }
         self.install_dev_dependencies().await?;
 
         // Install dependencies
+        if let Some(cb) = progress {
+            cb("Installing runtime dependencies");
+        }
         self.install_dependencies().await?;
 
         // Set npm scripts
+        if let Some(cb) = progress {
+            cb("Configuring npm scripts");
+        }
         self.set_npm_scripts().await?;
 
         // Create configuration files
+        if let Some(cb) = progress {
+            cb("Creating configuration files");
+        }
         self.create_config_files().await?;
 
-        info!("Bootstrap complete for: {}", slug);
+        debug!("Bootstrap complete for: {}", slug);
         Ok(())
     }
 
@@ -87,13 +105,13 @@ impl Bootstrap {
         self.run_command("npm", &["pkg", "set", "type=module"])
             .await?;
 
-        info!("Created package.json");
+        debug!("Created package.json");
         Ok(())
     }
 
     /// Install development dependencies
     async fn install_dev_dependencies(&self) -> Result<()> {
-        info!("Installing dev dependencies (vitest, typescript, ts-node, @types/node)...");
+        debug!("Installing dev dependencies (vitest, typescript, ts-node, @types/node)...");
 
         self.run_command(
             "npm",
@@ -108,18 +126,18 @@ impl Bootstrap {
         )
         .await?;
 
-        info!("Dev dependencies installed");
+        debug!("Dev dependencies installed");
         Ok(())
     }
 
     /// Install runtime dependencies
     async fn install_dependencies(&self) -> Result<()> {
-        info!("Installing dependencies (@polkadot/api, ws)...");
+        debug!("Installing dependencies (@polkadot/api, ws)...");
 
         self.run_command("npm", &["install", "@polkadot/api", "ws"])
             .await?;
 
-        info!("Dependencies installed");
+        debug!("Dependencies installed");
         Ok(())
     }
 
@@ -181,7 +199,7 @@ export default defineConfig({
                 CookbookError::BootstrapError(format!("Failed to write tsconfig.json: {e}"))
             })?;
 
-        info!("Configuration files created");
+        debug!("Configuration files created");
         Ok(())
     }
 

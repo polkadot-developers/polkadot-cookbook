@@ -79,7 +79,7 @@ impl Dependency {
 /// Get required dependencies for a pathway
 pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
     match pathway {
-        RecipePathway::Runtime => vec![
+        RecipePathway::Parachain => vec![
             Dependency {
                 name: "Rust".to_string(),
                 command: "rustc".to_string(),
