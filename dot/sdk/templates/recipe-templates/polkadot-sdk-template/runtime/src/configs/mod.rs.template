@@ -317,7 +317,7 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 /// Configure the pallet template in pallets/template.
-impl pallet_{{slug | replace("-", "_")}}::Config for Runtime {
+impl pallet_{{slug_underscore}}::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_{{slug | replace("-", "_")}}::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_{{slug_underscore}}::weights::SubstrateWeight<Runtime>;
 }

@@ -453,8 +453,12 @@ impl Scaffold {
                     })
                     .unwrap_or_default();
 
+                // Convert slug hyphens to underscores for Rust identifiers
+                let slug_underscore = config.slug.replace("-", "_");
+
                 content
                     .replace("{{slug}}", &config.slug)
+                    .replace("{{slug_underscore}}", &slug_underscore)
                     .replace("{{title}}", &config.title)
                     .replace("{{description}}", &config.description)
                     .replace("{{category}}", &config.category)
