@@ -72,8 +72,26 @@ jobs:
       - name: Install protobuf compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
+      - name: Cache polkadot tools
+        uses: actions/cache@v4
+        id: cache-polkadot-tools
+        with:
+          path: |
+            ~/.cargo/bin/polkadot-omni-node
+            ~/.cargo/bin/chain-spec-builder
+          key: ${{ runner.os }}-polkadot-tools-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-polkadot-tools-
+
       - name: Install polkadot-omni-node
+        if: steps.cache-polkadot-tools.outputs.cache-hit != 'true'
         run: cargo install polkadot-omni-node --locked
+        env:
+          RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
+
+      - name: Install chain-spec-builder
+        if: steps.cache-polkadot-tools.outputs.cache-hit != 'true'
+        run: cargo install staging-chain-spec-builder --locked
         env:
           RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
 
