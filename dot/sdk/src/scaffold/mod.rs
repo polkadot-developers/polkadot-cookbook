@@ -771,8 +771,9 @@ mod tests {
         let toolchain_content =
             std::fs::read_to_string(project_path.join("rust-toolchain.toml")).unwrap();
         assert!(
-            toolchain_content.contains("channel = \"1.91\""),
-            "rust-toolchain.toml should specify Rust 1.91"
+            toolchain_content.contains("channel = \"1.86\""),
+            "rust-toolchain.toml should specify Rust 1.86 (as passed to create_files), but contains: {}",
+            toolchain_content
         );
         assert!(toolchain_content.contains("components = [\"rustfmt\", \"clippy\"]"));
         assert!(toolchain_content.contains("profile = \"minimal\""));
