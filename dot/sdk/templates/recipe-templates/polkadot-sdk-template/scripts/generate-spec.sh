@@ -12,9 +12,11 @@ cargo build --release
 
 echo "📄 Generating chain specification..."
 
-# Use the compiled node binary to generate chain spec
-./target/release/{{slug}}-node build-spec \
+# Use polkadot-omni-node to generate chain spec
+# The chain spec will be generated from the compiled runtime WASM
+polkadot-omni-node build-spec \
   --chain local \
+  --runtime ./target/release/wbuild/{{slug}}-runtime/{{slug}}_runtime.compact.compressed.wasm \
   --disable-default-bootnode \
   > "$PROJECT_ROOT/chain-spec.json"
 
