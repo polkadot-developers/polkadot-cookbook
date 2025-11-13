@@ -128,4 +128,61 @@ mod tests {
         let cookbook_err: CookbookError = io_err.into();
         assert!(matches!(cookbook_err, CookbookError::IoError(_)));
     }
+
+    #[test]
+    fn test_serde_yaml_error_conversion() {
+        let yaml = "invalid: [yaml";
+        let result: std::result::Result<serde_yaml::Value, _> = serde_yaml::from_str(yaml);
+        if let Err(err) = result {
+            let cookbook_err: CookbookError = err.into();
+            assert!(matches!(cookbook_err, CookbookError::ConfigError(_)));
+        }
+    }
+
+    #[test]
+    fn test_serde_json_error_conversion() {
+        let json = "{invalid json}";
+        let result: std::result::Result<serde_json::Value, _> = serde_json::from_str(json);
+        if let Err(err) = result {
+            let cookbook_err: CookbookError = err.into();
+            assert!(matches!(cookbook_err, CookbookError::ConfigError(_)));
+        }
+    }
+
+    #[test]
+    fn test_regex_error_conversion() {
+        let result = regex::Regex::new("[");
+        if let Err(err) = result {
+            let cookbook_err: CookbookError = err.into();
+            assert!(matches!(cookbook_err, CookbookError::ValidationError(_)));
+        }
+    }
+
+    #[test]
+    fn test_command_error_display() {
+        let error = CookbookError::CommandError {
+            command: "npm install".to_string(),
+            message: "failed to install".to_string(),
+        };
+        let display = format!("{}", error);
+        assert!(display.contains("npm install"));
+        assert!(display.contains("failed to install"));
+    }
+
+    #[test]
+    fn test_file_system_error_display() {
+        let error = CookbookError::FileSystemError {
+            message: "permission denied".to_string(),
+            path: Some(std::path::PathBuf::from("/some/path")),
+        };
+        let display = format!("{}", error);
+        assert!(display.contains("permission denied"));
+    }
+
+    #[test]
+    fn test_error_debug() {
+        let error = CookbookError::GitError("test".to_string());
+        let debug = format!("{:?}", error);
+        assert!(debug.contains("GitError"));
+    }
 }

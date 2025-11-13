@@ -231,4 +231,74 @@ mod tests {
         let json = serde_json::to_string(&testing).unwrap();
         assert_eq!(json, "\"testing\"");
     }
+
+    #[test]
+    fn test_recipe_type_clone() {
+        let original = RecipeType::PolkadotSdk;
+        let cloned = original.clone();
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn test_recipe_pathway_clone() {
+        let original = RecipePathway::Parachain;
+        let cloned = original.clone();
+        assert_eq!(original, cloned);
+    }
+
+    #[test]
+    fn test_recipe_type_copy() {
+        let original = RecipeType::PolkadotSdk;
+        let copied = original;
+        assert_eq!(original, copied);
+    }
+
+    #[test]
+    fn test_recipe_pathway_copy() {
+        let original = RecipePathway::Parachain;
+        let copied = original;
+        assert_eq!(original, copied);
+    }
+
+    #[test]
+    fn test_recipe_type_debug() {
+        let sdk = RecipeType::PolkadotSdk;
+        let debug_str = format!("{:?}", sdk);
+        assert!(debug_str.contains("PolkadotSdk"));
+    }
+
+    #[test]
+    fn test_recipe_pathway_debug() {
+        let parachain = RecipePathway::Parachain;
+        let debug_str = format!("{:?}", parachain);
+        assert!(debug_str.contains("Parachain"));
+    }
+
+    #[test]
+    fn test_recipe_config_with_pathway() {
+        let mut config = RecipeConfig::new("My Recipe", "my-recipe", RecipeType::PolkadotSdk);
+        config.pathway = Some(RecipePathway::Parachain);
+
+        assert_eq!(config.pathway, Some(RecipePathway::Parachain));
+    }
+
+    #[test]
+    fn test_recipe_config_with_description() {
+        let mut config = RecipeConfig::new("My Recipe", "my-recipe", RecipeType::PolkadotSdk);
+        config.description = "Test description".to_string();
+
+        assert_eq!(config.description, "Test description");
+    }
+
+    #[test]
+    fn test_recipe_config_yaml_serialization() {
+        let config = RecipeConfig::new("My Recipe", "my-recipe", RecipeType::PolkadotSdk);
+
+        #[allow(deprecated)]
+        let yaml = config.to_yaml().unwrap();
+
+        assert!(yaml.contains("name: My Recipe"));
+        assert!(yaml.contains("slug: my-recipe"));
+        assert!(yaml.contains("type: polkadot-sdk"));
+    }
 }
