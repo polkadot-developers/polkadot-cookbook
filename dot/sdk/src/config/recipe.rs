@@ -301,4 +301,83 @@ mod tests {
         assert!(yaml.contains("slug: my-recipe"));
         assert!(yaml.contains("type: polkadot-sdk"));
     }
+
+    #[tokio::test]
+    async fn test_from_recipe_directory() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Create a temporary directory
+        let temp_dir = TempDir::new().unwrap();
+        let recipe_path = temp_dir.path().join("test-recipe");
+        fs::create_dir(&recipe_path).unwrap();
+
+        // Create a README.md with frontmatter
+        let readme_content = r#"---
+title: Test Recipe
+description: A test recipe for testing
+---
+
+# Test Recipe
+
+This is a test recipe.
+"#;
+        fs::write(recipe_path.join("README.md"), readme_content).unwrap();
+
+        // Create a Cargo.toml to indicate this is a Polkadot SDK recipe
+        fs::write(recipe_path.join("Cargo.toml"), "[package]\nname = \"test\"").unwrap();
+        fs::create_dir(recipe_path.join("pallets")).unwrap();
+
+        // Test loading the recipe config
+        let config = RecipeConfig::from_recipe_directory(&recipe_path)
+            .await
+            .unwrap();
+
+        assert_eq!(config.name, "Test Recipe");
+        assert_eq!(config.slug, "test-recipe");
+        assert_eq!(config.description, "A test recipe for testing");
+        assert_eq!(config.recipe_type, RecipeType::PolkadotSdk);
+        assert_eq!(config.pathway, Some(RecipePathway::Parachain));
+    }
+
+    #[tokio::test]
+    async fn test_from_recipe_directory_solidity() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Create a temporary directory for Solidity recipe
+        let temp_dir = TempDir::new().unwrap();
+        let recipe_path = temp_dir.path().join("solidity-recipe");
+        fs::create_dir(&recipe_path).unwrap();
+
+        // Create a README.md with frontmatter
+        let readme_content = r#"---
+title: Solidity Contract
+description: A Solidity smart contract recipe
+---
+
+# Solidity Contract
+"#;
+        fs::write(recipe_path.join("README.md"), readme_content).unwrap();
+
+        // Create package.json with hardhat dependency to indicate Solidity recipe
+        let package_json = r#"{
+  "name": "solidity-recipe",
+  "dependencies": {
+    "hardhat": "^2.0.0"
+  }
+}"#;
+        fs::write(recipe_path.join("package.json"), package_json).unwrap();
+
+        // Test loading the recipe config
+        let config = RecipeConfig::from_recipe_directory(&recipe_path)
+            .await
+            .unwrap();
+
+        assert_eq!(config.name, "Solidity Contract");
+        assert_eq!(config.slug, "solidity-recipe");
+        assert_eq!(config.description, "A Solidity smart contract recipe");
+        assert_eq!(config.recipe_type, RecipeType::Solidity);
+        assert_eq!(config.pathway, Some(RecipePathway::Contracts));
+    }
 }
