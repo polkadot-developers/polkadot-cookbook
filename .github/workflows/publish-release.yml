@@ -103,7 +103,7 @@ jobs:
       - name: Build CLI binary
         shell: bash
         run: |
-          cd cli
+          cd dot/cli
           if [ "${{ matrix.cross }}" = "true" ]; then
             cross build --release --locked --target ${{ matrix.target }}
           else
