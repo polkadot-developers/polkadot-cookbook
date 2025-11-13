@@ -261,7 +261,10 @@ async fn test_parachain_example_end_to_end() {
         .join("release")
         .join("wbuild")
         .join(format!("{}-runtime", recipe_name))
-        .join(format!("{}_runtime.compact.compressed.wasm", recipe_name));
+        .join(format!(
+            "{}_runtime.compact.compressed.wasm",
+            recipe_name.replace("-", "_")
+        ));
     assert!(
         wasm_path.exists(),
         "Runtime WASM should exist at {:?}",
