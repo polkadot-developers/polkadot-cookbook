@@ -165,8 +165,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_runtime_dependencies() {
-        let deps = get_pathway_dependencies(&RecipePathway::Runtime);
+    fn test_parachain_dependencies() {
+        let deps = get_pathway_dependencies(&RecipePathway::Parachain);
         assert_eq!(deps.len(), 2);
         assert_eq!(deps[0].name, "Rust");
         assert_eq!(deps[1].name, "Cargo");
