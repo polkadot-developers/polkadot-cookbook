@@ -69,6 +69,9 @@ jobs:
       - name: Add CLI to PATH
         run: echo "${{ github.workspace }}/target/release" >> $GITHUB_PATH
 
+      - name: Install protobuf compiler
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
       - name: Install polkadot-omni-node
         run: cargo install polkadot-omni-node --locked
         env:
