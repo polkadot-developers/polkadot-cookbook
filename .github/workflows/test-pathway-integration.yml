@@ -71,6 +71,8 @@ jobs:
 
       - name: Install polkadot-omni-node
         run: cargo install polkadot-omni-node --locked
+        env:
+          RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
 
       - name: Run pathway integration tests
         run: cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
