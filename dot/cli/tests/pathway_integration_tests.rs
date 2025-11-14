@@ -1,8 +1,8 @@
 //! End-to-end integration tests for all recipe pathways
 //!
 //! These tests validate the complete user workflow by creating real example recipes:
-//! 1. `dot recipe create` - Create a recipe for each pathway in recipes/ directory
-//! 2. `dot recipe test` - Run tests on the created recipe
+//! 1. `dot create` - Create a recipe for each pathway in recipes/ directory
+//! 2. `dot test` - Run tests on the created recipe
 //! 3. Verify all tests pass
 //!
 //! This ensures that:
@@ -42,25 +42,25 @@ fn get_repo_root() -> PathBuf {
 }
 
 /// Clean up an existing example recipe if it exists
-fn cleanup_recipe(recipe_name: &str) {
+fn cleanup_project(project_name: &str) {
     let repo_root = get_repo_root();
 
     // Search in all pathway subdirectories
     let pathways = ["contracts", "pallets", "transactions", "xcm", "networks"];
 
     for pathway in &pathways {
-        let recipe_path = repo_root.join("recipes").join(pathway).join(recipe_name);
-        if recipe_path.exists() {
-            std::fs::remove_dir_all(&recipe_path)
-                .unwrap_or_else(|e| eprintln!("Warning: Failed to remove {}: {}", recipe_name, e));
+        let project_path = repo_root.join("recipes").join(pathway).join(project_name);
+        if project_path.exists() {
+            std::fs::remove_dir_all(&project_path)
+                .unwrap_or_else(|e| eprintln!("Warning: Failed to remove {}: {}", project_name, e));
         }
     }
 
     // Also check legacy location (directly in recipes/)
-    let legacy_path = repo_root.join("recipes").join(recipe_name);
+    let legacy_path = repo_root.join("recipes").join(project_name);
     if legacy_path.exists() {
         std::fs::remove_dir_all(&legacy_path).unwrap_or_else(|e| {
-            eprintln!("Warning: Failed to remove {} (legacy): {}", recipe_name, e)
+            eprintln!("Warning: Failed to remove {} (legacy): {}", project_name, e)
         });
     }
 }
@@ -103,8 +103,8 @@ struct TestNode {
 
 impl TestNode {
     /// Start a development node by running the start-dev-node.sh script
-    async fn start(recipe_path: &PathBuf) -> Result<Self, String> {
-        let script_path = recipe_path.join("scripts").join("start-dev-node.sh");
+    async fn start(project_path: &PathBuf) -> Result<Self, String> {
+        let script_path = project_path.join("scripts").join("start-dev-node.sh");
 
         if !script_path.exists() {
             return Err(format!("Script not found: {:?}", script_path));
@@ -114,7 +114,7 @@ impl TestNode {
 
         let mut process = TokioCommand::new("bash")
             .arg(&script_path)
-            .current_dir(recipe_path)
+            .current_dir(project_path)
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .kill_on_drop(true) // Automatically kill when dropped
@@ -173,13 +173,13 @@ impl Drop for TestNode {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 async fn test_parachain_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "parachain-example";
+    let project_name = "parachain-example";
 
     // Clean up any existing example
-    cleanup_recipe(recipe_name);
+    cleanup_project(project_name);
 
-    // Step 1: Create a Parachain recipe (default mode: full parachain + PAPI)
-    println!("📦 Step 1/5: Creating parachain recipe...");
+    // Step 1: Create a Parachain project (default mode: full parachain + PAPI)
+    println!("📦 Step 1/5: Creating parachain project...");
     let recipes_dir = repo_root.join("recipes");
     std::fs::create_dir_all(&recipes_dir).unwrap();
 
@@ -197,51 +197,51 @@ async fn test_parachain_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
-    assert!(recipe_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join("recipes").join(project_name);
+    assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
-        recipe_path.join("README.md").exists(),
+        project_path.join("README.md").exists(),
         "README.md should exist"
     );
     assert!(
-        recipe_path.join("Cargo.toml").exists(),
+        project_path.join("Cargo.toml").exists(),
         "Cargo.toml should exist"
     );
     assert!(
-        recipe_path.join("rust-toolchain.toml").exists(),
+        project_path.join("rust-toolchain.toml").exists(),
         "rust-toolchain.toml should exist"
     );
     assert!(
-        recipe_path.join("pallets").exists(),
+        project_path.join("pallets").exists(),
         "pallets/ should exist"
     );
     assert!(
-        recipe_path.join("runtime").exists(),
+        project_path.join("runtime").exists(),
         "runtime/ should exist"
     );
 
     // Verify PAPI files are present (not pallet-only mode)
     assert!(
-        recipe_path.join("package.json").exists(),
+        project_path.join("package.json").exists(),
         "package.json should exist in full parachain mode"
     );
     assert!(
-        recipe_path.join("tests").exists(),
+        project_path.join("tests").exists(),
         "tests/ should exist for PAPI tests"
     );
     assert!(
-        recipe_path.join("scripts").exists(),
+        project_path.join("scripts").exists(),
         "scripts/ should exist for node management"
     );
     assert!(
-        recipe_path.join("zombienet.toml").exists()
-            || recipe_path.join("zombienet-omni-node.toml").exists(),
+        project_path.join("zombienet.toml").exists()
+            || project_path.join("zombienet-omni-node.toml").exists(),
         "zombienet config should exist"
     );
 
     // Verify XCM config IS present (always included for full parachain)
     assert!(
-        recipe_path.join("zombienet-xcm.toml").exists(),
+        project_path.join("zombienet-xcm.toml").exists(),
         "zombienet-xcm.toml should always exist in full parachain mode"
     );
 
@@ -252,7 +252,7 @@ async fn test_parachain_example_end_to_end() {
         TokioCommand::new("cargo")
             .arg("build")
             .arg("--release")
-            .current_dir(&recipe_path)
+            .current_dir(&project_path)
             .output(),
     )
     .await;
@@ -271,14 +271,14 @@ async fn test_parachain_example_end_to_end() {
     }
 
     // Verify WASM was built
-    let wasm_path = recipe_path
+    let wasm_path = project_path
         .join("target")
         .join("release")
         .join("wbuild")
-        .join(format!("{}-runtime", recipe_name))
+        .join(format!("{}-runtime", project_name))
         .join(format!(
             "{}_runtime.compact.compressed.wasm",
-            recipe_name.replace("-", "_")
+            project_name.replace("-", "_")
         ));
     assert!(
         wasm_path.exists(),
@@ -288,7 +288,7 @@ async fn test_parachain_example_end_to_end() {
 
     // Step 3: Generate chain specification
     println!("📋 Step 3/5: Generating chain specification...");
-    let generate_spec_script = recipe_path.join("scripts").join("generate-spec.sh");
+    let generate_spec_script = project_path.join("scripts").join("generate-spec.sh");
     assert!(
         generate_spec_script.exists(),
         "generate-spec.sh should exist"
@@ -298,7 +298,7 @@ async fn test_parachain_example_end_to_end() {
         Duration::from_secs(60),
         TokioCommand::new("bash")
             .arg(&generate_spec_script)
-            .current_dir(&recipe_path)
+            .current_dir(&project_path)
             .output(),
     )
     .await;
@@ -317,7 +317,7 @@ async fn test_parachain_example_end_to_end() {
     }
 
     // Verify chain-spec.json was created
-    let chain_spec_path = recipe_path.join("chain-spec.json");
+    let chain_spec_path = project_path.join("chain-spec.json");
     assert!(
         chain_spec_path.exists(),
         "chain-spec.json should exist at {:?}",
@@ -326,7 +326,7 @@ async fn test_parachain_example_end_to_end() {
 
     // Step 4: Start the development node
     println!("🚀 Step 4/5: Starting development node...");
-    let node = TestNode::start(&recipe_path)
+    let node = TestNode::start(&project_path)
         .await
         .expect("Failed to start test node");
 
@@ -343,7 +343,7 @@ async fn test_parachain_example_end_to_end() {
         Duration::from_secs(300),
         TokioCommand::new("npm")
             .arg("install")
-            .current_dir(&recipe_path)
+            .current_dir(&project_path)
             .output(),
     )
     .await;
@@ -371,7 +371,7 @@ async fn test_parachain_example_end_to_end() {
             .arg("dot")
             .arg("-w")
             .arg("ws://localhost:9944")
-            .current_dir(&recipe_path)
+            .current_dir(&project_path)
             .output(),
     )
     .await;
@@ -394,7 +394,7 @@ async fn test_parachain_example_end_to_end() {
         Duration::from_secs(120),
         TokioCommand::new("npm")
             .arg("test")
-            .current_dir(&recipe_path)
+            .current_dir(&project_path)
             .output(),
     )
     .await;
@@ -431,12 +431,12 @@ async fn test_parachain_example_end_to_end() {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_pallet_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "pallet-example";
+    let project_name = "pallet-example";
 
     // Clean up any existing example
-    cleanup_recipe(recipe_name);
+    cleanup_project(project_name);
 
-    // Step 1: Create a pallet-only recipe
+    // Step 1: Create a pallet-only project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
@@ -452,14 +452,14 @@ fn test_pallet_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join("pallets").join(recipe_name);
-    assert!(recipe_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join("recipes").join("pallets").join(project_name);
+    assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
-        recipe_path.join("Cargo.toml").exists(),
+        project_path.join("Cargo.toml").exists(),
         "Cargo.toml should exist"
     );
     assert!(
-        recipe_path.join("pallets").exists(),
+        project_path.join("pallets").exists(),
         "pallets/ should exist"
     );
 
@@ -468,15 +468,15 @@ fn test_pallet_example_end_to_end() {
 
     // Verify PAPI files are NOT present (pallet-only mode)
     assert!(
-        !recipe_path.join("package.json").exists(),
+        !project_path.join("package.json").exists(),
         "package.json should not exist in pallet-only mode"
     );
     assert!(
-        !recipe_path.join("tests").exists() || !recipe_path.join("tests").is_dir(),
+        !project_path.join("tests").exists() || !project_path.join("tests").is_dir(),
         "PAPI tests/ should not exist in pallet-only mode"
     );
     assert!(
-        !recipe_path.join("scripts").exists(),
+        !project_path.join("scripts").exists(),
         "scripts/ should not exist in pallet-only mode"
     );
 
@@ -485,7 +485,7 @@ fn test_pallet_example_end_to_end() {
     test_cmd
         .current_dir(&repo_root)
         .arg("test")
-        .arg(recipe_name)
+        .arg(project_name)
         .timeout(std::time::Duration::from_secs(600));
 
     test_cmd
@@ -499,12 +499,12 @@ fn test_pallet_example_end_to_end() {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_contracts_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "contracts-example";
+    let project_name = "contracts-example";
 
     // Clean up any existing example
-    cleanup_recipe(recipe_name);
+    cleanup_project(project_name);
 
-    // Step 1: Create a Contracts (Solidity) recipe
+    // Step 1: Create a Contracts (Solidity) project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
@@ -518,35 +518,35 @@ fn test_contracts_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root
+    let project_path = repo_root
         .join("recipes")
         .join("contracts")
-        .join(recipe_name);
-    assert!(recipe_path.exists(), "Recipe directory should exist");
+        .join(project_name);
+    assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
-        recipe_path.join("README.md").exists(),
+        project_path.join("README.md").exists(),
         "README.md should exist"
     );
     assert!(
-        recipe_path.join("package.json").exists(),
+        project_path.join("package.json").exists(),
         "package.json should exist"
     );
     assert!(
-        recipe_path.join("hardhat.config.ts").exists(),
+        project_path.join("hardhat.config.ts").exists(),
         "hardhat.config.ts should exist"
     );
     assert!(
-        recipe_path.join("contracts").exists(),
+        project_path.join("contracts").exists(),
         "contracts/ should exist"
     );
-    assert!(recipe_path.join("tests").exists(), "tests/ should exist");
+    assert!(project_path.join("tests").exists(), "tests/ should exist");
 
     // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
         .arg("test")
-        .arg(recipe_name)
+        .arg(project_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
 
     test_cmd.assert().success();
@@ -557,12 +557,12 @@ fn test_contracts_example_end_to_end() {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_basic_interaction_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "transactions-example";
+    let project_name = "transactions-example";
 
     // Clean up any existing example
-    cleanup_recipe(recipe_name);
+    cleanup_project(project_name);
 
-    // Step 1: Create a BasicInteraction recipe
+    // Step 1: Create a BasicInteraction project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
@@ -576,32 +576,32 @@ fn test_basic_interaction_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root
+    let project_path = repo_root
         .join("recipes")
         .join("transactions")
-        .join(recipe_name);
-    assert!(recipe_path.exists(), "Recipe directory should exist");
+        .join(project_name);
+    assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
-        recipe_path.join("README.md").exists(),
+        project_path.join("README.md").exists(),
         "README.md should exist"
     );
     assert!(
-        recipe_path.join("package.json").exists(),
+        project_path.join("package.json").exists(),
         "package.json should exist"
     );
     assert!(
-        recipe_path.join("vitest.config.ts").exists(),
+        project_path.join("vitest.config.ts").exists(),
         "vitest.config.ts should exist"
     );
-    assert!(recipe_path.join("src").exists(), "src/ should exist");
-    assert!(recipe_path.join("tests").exists(), "tests/ should exist");
+    assert!(project_path.join("src").exists(), "src/ should exist");
+    assert!(project_path.join("tests").exists(), "tests/ should exist");
 
     // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
         .arg("test")
-        .arg(recipe_name)
+        .arg(project_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
 
     test_cmd.assert().success();
@@ -612,12 +612,12 @@ fn test_basic_interaction_example_end_to_end() {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_xcm_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "xcm-example";
+    let project_name = "xcm-example";
 
     // Clean up any existing example
-    cleanup_recipe(recipe_name);
+    cleanup_project(project_name);
 
-    // Step 1: Create an XCM recipe
+    // Step 1: Create an XCM project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
@@ -631,29 +631,29 @@ fn test_xcm_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join("xcm").join(recipe_name);
-    assert!(recipe_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join("recipes").join("xcm").join(project_name);
+    assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
-        recipe_path.join("README.md").exists(),
+        project_path.join("README.md").exists(),
         "README.md should exist"
     );
     assert!(
-        recipe_path.join("package.json").exists(),
+        project_path.join("package.json").exists(),
         "package.json should exist"
     );
     assert!(
-        recipe_path.join("chopsticks.yml").exists(),
+        project_path.join("chopsticks.yml").exists(),
         "chopsticks.yml should exist"
     );
-    assert!(recipe_path.join("src").exists(), "src/ should exist");
-    assert!(recipe_path.join("tests").exists(), "tests/ should exist");
+    assert!(project_path.join("src").exists(), "src/ should exist");
+    assert!(project_path.join("tests").exists(), "tests/ should exist");
 
     // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
         .arg("test")
-        .arg(recipe_name)
+        .arg(project_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
 
     test_cmd.assert().success();
@@ -664,12 +664,12 @@ fn test_xcm_example_end_to_end() {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_infra_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "infra-example";
+    let project_name = "infra-example";
 
     // Clean up any existing example
-    cleanup_recipe(recipe_name);
+    cleanup_project(project_name);
 
-    // Step 1: Create a Polkadot Infrastructure recipe
+    // Step 1: Create a Polkadot Infrastructure project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
@@ -683,28 +683,31 @@ fn test_infra_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join("networks").join(recipe_name);
-    assert!(recipe_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root
+        .join("recipes")
+        .join("networks")
+        .join(project_name);
+    assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
-        recipe_path.join("README.md").exists(),
+        project_path.join("README.md").exists(),
         "README.md should exist"
     );
     assert!(
-        recipe_path.join("package.json").exists(),
+        project_path.join("package.json").exists(),
         "package.json should exist"
     );
     assert!(
-        recipe_path.join("configs").exists(),
+        project_path.join("configs").exists(),
         "configs/ should exist"
     );
-    assert!(recipe_path.join("tests").exists(), "tests/ should exist");
+    assert!(project_path.join("tests").exists(), "tests/ should exist");
 
     // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
         .arg("test")
-        .arg(recipe_name)
+        .arg(project_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
 
     test_cmd.assert().success();
@@ -734,7 +737,7 @@ fn test_all_examples_create_only() {
 
     for (pathway, title, expected_slug) in pathways {
         // Clean up any existing example
-        cleanup_recipe(expected_slug);
+        cleanup_project(expected_slug);
 
         let mut cmd = Command::cargo_bin("dot").unwrap();
         let working_dir = repo_root.join("recipes").join(pathway);
@@ -751,19 +754,19 @@ fn test_all_examples_create_only() {
 
         cmd.assert().success();
 
-        let recipe_path = repo_root.join("recipes").join(pathway).join(expected_slug);
+        let project_path = repo_root.join("recipes").join(pathway).join(expected_slug);
         assert!(
-            recipe_path.exists(),
+            project_path.exists(),
             "Recipe directory for {} should exist",
             pathway
         );
         assert!(
-            recipe_path.join("README.md").exists(),
+            project_path.join("README.md").exists(),
             "README.md for {} should exist",
             pathway
         );
 
         // Clean up after smoke test
-        cleanup_recipe(expected_slug);
+        cleanup_project(expected_slug);
     }
 }

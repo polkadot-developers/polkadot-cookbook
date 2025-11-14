@@ -1,14 +1,14 @@
 //! CLI wrapper for Polkadot Cookbook SDK
 //!
 //! This is a thin wrapper around the polkadot-cookbook-sdk library that provides
-//! a command-line interface for creating and managing Polkadot Cookbook recipes.
+//! a command-line interface for creating and managing Polkadot projects.
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use cliclack::{clear_screen, confirm, input, intro, note, outro, outro_cancel, select, spinner};
 use colored::Colorize;
 use polkadot_cookbook_sdk::{
-    config::{ProjectConfig, RecipePathway, RecipeType},
+    config::{ProjectConfig, ProjectPathway, ProjectType},
     dependencies::check_pathway_dependencies,
     Scaffold,
 };
@@ -35,7 +35,7 @@ impl PolkadotColor for String {
 #[command(name = "dot")]
 #[command(about = "dot CLI - a command-line tool for Polkadot development", long_about = None)]
 #[command(
-    after_help = "EXAMPLES:\n  # Create a new smart contract project (interactive)\n  dot create\n\n  # Create a project non-interactively\n  dot create --title \"My DeFi Protocol\" --pathway contracts --non-interactive\n\n  # Run tests on a recipe\n  dot test my-recipe\n\n  # Submit a recipe as a pull request\n  dot submit my-recipe"
+    after_help = "EXAMPLES:\n  # Create a new smart contract project (interactive)\n  dot create\n\n  # Create a project non-interactively\n  dot create --title \"My DeFi Protocol\" --pathway contracts --non-interactive\n\n  # Run tests on a project\n  dot test my-recipe\n\n  # Submit a recipe as a pull request\n  dot submit my-recipe"
 )]
 #[command(version)]
 struct Cli {
@@ -47,11 +47,11 @@ struct Cli {
 enum Commands {
     /// Create a new project (interactive)
     Create {
-        /// Recipe title (for non-interactive mode)
+        /// Project title (for non-interactive mode)
         #[arg(long)]
         title: Option<String>,
 
-        /// Recipe pathway (for non-interactive mode): contracts, pallets, transactions, xcm, networks
+        /// Project pathway (for non-interactive mode): contracts, pallets, transactions, xcm, networks
         #[arg(long)]
         pathway: Option<String>,
 
@@ -200,10 +200,10 @@ async fn main() -> Result<()> {
             .await?;
         }
         Commands::Test { slug } => {
-            handle_recipe_test(slug).await?;
+            handle_project_test(slug).await?;
         }
         Commands::Submit { slug, title, body } => {
-            handle_recipe_submit(slug, title, body).await?;
+            handle_project_submit(slug, title, body).await?;
         }
     }
 
@@ -243,15 +243,15 @@ async fn handle_create(
     )?;
 
     // Step 1: Determine pathway - either from argument or by asking user
-    let pathway: RecipePathway = if let Some(pathway_str) = pathway {
+    let pathway: ProjectPathway = if let Some(pathway_str) = pathway {
         // Pathway provided via argument (from alias commands like `dot contract`)
-        // Parse the pathway string to RecipePathway
+        // Parse the pathway string to ProjectPathway
         match pathway_str.as_str() {
-            "contracts" => RecipePathway::Contracts,
-            "pallets" => RecipePathway::Pallets,
-            "transactions" => RecipePathway::Transactions,
-            "xcm" => RecipePathway::Xcm,
-            "networks" => RecipePathway::Networks,
+            "contracts" => ProjectPathway::Contracts,
+            "pallets" => ProjectPathway::Pallets,
+            "transactions" => ProjectPathway::Transactions,
+            "xcm" => ProjectPathway::Xcm,
+            "networks" => ProjectPathway::Networks,
             _ => {
                 outro_cancel(format!(
                     "Invalid pathway: '{}'. Valid options: contracts, pallets, transactions, xcm, networks",
@@ -265,40 +265,40 @@ async fn handle_create(
         let pathway_question = "What would you like to build?".polkadot_pink().to_string();
         select(&pathway_question)
             .item(
-                RecipePathway::Contracts,
+                ProjectPathway::Contracts,
                 "Smart Contract (Solidity)",
                 "Build, test, and run Solidity smart contracts",
             )
             .item(
-                RecipePathway::Pallets,
+                ProjectPathway::Pallets,
                 "Parachain (Polkadot SDK)",
                 "Build a full parachain with custom pallets and PAPI integration",
             )
             .item(
-                RecipePathway::Transactions,
+                ProjectPathway::Transactions,
                 "Chain Transactions",
                 "Single-chain transactions and state queries with PAPI",
             )
             .item(
-                RecipePathway::Xcm,
+                ProjectPathway::Xcm,
                 "Cross-Chain Transactions (XCM)",
                 "Cross-chain asset transfers and cross-chain calls with Chopsticks",
             )
             .item(
-                RecipePathway::Networks,
+                ProjectPathway::Networks,
                 "Polkadot Networks (Zombienet / Chopsticks)",
                 "Run Polkadot networks locally for testing",
             )
             .interact()?
     };
 
-    // Map pathway to recipe type (for template selection)
-    let recipe_type = match pathway {
-        RecipePathway::Pallets => RecipeType::PolkadotSdk,
-        RecipePathway::Contracts => RecipeType::Solidity,
-        RecipePathway::Transactions => RecipeType::Transactions,
-        RecipePathway::Xcm => RecipeType::Xcm,
-        RecipePathway::Networks => RecipeType::Networks,
+    // Map pathway to project type (for template selection)
+    let project_type = match pathway {
+        ProjectPathway::Pallets => ProjectType::PolkadotSdk,
+        ProjectPathway::Contracts => ProjectType::Solidity,
+        ProjectPathway::Transactions => ProjectType::Transactions,
+        ProjectPathway::Xcm => ProjectType::Xcm,
+        ProjectPathway::Networks => ProjectType::Networks,
     };
 
     // Interactive mode always creates full parachain
@@ -308,12 +308,12 @@ async fn handle_create(
     check_dependencies_interactive(&pathway)?;
 
     // Step 2: Ask for title (now that user knows the pathway)
-    let title_question = "What is your recipe title?".polkadot_pink().to_string();
+    let title_question = "What is your project title?".polkadot_pink().to_string();
     let hint_text = "(e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')"
         .dimmed()
         .to_string();
     let title: String = input(format!("{title_question} {hint_text}"))
-        .placeholder("My Recipe")
+        .placeholder("My Project")
         .validate(|input: &String| {
             if input.trim().is_empty() {
                 Err("Title cannot be empty")
@@ -358,7 +358,7 @@ async fn handle_create(
 
     // Generate directory tree based on pathway
     let tree_structure = match pathway {
-        RecipePathway::Pallets => {
+        ProjectPathway::Pallets => {
             if pallet_only {
                 format!(
                     "{}/\n\
@@ -415,7 +415,7 @@ async fn handle_create(
                 )
             }
         }
-        RecipePathway::Contracts => {
+        ProjectPathway::Contracts => {
             format!(
                 "{}/\n\
                  ├── README.md\n\
@@ -431,7 +431,7 @@ async fn handle_create(
                 slug
             )
         }
-        RecipePathway::Transactions => {
+        ProjectPathway::Transactions => {
             format!(
                 "{}/\n\
                  ├── README.md\n\
@@ -445,7 +445,7 @@ async fn handle_create(
                 slug
             )
         }
-        RecipePathway::Xcm => {
+        ProjectPathway::Xcm => {
             format!(
                 "{}/\n\
                  ├── README.md\n\
@@ -460,7 +460,7 @@ async fn handle_create(
                 slug
             )
         }
-        RecipePathway::Networks => {
+        ProjectPathway::Networks => {
             format!(
                 "{}/\n\
                  ├── README.md\n\
@@ -492,17 +492,17 @@ async fn handle_create(
             slug.dimmed(),
             "Pathway:".polkadot_pink(),
             match pathway {
-                RecipePathway::Pallets => {
+                ProjectPathway::Pallets => {
                     if pallet_only {
                         "Custom Pallet (Pallet-only)"
                     } else {
                         "Custom Pallet"
                     }
                 }
-                RecipePathway::Contracts => "Smart Contract",
-                RecipePathway::Transactions => "Chain Transactions",
-                RecipePathway::Xcm => "Cross-Chain Transactions",
-                RecipePathway::Networks => "Polkadot Networks",
+                ProjectPathway::Contracts => "Smart Contract",
+                ProjectPathway::Transactions => "Chain Transactions",
+                ProjectPathway::Xcm => "Cross-Chain Transactions",
+                ProjectPathway::Networks => "Polkadot Networks",
             },
             "Location:".polkadot_pink(),
             project_path.display(),
@@ -516,7 +516,7 @@ async fn handle_create(
     let should_continue = confirm(&confirm_question).initial_value(true).interact()?;
 
     if !should_continue {
-        outro_cancel("Recipe creation cancelled")?;
+        outro_cancel("Project creation cancelled")?;
         std::process::exit(0);
     }
 
@@ -526,7 +526,7 @@ async fn handle_create(
         .with_destination(PathBuf::from("."))
         .with_git_init(create_git_branch)
         .with_skip_install(skip_install)
-        .with_recipe_type(recipe_type)
+        .with_project_type(project_type)
         .with_description(description)
         .with_pathway(pathway);
 
@@ -536,9 +536,9 @@ async fn handle_create(
     // Create the project with spinner
     let sp = spinner();
     let spinner_msg = if skip_install {
-        "Creating recipe project...".polkadot_pink().to_string()
+        "Creating project...".polkadot_pink().to_string()
     } else {
-        "Creating recipe project (this may take ~30 seconds for npm install)..."
+        "Creating project (this may take ~30 seconds for npm install)..."
             .polkadot_pink()
             .to_string()
     };
@@ -561,7 +561,7 @@ async fn handle_create(
         Ok(project_info) => {
             sp.stop(format!(
                 "{}",
-                "✅ Recipe created successfully!".polkadot_pink()
+                "✅ Project created successfully!".polkadot_pink()
             ));
 
             let project_title = "📦 Project Created".polkadot_pink().to_string();
@@ -582,7 +582,7 @@ async fn handle_create(
 
             let steps_title = "📝 Next Steps".polkadot_pink().to_string();
 
-            // Generate context-aware next steps based on recipe type and mode
+            // Generate context-aware next steps based on project type and mode
             let next_steps = if pallet_only {
                 format!(
                     "{} Implement your pallet\n   {} {}\n\n\
@@ -607,7 +607,7 @@ async fn handle_create(
                     format!("cd {} && cargo test", project_info.project_path.display())
                         .polkadot_pink()
                 )
-            } else if matches!(pathway, RecipePathway::Pallets) {
+            } else if matches!(pathway, ProjectPathway::Pallets) {
                 format!(
                     "{} Customize your pallet\n   {} {}\n\n\
                      {} Configure runtime\n   {} {}\n\n\
@@ -666,7 +666,7 @@ async fn handle_create(
                          {} {}\n\
                          {} {}",
                         "1.".polkadot_pink().bold(),
-                        format!("./target/release/dot recipe submit {}", project_info.slug)
+                        format!("./target/release/dot submit {}", project_info.slug)
                             .polkadot_pink(),
                         "2.".polkadot_pink().bold(),
                         "   →".dimmed(),
@@ -686,7 +686,7 @@ async fn handle_create(
             outro(&outro_msg)?;
         }
         Err(e) => {
-            sp.stop(format!("❌ Failed to create recipe: {e}"));
+            sp.stop(format!("❌ Failed to create project: {e}"));
             outro_cancel(format!("Error: {e}"))?;
             std::process::exit(1);
         }
@@ -705,7 +705,7 @@ async fn run_non_interactive(
 ) -> Result<()> {
     // Validate title
     if let Err(e) = polkadot_cookbook_sdk::config::validate_title(title) {
-        eprintln!("❌ Invalid recipe title: {e}");
+        eprintln!("❌ Invalid project title: {e}");
         eprintln!("Title must be properly formatted.");
         std::process::exit(1);
     }
@@ -713,14 +713,14 @@ async fn run_non_interactive(
     // Generate slug from title
     let slug = polkadot_cookbook_sdk::config::title_to_slug(title);
 
-    // Parse pathway to recipe type
-    let recipe_type = if let Some(p) = pathway {
+    // Parse pathway to project type
+    let project_type = if let Some(p) = pathway {
         match p.as_str() {
-            "pallets" => RecipeType::PolkadotSdk,
-            "contracts" => RecipeType::Solidity,
-            "transactions" => RecipeType::Transactions,
-            "xcm" => RecipeType::Xcm,
-            "networks" => RecipeType::Networks,
+            "pallets" => ProjectType::PolkadotSdk,
+            "contracts" => ProjectType::Solidity,
+            "transactions" => ProjectType::Transactions,
+            "xcm" => ProjectType::Xcm,
+            "networks" => ProjectType::Networks,
             "request-new" => {
                 eprintln!("🎯 Request a New Recipe Template\n");
                 eprintln!("We'd love to support your use case! Please create a GitHub issue:\n");
@@ -744,23 +744,23 @@ async fn run_non_interactive(
             }
         }
     } else {
-        RecipeType::PolkadotSdk // Default
+        ProjectType::PolkadotSdk // Default
     };
 
     // Title is already provided as input parameter
 
-    // Determine pathway from recipe type
-    let pathway_value = match recipe_type {
-        RecipeType::PolkadotSdk => Some(RecipePathway::Pallets),
-        RecipeType::Solidity => Some(RecipePathway::Contracts),
-        RecipeType::Transactions => Some(RecipePathway::Transactions),
-        RecipeType::Xcm => Some(RecipePathway::Xcm),
-        RecipeType::Networks => Some(RecipePathway::Networks),
+    // Determine pathway from project type
+    let pathway_value = match project_type {
+        ProjectType::PolkadotSdk => Some(ProjectPathway::Pallets),
+        ProjectType::Solidity => Some(ProjectPathway::Contracts),
+        ProjectType::Transactions => Some(ProjectPathway::Transactions),
+        ProjectType::Xcm => Some(ProjectPathway::Xcm),
+        ProjectType::Networks => Some(ProjectPathway::Networks),
     };
 
     println!(
         "{} {} ({})",
-        "Creating recipe:".polkadot_pink(),
+        "Creating project:".polkadot_pink(),
         title.polkadot_pink().bold(),
         slug.dimmed()
     );
@@ -771,7 +771,7 @@ async fn run_non_interactive(
         .with_destination(PathBuf::from("."))
         .with_git_init(!no_git)
         .with_skip_install(skip_install)
-        .with_recipe_type(recipe_type)
+        .with_project_type(project_type)
         .with_description("Replace with a short description.".to_string());
 
     // Add optional fields if provided
@@ -788,7 +788,7 @@ async fn run_non_interactive(
         Ok(project_info) => {
             println!(
                 "{}",
-                "✅ Recipe created successfully!".polkadot_pink().bold()
+                "✅ Project created successfully!".polkadot_pink().bold()
             );
             println!(
                 "{} {}",
@@ -800,7 +800,7 @@ async fn run_non_interactive(
             }
         }
         Err(e) => {
-            eprintln!("❌ Failed to create recipe: {e}");
+            eprintln!("❌ Failed to create project: {e}");
             std::process::exit(1);
         }
     }
@@ -808,34 +808,35 @@ async fn run_non_interactive(
     Ok(())
 }
 
-/// Run tests for a recipe and return whether they passed
-async fn run_recipe_tests(recipe_path: &std::path::Path, show_notes: bool) -> Result<bool> {
-    // Auto-detect recipe type from files
-    let recipe_config =
-        match polkadot_cookbook_sdk::config::RecipeConfig::from_recipe_directory(recipe_path).await
+/// Run tests for a project and return whether they passed
+async fn run_project_tests(project_path: &std::path::Path, show_notes: bool) -> Result<bool> {
+    // Auto-detect project type from files
+    let project_metadata =
+        match polkadot_cookbook_sdk::config::ProjectMetadata::from_project_directory(project_path)
+            .await
         {
             Ok(config) => config,
             Err(e) => {
-                outro_cancel(format!("Failed to detect recipe type: {e}"))?;
+                outro_cancel(format!("Failed to detect project type: {e}"))?;
                 std::process::exit(1);
             }
         };
 
     let is_polkadot_sdk = matches!(
-        recipe_config.recipe_type,
-        polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk
+        project_metadata.project_type,
+        polkadot_cookbook_sdk::config::ProjectType::PolkadotSdk
     );
 
     if is_polkadot_sdk {
         if show_notes {
-            note("Recipe Type", "Polkadot SDK (Rust)")?;
+            note("Project Type", "Polkadot SDK (Rust)")?;
         }
 
         println!("\n{}\n", "Running cargo test...".polkadot_pink().bold());
 
         let status = std::process::Command::new("cargo")
             .args(["test", "--all-features"])
-            .current_dir(recipe_path)
+            .current_dir(project_path)
             .status()?;
 
         println!(); // Add spacing after test output
@@ -849,14 +850,14 @@ async fn run_recipe_tests(recipe_path: &std::path::Path, show_notes: bool) -> Re
         }
     } else {
         if show_notes {
-            note("Recipe Type", "TypeScript")?;
+            note("Project Type", "TypeScript")?;
         }
 
         println!("\n{}\n", "Running npm test...".polkadot_pink().bold());
 
         let status = std::process::Command::new("npm")
             .args(["test"])
-            .current_dir(recipe_path)
+            .current_dir(project_path)
             .status()?;
 
         println!(); // Add spacing after test output
@@ -871,12 +872,12 @@ async fn run_recipe_tests(recipe_path: &std::path::Path, show_notes: bool) -> Re
     }
 }
 
-async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
-    let recipe_path = get_recipe_path(slug)?;
+async fn handle_project_test(slug: Option<String>) -> Result<()> {
+    let project_path = get_project_path(slug)?;
 
     intro(format!(
-        "🧪 Testing Recipe: {}",
-        recipe_path
+        "🧪 Testing Project: {}",
+        project_path
             .file_name()
             .unwrap()
             .to_str()
@@ -884,7 +885,7 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
             .polkadot_pink()
     ))?;
 
-    let tests_passed = run_recipe_tests(&recipe_path, true).await?;
+    let tests_passed = run_project_tests(&project_path, true).await?;
 
     if !tests_passed {
         outro_cancel("Tests failed")?;
@@ -895,7 +896,7 @@ async fn handle_recipe_test(slug: Option<String>) -> Result<()> {
     Ok(())
 }
 
-async fn handle_recipe_submit(
+async fn handle_project_submit(
     slug: Option<String>,
     title: Option<String>,
     body: Option<String>,
@@ -919,22 +920,25 @@ async fn handle_cookbook_repo_submit(
     title: Option<String>,
     body: Option<String>,
 ) -> Result<()> {
-    let recipe_path = get_recipe_path(slug.clone())?;
-    let recipe_slug = recipe_path
+    let project_path = get_project_path(slug.clone())?;
+    let project_slug = project_path
         .file_name()
         .unwrap()
         .to_str()
         .unwrap()
         .to_string();
 
-    intro(format!("📤 Submit Recipe: {}", recipe_slug.polkadot_pink()))?;
+    intro(format!(
+        "📤 Submit Project: {}",
+        project_slug.polkadot_pink()
+    ))?;
 
     // Run tests before allowing submission
     note(
         "Pre-submission Check",
-        "Running tests to ensure recipe quality",
+        "Running tests to ensure project quality",
     )?;
-    let tests_passed = run_recipe_tests(&recipe_path, false).await?;
+    let tests_passed = run_project_tests(&project_path, false).await?;
 
     if !tests_passed {
         outro_cancel(
@@ -985,33 +989,33 @@ async fn handle_cookbook_repo_submit(
     };
 
     // Read recipe metadata from frontmatter
-    let readme_path = recipe_path.join("README.md");
-    let (recipe_name, recipe_desc) =
+    let readme_path = project_path.join("README.md");
+    let (project_name, project_desc) =
         match polkadot_cookbook_sdk::metadata::parse_frontmatter_from_file(&readme_path).await {
             Ok(frontmatter) => (frontmatter.title, frontmatter.description),
             Err(_) => (
-                recipe_slug.clone(),
+                project_slug.clone(),
                 "A new Polkadot Cookbook recipe".to_string(),
             ),
         };
 
-    // Auto-detect recipe type
-    let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(&recipe_path).await
-    {
-        Ok(t) => match t {
-            polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => "Polkadot SDK",
-            polkadot_cookbook_sdk::config::RecipeType::Solidity => "Solidity",
-            polkadot_cookbook_sdk::config::RecipeType::Xcm => "XCM",
-            polkadot_cookbook_sdk::config::RecipeType::Transactions => "Transactions",
-            polkadot_cookbook_sdk::config::RecipeType::Networks => "Network Infrastructure",
-        },
-        Err(_) => "Unknown",
-    };
+    // Auto-detect project type
+    let project_type =
+        match polkadot_cookbook_sdk::metadata::detect_project_type(&project_path).await {
+            Ok(t) => match t {
+                polkadot_cookbook_sdk::config::ProjectType::PolkadotSdk => "Polkadot SDK",
+                polkadot_cookbook_sdk::config::ProjectType::Solidity => "Solidity",
+                polkadot_cookbook_sdk::config::ProjectType::Xcm => "XCM",
+                polkadot_cookbook_sdk::config::ProjectType::Transactions => "Transactions",
+                polkadot_cookbook_sdk::config::ProjectType::Networks => "Network Infrastructure",
+            },
+            Err(_) => "Unknown",
+        };
 
     // Check git status
     let git_status = std::process::Command::new("git")
         .args(["status", "--porcelain"])
-        .current_dir(&recipe_path)
+        .current_dir(&project_path)
         .output()?;
 
     let has_changes = !String::from_utf8_lossy(&git_status.stdout)
@@ -1027,12 +1031,12 @@ async fn handle_cookbook_repo_submit(
         .to_string();
 
     note(
-        "Recipe Info",
+        "Project Info",
         format!(
             "Name:        {}\nSlug:        {}\nType:        {}\nBranch:      {}\nChanges:     {}",
-            recipe_name.polkadot_pink(),
-            recipe_slug.polkadot_pink(),
-            recipe_type,
+            project_name.polkadot_pink(),
+            project_slug.polkadot_pink(),
+            project_type,
             current_branch.polkadot_pink(),
             if has_changes {
                 "Yes (uncommitted)".yellow().to_string()
@@ -1043,15 +1047,15 @@ async fn handle_cookbook_repo_submit(
     )?;
 
     // Generate default PR title and body
-    let default_title = title.unwrap_or_else(|| format!("feat(recipe): add {recipe_slug}"));
+    let default_title = title.unwrap_or_else(|| format!("feat(recipe): add {project_slug}"));
     let default_body = body.unwrap_or_else(|| {
         format!(
             "## Summary\n\n\
-             This PR adds a new {recipe_type} recipe: **{recipe_name}**\n\n\
-             {recipe_desc}\n\n\
+             This PR adds a new {project_type} recipe: **{project_name}**\n\n\
+             {project_desc}\n\n\
              ## Recipe Details\n\n\
-             - **Type**: {recipe_type}\n\
-             - **Slug**: `{recipe_slug}`\n\n\
+             - **Type**: {project_type}\n\
+             - **Slug**: `{project_slug}`\n\n\
              ## Testing\n\n\
              - [ ] All tests pass\n\
              - [ ] Code is properly formatted\n\
@@ -1092,10 +1096,10 @@ async fn handle_cookbook_repo_submit(
             let sp = spinner();
             sp.start("Committing changes...");
 
-            let commit_msg = format!("feat(recipe): add {recipe_slug}");
+            let commit_msg = format!("feat(recipe): add {project_slug}");
             let commit_output = std::process::Command::new("git")
                 .args(["commit", "-am", &commit_msg])
-                .current_dir(&recipe_path)
+                .current_dir(&project_path)
                 .output()?;
 
             if !commit_output.status.success() {
@@ -1213,9 +1217,9 @@ async fn handle_standalone_submit(
     // Run tests before allowing submission
     note(
         "Pre-submission Check",
-        "Running tests to ensure recipe quality",
+        "Running tests to ensure project quality",
     )?;
-    let tests_passed = run_recipe_tests(&project_path, false).await?;
+    let tests_passed = run_project_tests(&project_path, false).await?;
 
     if !tests_passed {
         outro_cancel(
@@ -1262,18 +1266,18 @@ async fn handle_standalone_submit(
             ),
         };
 
-    // Auto-detect recipe type
-    let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(&project_path).await
-    {
-        Ok(t) => match t {
-            polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => "Polkadot SDK",
-            polkadot_cookbook_sdk::config::RecipeType::Solidity => "Solidity",
-            polkadot_cookbook_sdk::config::RecipeType::Xcm => "XCM",
-            polkadot_cookbook_sdk::config::RecipeType::Transactions => "Transactions",
-            polkadot_cookbook_sdk::config::RecipeType::Networks => "Network Infrastructure",
-        },
-        Err(_) => "Unknown",
-    };
+    // Auto-detect project type
+    let project_type =
+        match polkadot_cookbook_sdk::metadata::detect_project_type(&project_path).await {
+            Ok(t) => match t {
+                polkadot_cookbook_sdk::config::ProjectType::PolkadotSdk => "Polkadot SDK",
+                polkadot_cookbook_sdk::config::ProjectType::Solidity => "Solidity",
+                polkadot_cookbook_sdk::config::ProjectType::Xcm => "XCM",
+                polkadot_cookbook_sdk::config::ProjectType::Transactions => "Transactions",
+                polkadot_cookbook_sdk::config::ProjectType::Networks => "Network Infrastructure",
+            },
+            Err(_) => "Unknown",
+        };
 
     // Prompt for pathway to organize the recipe
     let pathway_question = "Which pathway does this recipe belong to?"
@@ -1281,22 +1285,22 @@ async fn handle_standalone_submit(
         .to_string();
     let pathway = select(pathway_question)
         .item(
-            RecipePathway::Contracts,
+            ProjectPathway::Contracts,
             "Smart Contract",
             "Develop Solidity contracts for Polkadot",
         )
         .item(
-            RecipePathway::Transactions,
+            ProjectPathway::Transactions,
             "Chain Transactions",
             "Single-chain PAPI interactions with TypeScript",
         )
         .item(
-            RecipePathway::Xcm,
+            ProjectPathway::Xcm,
             "Cross-Chain Transactions",
             "Cross-chain messaging with XCM and Chopsticks",
         )
         .item(
-            RecipePathway::Networks,
+            ProjectPathway::Networks,
             "Polkadot Networks",
             "Network infrastructure with Zombienet/Chopsticks",
         )
@@ -1310,7 +1314,7 @@ async fn handle_standalone_submit(
             "Name:        {}\nSlug:        {}\nType:        {}\nPathway:     {}",
             project_name.polkadot_pink(),
             project_slug.polkadot_pink(),
-            recipe_type,
+            project_type,
             pathway_folder.polkadot_pink(),
         ),
     )?;
@@ -1320,10 +1324,10 @@ async fn handle_standalone_submit(
     let default_body = body.unwrap_or_else(|| {
         format!(
             "## Summary\n\n\
-             This PR adds a new {recipe_type} recipe: **{project_name}**\n\n\
+             This PR adds a new {project_type} recipe: **{project_name}**\n\n\
              {project_desc}\n\n\
              ## Recipe Details\n\n\
-             - **Type**: {recipe_type}\n\
+             - **Type**: {project_type}\n\
              - **Slug**: `{project_slug}`\n\n\
              ## Testing\n\n\
              - [ ] All tests pass\n\
@@ -1667,7 +1671,7 @@ fn get_repo_info() -> Result<(String, String)> {
 }
 
 /// Check dependencies for a pathway and prompt user if any are missing
-fn check_dependencies_interactive(pathway: &RecipePathway) -> Result<()> {
+fn check_dependencies_interactive(pathway: &ProjectPathway) -> Result<()> {
     let results = check_pathway_dependencies(pathway);
 
     let missing: Vec<_> = results.iter().filter(|r| !r.installed).collect();
@@ -1710,7 +1714,7 @@ fn check_dependencies_interactive(pathway: &RecipePathway) -> Result<()> {
     Ok(())
 }
 
-fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {
+fn get_project_path(slug: Option<String>) -> Result<PathBuf> {
     // Find repository root by looking for .git directory
     let mut current = std::env::current_dir()?;
     let mut repo_root = None;
@@ -1736,7 +1740,7 @@ fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {
     };
 
     if let Some(slug) = slug {
-        // Search for recipe in pathway subdirectories
+        // Search for project in pathway subdirectories
         let pathways = ["pallets", "contracts", "transactions", "xcm", "testing"];
 
         for pathway in &pathways {
@@ -1752,14 +1756,14 @@ fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {
             return Ok(legacy_path);
         }
 
-        eprintln!("Recipe not found: {slug}");
+        eprintln!("Project not found: {slug}");
         eprintln!("Searched in pathway directories: {}", pathways.join(", "));
         std::process::exit(1);
     } else {
         // Try to infer from current directory
         let current = std::env::current_dir()?;
 
-        // Check if we're in a pathway subdirectory (e.g., recipes/parachain/my-recipe)
+        // Check if we're in a pathway subdirectory (e.g., recipes/parachain/my-project)
         if let Some(parent) = current.parent() {
             if let Some(grandparent) = parent.parent() {
                 if grandparent.file_name() == Some(std::ffi::OsStr::new("recipes")) {
@@ -1773,7 +1777,7 @@ fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {
             return Ok(current);
         }
 
-        eprintln!("Please provide a recipe slug or run from within a recipe directory");
+        eprintln!("Please provide a project slug or run from within a project directory");
         std::process::exit(1);
     }
 }

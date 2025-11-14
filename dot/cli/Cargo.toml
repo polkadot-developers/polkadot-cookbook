@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "CLI wrapper for Polkadot Cookbook SDK"
-keywords = ["polkadot", "substrate", "blockchain", "recipe", "cli"]
+keywords = ["polkadot", "substrate", "blockchain", "project", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]

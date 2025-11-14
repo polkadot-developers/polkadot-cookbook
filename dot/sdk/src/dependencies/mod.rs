@@ -1,9 +1,9 @@
-//! Dependency checking for different recipe pathways
+//! Dependency checking for different project pathways
 //!
 //! This module provides functionality to detect whether required dependencies
-//! are installed for each recipe pathway (Polkadot SDK, Solidity, XCM, etc.)
+//! are installed for each project pathway (Polkadot SDK, Solidity, XCM, etc.)
 
-use crate::config::RecipePathway;
+use crate::config::ProjectPathway;
 use std::process::Command;
 
 /// Represents a single dependency requirement
@@ -77,9 +77,9 @@ impl Dependency {
 }
 
 /// Get required dependencies for a pathway
-pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
+pub fn get_pathway_dependencies(pathway: &ProjectPathway) -> Vec<Dependency> {
     match pathway {
-        RecipePathway::Pallets => vec![
+        ProjectPathway::Pallets => vec![
             Dependency {
                 name: "Rust".to_string(),
                 command: "rustc".to_string(),
@@ -95,7 +95,7 @@ pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
                 install_instructions: "Cargo is installed with Rust via rustup".to_string(),
             },
         ],
-        RecipePathway::Contracts => vec![
+        ProjectPathway::Contracts => vec![
             Dependency {
                 name: "Node.js".to_string(),
                 command: "node".to_string(),
@@ -125,7 +125,7 @@ pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
                 install_instructions: "npm install -g hardhat (optional - can be installed per-project)".to_string(),
             },
         ],
-        RecipePathway::Xcm | RecipePathway::Transactions | RecipePathway::Networks => vec![
+        ProjectPathway::Xcm | ProjectPathway::Transactions | ProjectPathway::Networks => vec![
             Dependency {
                 name: "Node.js".to_string(),
                 command: "node".to_string(),
@@ -152,7 +152,7 @@ pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
 }
 
 /// Check all dependencies for a pathway
-pub fn check_pathway_dependencies(pathway: &RecipePathway) -> Vec<DependencyCheckResult> {
+pub fn check_pathway_dependencies(pathway: &ProjectPathway) -> Vec<DependencyCheckResult> {
     get_pathway_dependencies(pathway)
         .iter()
         .map(|dep| dep.check())
@@ -165,7 +165,7 @@ mod tests {
 
     #[test]
     fn test_pallets_dependencies() {
-        let deps = get_pathway_dependencies(&RecipePathway::Pallets);
+        let deps = get_pathway_dependencies(&ProjectPathway::Pallets);
         assert_eq!(deps.len(), 2);
         assert_eq!(deps[0].name, "Rust");
         assert_eq!(deps[1].name, "Cargo");
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_contracts_dependencies() {
-        let deps = get_pathway_dependencies(&RecipePathway::Contracts);
+        let deps = get_pathway_dependencies(&ProjectPathway::Contracts);
         assert_eq!(deps.len(), 4);
         assert_eq!(deps[0].name, "Node.js");
         assert_eq!(deps[1].name, "npm");
@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn test_xcm_dependencies() {
-        let deps = get_pathway_dependencies(&RecipePathway::Xcm);
+        let deps = get_pathway_dependencies(&ProjectPathway::Xcm);
         assert_eq!(deps.len(), 3);
         assert_eq!(deps[0].name, "Node.js");
     }

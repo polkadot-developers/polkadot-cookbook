@@ -1,36 +1,36 @@
-/// Auto-detect recipe type from file presence
-use crate::config::RecipeType;
+/// Auto-detect project type from file presence
+use crate::config::ProjectType;
 use std::path::Path;
 
-/// Detect recipe type based on files present in the recipe directory
+/// Detect project type based on files present in the project directory
 ///
 /// Detection logic:
 /// - `polkadot-sdk`: Has Cargo.toml at root (and pallets/ directory)
 /// - `solidity`: Has package.json with hardhat dependency
 /// - `xcm`: Has chopsticks configuration (chopsticks.yml or .chopsticks directory)
 /// - `transactions`: Has package.json without hardhat/chopsticks
-/// - `testing`: Has zombienet configuration files
-pub async fn detect_recipe_type(
-    recipe_path: impl AsRef<Path>,
-) -> Result<RecipeType, RecipeDetectionError> {
-    let path = recipe_path.as_ref();
+/// - `networks`: Has zombienet configuration files
+pub async fn detect_project_type(
+    project_path: impl AsRef<Path>,
+) -> Result<ProjectType, ProjectDetectionError> {
+    let path = project_path.as_ref();
 
     // Check for Polkadot SDK (Rust-based with Cargo.toml)
     if path.join("Cargo.toml").exists() {
-        return Ok(RecipeType::PolkadotSdk);
+        return Ok(ProjectType::PolkadotSdk);
     }
 
-    // Check for package.json (TypeScript-based recipes)
+    // Check for package.json (TypeScript-based projects)
     let package_json_path = path.join("package.json");
     if package_json_path.exists() {
         // Read package.json to determine type
         let content = tokio::fs::read_to_string(&package_json_path)
             .await
-            .map_err(|e| RecipeDetectionError::IoError(e.to_string()))?;
+            .map_err(|e| ProjectDetectionError::IoError(e.to_string()))?;
 
         // Check for Hardhat (Solidity)
         if content.contains("\"hardhat\"") || content.contains("@nomicfoundation/hardhat") {
-            return Ok(RecipeType::Solidity);
+            return Ok(ProjectType::Solidity);
         }
 
         // Check for Chopsticks (XCM)
@@ -38,29 +38,29 @@ pub async fn detect_recipe_type(
             || path.join("chopsticks.yml").exists()
             || path.join(".chopsticks").exists()
         {
-            return Ok(RecipeType::Xcm);
+            return Ok(ProjectType::Xcm);
         }
 
-        // Default TypeScript recipe is transactions
-        return Ok(RecipeType::Transactions);
+        // Default TypeScript project is transactions
+        return Ok(ProjectType::Transactions);
     }
 
-    // Check for zombienet (Testing infrastructure)
+    // Check for zombienet (Networks infrastructure)
     if path.join("zombienet.toml").exists() || path.join("network.toml").exists() {
-        return Ok(RecipeType::Networks);
+        return Ok(ProjectType::Networks);
     }
 
-    Err(RecipeDetectionError::UnknownRecipeType)
+    Err(ProjectDetectionError::UnknownProjectType)
 }
 
-/// Errors that can occur during recipe type detection
+/// Errors that can occur during project type detection
 #[derive(Debug, thiserror::Error)]
-pub enum RecipeDetectionError {
-    /// Could not determine recipe type from files present
-    #[error("Could not determine recipe type from files present")]
-    UnknownRecipeType,
+pub enum ProjectDetectionError {
+    /// Could not determine project type from files present
+    #[error("Could not determine project type from files present")]
+    UnknownProjectType,
 
-    /// IO error reading recipe files
+    /// IO error reading project files
     #[error("IO error: {0}")]
     IoError(String),
 }
@@ -74,19 +74,23 @@ mod tests {
     #[tokio::test]
     async fn test_detect_polkadot_sdk() {
         let temp_dir = TempDir::new().unwrap();
-        let recipe_path = temp_dir.path();
+        let project_path = temp_dir.path();
 
         // Create Cargo.toml
-        fs::write(recipe_path.join("Cargo.toml"), "[package]\nname = \"test\"").unwrap();
+        fs::write(
+            project_path.join("Cargo.toml"),
+            "[package]\nname = \"test\"",
+        )
+        .unwrap();
 
-        let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::PolkadotSdk);
+        let result = detect_project_type(project_path).await.unwrap();
+        assert_eq!(result, ProjectType::PolkadotSdk);
     }
 
     #[tokio::test]
     async fn test_detect_solidity() {
         let temp_dir = TempDir::new().unwrap();
-        let recipe_path = temp_dir.path();
+        let project_path = temp_dir.path();
 
         // Create package.json with hardhat
         let package_json = r#"{
@@ -95,16 +99,16 @@ mod tests {
                 "hardhat": "^2.0.0"
             }
         }"#;
-        fs::write(recipe_path.join("package.json"), package_json).unwrap();
+        fs::write(project_path.join("package.json"), package_json).unwrap();
 
-        let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::Solidity);
+        let result = detect_project_type(project_path).await.unwrap();
+        assert_eq!(result, ProjectType::Solidity);
     }
 
     #[tokio::test]
     async fn test_detect_xcm() {
         let temp_dir = TempDir::new().unwrap();
-        let recipe_path = temp_dir.path();
+        let project_path = temp_dir.path();
 
         // Create package.json with chopsticks
         let package_json = r#"{
@@ -113,16 +117,16 @@ mod tests {
                 "@acala-network/chopsticks": "^0.1.0"
             }
         }"#;
-        fs::write(recipe_path.join("package.json"), package_json).unwrap();
+        fs::write(project_path.join("package.json"), package_json).unwrap();
 
-        let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::Xcm);
+        let result = detect_project_type(project_path).await.unwrap();
+        assert_eq!(result, ProjectType::Xcm);
     }
 
     #[tokio::test]
-    async fn test_detect_basic_interaction() {
+    async fn test_detect_transactions() {
         let temp_dir = TempDir::new().unwrap();
-        let recipe_path = temp_dir.path();
+        let project_path = temp_dir.path();
 
         // Create package.json without hardhat or chopsticks
         let package_json = r#"{
@@ -131,34 +135,34 @@ mod tests {
                 "@polkadot/api": "^10.0.0"
             }
         }"#;
-        fs::write(recipe_path.join("package.json"), package_json).unwrap();
+        fs::write(project_path.join("package.json"), package_json).unwrap();
 
-        let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::Transactions);
+        let result = detect_project_type(project_path).await.unwrap();
+        assert_eq!(result, ProjectType::Transactions);
     }
 
     #[tokio::test]
-    async fn test_detect_testing() {
+    async fn test_detect_networks() {
         let temp_dir = TempDir::new().unwrap();
-        let recipe_path = temp_dir.path();
+        let project_path = temp_dir.path();
 
         // Create zombienet.toml
-        fs::write(recipe_path.join("zombienet.toml"), "# test config").unwrap();
+        fs::write(project_path.join("zombienet.toml"), "# test config").unwrap();
 
-        let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::Networks);
+        let result = detect_project_type(project_path).await.unwrap();
+        assert_eq!(result, ProjectType::Networks);
     }
 
     #[tokio::test]
     async fn test_detect_unknown_type() {
         let temp_dir = TempDir::new().unwrap();
-        let recipe_path = temp_dir.path();
+        let project_path = temp_dir.path();
 
         // Empty directory
-        let result = detect_recipe_type(recipe_path).await;
+        let result = detect_project_type(project_path).await;
         assert!(matches!(
             result,
-            Err(RecipeDetectionError::UnknownRecipeType)
+            Err(ProjectDetectionError::UnknownProjectType)
         ));
     }
 }

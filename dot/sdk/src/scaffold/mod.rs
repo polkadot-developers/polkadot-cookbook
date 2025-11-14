@@ -1,9 +1,9 @@
-//! Recipe scaffolding module
+//! Project scaffolding module
 //!
-//! This module provides functionality for creating new recipes,
+//! This module provides functionality for creating new projects,
 //! including directory structure, template files, and initial configuration.
 
-use crate::config::{ProjectConfig, ProjectInfo, RecipeType};
+use crate::config::{ProjectConfig, ProjectInfo, ProjectType};
 use crate::error::{CookbookError, Result};
 use include_dir::{include_dir, Dir};
 use std::path::Path;
@@ -11,15 +11,15 @@ use tracing::{debug, info, warn};
 
 // Embed all template directories at compile time
 static POLKADOT_SDK_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/polkadot-sdk-template");
+    include_dir!("$CARGO_MANIFEST_DIR/templates/project-templates/polkadot-sdk-template");
 static XCM_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/xcm-template");
+    include_dir!("$CARGO_MANIFEST_DIR/templates/project-templates/xcm-template");
 static SOLIDITY_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/solidity-template");
+    include_dir!("$CARGO_MANIFEST_DIR/templates/project-templates/solidity-template");
 static TRANSACTIONS_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/transactions-template");
+    include_dir!("$CARGO_MANIFEST_DIR/templates/project-templates/transactions-template");
 static NETWORKS_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/networks-template");
+    include_dir!("$CARGO_MANIFEST_DIR/templates/project-templates/networks-template");
 
 pub mod bootstrap;
 
@@ -117,7 +117,7 @@ impl Scaffold {
         };
 
         // Create directory structure
-        self.create_directories(&project_path, config.recipe_type)
+        self.create_directories(&project_path, config.project_type)
             .await?;
 
         // Generate and write template files
@@ -125,18 +125,18 @@ impl Scaffold {
             .await?;
 
         // Bootstrap test environment if not skipped
-        // Note: Only TypeScript-based recipes with vitest need bootstrap
-        // Solidity recipes have their own package.json with hardhat
+        // Note: Only TypeScript-based projects with vitest need bootstrap
+        // Solidity projects have their own package.json with hardhat
         if !config.skip_install
             && matches!(
-                config.recipe_type,
-                RecipeType::Xcm | RecipeType::Transactions | RecipeType::Networks
+                config.project_type,
+                ProjectType::Xcm | ProjectType::Transactions | ProjectType::Networks
             )
         {
             let bootstrap = Bootstrap::new(project_path.clone());
             bootstrap.setup(&config.slug, progress).await?;
-        } else if matches!(config.recipe_type, RecipeType::Solidity) {
-            // Solidity recipes come with their own package.json and dependencies
+        } else if matches!(config.project_type, ProjectType::Solidity) {
+            // Solidity projects come with their own package.json and dependencies
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
                 debug!("Installing Solidity recipe dependencies");
@@ -161,8 +161,8 @@ impl Scaffold {
                     }
                 }
             }
-        } else if matches!(config.recipe_type, RecipeType::PolkadotSdk) {
-            // Parachain recipes: install PAPI dependencies unless pallet-only mode
+        } else if matches!(config.project_type, ProjectType::PolkadotSdk) {
+            // Parachain projects: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
                 debug!("Installing Parachain recipe PAPI dependencies");
                 // Show npm install output in real-time (like create-react-app)
@@ -205,35 +205,39 @@ impl Scaffold {
     }
 
     /// Create the directory structure for a project
-    async fn create_directories(&self, project_path: &Path, recipe_type: RecipeType) -> Result<()> {
+    async fn create_directories(
+        &self,
+        project_path: &Path,
+        project_type: ProjectType,
+    ) -> Result<()> {
         debug!(
             "Creating directory structure at: {} for recipe type: {:?}",
             project_path.display(),
-            recipe_type
+            project_type
         );
 
-        let directories = match recipe_type {
-            RecipeType::PolkadotSdk => {
-                // For Rust-based recipes, we'll copy from template
+        let directories = match project_type {
+            ProjectType::PolkadotSdk => {
+                // For Rust-based projects, we'll copy from template
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::Xcm => {
-                // For XCM recipes with Chopsticks
+            ProjectType::Xcm => {
+                // For XCM projects with Chopsticks
                 // Template will create src/ and tests/ directories
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::Transactions => {
-                // For transaction recipes (TypeScript + PAPI)
+            ProjectType::Transactions => {
+                // For transaction projects (TypeScript + PAPI)
                 // Template will create src/ and tests/ directories
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::Networks => {
-                // For testing infrastructure recipes (Zombienet/Chopsticks configs)
+            ProjectType::Networks => {
+                // For network infrastructure projects (Zombienet/Chopsticks configs)
                 // Template will create configs/, scripts/, tests/ directories
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::Solidity => {
-                // For Solidity recipes
+            ProjectType::Solidity => {
+                // For Solidity projects
                 vec![
                     project_path.to_path_buf(),
                     project_path.join("tests"),
@@ -269,24 +273,24 @@ impl Scaffold {
     ) -> Result<()> {
         debug!("Creating template files in: {}", project_path.display());
 
-        match config.recipe_type {
-            RecipeType::PolkadotSdk => {
+        match config.project_type {
+            ProjectType::PolkadotSdk => {
                 self.create_polkadot_sdk_files(project_path, config, rust_version)
                     .await?;
             }
-            RecipeType::Xcm => {
+            ProjectType::Xcm => {
                 self.create_xcm_files(project_path, config, rust_version)
                     .await?;
             }
-            RecipeType::Transactions => {
+            ProjectType::Transactions => {
                 self.create_basic_interaction_files(project_path, config, rust_version)
                     .await?;
             }
-            RecipeType::Networks => {
+            ProjectType::Networks => {
                 self.create_testing_files(project_path, config, rust_version)
                     .await?;
             }
-            RecipeType::Solidity => {
+            ProjectType::Solidity => {
                 self.create_solidity_files(project_path, config, rust_version)
                     .await?;
             }
@@ -310,7 +314,7 @@ impl Scaffold {
         Ok(())
     }
 
-    /// Create files for XCM recipes (TypeScript with Chopsticks)
+    /// Create files for XCM projects (TypeScript with Chopsticks)
     async fn create_xcm_files(
         &self,
         project_path: &Path,
@@ -325,7 +329,7 @@ impl Scaffold {
         Ok(())
     }
 
-    /// Create files for Solidity recipes (TypeScript)
+    /// Create files for Solidity projects (TypeScript)
     async fn create_solidity_files(
         &self,
         project_path: &Path,
@@ -339,7 +343,7 @@ impl Scaffold {
         Ok(())
     }
 
-    /// Create files for Basic Interaction recipes (TypeScript with PAPI)
+    /// Create files for Chain Transaction projects (TypeScript with PAPI)
     async fn create_basic_interaction_files(
         &self,
         project_path: &Path,
@@ -353,7 +357,7 @@ impl Scaffold {
         Ok(())
     }
 
-    /// Create files for Network Infrastructure recipes (Zombienet/Chopsticks)
+    /// Create files for Network Infrastructure projects (Zombienet/Chopsticks)
     async fn create_testing_files(
         &self,
         project_path: &Path,
@@ -400,11 +404,11 @@ impl Scaffold {
                         .as_ref()
                         .map(|p| {
                             let value = match p {
-                                crate::config::RecipePathway::Pallets => "pallets",
-                                crate::config::RecipePathway::Contracts => "contracts",
-                                crate::config::RecipePathway::Transactions => "transactions",
-                                crate::config::RecipePathway::Xcm => "xcm",
-                                crate::config::RecipePathway::Networks => "networks",
+                                crate::config::ProjectPathway::Pallets => "pallets",
+                                crate::config::ProjectPathway::Contracts => "contracts",
+                                crate::config::ProjectPathway::Transactions => "transactions",
+                                crate::config::ProjectPathway::Xcm => "xcm",
+                                crate::config::ProjectPathway::Networks => "networks",
                             };
                             format!("pathway: {value}")
                         })
@@ -434,7 +438,7 @@ impl Scaffold {
                 }
 
                 // Skip full parachain and PAPI files in pallet-only mode
-                if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk) {
                     let excluded_files = [
                         "package.json",
                         "tsconfig.json",
@@ -454,7 +458,7 @@ impl Scaffold {
                 }
 
                 // Use pallet-only Cargo.toml template in pallet-only mode
-                if matches!(config.recipe_type, RecipeType::PolkadotSdk)
+                if matches!(config.project_type, ProjectType::PolkadotSdk)
                     && file_name == "Cargo.pallet-only.toml.template"
                 {
                     if config.pallet_only {
@@ -474,7 +478,7 @@ impl Scaffold {
                 }
 
                 // Skip XCM zombienet config in pallet-only mode
-                if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk) {
                     let xcm_files = ["zombienet-xcm.toml", "zombienet-xcm.toml.template"];
                     if xcm_files.contains(&file_name) {
                         debug!("Skipping XCM zombienet config in pallet-only mode");
@@ -483,7 +487,8 @@ impl Scaffold {
                 }
 
                 // Skip the base README.md from template
-                if file_name == "README.md" && matches!(config.recipe_type, RecipeType::PolkadotSdk)
+                if file_name == "README.md"
+                    && matches!(config.project_type, ProjectType::PolkadotSdk)
                 {
                     debug!("Skipping base README.md");
                     continue;
@@ -491,7 +496,8 @@ impl Scaffold {
 
                 // Handle README templates based on mode
                 if file_name == "README.pallet-only.md.template" {
-                    if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                    if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk)
+                    {
                         let dest_path = dest_dir.join("README.md");
                         let content =
                             file.contents_utf8()
@@ -508,7 +514,8 @@ impl Scaffold {
 
                 // Handle README templates - use tutorial version by default
                 if file_name == "README.tutorial.md.template" {
-                    if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                    if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk)
+                    {
                         continue;
                     }
                     let dest_path = dest_dir.join("README.md");
@@ -566,7 +573,7 @@ impl Scaffold {
                 }
 
                 // Skip full parachain directories in pallet-only mode
-                if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk) {
                     let excluded_dirs = ["node", "runtime", "tests", "scripts", ".github"];
                     if excluded_dirs.contains(&dir_name) {
                         debug!("Skipping directory in pallet-only mode: {}", dir_name);
@@ -649,7 +656,7 @@ impl Default for Scaffold {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::RecipeType;
+    use crate::config::ProjectType;
     use tempfile::TempDir;
 
     #[tokio::test]
@@ -659,7 +666,7 @@ mod tests {
 
         let scaffold = Scaffold::new();
         scaffold
-            .create_directories(&project_path, RecipeType::Solidity)
+            .create_directories(&project_path, ProjectType::Solidity)
             .await
             .unwrap();
 
@@ -676,7 +683,7 @@ mod tests {
 
         let scaffold = Scaffold::dry_run();
         scaffold
-            .create_directories(&project_path, RecipeType::Solidity)
+            .create_directories(&project_path, ProjectType::Solidity)
             .await
             .unwrap();
 
@@ -711,10 +718,10 @@ mod tests {
         assert!(project_path.join("Cargo.toml").exists());
         assert!(project_path.join("pallets").exists());
 
-        // Verify rust-toolchain.toml was copied for Polkadot SDK recipes
+        // Verify rust-toolchain.toml was copied for Polkadot SDK projects
         assert!(
             project_path.join("rust-toolchain.toml").exists(),
-            "rust-toolchain.toml should be copied for Polkadot SDK recipes"
+            "rust-toolchain.toml should be copied for Polkadot SDK projects"
         );
 
         // Verify content of rust-toolchain.toml
@@ -746,8 +753,8 @@ mod tests {
         let project_path = temp_dir.path().join("basic-interaction-test");
         tokio::fs::create_dir_all(&project_path).await.unwrap();
 
-        let config =
-            ProjectConfig::new("basic-interaction-test").with_recipe_type(RecipeType::Transactions);
+        let config = ProjectConfig::new("basic-interaction-test")
+            .with_project_type(ProjectType::Transactions);
 
         let scaffold = Scaffold::new();
         let result = scaffold.create_files(&project_path, &config, "1.86").await;
@@ -775,7 +782,7 @@ mod tests {
         tokio::fs::create_dir_all(&project_path).await.unwrap();
 
         let config =
-            ProjectConfig::new("testing-recipe-test").with_recipe_type(RecipeType::Networks);
+            ProjectConfig::new("testing-recipe-test").with_project_type(ProjectType::Networks);
 
         let scaffold = Scaffold::new();
         let result = scaffold.create_files(&project_path, &config, "1.86").await;
@@ -799,7 +806,7 @@ mod tests {
         let project_path = temp_dir.path().join("xcm-test");
         tokio::fs::create_dir_all(&project_path).await.unwrap();
 
-        let config = ProjectConfig::new("xcm-test").with_recipe_type(RecipeType::Xcm);
+        let config = ProjectConfig::new("xcm-test").with_project_type(ProjectType::Xcm);
 
         let scaffold = Scaffold::new();
         let result = scaffold.create_files(&project_path, &config, "1.86").await;
@@ -811,7 +818,7 @@ mod tests {
         assert!(project_path.join("package.json").exists());
         assert!(project_path.join("chopsticks.yml").exists());
 
-        // Verify rust-toolchain.toml was NOT copied for TypeScript recipes
+        // Verify rust-toolchain.toml was NOT copied for TypeScript projects
         assert!(
             !project_path.join("rust-toolchain.toml").exists(),
             "rust-toolchain.toml should NOT exist for XCM (TypeScript) recipes"

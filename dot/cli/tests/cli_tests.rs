@@ -90,7 +90,7 @@ fn test_version_command() {
 }
 
 #[test]
-fn test_create_recipe_non_interactive() {
+fn test_create_project_non_interactive() {
     let temp_dir = setup_test_repo();
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
@@ -117,7 +117,7 @@ fn test_create_recipe_non_interactive() {
 }
 
 #[test]
-fn test_create_recipe_with_create_subcommand() {
+fn test_create_project_with_create_subcommand() {
     let temp_dir = setup_test_repo();
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
@@ -169,7 +169,7 @@ fn test_non_interactive_requires_slug() {
 }
 
 #[test]
-fn test_recipe_config_content() {
+fn test_project_config_content() {
     let temp_dir = setup_test_repo();
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
@@ -277,7 +277,7 @@ fn test_create_recipe_with_toolchain() {
 
 #[test]
 fn test_create_in_any_directory() {
-    // CLI can now create recipes in any directory, not just cookbook repos
+    // CLI can now create projects in any directory, not just cookbook repos
     let temp_dir = TempDir::new().unwrap();
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
@@ -291,7 +291,7 @@ fn test_create_in_any_directory() {
 
     cmd.assert().success();
 
-    // Verify recipe was created
+    // Verify project was created
     assert!(temp_dir
         .path()
         .join("testing-directory-validation")

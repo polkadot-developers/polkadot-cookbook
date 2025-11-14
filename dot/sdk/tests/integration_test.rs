@@ -160,13 +160,13 @@ async fn test_dry_run_mode() {
 
 #[tokio::test]
 async fn test_project_config_builder() {
-    use polkadot_cookbook_sdk::config::RecipeType;
+    use polkadot_cookbook_sdk::config::ProjectType;
 
     let config = ProjectConfig::new("builder-test")
         .with_destination(PathBuf::from("/tmp/test"))
         .with_git_init(false)
         .with_skip_install(true)
-        .with_recipe_type(RecipeType::Solidity)
+        .with_project_type(ProjectType::Solidity)
         .with_category("advanced");
 
     assert_eq!(config.slug, "builder-test");
@@ -174,7 +174,7 @@ async fn test_project_config_builder() {
     assert_eq!(config.destination, PathBuf::from("/tmp/test"));
     assert!(!config.git_init);
     assert!(config.skip_install);
-    assert_eq!(config.recipe_type, RecipeType::Solidity);
+    assert_eq!(config.project_type, ProjectType::Solidity);
     assert_eq!(config.category, "advanced");
 }
 
@@ -259,68 +259,68 @@ async fn test_project_without_git() {
 }
 
 // ============================================================================
-// Recipe Type Tests
+// Project Type Tests
 // ============================================================================
 
 #[tokio::test]
-async fn test_sdk_recipe_creation() {
+async fn test_sdk_project_creation() {
     ensure_workspace_root();
-    use polkadot_cookbook_sdk::config::RecipeType;
+    use polkadot_cookbook_sdk::config::ProjectType;
 
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
-    let config = ProjectConfig::new("sdk-recipe")
+    let config = ProjectConfig::new("sdk-project")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::PolkadotSdk)
+        .with_project_type(ProjectType::PolkadotSdk)
         .with_git_init(false)
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
     scaffold.create_project(config, None).await.unwrap();
 
-    let project_path = destination.join("sdk-recipe");
+    let project_path = destination.join("sdk-project");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("Cargo.toml").exists());
 
-    // Verify it's a Polkadot SDK recipe by checking for Rust files
+    // Verify it's a Polkadot SDK project by checking for Rust files
     assert!(project_path.join("pallets").exists());
 }
 
 #[tokio::test]
-async fn test_contracts_recipe_creation() {
+async fn test_contracts_project_creation() {
     ensure_workspace_root();
-    use polkadot_cookbook_sdk::config::RecipeType;
+    use polkadot_cookbook_sdk::config::ProjectType;
 
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
-    let config = ProjectConfig::new("contracts-recipe")
+    let config = ProjectConfig::new("contracts-project")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::Solidity)
+        .with_project_type(ProjectType::Solidity)
         .with_git_init(false)
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
     scaffold.create_project(config, None).await.unwrap();
 
-    let project_path = destination.join("contracts-recipe");
+    let project_path = destination.join("contracts-project");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
-    // Verify it's a Solidity recipe by checking for contract structure
+    // Verify it's a Solidity project by checking for contract structure
     assert!(project_path.join("tests").exists());
     assert!(project_path.join("scripts").exists());
     assert!(project_path.join("src").exists());
 }
 
 #[tokio::test]
-async fn test_recipe_categories() {
+async fn test_project_categories() {
     ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
@@ -336,7 +336,7 @@ async fn test_recipe_categories() {
 
     let project_path = destination.join("category-test");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 }
@@ -406,7 +406,7 @@ async fn test_description_with_special_characters() {
 
     let project_path = destination.join("special-desc");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
@@ -455,7 +455,7 @@ async fn test_unicode_in_description() {
 
     let project_path = destination.join("unicode-test");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
@@ -485,7 +485,7 @@ async fn test_multiline_description() {
 
     let project_path = destination.join("multiline-desc");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
@@ -520,7 +520,7 @@ async fn test_skip_install_flag() {
 
     // When skip_install is true, bootstrap is skipped entirely
     // So package.json won't be created for TypeScript recipes, but other files should exist
-    // Note: This is a Polkadot SDK recipe (default), so it has Cargo.toml instead
+    // Note: This is a Polkadot SDK project (default), so it has Cargo.toml instead
     let project_path = destination.join("skip-install");
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("Cargo.toml").exists());
