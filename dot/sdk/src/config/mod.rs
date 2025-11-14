@@ -42,6 +42,10 @@ pub struct ProjectConfig {
 
     /// Recipe pathway (optional)
     pub pathway: Option<RecipePathway>,
+
+    /// Pallet-only mode (no runtime, no PAPI)
+    #[serde(default)]
+    pub pallet_only: bool,
 }
 
 impl ProjectConfig {
@@ -69,6 +73,7 @@ impl ProjectConfig {
             category: "polkadot-sdk-cookbook".to_string(),
             description: "Replace with a short description.".to_string(),
             pathway: None,
+            pallet_only: false,
         }
     }
 

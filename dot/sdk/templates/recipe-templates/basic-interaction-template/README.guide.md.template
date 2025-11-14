@@ -387,70 +387,10 @@ In `package.json`:
 ```json
 {
   "scripts": {
-    "generate": "papi add -n westend2_asset_hub ahp && papi add -n westend wnd"
+    "generate": "papi add -n paseo_asset_hub ahp && papi add -n paseo pas"
   }
 }
 ```
-
-## Troubleshooting
-
-### Connection Issues
-
-```typescript
-// Add connection error handling
-const provider = getWsProvider("wss://...", {
-  onError: (error) => console.error("Connection error:", error),
-  onClose: () => console.log("Connection closed"),
-});
-```
-
-### Type Generation Issues
-
-```bash
-# Clear generated types and regenerate
-rm -rf node_modules/.papi
-npm run generate
-```
-
-### Transaction Failures
-
-```typescript
-// Get detailed error information
-try {
-  await tx.signAndSubmit(signer);
-} catch (error) {
-  console.error("Error type:", error.type);
-  console.error("Error message:", error.message);
-  console.error("Error details:", error.details);
-}
-```
-
-### Timeout Issues
-
-```typescript
-// Increase timeout for slow chains
-const result = await tx.signAndSubmit(signer, {
-  timeout: 60000, // 60 seconds
-});
-```
-
-## Best Practices
-
-- Always clean up subscriptions when done
-- Use typed APIs for compile-time safety
-- Batch queries when possible
-- Handle all error cases
-- Test against testnets first
-- Cache static data
-- Monitor transaction status
-- Validate addresses before use
-
-## Resources
-
-- [Polkadot API Docs](https://papi.how/)
-- [PAPI Examples](https://github.com/polkadot-api/polkadot-api)
-- [Polkadot Wiki](https://wiki.polkadot.network/)
-- [Public RPC Endpoints](https://wiki.polkadot.network/docs/maintain-endpoints)
 
 ## License
 

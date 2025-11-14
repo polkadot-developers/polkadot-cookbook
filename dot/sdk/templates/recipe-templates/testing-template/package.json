@@ -4,8 +4,8 @@
   "description": "{{description}}",
   "type": "module",
   "scripts": {
-    "zombienet": "zombienet spawn ./configs/network.toml",
-    "chopsticks": "chopsticks --config=./configs/chopsticks.yml",
+    "zombienet": "zombienet spawn configs/network.toml",
+    "chopsticks": "chopsticks xcm --config=configs/chopsticks.yml",
     "test": "vitest run",
     "test:watch": "vitest"
   },

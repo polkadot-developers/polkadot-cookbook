@@ -4,7 +4,7 @@
   "description": "{{description}}",
   "type": "module",
   "scripts": {
-    "generate": "papi add -n westend2_asset_hub ahp",
+    "generate": "papi add -n paseo_asset_hub ahp",
     "postinstall": "npm run generate",
     "test": "vitest run",
     "test:watch": "vitest",

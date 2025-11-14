@@ -34,10 +34,8 @@ dot recipe create
 ```
 
 Launches an interactive prompt that guides you through:
-1. Recipe title
-2. Pathway selection (runtime, contracts, basic-interaction, xcm, testing)
-3. Difficulty level (beginner, intermediate, advanced)
-4. Content type (tutorial, guide)
+1. Pathway selection (Custom Parachain, Smart Contract, Basic Interaction, Cross-chain Interaction, Polkadot Network)
+2. Recipe title
 
 **Non-Interactive Mode:**
 ```bash
@@ -49,68 +47,85 @@ dot recipe create --title "My Recipe" --non-interactive [OPTIONS]
 | Flag | Description | Required | Default |
 |------|-------------|----------|---------|
 | `--title <TITLE>` | Recipe title | Yes (non-interactive) | - |
-| `--pathway <PATHWAY>` | Recipe pathway | No | Interactive prompt |
-| `--difficulty <DIFFICULTY>` | Difficulty level | No | Interactive prompt |
-| `--content-type <TYPE>` | Content type | No | Interactive prompt |
+| `--pathway <PATHWAY>` | Recipe pathway | No | parachain |
 | `--skip-install` | Skip npm dependency installation | No | false |
 | `--no-git` | Skip git branch creation | No | false |
+| `--pallet-only` | Pallet-only mode (no runtime, no PAPI) | No | false |
 | `--non-interactive` | Non-interactive mode | No | false |
 
 **Pathway Options:**
-- `runtime` - Polkadot SDK runtime development (pallets, runtimes)
-- `contracts` - Smart contract development (Solidity, ink!)
-- `basic-interaction` - Basic blockchain interactions
-- `xcm` - Cross-chain messaging
-- `testing` - Testing strategies and patterns
-
-**Difficulty Options:**
-- `beginner` - Introductory recipes
-- `intermediate` - Moderate complexity
-- `advanced` - Complex, production-ready examples
-
-**Content Type Options:**
-- `tutorial` - Step-by-step learning content
-- `guide` - Reference/how-to guides
+- `parachain` - Custom Parachain: Build a custom parachain with PAPI integration
+- `contracts` - Smart Contract: Build, test, and run Solidity smart contracts
+- `basic-interaction` - Basic Interaction: Single-chain transactions and state queries with PAPI
+- `xcm` - Cross-chain Interaction: Cross-chain asset transfers and cross-chain calls with Chopsticks
+- `testing` - Polkadot Network: Run a Polkadot network locally with Zombienet or Chopsticks
 
 **Examples:**
 
 ```bash
-# Interactive mode (recommended for first-time users)
+# Interactive mode (recommended)
 dot recipe create
 
-# Non-interactive with title only (minimal)
-dot recipe create --title "Custom Pallet Recipe" --non-interactive
+# Non-interactive parachain recipe
+dot recipe create --title "My Parachain" --pathway parachain --non-interactive
 
-# Full specification (CI/CD)
+# Pallet-only mode (advanced, no runtime)
+dot recipe create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+
+# Smart contracts recipe
+dot recipe create --title "My Contract" --pathway contracts --non-interactive
+
+# Skip npm install for faster creation
+dot recipe create --title "Quick Test" --pathway basic-interaction --skip-install --non-interactive
+
+# CI/CD mode (skip git branch creation)
 dot recipe create \
   --title "My Recipe" \
-  --pathway runtime \
-  --difficulty beginner \
-  --content-type tutorial \
+  --pathway parachain \
   --skip-install \
   --no-git \
   --non-interactive
-
-# Quick creation without installation
-dot recipe create --title "Quick Test" --skip-install --non-interactive
 ```
 
 **What it Creates:**
 
+**Parachain Recipe:**
 ```
-recipes/my-recipe/
-├── README.md              # Recipe content and documentation
-├── recipe.config.yml      # Metadata and configuration
-├── rust-toolchain.toml    # Rust version specification (Polkadot SDK recipes)
-├── package.json           # npm dependencies (TypeScript recipes)
-├── tsconfig.json          # TypeScript configuration
-├── vitest.config.ts       # Test configuration
-├── src/                   # Implementation code
-├── tests/                 # Test files
-└── scripts/               # Deployment scripts (Solidity recipes)
+recipes/my-parachain/
+├── README.md              # Tutorial documentation
+├── Cargo.toml             # Workspace configuration
+├── rust-toolchain.toml    # Rust version specification
+├── package.json           # PAPI dependencies
+├── pallets/               # Custom FRAME pallets
+│   └── template/          # Template pallet
+├── runtime/               # Parachain runtime
+├── tests/                 # PAPI integration tests
+├── scripts/               # Node management scripts
+└── zombienet-xcm.toml     # Multi-parachain XCM testing
 ```
 
-Note: Structure varies by recipe type (Runtime, Solidity, XCM, etc.)
+**Pallet-Only Recipe:**
+```
+recipes/my-pallet/
+├── README.md              # Pallet documentation
+├── Cargo.toml             # Minimal workspace
+├── rust-toolchain.toml    # Rust version
+└── pallets/               # Custom pallet only
+    └── template/          # Template pallet with mock runtime
+```
+
+**Contracts Recipe:**
+```
+recipes/my-contract/
+├── README.md              # Contract documentation
+├── package.json           # Hardhat dependencies
+├── hardhat.config.ts      # Hardhat configuration
+├── contracts/             # Solidity contracts
+├── tests/                 # Contract tests
+└── scripts/               # Deployment scripts
+```
+
+Note: Structure varies by recipe pathway. See pathway-specific READMEs for details.
 
 **Exit Codes:**
 - `0` - Success

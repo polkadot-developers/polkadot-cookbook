@@ -409,35 +409,8 @@ Now that you've completed this tutorial, try:
 
 - [Polkadot API Documentation](https://papi.how/)
 - [Polkadot Wiki](https://wiki.polkadot.network/)
-- [Substrate Documentation](https://docs.substrate.io/)
+- [Substrate Documentation](https://docs.polkadot.com/)
 - [Polkadot JS Apps](https://polkadot.js.org/apps/) - For chain exploration
-
-## Troubleshooting
-
-### Common Issues
-
-**Connection Errors:**
-- Verify WebSocket endpoint is correct
-- Check network connectivity
-- Try alternative RPC endpoints
-- Ensure chain is synced
-
-**Type Errors:**
-- Run `npm run generate` to regenerate types
-- Verify chain metadata is up to date
-- Check PAPI version compatibility
-
-**Transaction Failures:**
-- Verify account has sufficient balance for tx + fees
-- Check transaction parameters are valid
-- Ensure signer is properly configured
-- Verify chain hasn't been upgraded
-
-**Performance Issues:**
-- Batch multiple queries together
-- Use subscriptions for real-time data
-- Cache frequently accessed data
-- Avoid polling when possible
 
 ## License
 

@@ -10,7 +10,7 @@ use tracing::{debug, info, warn};
 
 pub mod bootstrap;
 
-pub use bootstrap::Bootstrap;
+pub use bootstrap::{Bootstrap, ProgressCallback};
 
 /// Scaffold manager for creating new projects
 pub struct Scaffold {
@@ -39,7 +39,7 @@ impl Scaffold {
     /// Read Rust version from rust-toolchain.toml file
     ///
     /// Attempts to read the Rust toolchain version from the repository's
-    /// rust-toolchain.toml file. Falls back to "1.86" if the file cannot
+    /// rust-toolchain.toml file. Falls back to "1.91" if the file cannot
     /// be read or parsed.
     async fn read_rust_version() -> String {
         let toolchain_path = Path::new("rust-toolchain.toml");
@@ -50,7 +50,7 @@ impl Scaffold {
                 for line in content.lines() {
                     let line = line.trim();
                     if line.starts_with("channel") {
-                        // Extract version from: channel = "1.86"
+                        // Extract version from: channel = "1.91"
                         if let Some(version) = line
                             .split('=')
                             .nth(1)
@@ -62,14 +62,14 @@ impl Scaffold {
                     }
                 }
                 warn!("Could not parse Rust version from rust-toolchain.toml, using default");
-                "1.86".to_string()
+                "1.91".to_string()
             }
             Err(e) => {
                 warn!(
                     "Failed to read rust-toolchain.toml: {}, using default rust version",
                     e
                 );
-                "1.86".to_string()
+                "1.91".to_string()
             }
         }
     }
@@ -89,13 +89,17 @@ impl Scaffold {
     ///     .with_destination(PathBuf::from("./tutorials"));
     ///
     /// let scaffold = Scaffold::new();
-    /// let project_info = scaffold.create_project(config).await?;
+    /// let project_info = scaffold.create_project(config, None).await?;
     ///
     /// println!("Created project: {}", project_info.slug);
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn create_project(&self, config: ProjectConfig) -> Result<ProjectInfo> {
+    pub async fn create_project(
+        &self,
+        config: ProjectConfig,
+        progress: Option<&ProgressCallback>,
+    ) -> Result<ProjectInfo> {
         info!("Creating project: {}", config.slug);
 
         // Validate configuration
@@ -135,22 +139,73 @@ impl Scaffold {
             .await?;
 
         // Bootstrap test environment if not skipped
-        // Note: Only TypeScript-based recipes need npm install
+        // Note: Only TypeScript-based recipes with vitest need bootstrap
+        // Solidity recipes have their own package.json with hardhat
         if !config.skip_install
             && matches!(
                 config.recipe_type,
-                RecipeType::Solidity
-                    | RecipeType::Xcm
-                    | RecipeType::BasicInteraction
-                    | RecipeType::Testing
+                RecipeType::Xcm | RecipeType::BasicInteraction | RecipeType::Testing
             )
         {
             let bootstrap = Bootstrap::new(project_path.clone());
-            bootstrap.setup(&config.slug).await?;
+            bootstrap.setup(&config.slug, progress).await?;
+        } else if matches!(config.recipe_type, RecipeType::Solidity) {
+            // Solidity recipes come with their own package.json and dependencies
+            // Just run npm install to install hardhat and dependencies
+            if !config.skip_install {
+                debug!("Installing Solidity recipe dependencies");
+                let install_result = tokio::process::Command::new("npm")
+                    .arg("install")
+                    .current_dir(&project_path)
+                    .output()
+                    .await;
+
+                match install_result {
+                    Ok(output) if output.status.success() => {
+                        debug!("Solidity dependencies installed successfully");
+                    }
+                    Ok(output) => {
+                        warn!(
+                            "npm install failed for Solidity recipe: {}",
+                            String::from_utf8_lossy(&output.stderr)
+                        );
+                    }
+                    Err(e) => {
+                        warn!("Failed to run npm install for Solidity recipe: {}", e);
+                    }
+                }
+            }
         } else if matches!(config.recipe_type, RecipeType::PolkadotSdk) {
-            info!("Skipping npm install for Polkadot SDK recipe (Rust-based)");
+            // Parachain recipes: install PAPI dependencies unless pallet-only mode
+            if !config.skip_install && !config.pallet_only {
+                debug!("Installing Parachain recipe PAPI dependencies");
+                let install_result = tokio::process::Command::new("npm")
+                    .arg("install")
+                    .current_dir(&project_path)
+                    .output()
+                    .await;
+
+                match install_result {
+                    Ok(output) if output.status.success() => {
+                        debug!("PAPI dependencies installed successfully");
+                    }
+                    Ok(output) => {
+                        warn!(
+                            "npm install failed for Parachain recipe: {}",
+                            String::from_utf8_lossy(&output.stderr)
+                        );
+                    }
+                    Err(e) => {
+                        warn!("Failed to run npm install for Parachain recipe: {}", e);
+                    }
+                }
+            } else if config.pallet_only {
+                debug!("Skipping npm install for pallet-only mode (Rust-only)");
+            } else {
+                debug!("Skipping npm install (skip_install = true)");
+            }
         } else {
-            info!("Skipping npm install (skip_install = true)");
+            debug!("Skipping npm install (skip_install = true)");
         }
 
         info!("Successfully created project: {}", config.slug);
@@ -355,6 +410,18 @@ impl Scaffold {
         config: &'a ProjectConfig,
         rust_version: &'a str,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + 'a>> {
+        self.copy_template_dir_impl(template_dir, dest_dir, config, rust_version, template_dir)
+    }
+
+    /// Internal implementation that tracks the root template directory
+    fn copy_template_dir_impl<'a>(
+        &'a self,
+        template_dir: &'a Path,
+        dest_dir: &'a Path,
+        config: &'a ProjectConfig,
+        rust_version: &'a str,
+        root_template_dir: &'a Path,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + 'a>> {
         Box::pin(async move {
             debug!(
                 "Copying template from {} to {}",
@@ -373,7 +440,7 @@ impl Scaffold {
                     .as_ref()
                     .map(|p| {
                         let value = match p {
-                            crate::config::RecipePathway::Runtime => "runtime",
+                            crate::config::RecipePathway::Parachain => "parachain",
                             crate::config::RecipePathway::Contracts => "contracts",
                             crate::config::RecipePathway::BasicInteraction => "basic-interaction",
                             crate::config::RecipePathway::Xcm => "xcm",
@@ -386,8 +453,12 @@ impl Scaffold {
                     })
                     .unwrap_or_default();
 
+                // Convert slug hyphens to underscores for Rust identifiers
+                let slug_underscore = config.slug.replace("-", "_");
+
                 content
                     .replace("{{slug}}", &config.slug)
+                    .replace("{{slug_underscore}}", &slug_underscore)
                     .replace("{{title}}", &config.title)
                     .replace("{{description}}", &config.description)
                     .replace("{{category}}", &config.category)
@@ -421,8 +492,101 @@ impl Scaffold {
                     continue;
                 }
 
-                // Handle README templates - use tutorial version by default
+                // Skip full parachain and PAPI files in pallet-only mode
+                if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                    let excluded_files = [
+                        // PAPI/TypeScript files
+                        "package.json",
+                        "tsconfig.json",
+                        "vitest.config.ts",
+                        "papi.json",
+                        "tests",
+                        "scripts",
+                        // Full parachain infrastructure
+                        "node",
+                        "runtime",
+                        "zombienet.toml",
+                        "zombienet-omni-node.toml",
+                        "dev_chain_spec.json",
+                        "Dockerfile",
+                        ".github",
+                        "LICENSE",
+                    ];
+                    if excluded_files.contains(&file_name_str.as_ref()) {
+                        debug!("Skipping file in pallet-only mode: {}", file_name_str);
+                        continue;
+                    }
+
+                    // Use special pallet-only Cargo.toml instead of root parachain one
+                    // Only skip if this is the root Cargo.toml (parent is root_template_dir)
+                    if file_name_str == "Cargo.toml" && path.parent() == Some(root_template_dir) {
+                        debug!("Skipping root Cargo.toml in pallet-only mode (will use Cargo.pallet-only.toml)");
+                        continue;
+                    }
+                }
+
+                // Use pallet-only Cargo.toml template in pallet-only mode
+                if matches!(config.recipe_type, RecipeType::PolkadotSdk)
+                    && file_name_str == "Cargo.pallet-only.toml.template"
+                {
+                    if config.pallet_only {
+                        // Use this as Cargo.toml
+                        let dest_path = dest_dir.join("Cargo.toml");
+                        let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
+                            CookbookError::FileSystemError {
+                                message: format!(
+                                    "Failed to read pallet-only Cargo.toml template: {e}"
+                                ),
+                                path: Some(path.clone()),
+                            }
+                        })?;
+                        let processed_content = process_content(content, config, rust_version);
+                        self.write_file(&dest_path, &processed_content).await?;
+                    }
+                    // Skip this file in both cases (either used or ignored)
+                    continue;
+                }
+
+                // Skip XCM zombienet config in pallet-only mode (no runtime/node)
+                // For full parachain mode, always include it as XCM is a core feature
+                if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                    let xcm_files = ["zombienet-xcm.toml", "zombienet-xcm.toml.template"];
+                    if xcm_files.contains(&file_name_str.as_ref()) {
+                        debug!("Skipping XCM zombienet config in pallet-only mode");
+                        continue;
+                    }
+                }
+
+                // Skip the base README.md from template (we use .template versions)
+                if file_name_str == "README.md"
+                    && matches!(config.recipe_type, RecipeType::PolkadotSdk)
+                {
+                    debug!("Skipping base README.md (using template version instead)");
+                    continue;
+                }
+
+                // Handle README templates based on mode
+                if file_name_str == "README.pallet-only.md.template" {
+                    if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                        let dest_path = dest_dir.join("README.md");
+                        let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
+                            CookbookError::FileSystemError {
+                                message: format!("Failed to read pallet-only README template: {e}"),
+                                path: Some(path.clone()),
+                            }
+                        })?;
+                        let processed_content = process_content(content, config, rust_version);
+                        self.write_file(&dest_path, &processed_content).await?;
+                    }
+                    continue;
+                }
+
+                // Handle README templates - use tutorial version by default for full parachain
                 if file_name_str == "README.tutorial.md.template" {
+                    // Skip if pallet-only mode (use pallet-only README instead)
+                    if config.pallet_only && matches!(config.recipe_type, RecipeType::PolkadotSdk) {
+                        continue;
+                    }
                     let dest_path = dest_dir.join("README.md");
                     let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
                         CookbookError::FileSystemError {
@@ -460,8 +624,14 @@ impl Scaffold {
                             }
                         })?;
                     }
-                    self.copy_template_dir(&path, &dest_path, config, rust_version)
-                        .await?;
+                    self.copy_template_dir_impl(
+                        &path,
+                        &dest_path,
+                        config,
+                        rust_version,
+                        root_template_dir,
+                    )
+                    .await?;
                 } else {
                     // Copy and process files
                     let content = tokio::fs::read_to_string(&path).await.map_err(|e| {
@@ -606,7 +776,8 @@ mod tests {
             std::fs::read_to_string(project_path.join("rust-toolchain.toml")).unwrap();
         assert!(
             toolchain_content.contains("channel = \"1.86\""),
-            "rust-toolchain.toml should specify Rust 1.86"
+            "rust-toolchain.toml should specify Rust 1.86 (as passed to create_files), but contains: {}",
+            toolchain_content
         );
         assert!(toolchain_content.contains("components = [\"rustfmt\", \"clippy\"]"));
         assert!(toolchain_content.contains("profile = \"minimal\""));
@@ -729,7 +900,7 @@ profile = "minimal"
             );
         }
 
-        // Scenario 2: Missing file should fallback to 1.86
+        // Scenario 2: Missing file should fallback to 1.91
         {
             let temp_dir = TempDir::new().unwrap();
             std::env::set_current_dir(temp_dir.path()).unwrap();
@@ -737,12 +908,12 @@ profile = "minimal"
             // No rust-toolchain.toml exists
             let version = Scaffold::read_rust_version().await;
             assert_eq!(
-                version, "1.86",
-                "Should fallback to 1.86 when file is missing"
+                version, "1.91",
+                "Should fallback to 1.91 when file is missing"
             );
         }
 
-        // Scenario 3: Invalid format should fallback to 1.86
+        // Scenario 3: Invalid format should fallback to 1.91
         {
             let temp_dir = TempDir::new().unwrap();
             std::env::set_current_dir(temp_dir.path()).unwrap();
@@ -757,8 +928,8 @@ components = ["rustfmt", "clippy"]
 
             let version = Scaffold::read_rust_version().await;
             assert_eq!(
-                version, "1.86",
-                "Should fallback to 1.86 when format is invalid"
+                version, "1.91",
+                "Should fallback to 1.91 when format is invalid"
             );
         }
 
