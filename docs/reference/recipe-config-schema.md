@@ -323,7 +323,7 @@ The CLI validates:
 **Missing required field:**
 ```yaml
 # ❌ Error: missing 'description' field
-title: "My Recipe"
+title: "My Project"
 slug: "my-recipe"
 pathway: "runtime"
 difficulty: "beginner"
@@ -488,7 +488,7 @@ category: "substrate"  # Old field
 
 **New format:**
 ```yaml
-title: "My Recipe"  # Renamed from 'name'
+title: "My Project"  # Renamed from 'name'
 pathway: "runtime"  # Renamed from 'category', value changed
 slug: "my-recipe"  # Added (auto-generate from title)
 type: "polkadot-sdk"  # Added

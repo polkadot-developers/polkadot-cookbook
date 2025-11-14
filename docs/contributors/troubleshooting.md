@@ -685,7 +685,7 @@ git remote -v  # Ensure fork exists
 
 # Manual PR creation
 git push -u origin recipe/my-recipe
-gh pr create --title "feat(recipe): my recipe" --body "Description"
+gh pr create --title "feat(recipe): my project" --body "Description"
 ```
 
 ---

@@ -7,7 +7,7 @@ Step-by-step guide to contributing recipes to the Polkadot Cookbook.
 The contribution workflow follows these steps:
 
 1. **Setup** - Fork, clone, and configure your environment
-2. **Create** - Generate a new recipe or modify existing content
+2. **Create** - Generate a new project or modify existing content
 3. **Develop** - Write content, code, and tests
 4. **Test** - Run tests locally
 5. **Commit** - Use conventional commit messages
@@ -76,28 +76,26 @@ git config --list
 
 ---
 
-## Step 2: Create a Recipe
+## Step 2: Create a Project
 
 ### Using the CLI (Recommended)
 
-The CLI automatically creates a new branch for your recipe:
+The CLI automatically creates a new branch for your project:
 
 ```bash
 # Interactive mode
 dot create
 
 # The CLI will:
-# 1. Create recipes/your-recipe/
+# 1. Create recipes/your-project/
 # 2. Generate scaffolded files
-# 3. Create branch: recipe/your-recipe
+# 3. Initialize git repository
 # 4. Install dependencies
 ```
 
-**Your branch is now:** `recipe/your-recipe`
-
 ### Manual Branch Creation
 
-If you're modifying existing content instead of creating a new recipe:
+If you're modifying existing content instead of creating a new project:
 
 ```bash
 # Update master first
@@ -120,11 +118,11 @@ git checkout -b fix/correct-example-code
 
 ---
 
-## Step 3: Develop Your Recipe
+## Step 3: Develop Your Project
 
-### Recipe Structure
+### Project Structure
 
-Your recipe directory should contain:
+Your project directory should contain:
 
 ```
 recipes/your-recipe/
@@ -165,31 +163,31 @@ Only include versions that differ from global defaults.
 
 ---
 
-## Step 4: Test Your Recipe
+## Step 4: Test Your Project
 
 ### Run Tests Locally
 
-**TypeScript recipes:**
+**TypeScript projects:**
 ```bash
-cd recipes/your-recipe
+cd recipes/your-project
 npm test
 ```
 
-**Rust recipes:**
+**Rust projects:**
 ```bash
-cd recipes/your-recipe
+cd recipes/your-project
 cargo test
 cargo clippy --all-targets --all-features
 cargo fmt --check
 ```
 
-**XCM recipes:**
+**XCM projects:**
 ```bash
-cd recipes/your-recipe
+cd recipes/your-project
 npm test  # Includes Chopsticks setup
 ```
 
-### Validate Recipe Structure
+### Validate Project Structure
 
 ```bash
 # From repository root
@@ -292,13 +290,13 @@ git commit --amend
 
 ---
 
-## Step 6: Submit Your Recipe
+## Step 6: Submit Your Project as a Recipe
 
 ### Push to Your Fork
 
 ```bash
 # Push your branch
-git push -u origin recipe/your-recipe
+git push -u origin your-branch-name
 ```
 
 ### Create Pull Request
@@ -311,20 +309,20 @@ dot submit
 The CLI will:
 1. Run tests to validate your code
 2. Validate that required lock files are present
-3. Validate recipe structure
+3. Validate project structure
 4. Push to your fork
 5. Create PR with template
 6. Apply appropriate labels
 
 **Option B: Using GitHub CLI**
 ```bash
-gh pr create --title "feat(recipe): add your recipe" --body "Description of your recipe"
+gh pr create --title "feat(recipe): add your project" --body "Description of your project"
 ```
 
 **Option C: Using GitHub Web UI**
 1. Visit your fork on GitHub
 2. Click **Pull Request**
-3. Select base: `master` ← compare: `recipe/your-recipe`
+3. Select base: `master` ← compare: `your-branch-name`
 4. Fill in PR template
 5. Click **Create Pull Request**
 
@@ -453,7 +451,7 @@ Ready to contribute again? Start from Step 2!
 git checkout master
 git pull upstream master
 
-# Create new recipe
+# Create new project
 dot create
 ```
 
@@ -595,7 +593,7 @@ git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
 cd polkadot-cookbook
 git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
 
-# Create recipe
+# Create project
 dot create
 
 # Test
@@ -618,7 +616,7 @@ git push origin master
 
 ### Helpful Links
 
-- **[First Recipe Tutorial](../getting-started/first-project.md)** - Step-by-step walkthrough
+- **[First Project Tutorial](../getting-started/first-project.md)** - Step-by-step walkthrough
 - **[Recipe Guidelines](recipe-guidelines.md)** - Structure and style requirements
 - **[Recipe Development Guide](recipe-development.md)** - Best practices
 - **[Testing Guide](testing-recipes.md)** - Testing strategies
@@ -650,7 +648,7 @@ If you need help from maintainers:
 The contribution workflow:
 
 1. ✅ Fork and clone repository
-2. ✅ Create recipe with CLI or manual branch
+2. ✅ Create project with CLI or manual branch
 3. ✅ Develop content following guidelines
 4. ✅ Test thoroughly (automated and manual)
 5. ✅ Commit with conventional format

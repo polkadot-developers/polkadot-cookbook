@@ -1,6 +1,6 @@
-# Your First Recipe
+# Your First Project
 
-A step-by-step tutorial for creating your first Polkadot Cookbook recipe.
+A step-by-step tutorial for creating your first Polkadot project and submitting it as a recipe to the cookbook.
 
 ## What You'll Learn
 
@@ -70,7 +70,7 @@ Enter a clear, descriptive title. This will be used to generate the project slug
 
 The CLI will:
 1. Check dependencies (Rust, Node.js, etc.)
-2. Create the recipe directory: `recipes/my-first-parachain/`
+2. Create the project directory: `recipes/my-first-parachain/`
 3. Generate scaffolded files from the polkadot-sdk-parachain-template
 4. Install npm dependencies (for PAPI testing)
 5. Create a git branch
@@ -101,7 +101,7 @@ Next steps:
 
 ## Step 2: Explore the Generated Files
 
-Navigate to your new recipe directory:
+Navigate to your new project directory:
 
 ```bash
 cd recipes/my-first-parachain
@@ -197,7 +197,7 @@ describe('Template Pallet', () => {
 
 ---
 
-## Step 3: Customize Your Recipe
+## Step 3: Customize Your Project
 
 ### Update Your Pallet
 
@@ -371,7 +371,7 @@ npm test
 
 ## Step 5: Test Multi-Chain XCM (Optional)
 
-Your recipe includes `zombienet-xcm.toml` for testing cross-chain messaging.
+Your project includes `zombienet-xcm.toml` for testing cross-chain messaging.
 
 ### Setup Binaries (One-time)
 
@@ -399,7 +399,7 @@ Perfect for testing XCM patterns like asset transfers and remote execution.
 
 ## Step 6: Commit Your Changes
 
-Your recipe was created on a git branch. Commit your changes:
+Your project was created on a git branch. Commit your changes:
 
 ```bash
 # Review changes
@@ -419,9 +419,9 @@ feat(recipe): <description>
 
 ---
 
-## Step 7: Submit Your Recipe
+## Step 7: Submit Your Project
 
-Once your recipe is complete and tested, submit it for review:
+Once your project is complete and tested, submit it for review:
 
 ```bash
 dot submit my-first-parachain
@@ -575,7 +575,7 @@ cargo test
 
 ## Next Steps
 
-Congratulations! You've created your first recipe. Here's what to explore next:
+Congratulations! You've created your first project. Here's what to explore next:
 
 ### Learn More
 
@@ -687,7 +687,7 @@ gh auth token
 ## Summary
 
 You've learned how to:
-- ✅ Create a recipe with `dot create`
+- ✅ Create a project with `dot create`
 - ✅ Understand the generated file structure
 - ✅ Build and test a parachain
 - ✅ Run PAPI integration tests

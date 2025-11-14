@@ -164,7 +164,7 @@ impl ProjectConfig {
 use polkadot_cookbook_sdk::ProjectConfig;
 
 let config = ProjectConfig {
-    title: "My Recipe".to_string(),
+    title: "My Project".to_string(),
     slug: "my-recipe".to_string(),
     pathway: "runtime".to_string(),
     difficulty: "beginner".to_string(),
@@ -348,7 +348,7 @@ impl Scaffold {
 use polkadot_cookbook_sdk::Scaffold;
 
 let scaffold = Scaffold::builder()
-    .title("Custom Recipe")
+    .title("Custom Project")
     .pathway("runtime")
     .difficulty("beginner")
     .content_type("guide")
@@ -519,7 +519,7 @@ use std::fs;
 
 fn create_custom_recipe() -> Result<(), Box<dyn std::error::Error>> {
     let scaffold = Scaffold::builder()
-        .title("My Custom Recipe")
+        .title("My Custom Project")
         .pathway("runtime")
         .difficulty("beginner")
         .content_type("tutorial")
@@ -651,7 +651,7 @@ mod tests {
     #[test]
     fn test_recipe_config_load() {
         let config = ProjectConfig::load("tests/fixtures/recipe.config.yml").unwrap();
-        assert_eq!(config.title, "Test Recipe");
+        assert_eq!(config.title, "Test Project");
         assert_eq!(config.pathway, "runtime");
     }
 

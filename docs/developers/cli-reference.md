@@ -80,7 +80,7 @@ dot create --title "Quick Test" --pathway basic-interaction --skip-install --non
 
 # CI/CD mode (skip git branch creation)
 dot create \
-  --title "My Recipe" \
+  --title "My Project" \
   --pathway parachain \
   --skip-install \
   --no-git \
