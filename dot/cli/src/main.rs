@@ -255,26 +255,9 @@ async fn handle_create(
         })
         .interact()?;
 
-    // Generate suggested slug from title
-    let suggested_slug = polkadot_cookbook_sdk::config::title_to_slug(&title);
-
-    // Prompt for slug with suggestion pre-filled
-    let slug_question = "Recipe slug".polkadot_pink().to_string();
-    let slug_hint = "(lowercase, dashes only)".dimmed().to_string();
-    let slug: String = input(format!("{slug_question} {slug_hint}"))
-        .default_input(&suggested_slug)
-        .validate(|input: &String| {
-            if input.is_empty() {
-                Err("Slug cannot be empty")
-            } else if let Err(e) = polkadot_cookbook_sdk::config::validate_slug(input) {
-                Err(Box::leak(e.to_string().into_boxed_str()) as &str)
-            } else {
-                Ok(())
-            }
-        })
-        .interact()?;
-
+    // Auto-generate slug from title
     let title = title.trim().to_string();
+    let slug = polkadot_cookbook_sdk::config::title_to_slug(&title);
 
     // Step 3: Prompt for description
     let description_question = "Brief description".polkadot_pink().to_string();
