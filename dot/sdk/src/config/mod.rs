@@ -143,8 +143,8 @@ pub struct ProjectInfo {
     /// Full path to project directory
     pub project_path: PathBuf,
 
-    /// Git branch name (if created)
-    pub git_branch: Option<String>,
+    /// Whether a git repository was initialized
+    pub git_initialized: bool,
 }
 
 #[cfg(test)]

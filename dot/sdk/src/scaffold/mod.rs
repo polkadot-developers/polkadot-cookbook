@@ -100,25 +100,25 @@ impl Scaffold {
 
         let project_path = config.project_path();
 
-        // Create git branch if requested
-        let git_branch = if config.git_init {
-            match crate::git::GitOperations::create_branch(&config.slug).await {
-                Ok(branch) => {
-                    info!("Created git branch: {}", branch);
-                    Some(branch)
+        // Create directory structure first
+        self.create_directories(&project_path, config.project_type)
+            .await?;
+
+        // Initialize git repository if requested
+        let git_initialized = if config.git_init {
+            match crate::git::GitOperations::init(&project_path).await {
+                Ok(()) => {
+                    info!("Initialized git repository at: {}", project_path.display());
+                    true
                 }
                 Err(e) => {
-                    warn!("Failed to create git branch: {}", e);
-                    None
+                    warn!("Failed to initialize git repository: {}", e);
+                    false
                 }
             }
         } else {
-            None
+            false
         };
-
-        // Create directory structure
-        self.create_directories(&project_path, config.project_type)
-            .await?;
 
         // Generate and write template files
         self.create_files(&project_path, &config, &rust_version)
@@ -200,7 +200,7 @@ impl Scaffold {
             slug: config.slug.clone(),
             title: config.title.clone(),
             project_path,
-            git_branch,
+            git_initialized,
         })
     }
 

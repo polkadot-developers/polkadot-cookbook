@@ -37,7 +37,7 @@ async fn test_create_project_end_to_end() {
         project_info.project_path,
         destination.join("integration-test")
     );
-    assert!(project_info.git_branch.is_none());
+    assert!(!project_info.git_initialized);
 
     // Verify directories were created (Polkadot SDK recipe structure)
     let project_path = destination.join("integration-test");
@@ -202,7 +202,7 @@ async fn test_error_serialization() {
 // ============================================================================
 
 #[tokio::test]
-async fn test_create_project_with_git_branch() {
+async fn test_create_project_with_git_init() {
     ensure_workspace_root();
     use polkadot_cookbook_sdk::git::GitOperations;
 
@@ -225,7 +225,7 @@ async fn test_create_project_with_git_branch() {
 
     // Verify git branch was created (or attempted)
     // Note: Branch creation might fail if git is not configured, which is okay
-    if let Some(branch) = project_info.git_branch {
+    if project_info.git_initialized {
         assert!(branch.starts_with("feat/tutorial-"));
         assert!(branch.contains("git-branch-test"));
     }
@@ -255,7 +255,7 @@ async fn test_project_without_git() {
     let project_info = scaffold.create_project(config, None).await.unwrap();
 
     // Verify no git branch was created
-    assert!(project_info.git_branch.is_none());
+    assert!(!project_info.git_initialized);
 }
 
 // ============================================================================

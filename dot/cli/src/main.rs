@@ -59,7 +59,7 @@ enum Commands {
         #[arg(long, default_value = "false")]
         skip_install: bool,
 
-        /// Skip git branch creation
+        /// Skip git repository initialization
         #[arg(long, default_value = "false")]
         no_git: bool,
 
@@ -81,7 +81,7 @@ enum Commands {
         #[arg(long, default_value = "false")]
         skip_install: bool,
 
-        /// Skip git branch creation
+        /// Skip git repository initialization
         #[arg(long, default_value = "false")]
         no_git: bool,
 
@@ -99,7 +99,7 @@ enum Commands {
         #[arg(long, default_value = "false")]
         skip_install: bool,
 
-        /// Skip git branch creation
+        /// Skip git repository initialization
         #[arg(long, default_value = "false")]
         no_git: bool,
 
@@ -342,19 +342,14 @@ async fn handle_create(
         description.trim().to_string()
     };
 
-    // Git branch creation is default (unless --no-git flag is used)
-    let create_git_branch = !no_git;
+    // Git initialization is default (unless --no-git flag is used)
+    let init_git = !no_git;
 
     // Npm install is default (unless --skip-install flag is used)
     // Skip install flag is already set from CLI args
 
     // Calculate derived values for the summary
     let project_path = PathBuf::from(".").join(&slug);
-    let branch_name = if create_git_branch {
-        format!("feat/{slug}")
-    } else {
-        "(none)".to_string()
-    };
 
     // Generate directory tree based on pathway
     let tree_structure = match pathway {
@@ -506,8 +501,8 @@ async fn handle_create(
             },
             "Location:".polkadot_pink(),
             project_path.display(),
-            "Git Branch:".polkadot_pink(),
-            branch_name,
+            "Git Init:".polkadot_pink(),
+            if init_git { "Yes" } else { "No" },
             tree_structure.dimmed()
         ),
     )?;
@@ -524,7 +519,7 @@ async fn handle_create(
     let mut config = ProjectConfig::new(&slug)
         .with_title(&title)
         .with_destination(PathBuf::from("."))
-        .with_git_init(create_git_branch)
+        .with_git_init(init_git)
         .with_skip_install(skip_install)
         .with_project_type(project_type)
         .with_description(description)
@@ -568,7 +563,7 @@ async fn handle_create(
             note(
                 &project_title,
                 format!(
-                    "Slug:       {}\nTitle:      {}\nLocation:   {}\nGit Branch: {}",
+                    "Slug:       {}\nTitle:      {}\nLocation:   {}\nGit Init:   {}",
                     project_info.slug.polkadot_pink(),
                     project_info.title.polkadot_pink(),
                     project_info
@@ -576,7 +571,11 @@ async fn handle_create(
                         .display()
                         .to_string()
                         .polkadot_pink(),
-                    project_info.git_branch.as_deref().unwrap_or("(none)")
+                    if project_info.git_initialized {
+                        "Yes"
+                    } else {
+                        "No"
+                    }
                 ),
             )?;
 
@@ -655,7 +654,7 @@ async fn handle_create(
 
             note(&steps_title, next_steps)?;
 
-            if let Some(_branch) = project_info.git_branch {
+            if project_info.git_initialized {
                 let git_title = "🔀 Ready to Submit?".polkadot_pink().to_string();
                 note(
                     &git_title,
@@ -795,9 +794,15 @@ async fn run_non_interactive(
                 "Path:".polkadot_pink(),
                 project_info.project_path.display()
             );
-            if let Some(ref branch) = project_info.git_branch {
-                println!("{} {}", "Git Branch:".polkadot_pink(), branch);
-            }
+            println!(
+                "{} {}",
+                "Git Init:".polkadot_pink(),
+                if project_info.git_initialized {
+                    "Yes"
+                } else {
+                    "No"
+                }
+            );
         }
         Err(e) => {
             eprintln!("❌ Failed to create project: {e}");
