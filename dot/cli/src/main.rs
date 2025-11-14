@@ -242,35 +242,55 @@ async fn handle_create(
         "Let's create your new Polkadot project. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
     )?;
 
-    // Step 1: Ask for pathway first (so users know what they can build)
-    let pathway_question = "What would you like to build?".polkadot_pink().to_string();
-    let pathway: RecipePathway = select(&pathway_question)
-        .item(
-            RecipePathway::Contracts,
-            "Smart Contract (Solidity)",
-            "Build, test, and run Solidity smart contracts",
-        )
-        .item(
-            RecipePathway::Pallets,
-            "Parachain (Polkadot SDK)",
-            "Build a full parachain with custom pallets and PAPI integration",
-        )
-        .item(
-            RecipePathway::Transactions,
-            "Chain Transactions",
-            "Single-chain transactions and state queries with PAPI",
-        )
-        .item(
-            RecipePathway::Xcm,
-            "Cross-chain Transactions (XCM)",
-            "Cross-chain asset transfers and cross-chain calls with Chopsticks",
-        )
-        .item(
-            RecipePathway::Networks,
-            "Polkadot Networks (Zombienet / Chopsticks)",
-            "Run Polkadot networks locally for testing",
-        )
-        .interact()?;
+    // Step 1: Determine pathway - either from argument or by asking user
+    let pathway: RecipePathway = if let Some(pathway_str) = pathway {
+        // Pathway provided via argument (from alias commands like `dot contract`)
+        // Parse the pathway string to RecipePathway
+        match pathway_str.as_str() {
+            "contracts" => RecipePathway::Contracts,
+            "pallets" => RecipePathway::Pallets,
+            "transactions" => RecipePathway::Transactions,
+            "xcm" => RecipePathway::Xcm,
+            "networks" => RecipePathway::Networks,
+            _ => {
+                outro_cancel(format!(
+                    "Invalid pathway: '{}'. Valid options: contracts, pallets, transactions, xcm, networks",
+                    pathway_str
+                ))?;
+                std::process::exit(1);
+            }
+        }
+    } else {
+        // No pathway provided - ask user interactively
+        let pathway_question = "What would you like to build?".polkadot_pink().to_string();
+        select(&pathway_question)
+            .item(
+                RecipePathway::Contracts,
+                "Smart Contract (Solidity)",
+                "Build, test, and run Solidity smart contracts",
+            )
+            .item(
+                RecipePathway::Pallets,
+                "Parachain (Polkadot SDK)",
+                "Build a full parachain with custom pallets and PAPI integration",
+            )
+            .item(
+                RecipePathway::Transactions,
+                "Chain Transactions",
+                "Single-chain transactions and state queries with PAPI",
+            )
+            .item(
+                RecipePathway::Xcm,
+                "Cross-chain Transactions (XCM)",
+                "Cross-chain asset transfers and cross-chain calls with Chopsticks",
+            )
+            .item(
+                RecipePathway::Networks,
+                "Polkadot Networks (Zombienet / Chopsticks)",
+                "Run Polkadot networks locally for testing",
+            )
+            .interact()?
+    };
 
     // Map pathway to recipe type (for template selection)
     let recipe_type = match pathway {
