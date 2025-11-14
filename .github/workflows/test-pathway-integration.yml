@@ -39,8 +39,9 @@ jobs:
     # 1. Path-based triggers: Only run when relevant template files change
     # 2. Runtime WASM caching: Avoid 15+ minute rebuilds when runtime code unchanged
     # 3. Cargo/Node caching: Speed up dependency installation
-    # 4. Polkadot tools version-based caching: Avoid rebuilding external tools
-    # Result: Most PRs skip this workflow, and when it runs, cached builds are 10x faster
+    # 4. Polkadot tools version-based caching: Avoid rebuilding external tools (30-40min savings)
+    # 5. 90-minute timeout: Accommodates cold cache compilation of Polkadot tools
+    # Result: Most PRs skip this workflow, cached runs complete in ~15-20 minutes
 
     steps:
       - name: Checkout code
@@ -51,19 +52,7 @@ jobs:
         with:
           components: rustfmt, clippy, rust-src
           target: wasm32-unknown-unknown
-          # Enable sccache for faster Rust compilation
           cache: true
-
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.6
-        continue-on-error: true  # Don't fail if GitHub cache service is down
-        id: sccache
-
-      - name: Configure sccache
-        if: steps.sccache.outcome == 'success'
-        run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -143,10 +132,6 @@ jobs:
         run: cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
         env:
           RUST_BACKTRACE: 1
-
-      - name: Show sccache stats
-        if: always()
-        run: sccache --show-stats
 
       - name: Upload parachain-example artifact
         if: always()
