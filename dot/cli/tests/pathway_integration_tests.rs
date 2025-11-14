@@ -346,29 +346,32 @@ async fn test_parachain_example_end_to_end() {
         Err(_) => panic!("npm install timed out"),
     }
 
-    // Generate TypeScript types from chain spec
-    println!("📝 Generating TypeScript types from chain spec...");
-    let generate_types = timeout(
+    // Fetch metadata and generate TypeScript types using papi add
+    println!("📝 Fetching metadata and generating TypeScript types...");
+    let papi_add = timeout(
         Duration::from_secs(120),
-        TokioCommand::new("npm")
-            .arg("run")
-            .arg("generate:types")
+        TokioCommand::new("npx")
+            .arg("papi")
+            .arg("add")
+            .arg("dot")
+            .arg("-w")
+            .arg("ws://localhost:9944")
             .current_dir(&recipe_path)
             .output(),
     )
     .await;
 
-    match generate_types {
+    match papi_add {
         Ok(Ok(output)) => {
             assert!(
                 output.status.success(),
-                "Type generation failed:\n{}",
+                "PAPI add failed:\n{}",
                 String::from_utf8_lossy(&output.stderr)
             );
-            println!("✅ TypeScript types generated");
+            println!("✅ TypeScript types generated from running node");
         }
-        Ok(Err(e)) => panic!("Failed to execute npm run generate:types: {}", e),
-        Err(_) => panic!("Type generation timed out"),
+        Ok(Err(e)) => panic!("Failed to execute npx papi add: {}", e),
+        Err(_) => panic!("PAPI add timed out"),
     }
 
     // Run the PAPI tests
