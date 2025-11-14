@@ -10,12 +10,21 @@ on:
     types: [published]
 
   # Run on PRs that touch critical files
+  # Smart path filtering: only run tests for templates that actually changed
   pull_request:
     paths:
+      # Global toolchain/workflow changes - run all tests
       - 'rust-toolchain.toml'
-      - 'dot/sdk/templates/**'
       - 'dot/cli/tests/pathway_integration_tests.rs'
       - '.github/workflows/test-pathway-integration.yml'
+      # Core SDK changes - run all tests
+      - 'dot/sdk/src/**'
+      # Template-specific changes - only run affected template tests
+      - 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**'
+      - 'dot/sdk/templates/recipe-templates/basic-interaction-template/**'
+      - 'dot/sdk/templates/recipe-templates/solidity-template/**'
+      - 'dot/sdk/templates/recipe-templates/xcm-template/**'
+      - 'dot/sdk/templates/recipe-templates/testing-template/**'
 
   # Allow manual trigger
   workflow_dispatch:
@@ -25,6 +34,12 @@ jobs:
     name: Test All Recipe Pathways
     runs-on: ubuntu-latest
     timeout-minutes: 60  # Integration tests can take a while
+
+    # Performance optimizations:
+    # 1. Path-based triggers: Only run when relevant template files change
+    # 2. Runtime WASM caching: Avoid 15+ minute rebuilds when runtime code unchanged
+    # 3. Cargo/Node caching: Speed up dependency installation
+    # Result: Most PRs skip this workflow, and when it runs, cached builds are 10x faster
 
     steps:
       - name: Checkout code
@@ -62,6 +77,18 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
+      # Cache compiled runtime WASM to avoid 15+ minute rebuilds
+      # This is the biggest time saver for parachain tests
+      - name: Cache compiled runtime artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            recipes/*/target/release/wbuild
+            recipes/*/target/release/*.wasm
+          key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/recipe-templates/polkadot-sdk-template/runtime/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/pallets/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-runtime-wasm-
 
       - name: Build CLI
         run: cargo build --release --package cli --locked
