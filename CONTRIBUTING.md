@@ -43,49 +43,51 @@ cargo build --release --bin dot
 # Use ./target/release/dot
 ```
 
-### 2. Create a Recipe
+### 2. Create a Project
 
 ```bash
 # Interactive mode (recommended)
-dot recipe create
+dot create
+
+# Or specify a pathway directly
+dot create --pathway pallets --title "My Custom Pallet"
 ```
 
 The CLI will guide you through:
-- **Pathway** - Parachain, Contracts, Basic Interactions, XCM, or Polkadot Infrastructure
+- **Pathway** - Pallets, Contracts, Transactions, XCM, or Networks
 - **Title** - Clear, descriptive name (e.g., "NFT Pallet with Minting")
-- **Difficulty** - Beginner, Intermediate, or Advanced
-- **Content Type** - Tutorial (comprehensive) or Guide (focused task)
 - **Description** - Brief 1-2 sentence summary
 
 The CLI automatically:
-- Creates the recipe structure
+- Creates the project structure
 - Sets up testing infrastructure
 - Installs dependencies
 - Creates a git branch
 
-### 3. Write Your Recipe
+### 3. Write Your Code
 
 Edit the generated files:
 - `README.md` - Your recipe content (the CLI provides a template)
 - `src/` or `pallets/` - Your implementation
 - `tests/` - Test your code
 
-### 4. Test Your Recipe
+### 4. Test Your Project
 
 ```bash
-# Test your recipe
-dot recipe test my-recipe-name
+# Test your project
+dot test my-project-name
 ```
 
-### 5. Submit Your Recipe
+### 5. Submit as a Recipe
 
 ```bash
-# Submit as a pull request
-dot recipe submit my-recipe-name
+# Submit as a pull request to the cookbook
+dot submit my-project-name
 ```
 
 The CLI will:
-- Validate your recipe
+- Run tests to validate your code
+- Validate that required lock files are present (Cargo.lock and/or package-lock.json)
 - Commit changes
 - Push to your fork
 - Create a pull request
@@ -119,18 +121,17 @@ Documentation fixes are welcome! Submit changes via pull request.
 ## CLI Commands Reference
 
 ```bash
-# Recipe management
-dot recipe create   # Create recipe (interactive)
-dot recipe test     # Test a recipe
-dot recipe submit   # Submit as pull request
+# Project creation
+dot create          # Create project (interactive)
+dot create --title "My Project" --pathway pallets --non-interactive
 
-# Non-interactive mode
-dot recipe create \
-  --title "My Recipe Title" \
-  --pathway parachain \
-  --difficulty beginner \
-  --content-type tutorial \
-  --non-interactive
+# Shortcut commands
+dot contract        # Create a contract project
+dot parachain       # Create a parachain project
+
+# Testing and submission
+dot test            # Test a project
+dot submit          # Submit as pull request to cookbook
 ```
 
 <hr />
@@ -144,12 +145,6 @@ Use clear, descriptive titles:
 - ✅ "Asset Transfer using XCM"
 - ❌ "My NFT Pallet" (no personal pronouns)
 - ❌ "Simple Counter" (no vague qualifiers)
-- ❌ "NFT Tutorial" (don't include content type)
-
-### Content Types
-
-- **Tutorial** - Comprehensive learning journey from scratch
-- **Guide** - Focused, actionable steps for a specific task
 
 ### Code Quality
 
@@ -157,6 +152,7 @@ Use clear, descriptive titles:
 - Follow language conventions (run `cargo fmt`, `cargo clippy`)
 - Add clear comments for complex logic
 - Include error handling
+- **Commit lock files** (Cargo.lock and/or package-lock.json) to ensure reproducible builds
 
 ### Commit Messages
 
@@ -176,19 +172,10 @@ test(my-recipe): add integration tests
 ### Documentation
 
 - **[Documentation Hub](docs/README.md)** - Complete documentation organized by role
-- **[Getting Started Guide](docs/getting-started/)** - Installation and first recipe tutorial
+- **[Getting Started Guide](docs/getting-started/)** - Installation and first project tutorial
 - **[Contributor Guide](docs/contributors/)** - Workflow, guidelines, and best practices
-- **[Recipe Development](docs/contributors/recipe-development.md)** - Advanced development techniques
-- **[Testing Recipes](docs/contributors/testing-recipes.md)** - Comprehensive testing guide
-- **[Troubleshooting](docs/contributors/troubleshooting.md)** - Common issues and solutions
-
-### Technical Reference
-
 - **[CLI Reference](docs/developers/cli-reference.md)** - Complete CLI command reference
 - **[SDK Guide](docs/developers/sdk-guide.md)** - Using the SDK programmatically
-- **[Architecture](docs/developers/architecture.md)** - System design and internals
-- **[Recipe Config Schema](docs/reference/recipe-config-schema.md)** - Configuration file format
-- **[Version Management](docs/maintainers/version-management.md)** - Dependency version system
 
 ### External Resources
 
@@ -200,7 +187,7 @@ test(my-recipe): add integration tests
 ## Getting Help
 
 - **Questions**: [Open an issue](https://github.com/polkadot-developers/polkadot-cookbook/issues)
-- **Example Recipe**: See `recipes/basic-pallet/` for reference
+- **Example Projects**: See `recipes/` directory for reference implementations
 
 <hr />
 

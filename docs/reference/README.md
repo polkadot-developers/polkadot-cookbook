@@ -7,7 +7,6 @@ This section contains reference material, schemas, and specifications.
 ### Schemas & Specifications
 
 - **[Manifest Schema](manifest-schema.md)** - Release manifest format
-- **[Recipe Config Schema](recipe-config-schema.md)** - `recipe.config.yml` specification
 
 ### Security
 
@@ -36,19 +35,6 @@ recipes:
 
 [→ Complete Manifest Schema](manifest-schema.md)
 
-### Recipe Configuration
-
-Each recipe requires a `recipe.config.yml`:
-
-```yaml
-name: Basic Pallet
-slug: basic-pallet
-version: 0.1.0
-type: polkadot-sdk
-difficulty: beginner
-```
-
-[→ Complete Recipe Config Schema](recipe-config-schema.md)
 
 ## Security Guidelines
 

@@ -6,10 +6,10 @@ Guide to using the Polkadot Cookbook SDK programmatically.
 
 The Polkadot Cookbook SDK (`polkadot-cookbook-sdk`) is a Rust library that provides:
 
-- **Recipe Configuration** - Parse and validate `recipe.config.yml`
+- **Project Configuration** - Configure and validate project settings
 - **Version Management** - Resolve dependency versions
-- **Recipe Scaffolding** - Generate new recipes programmatically
-- **Validation** - Validate recipe structure and content
+- **Project Scaffolding** - Generate new projects programmatically
+- **Validation** - Validate project structure and content
 
 ## Installation
 
@@ -34,20 +34,19 @@ cargo build --release -p polkadot-cookbook-sdk
 
 ## Quick Start
 
-### Parse Recipe Configuration
+### Create Project Configuration
 
 ```rust
-use polkadot_cookbook_sdk::RecipeConfig;
-use std::path::Path;
+use polkadot_cookbook_sdk::config::ProjectConfig;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load recipe config
-    let config_path = Path::new("recipes/my-recipe/recipe.config.yml");
-    let config = RecipeConfig::load(config_path)?;
+    // Create project config
+    let config = ProjectConfig::new("my-project")
+        .with_title("My Custom Project")
+        .with_description("A Polkadot project");
 
-    println!("Recipe: {}", config.title);
-    println!("Pathway: {}", config.pathway);
-    println!("Difficulty: {}", config.difficulty);
+    println!("Project: {}", config.title);
+    println!("Slug: {}", config.slug);
 
     Ok(())
 }
@@ -75,23 +74,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### Create Recipe
+### Create Project
 
 ```rust
-use polkadot_cookbook_sdk::RecipeScaffold;
+use polkadot_cookbook_sdk::scaffold::Scaffold;
+use polkadot_cookbook_sdk::config::{ProjectConfig, ProjectType};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let scaffold = RecipeScaffold::builder()
-        .title("My Custom Recipe")
-        .pathway("runtime")
-        .difficulty("beginner")
-        .content_type("tutorial")
-        .build()?;
+    let config = ProjectConfig::new("my-custom-project")
+        .with_title("My Custom Project")
+        .with_project_type(ProjectType::PolkadotSdk);
 
-    // Generate recipe files
-    scaffold.generate("recipes/my-custom-recipe")?;
+    let scaffold = Scaffold::new();
 
-    println!("Recipe created successfully!");
+    // Generate project files
+    scaffold.create_project(config, None).await?;
+
+    println!("Project created successfully!");
 
     Ok(())
 }
@@ -101,18 +100,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Core Modules
 
-### Recipe Configuration
+### Project Configuration
 
-#### RecipeConfig
+#### ProjectConfig
 
-Represents a recipe's metadata from `recipe.config.yml`.
+Represents a project's configuration settings.
 
 ```rust
-use polkadot_cookbook_sdk::RecipeConfig;
+use polkadot_cookbook_sdk::ProjectConfig;
 use std::path::Path;
 
 // Load from file
-let config = RecipeConfig::load("recipes/my-recipe/recipe.config.yml")?;
+let config = ProjectConfig::load("recipes/my-recipe/recipe.config.yml")?;
 
 // Access fields
 println!("Title: {}", config.title);
@@ -129,7 +128,7 @@ config.validate()?;
 **Fields:**
 
 ```rust
-pub struct RecipeConfig {
+pub struct ProjectConfig {
     pub title: String,
     pub slug: String,
     pub pathway: String,
@@ -144,7 +143,7 @@ pub struct RecipeConfig {
 **Methods:**
 
 ```rust
-impl RecipeConfig {
+impl ProjectConfig {
     /// Load config from file
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Error>;
 
@@ -162,10 +161,10 @@ impl RecipeConfig {
 **Example: Create and save config**
 
 ```rust
-use polkadot_cookbook_sdk::RecipeConfig;
+use polkadot_cookbook_sdk::ProjectConfig;
 
-let config = RecipeConfig {
-    title: "My Recipe".to_string(),
+let config = ProjectConfig {
+    title: "My Project".to_string(),
     slug: "my-recipe".to_string(),
     pathway: "runtime".to_string(),
     difficulty: "beginner".to_string(),
@@ -287,15 +286,15 @@ for (key, value) in versions {
 
 ### Recipe Scaffolding
 
-#### RecipeScaffold
+#### Scaffold
 
 Generate new recipe structures programmatically.
 
 ```rust
-use polkadot_cookbook_sdk::RecipeScaffold;
+use polkadot_cookbook_sdk::Scaffold;
 
 // Build scaffold configuration
-let scaffold = RecipeScaffold::builder()
+let scaffold = Scaffold::builder()
     .title("Advanced Pallet Development")
     .pathway("runtime")
     .difficulty("advanced")
@@ -314,25 +313,25 @@ println!("Created recipe at: {}", recipe_path);
 **Builder pattern:**
 
 ```rust
-pub struct RecipeScaffoldBuilder {
+pub struct ScaffoldBuilder {
     // Builder fields
 }
 
-impl RecipeScaffoldBuilder {
+impl ScaffoldBuilder {
     pub fn title(mut self, title: impl Into<String>) -> Self;
     pub fn pathway(mut self, pathway: impl Into<String>) -> Self;
     pub fn difficulty(mut self, difficulty: impl Into<String>) -> Self;
     pub fn content_type(mut self, content_type: impl Into<String>) -> Self;
     pub fn description(mut self, description: impl Into<String>) -> Self;
     pub fn recipe_type(mut self, recipe_type: impl Into<String>) -> Self;
-    pub fn build(self) -> Result<RecipeScaffold, Error>;
+    pub fn build(self) -> Result<Scaffold, Error>;
 }
 ```
 
 **Generated files:**
 
 ```rust
-impl RecipeScaffold {
+impl Scaffold {
     /// Generate all recipe files
     pub fn generate<P: AsRef<Path>>(&self, output_path: P) -> Result<(), Error>;
 
@@ -346,10 +345,10 @@ impl RecipeScaffold {
 **Example: Custom template**
 
 ```rust
-use polkadot_cookbook_sdk::RecipeScaffold;
+use polkadot_cookbook_sdk::Scaffold;
 
-let scaffold = RecipeScaffold::builder()
-    .title("Custom Recipe")
+let scaffold = Scaffold::builder()
+    .title("Custom Project")
     .pathway("runtime")
     .difficulty("beginner")
     .content_type("guide")
@@ -451,10 +450,10 @@ pub enum Error {
 **Usage:**
 
 ```rust
-use polkadot_cookbook_sdk::{RecipeConfig, Error};
+use polkadot_cookbook_sdk::{ProjectConfig, Error};
 
-fn load_recipe(path: &str) -> Result<RecipeConfig, Error> {
-    RecipeConfig::load(path)
+fn load_recipe(path: &str) -> Result<ProjectConfig, Error> {
+    ProjectConfig::load(path)
 }
 
 fn main() {
@@ -476,7 +475,7 @@ fn main() {
 Process multiple recipes:
 
 ```rust
-use polkadot_cookbook_sdk::{RecipeConfig, VersionManager};
+use polkadot_cookbook_sdk::{ProjectConfig, VersionManager};
 use std::fs;
 use std::path::Path;
 
@@ -491,7 +490,7 @@ fn process_all_recipes() -> Result<(), Box<dyn std::error::Error>> {
         if path.is_dir() {
             // Load config
             let config_path = path.join("recipe.config.yml");
-            if let Ok(config) = RecipeConfig::load(&config_path) {
+            if let Ok(config) = ProjectConfig::load(&config_path) {
                 println!("Processing: {}", config.title);
 
                 // Get versions
@@ -515,12 +514,12 @@ fn process_all_recipes() -> Result<(), Box<dyn std::error::Error>> {
 Create recipes with custom templates:
 
 ```rust
-use polkadot_cookbook_sdk::RecipeScaffold;
+use polkadot_cookbook_sdk::Scaffold;
 use std::fs;
 
 fn create_custom_recipe() -> Result<(), Box<dyn std::error::Error>> {
-    let scaffold = RecipeScaffold::builder()
-        .title("My Custom Recipe")
+    let scaffold = Scaffold::builder()
+        .title("My Custom Project")
         .pathway("runtime")
         .difficulty("beginner")
         .content_type("tutorial")
@@ -588,7 +587,7 @@ fn compare_versions() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 // Recipe Configuration
-pub struct RecipeConfig {
+pub struct ProjectConfig {
     pub title: String,
     pub slug: String,
     pub pathway: String,
@@ -611,11 +610,11 @@ pub enum VersionSource {
 }
 
 // Recipe Scaffolding
-pub struct RecipeScaffold {
-    config: RecipeConfig,
+pub struct Scaffold {
+    config: ProjectConfig,
 }
 
-pub struct RecipeScaffoldBuilder { /* ... */ }
+pub struct ScaffoldBuilder { /* ... */ }
 
 // Validation
 pub struct RecipeValidator {
@@ -651,8 +650,8 @@ mod tests {
 
     #[test]
     fn test_recipe_config_load() {
-        let config = RecipeConfig::load("tests/fixtures/recipe.config.yml").unwrap();
-        assert_eq!(config.title, "Test Recipe");
+        let config = ProjectConfig::load("tests/fixtures/recipe.config.yml").unwrap();
+        assert_eq!(config.title, "Test Project");
         assert_eq!(config.pathway, "runtime");
     }
 
@@ -665,7 +664,7 @@ mod tests {
 
     #[test]
     fn test_scaffold_generation() {
-        let scaffold = RecipeScaffold::builder()
+        let scaffold = Scaffold::builder()
             .title("Test")
             .pathway("runtime")
             .difficulty("beginner")
@@ -691,7 +690,7 @@ mod tests {
 How the CLI uses the SDK:
 
 ```rust
-use polkadot_cookbook_sdk::{RecipeScaffold, VersionManager};
+use polkadot_cookbook_sdk::{Scaffold, VersionManager};
 use clap::Parser;
 
 #[derive(Parser)]
@@ -718,14 +717,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command {
         Command::Create { title, pathway } => {
-            let scaffold = RecipeScaffold::builder()
+            let scaffold = Scaffold::builder()
                 .title(&title)
                 .pathway(&pathway)
                 .difficulty("beginner")
                 .content_type("tutorial")
                 .build()?;
 
-            let slug = RecipeConfig::generate_slug(&title);
+            let slug = ProjectConfig::generate_slug(&title);
             scaffold.generate(format!("recipes/{}", slug))?;
 
             println!("✨ Recipe created: {}", slug);

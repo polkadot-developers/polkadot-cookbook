@@ -155,7 +155,7 @@ This feature is planned for a future release.
 
 Now that you have the CLI installed:
 
-1. **[Create Your First Recipe](first-recipe.md)** - Follow the tutorial
+1. **[Create Your First Project](first-project.md)** - Follow the tutorial
 2. **[Read the CLI Reference](../developers/cli-reference.md)** - Learn all commands
 3. **[Join the Community](../../CONTRIBUTING.md)** - Start contributing
 
@@ -333,7 +333,7 @@ rm -rf ~/.config/polkadot-cookbook
 
 ## Related Documentation
 
-- [First Recipe Tutorial](first-recipe.md) - Create your first recipe
+- [First Project Tutorial](first-project.md) - Create your first project
 - [CLI Reference](../developers/cli-reference.md) - Complete command reference
 - [Contributing Guide](../../CONTRIBUTING.md) - Start contributing
 

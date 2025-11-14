@@ -46,3 +46,4 @@ octocrab = { version = "0.39", default-features = false, features = ["default-cl
 
 # Testing
 tempfile = "3.8"
+serial_test = "3.2"

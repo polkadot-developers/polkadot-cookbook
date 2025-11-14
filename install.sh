@@ -213,7 +213,7 @@ main() {
         echo "    dot --help          # Show all commands"
         echo "    dot setup           # Setup development environment"
         echo "    dot doctor          # Check your environment"
-        echo "    dot recipe create   # Create a new recipe"
+        echo "    dot create   # Create a new project"
         echo ""
     else
         print_yellow "⚠ Installation complete, but 'dot' not found in PATH"

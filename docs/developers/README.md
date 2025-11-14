@@ -47,13 +47,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 The `dot` CLI provides commands for creating and managing recipes:
 
 ```bash
-# Create a new recipe
-dot recipe create --title "My Recipe"
+# Create a new project
+dot create --title "My Project"
 
 # View versions
 
 # Submit recipe for review
-dot recipe submit
+dot submit
 ```
 
 [→ Complete CLI Reference](cli-reference.md)

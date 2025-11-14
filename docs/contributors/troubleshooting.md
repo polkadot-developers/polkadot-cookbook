@@ -5,7 +5,7 @@ Common issues and solutions when developing Polkadot Cookbook recipes.
 ## Table of Contents
 
 - [Setup and Installation](#setup-and-installation)
-- [Recipe Creation](#recipe-creation)
+- [Project Creation](#project-creation)
 - [Development Issues](#development-issues)
 - [Testing Problems](#testing-problems)
 - [Git and GitHub](#git-and-github)
@@ -104,7 +104,7 @@ sudo dnf install git
 
 **Symptom:**
 ```bash
-$ dot recipe submit
+$ dot submit
 Error: GitHub CLI not authenticated
 ```
 
@@ -127,36 +127,36 @@ gh auth status
 
 ---
 
-## Recipe Creation
+## Project Creation
 
-### Recipe Create Fails with "Directory Already Exists"
+### Project Create Fails with "Directory Already Exists"
 
 **Symptom:**
 ```bash
-$ dot recipe create
-Error: Recipe directory already exists: recipes/my-recipe
+$ dot create
+Error: Project directory already exists: recipes/my-project
 ```
 
-**Cause:** Recipe with same name already exists
+**Cause:** Project with same name already exists
 
 **Solutions:**
 
 ```bash
 # Option 1: Use different name
-dot recipe create
+dot create
 # Enter different title
 
 # Option 2: Remove existing directory
-rm -rf recipes/my-recipe
-dot recipe create
+rm -rf recipes/my-project
+dot create
 
-# Option 3: Continue working on existing recipe
-cd recipes/my-recipe
+# Option 3: Continue working on existing project
+cd recipes/my-project
 ```
 
 ---
 
-### npm install Fails During Recipe Creation
+### npm install Fails During Project Creation
 
 **Symptom:**
 ```
@@ -186,7 +186,7 @@ cd recipes/my-recipe
 npm install
 
 # Use --skip-install flag
-dot recipe create --skip-install
+dot create --skip-install
 cd recipes/my-recipe
 npm install
 ```
@@ -206,7 +206,7 @@ Recipe created but no git branch
 git init
 
 # Or use --no-git flag
-dot recipe create --no-git
+dot create --no-git
 ```
 
 ---
@@ -667,7 +667,7 @@ git push --force-with-lease
 
 **Symptom:**
 ```bash
-$ dot recipe submit
+$ dot submit
 Error: Failed to create pull request
 ```
 
@@ -685,7 +685,7 @@ git remote -v  # Ensure fork exists
 
 # Manual PR creation
 git push -u origin recipe/my-recipe
-gh pr create --title "feat(recipe): my recipe" --body "Description"
+gh pr create --title "feat(recipe): my project" --body "Description"
 ```
 
 ---
