@@ -18,11 +18,10 @@ fi
 # Start polkadot-omni-node with the generated chain spec
 cd "$PROJECT_ROOT"
 polkadot-omni-node \
-  --dev \
+  --chain chain-spec.json \
   --rpc-cors all \
   --rpc-methods unsafe \
   --rpc-port 9944 \
-  --runtime ./target/release/wbuild/{{slug}}-runtime/{{slug}}_runtime.compact.compressed.wasm \
   --tmp
 
 echo ""
