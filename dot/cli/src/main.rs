@@ -278,15 +278,8 @@ async fn handle_create(
     // Git branch creation is default (unless --no-git flag is used)
     let create_git_branch = !no_git;
 
-    // Prompt for npm install (only if not specified via flag)
-    let skip_install = if skip_install {
-        true
-    } else {
-        let install_question = "Install npm dependencies (vitest, @polkadot/api, etc.)?"
-            .polkadot_pink()
-            .to_string();
-        !confirm(&install_question).initial_value(true).interact()?
-    };
+    // Npm install is default (unless --skip-install flag is used)
+    // Skip install flag is already set from CLI args
 
     // Calculate derived values for the summary
     let project_path = PathBuf::from(".").join(&slug);

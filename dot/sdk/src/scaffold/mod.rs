@@ -140,21 +140,21 @@ impl Scaffold {
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
                 debug!("Installing Solidity recipe dependencies");
+                // Show npm install output in real-time (like create-react-app)
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
-                    .output()
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
+                    .status()
                     .await;
 
                 match install_result {
-                    Ok(output) if output.status.success() => {
+                    Ok(status) if status.success() => {
                         debug!("Solidity dependencies installed successfully");
                     }
-                    Ok(output) => {
-                        warn!(
-                            "npm install failed for Solidity recipe: {}",
-                            String::from_utf8_lossy(&output.stderr)
-                        );
+                    Ok(status) => {
+                        warn!("npm install failed for Solidity recipe: {}", status);
                     }
                     Err(e) => {
                         warn!("Failed to run npm install for Solidity recipe: {}", e);
@@ -165,21 +165,21 @@ impl Scaffold {
             // Parachain recipes: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
                 debug!("Installing Parachain recipe PAPI dependencies");
+                // Show npm install output in real-time (like create-react-app)
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
-                    .output()
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
+                    .status()
                     .await;
 
                 match install_result {
-                    Ok(output) if output.status.success() => {
+                    Ok(status) if status.success() => {
                         debug!("PAPI dependencies installed successfully");
                     }
-                    Ok(output) => {
-                        warn!(
-                            "npm install failed for Parachain recipe: {}",
-                            String::from_utf8_lossy(&output.stderr)
-                        );
+                    Ok(status) => {
+                        warn!("npm install failed for Parachain recipe: {}", status);
                     }
                     Err(e) => {
                         warn!("Failed to run npm install for Parachain recipe: {}", e);

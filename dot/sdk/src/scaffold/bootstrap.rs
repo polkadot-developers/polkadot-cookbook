@@ -7,7 +7,7 @@ use crate::error::{CookbookError, Result};
 use std::path::PathBuf;
 use std::process::Stdio;
 use tokio::process::Command;
-use tracing::{debug, warn};
+use tracing::debug;
 
 /// Progress callback function type
 pub type ProgressCallback = Box<dyn Fn(&str) + Send + Sync>;
@@ -207,24 +207,23 @@ export default defineConfig({
     async fn run_command(&self, program: &str, args: &[&str]) -> Result<()> {
         debug!("Running command: {} {}", program, args.join(" "));
 
-        let output = Command::new(program)
+        // Use inherit to show output in real-time (like create-react-app)
+        let status = Command::new(program)
             .args(args)
             .current_dir(&self.project_path)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .output()
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .status()
             .await
             .map_err(|e| CookbookError::CommandError {
                 command: format!("{} {}", program, args.join(" ")),
                 message: e.to_string(),
             })?;
 
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            warn!("Command failed: {} - {}", program, stderr);
+        if !status.success() {
             return Err(CookbookError::CommandError {
                 command: format!("{} {}", program, args.join(" ")),
-                message: stderr.to_string(),
+                message: format!("Command exited with status: {}", status),
             });
         }
 
