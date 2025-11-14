@@ -1142,13 +1142,48 @@ async fn handle_standalone_submit(
         Err(_) => "Unknown",
     };
 
+    // Prompt for pathway to organize the recipe
+    let pathway_question = "Which pathway does this recipe belong to?"
+        .polkadot_pink()
+        .to_string();
+    let pathway = select(pathway_question)
+        .item(
+            RecipePathway::Parachain,
+            "Custom Parachain",
+            "Build custom parachains with Polkadot SDK",
+        )
+        .item(
+            RecipePathway::Contracts,
+            "Smart Contract",
+            "Develop Solidity contracts for Polkadot",
+        )
+        .item(
+            RecipePathway::BasicInteraction,
+            "Basic Interaction",
+            "Single-chain PAPI interactions with TypeScript",
+        )
+        .item(
+            RecipePathway::Xcm,
+            "Cross-chain Interaction",
+            "Cross-chain messaging with XCM and Chopsticks",
+        )
+        .item(
+            RecipePathway::Testing,
+            "Polkadot Network",
+            "Testing infrastructure with Zombienet/Chopsticks",
+        )
+        .interact()?;
+
+    let pathway_folder = pathway.to_folder_name();
+
     note(
         "Project Info",
         format!(
-            "Name:        {}\nSlug:        {}\nType:        {}",
+            "Name:        {}\nSlug:        {}\nType:        {}\nPathway:     {}",
             project_name.polkadot_pink(),
             project_slug.polkadot_pink(),
             recipe_type,
+            pathway_folder.polkadot_pink(),
         ),
     )?;
 
@@ -1257,19 +1292,26 @@ async fn handle_standalone_submit(
 
     sp.stop("✅ Repository cloned");
 
-    // Step 3: Copy project to recipes/{slug}/
-    sp.start(format!("Copying project to recipes/{}...", project_slug));
+    // Step 3: Copy project to recipes/{pathway}/{slug}/
+    sp.start(format!(
+        "Copying project to recipes/{}/{}...",
+        pathway_folder, project_slug
+    ));
 
     let recipes_dir = temp_path.join("recipes");
-    let dest_dir = recipes_dir.join(&project_slug);
+    let pathway_dir = recipes_dir.join(pathway_folder);
+    let dest_dir = pathway_dir.join(&project_slug);
 
-    // Create recipes directory if it doesn't exist
-    tokio::fs::create_dir_all(&recipes_dir).await?;
+    // Create pathway directory if it doesn't exist
+    tokio::fs::create_dir_all(&pathway_dir).await?;
 
     // Copy project directory
     copy_dir_recursive(&project_path, &dest_dir).await?;
 
-    sp.stop(format!("✅ Project copied to recipes/{}", project_slug));
+    sp.stop(format!(
+        "✅ Project copied to recipes/{}/{}",
+        pathway_folder, project_slug
+    ));
 
     // Step 4: Create branch, commit, and push
     let branch_name = format!("feat/recipe-{}", project_slug);
@@ -1566,20 +1608,50 @@ fn get_recipe_path(slug: Option<String>) -> Result<PathBuf> {
     };
 
     if let Some(slug) = slug {
-        let path = repo_root.join("recipes").join(&slug);
-        if !path.exists() {
-            eprintln!("Recipe not found: {slug}");
-            std::process::exit(1);
+        // Search for recipe in pathway subdirectories
+        let pathways = [
+            "parachain",
+            "contracts",
+            "basic-interaction",
+            "xcm",
+            "testing",
+        ];
+
+        for pathway in &pathways {
+            let path = repo_root.join("recipes").join(pathway).join(&slug);
+            if path.exists() {
+                return Ok(path);
+            }
         }
-        Ok(path)
+
+        // Also check legacy location (directly in recipes/)
+        let legacy_path = repo_root.join("recipes").join(&slug);
+        if legacy_path.exists() {
+            return Ok(legacy_path);
+        }
+
+        eprintln!("Recipe not found: {slug}");
+        eprintln!("Searched in pathway directories: {}", pathways.join(", "));
+        std::process::exit(1);
     } else {
         // Try to infer from current directory
         let current = std::env::current_dir()?;
-        if current.parent().and_then(|p| p.file_name()) == Some(std::ffi::OsStr::new("recipes")) {
-            Ok(current)
-        } else {
-            eprintln!("Please provide a recipe slug or run from within a recipe directory");
-            std::process::exit(1);
+
+        // Check if we're in a pathway subdirectory (e.g., recipes/parachain/my-recipe)
+        if let Some(parent) = current.parent() {
+            if let Some(grandparent) = parent.parent() {
+                if grandparent.file_name() == Some(std::ffi::OsStr::new("recipes")) {
+                    return Ok(current);
+                }
+            }
         }
+
+        // Check legacy location (directly in recipes/)
+        if current.parent().and_then(|p| p.file_name()) == Some(std::ffi::OsStr::new("recipes")) {
+            return Ok(current);
+        }
+
+        eprintln!("Please provide a recipe slug or run from within a recipe directory");
+        std::process::exit(1);
     }
 }

@@ -44,6 +44,20 @@ pub enum RecipePathway {
     RequestNew,
 }
 
+impl RecipePathway {
+    /// Convert pathway to folder name for organizing recipes
+    pub fn to_folder_name(&self) -> &'static str {
+        match self {
+            RecipePathway::Parachain => "parachain",
+            RecipePathway::Contracts => "contracts",
+            RecipePathway::BasicInteraction => "basic-interaction",
+            RecipePathway::Xcm => "xcm",
+            RecipePathway::Testing => "testing",
+            RecipePathway::RequestNew => "request-new",
+        }
+    }
+}
+
 /// Recipe metadata from recipe.config.yml
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecipeConfig {
