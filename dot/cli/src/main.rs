@@ -35,7 +35,7 @@ impl PolkadotColor for String {
 #[command(name = "dot")]
 #[command(about = "dot CLI - a command-line tool for Polkadot development", long_about = None)]
 #[command(
-    after_help = "EXAMPLES:\n  # Create a new smart contract project (interactive)\n  dot create\n\n  # Create a project non-interactively\n  dot create --title \"My DeFi Protocol\" --pathway contracts --non-interactive\n\n  # Run tests on a project\n  dot test my-recipe\n\n  # Submit a recipe as a pull request\n  dot submit my-recipe"
+    after_help = "EXAMPLES:\n  # Create a new smart contract project (interactive)\n  dot create\n\n  # Create a project non-interactively\n  dot create --title \"My DeFi Protocol\" --pathway contracts --non-interactive\n\n  # Run tests on a project\n  dot test my-project\n\n  # Submit a project as a recipe to the cookbook\n  dot submit my-project"
 )]
 #[command(version)]
 struct Cli {

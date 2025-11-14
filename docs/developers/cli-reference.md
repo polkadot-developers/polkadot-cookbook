@@ -21,7 +21,7 @@ dot [GLOBAL_FLAGS] <COMMAND> [COMMAND_FLAGS]
 
 ### `create`
 
-Create a new recipe with scaffolded structure.
+Create a new project with scaffolded structure.
 
 **Usage:**
 ```bash
@@ -35,19 +35,19 @@ dot create
 
 Launches an interactive prompt that guides you through:
 1. Pathway selection (Parachain, Smart Contract, Chain Transactions, Cross-Chain Transactions, Polkadot Networks)
-2. Recipe title
+2. Project title
 
 **Non-Interactive Mode:**
 ```bash
-dot create --title "My Recipe" --non-interactive [OPTIONS]
+dot create --title "My Project" --non-interactive [OPTIONS]
 ```
 
 **Options:**
 
 | Flag | Description | Required | Default |
 |------|-------------|----------|---------|
-| `--title <TITLE>` | Recipe title | Yes (non-interactive) | - |
-| `--pathway <PATHWAY>` | Recipe pathway | No | parachain |
+| `--title <TITLE>` | Project title | Yes (non-interactive) | - |
+| `--pathway <PATHWAY>` | Project pathway | No | parachain |
 | `--skip-install` | Skip npm dependency installation | No | false |
 | `--no-git` | Skip git branch creation | No | false |
 | `--pallet-only` | Pallet-only mode (no runtime, no PAPI) | No | false |
@@ -66,7 +66,7 @@ dot create --title "My Recipe" --non-interactive [OPTIONS]
 # Interactive mode (recommended)
 dot create
 
-# Non-interactive parachain recipe
+# Non-interactive parachain project
 dot create --title "My Parachain" --pathway parachain --non-interactive
 
 # Pallet-only mode (advanced, no runtime)
@@ -125,7 +125,7 @@ recipes/my-contract/
 └── scripts/               # Deployment scripts
 ```
 
-Note: Structure varies by recipe pathway. See pathway-specific READMEs for details.
+Note: Structure varies by project pathway. See pathway-specific READMEs for details.
 
 **Exit Codes:**
 - `0` - Success

@@ -13,7 +13,7 @@ The Polkadot Cookbook uses a modular SDK architecture consisting of two main com
 
 **Package**: `sdk`
 
-The SDK library provides the business logic for recipe creation and management. It can be used programmatically by other tools.
+The SDK library provides the business logic for project creation and management. It can be used programmatically by other tools.
 
 ### Key Modules
 
@@ -64,9 +64,9 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 
 ### Commands
 
-- `create` - Create a new recipe with interactive prompts
-- `test` - Test a recipe
-- `submit` - Submit recipe as pull request
+- `create` - Create a new project with interactive prompts
+- `test` - Test a project
+- `submit` - Submit project as a recipe to the cookbook
 
 ### Features
 
@@ -81,23 +81,23 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 ### Usage
 
 ```bash
-# Create recipe - Interactive mode (prompts for options)
+# Create project - Interactive mode (prompts for options)
 dot create
 
 # Non-interactive mode with title
-dot create --title "My Recipe"
+dot create --title "My Project"
 
 # With options
-dot create --title "My Recipe" --skip-install --no-git --non-interactive
+dot create --title "My Project" --skip-install --no-git --non-interactive
 
 # Non-interactive mode for CI/CD
-dot create --title "My Recipe" --non-interactive
+dot create --title "My Project" --non-interactive
 
 # View global dependency versions
 
-# View recipe-specific versions
+# View project-specific versions
 
-# Show version sources (global vs recipe override)
+# Show version sources (global vs project override)
 
 # CI-friendly output (KEY=VALUE format)
 
@@ -119,7 +119,7 @@ The SDK architecture provides several benefits:
 ### 2. Programmatic Access
 - Other tools can use the SDK library directly
 - IDE extensions can integrate the functionality
-- CI/CD pipelines can automate recipe creation
+- CI/CD pipelines can automate project creation
 
 ### 3. Better Testing
 - Unit tests for business logic

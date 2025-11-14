@@ -5,7 +5,7 @@ Common issues and solutions when developing Polkadot Cookbook recipes.
 ## Table of Contents
 
 - [Setup and Installation](#setup-and-installation)
-- [Recipe Creation](#recipe-creation)
+- [Project Creation](#project-creation)
 - [Development Issues](#development-issues)
 - [Testing Problems](#testing-problems)
 - [Git and GitHub](#git-and-github)
@@ -127,17 +127,17 @@ gh auth status
 
 ---
 
-## Recipe Creation
+## Project Creation
 
-### Recipe Create Fails with "Directory Already Exists"
+### Project Create Fails with "Directory Already Exists"
 
 **Symptom:**
 ```bash
 $ dot create
-Error: Recipe directory already exists: recipes/my-recipe
+Error: Project directory already exists: recipes/my-project
 ```
 
-**Cause:** Recipe with same name already exists
+**Cause:** Project with same name already exists
 
 **Solutions:**
 
@@ -147,16 +147,16 @@ dot create
 # Enter different title
 
 # Option 2: Remove existing directory
-rm -rf recipes/my-recipe
+rm -rf recipes/my-project
 dot create
 
-# Option 3: Continue working on existing recipe
-cd recipes/my-recipe
+# Option 3: Continue working on existing project
+cd recipes/my-project
 ```
 
 ---
 
-### npm install Fails During Recipe Creation
+### npm install Fails During Project Creation
 
 **Symptom:**
 ```

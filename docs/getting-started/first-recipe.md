@@ -5,10 +5,10 @@ A step-by-step tutorial for creating your first Polkadot Cookbook recipe.
 ## What You'll Learn
 
 By the end of this tutorial, you'll know how to:
-- Create a new recipe using the CLI
+- Create a new project using the CLI
 - Understand the generated file structure
-- Run and test your recipe
-- Submit your recipe for review
+- Run and test your project
+- Submit your project as a recipe to the cookbook
 
 ## Prerequisites
 
@@ -16,8 +16,8 @@ Before starting, ensure you have:
 
 1. **CLI Installed** - See [Installation Guide](installation.md)
 2. **Git Configured** - Name and email set
-3. **GitHub CLI** - For submitting your recipe: `gh auth login`
-4. **Development Tools** - Rust (for parachain recipes) or Node.js (for other recipes)
+3. **GitHub CLI** - For submitting your project: `gh auth login`
+4. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
 
 **Verify your setup:**
 ```bash
@@ -34,9 +34,9 @@ gh auth status
 
 ---
 
-## Step 1: Create Your Recipe
+## Step 1: Create Your Project
 
-The CLI provides an interactive mode that guides you through recipe creation.
+The CLI provides an interactive mode that guides you through project creation.
 
 ### Run the Create Command
 
@@ -59,12 +59,12 @@ dot create
 
 For this tutorial, select **Parachain (Polkadot SDK)**.
 
-**2. Enter Recipe Title**
+**2. Enter Project Title**
 ```
-? What is your recipe title? (e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')
+? What is your project title? (e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')
 ```
 
-Enter a clear, descriptive title. This will be used to generate the recipe slug (e.g., "My First Parachain" → `my-first-parachain`).
+Enter a clear, descriptive title. This will be used to generate the project slug (e.g., "My First Parachain" → `my-first-parachain`).
 
 ### What Happens Next
 
@@ -600,7 +600,7 @@ Congratulations! You've created your first recipe. Here's what to explore next:
 
 ## Troubleshooting
 
-### Recipe Creation Failed
+### Project Creation Failed
 
 **Symptom:** `dot create` fails with error
 
