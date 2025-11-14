@@ -56,8 +56,11 @@ jobs:
 
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+        continue-on-error: true  # Don't fail if GitHub cache service is down
+        id: sccache
 
       - name: Configure sccache
+        if: steps.sccache.outcome == 'success'
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
@@ -129,14 +132,12 @@ jobs:
         run: cargo install polkadot-omni-node --locked
         env:
           RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
-          RUSTC_WRAPPER: sccache  # Use sccache for compilation
 
       - name: Install chain-spec-builder
         if: steps.cache-polkadot-tools.outputs.cache-hit != 'true'
         run: cargo install staging-chain-spec-builder --locked
         env:
           RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
-          RUSTC_WRAPPER: sccache  # Use sccache for compilation
 
       - name: Run pathway integration tests
         run: cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
