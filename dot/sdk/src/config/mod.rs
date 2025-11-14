@@ -1,25 +1,25 @@
-/// Configuration management for Polkadot Cookbook recipes
+/// Configuration management for Polkadot projects
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-/// Recipe configuration types and utilities
-pub mod recipe;
-/// Recipe validation utilities
+/// Project type configuration and utilities
+pub mod project_types;
+/// Project validation utilities
 pub mod validation;
 
-pub use recipe::{RecipeConfig, RecipePathway, RecipeType};
+pub use project_types::{ProjectMetadata, ProjectPathway, ProjectType};
 pub use validation::{
-    is_valid_slug, slug_to_title, title_to_slug, validate_project_config, validate_slug,
-    validate_title, validate_working_directory,
+    is_valid_slug, slug_to_title, title_to_slug, validate_lock_files, validate_project_config,
+    validate_slug, validate_title,
 };
 
-/// Configuration for creating a new recipe
+/// Configuration for creating a new project
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectConfig {
-    /// Recipe slug (lowercase, dash-separated)
+    /// Project slug (lowercase, dash-separated)
     pub slug: String,
 
-    /// Human-readable recipe title
+    /// Human-readable project title
     pub title: String,
 
     /// Destination directory (usually "recipes/")
@@ -31,17 +31,17 @@ pub struct ProjectConfig {
     /// Whether to skip npm install
     pub skip_install: bool,
 
-    /// Recipe type
-    pub recipe_type: RecipeType,
+    /// Project type
+    pub project_type: ProjectType,
 
-    /// Recipe category
+    /// Project category
     pub category: String,
 
-    /// Recipe description
+    /// Project description
     pub description: String,
 
-    /// Recipe pathway (optional)
-    pub pathway: Option<RecipePathway>,
+    /// Project pathway (optional)
+    pub pathway: Option<ProjectPathway>,
 
     /// Pallet-only mode (no runtime, no PAPI)
     #[serde(default)]
@@ -49,15 +49,15 @@ pub struct ProjectConfig {
 }
 
 impl ProjectConfig {
-    /// Create a new recipe configuration with defaults
+    /// Create a new project configuration with defaults
     ///
     /// # Example
     /// ```
     /// use polkadot_cookbook_sdk::config::ProjectConfig;
     ///
-    /// let config = ProjectConfig::new("my-recipe");
-    /// assert_eq!(config.slug, "my-recipe");
-    /// assert_eq!(config.title, "My Recipe");
+    /// let config = ProjectConfig::new("my-project");
+    /// assert_eq!(config.slug, "my-project");
+    /// assert_eq!(config.title, "My Project");
     /// ```
     pub fn new(slug: impl Into<String>) -> Self {
         let slug = slug.into();
@@ -66,10 +66,10 @@ impl ProjectConfig {
         Self {
             slug,
             title,
-            destination: PathBuf::from("recipes"),
+            destination: PathBuf::from("."),
             git_init: true,
             skip_install: false,
-            recipe_type: RecipeType::PolkadotSdk,
+            project_type: ProjectType::PolkadotSdk,
             category: "polkadot-sdk-cookbook".to_string(),
             description: "Replace with a short description.".to_string(),
             pathway: None,
@@ -77,7 +77,7 @@ impl ProjectConfig {
         }
     }
 
-    /// Set the recipe title
+    /// Set the project title
     pub fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = title.into();
         self
@@ -101,33 +101,43 @@ impl ProjectConfig {
         self
     }
 
-    /// Set recipe type
-    pub fn with_recipe_type(mut self, recipe_type: RecipeType) -> Self {
-        self.recipe_type = recipe_type;
+    /// Set project type
+    pub fn with_project_type(mut self, project_type: ProjectType) -> Self {
+        self.project_type = project_type;
         self
     }
 
-    /// Set recipe category
+    /// Set project category
     pub fn with_category(mut self, category: impl Into<String>) -> Self {
         self.category = category.into();
         self
     }
 
-    /// Set recipe description
+    /// Set project description
     pub fn with_description(mut self, description: impl Into<String>) -> Self {
         self.description = description.into();
         self
     }
 
-    /// Set recipe pathway
-    pub fn with_pathway(mut self, pathway: RecipePathway) -> Self {
+    /// Set project pathway
+    pub fn with_pathway(mut self, pathway: ProjectPathway) -> Self {
         self.pathway = Some(pathway);
         self
     }
 
     /// Get the full project path
+    ///
+    /// If a pathway is set, the path will be: destination/recipes/{pathway}/{slug}
+    /// Otherwise, it will be: destination/{slug}
     pub fn project_path(&self) -> PathBuf {
-        self.destination.join(&self.slug)
+        if let Some(pathway) = &self.pathway {
+            self.destination
+                .join("recipes")
+                .join(pathway.to_folder_name())
+                .join(&self.slug)
+        } else {
+            self.destination.join(&self.slug)
+        }
     }
 }
 
@@ -143,8 +153,8 @@ pub struct ProjectInfo {
     /// Full path to project directory
     pub project_path: PathBuf,
 
-    /// Git branch name (if created)
-    pub git_branch: Option<String>,
+    /// Whether a git repository was initialized
+    pub git_initialized: bool,
 }
 
 #[cfg(test)]
@@ -153,10 +163,10 @@ mod tests {
 
     #[test]
     fn test_project_config_new() {
-        let config = ProjectConfig::new("my-recipe");
-        assert_eq!(config.slug, "my-recipe");
-        assert_eq!(config.title, "My Recipe");
-        assert_eq!(config.destination, PathBuf::from("recipes"));
+        let config = ProjectConfig::new("my-project");
+        assert_eq!(config.slug, "my-project");
+        assert_eq!(config.title, "My Project");
+        assert_eq!(config.destination, PathBuf::from("."));
         assert!(config.git_init);
         assert!(!config.skip_install);
         assert_eq!(config.pathway, None);
@@ -164,26 +174,26 @@ mod tests {
 
     #[test]
     fn test_project_config_builder() {
-        let config = ProjectConfig::new("test-recipe")
+        let config = ProjectConfig::new("test-project")
             .with_destination(PathBuf::from("/tmp/recipes"))
             .with_git_init(false)
             .with_skip_install(true)
-            .with_recipe_type(RecipeType::Solidity)
+            .with_project_type(ProjectType::Solidity)
             .with_category("advanced")
-            .with_pathway(RecipePathway::Contracts);
+            .with_pathway(ProjectPathway::Contracts);
 
-        assert_eq!(config.slug, "test-recipe");
+        assert_eq!(config.slug, "test-project");
         assert_eq!(config.destination, PathBuf::from("/tmp/recipes"));
         assert!(!config.git_init);
         assert!(config.skip_install);
-        assert!(matches!(config.recipe_type, RecipeType::Solidity));
+        assert!(matches!(config.project_type, ProjectType::Solidity));
         assert_eq!(config.category, "advanced");
-        assert_eq!(config.pathway, Some(RecipePathway::Contracts));
+        assert_eq!(config.pathway, Some(ProjectPathway::Contracts));
     }
 
     #[test]
     fn test_project_path() {
-        let config = ProjectConfig::new("my-recipe");
-        assert_eq!(config.project_path(), PathBuf::from("recipes/my-recipe"));
+        let config = ProjectConfig::new("my-project");
+        assert_eq!(config.project_path(), PathBuf::from("./my-project"));
     }
 }

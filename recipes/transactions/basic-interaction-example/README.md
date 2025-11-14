@@ -1,0 +1,417 @@
+---
+title: Basic Interaction Example
+description: Replace with a short description.
+pathway: transactions
+---
+
+# Basic Interaction Example
+
+Replace with a short description.
+
+## Overview
+
+This tutorial teaches you how to interact with Polkadot and Kusama parachains using **Polkadot API (PAPI)** - the modern, type-safe TypeScript library for blockchain interactions. You'll learn to read chain state, submit transactions, listen to events, and build robust blockchain applications.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Node.js 20+ installed
+- Basic understanding of TypeScript/JavaScript
+- Familiarity with async/await patterns
+- Understanding of blockchain concepts (accounts, transactions, blocks)
+
+## What You'll Learn
+
+By completing this tutorial, you will understand:
+
+- How to connect to Polkadot parachains using PAPI
+- How to read on-chain state and query storage
+- How to construct and submit transactions
+- How to listen to blocks and events
+- How to handle account management and signing
+- How to write comprehensive tests for chain interactions
+
+## Step-by-Step Implementation
+
+### Step 1: Project Setup
+
+Install all dependencies:
+
+```bash
+cd recipes/basic-interaction-example
+npm install
+```
+
+**What's installed:**
+- **polkadot-api** - Modern type-safe API for Polkadot
+- **@polkadot-labs/hdkd** - Key derivation utilities
+- **Vitest** - Fast testing framework
+- **TypeScript** - Type safety and better developer experience
+
+The `npm install` will automatically generate TypeScript types for the target chain specified in `package.json`.
+
+### Step 2: Understanding the Project Structure
+
+Your project is organized as follows:
+
+```
+src/
+├── index.ts        # Main application logic
+├── client.ts       # Chain connection setup
+tests/
+├── example.test.ts # Test suite
+package.json        # Dependencies and scripts
+```
+
+**Key files:**
+- **src/client.ts** - Configures the connection to the blockchain
+- **src/index.ts** - Implements chain interaction logic
+- **tests/** - Contains test cases for your interactions
+
+### Step 3: Connecting to a Chain
+
+The client setup in `src/client.ts` establishes the connection:
+
+```typescript
+import { createClient } from "polkadot-api";
+import { getWsProvider } from "polkadot-api/ws-provider/web";
+import { ahp } from "@polkadot-api/descriptors";
+
+// Create WebSocket provider
+const provider = getWsProvider("wss://westend-asset-hub-rpc.polkadot.io");
+
+// Create typed client
+export const client = createClient(provider);
+export const api = client.getTypedApi(ahp);
+```
+
+**Breaking it down:**
+1. `getWsProvider()` - Creates a WebSocket connection to the chain
+2. `createClient()` - Initializes the PAPI client
+3. `getTypedApi()` - Generates type-safe APIs from chain metadata
+
+**Why PAPI?** Unlike older libraries, PAPI generates types directly from chain metadata, ensuring your code is always in sync with the actual chain state.
+
+### Step 4: Reading Chain State
+
+Query on-chain storage:
+
+```typescript
+// Read system information
+const chainInfo = await api.constants.System.Version();
+console.log("Chain:", chainInfo.spec_name);
+
+// Query account balance
+const accountInfo = await api.query.System.Account.getValue(
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+);
+console.log("Balance:", accountInfo.data.free);
+
+// Query storage with multiple keys
+const allAccounts = await api.query.System.Account.getEntries();
+for (const [key, value] of allAccounts) {
+  console.log(`Account ${key}: ${value.data.free}`);
+}
+```
+
+**Storage query types:**
+- `getValue()` - Get a single storage item
+- `getEntries()` - Get all items in a storage map
+- `getValues()` - Get multiple specific items
+
+### Step 5: Subscribing to Updates
+
+Listen to real-time chain updates:
+
+```typescript
+// Subscribe to new blocks
+const unsubscribe = api.query.System.Number.watchValue((blockNumber) => {
+  console.log("New block:", blockNumber);
+});
+
+// Subscribe to account changes
+api.query.System.Account.watchValue(
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  (accountInfo) => {
+    console.log("Balance updated:", accountInfo.data.free);
+  }
+);
+
+// Clean up subscriptions
+// unsubscribe();
+```
+
+**Best practice:** Always clean up subscriptions when they're no longer needed to prevent memory leaks.
+
+### Step 6: Constructing Transactions
+
+Build and prepare transactions:
+
+```typescript
+// Create a balance transfer
+const transferTx = api.tx.Balances.transfer_allow_death({
+  dest: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+  value: 1_000_000_000n, // 1 token (assuming 9 decimals)
+});
+
+// Get transaction details before signing
+const txDetails = await transferTx.getEncodedData();
+console.log("Transaction size:", txDetails.length, "bytes");
+```
+
+**Transaction types:**
+- Balance transfers
+- Asset transfers
+- Governance voting
+- Staking operations
+- Custom pallet calls
+
+### Step 7: Signing and Submitting Transactions
+
+Sign and submit using different methods:
+
+```typescript
+import { getPolkadotSigner } from "polkadot-api/signer";
+
+// Method 1: Using extension signer
+const signer = getPolkadotSigner(/* extension connector */);
+
+const result = await transferTx.signAndSubmit(signer, {
+  at: "best", // or "finalized"
+});
+
+console.log("Transaction hash:", result.txHash);
+
+// Method 2: Using mnemonic/seed
+import { Sr25519 } from "@polkadot-labs/hdkd";
+import { getPolkadotSignerFromPjs } from "@polkadot-labs/hdkd-helpers";
+
+const keyring = Sr25519.fromSeed(hexToBytes(seed));
+const customSigner = getPolkadotSignerFromPjs(keyring);
+
+await transferTx.signAndSubmit(customSigner);
+```
+
+**Signing options:**
+- Browser extensions (Talisman, SubWallet, etc.)
+- Programmatic keys (for automation)
+- Hardware wallets (via extensions)
+
+### Step 8: Tracking Transaction Status
+
+Monitor transaction lifecycle:
+
+```typescript
+// Submit with detailed status tracking
+const unsubscribe = transferTx.signSubmitAndWatch(signer, {
+  onInBlock: (event) => {
+    console.log("Transaction in block:", event.block.hash);
+  },
+  onFinalized: (event) => {
+    console.log("Transaction finalized:", event.block.hash);
+  },
+  onError: (error) => {
+    console.error("Transaction error:", error);
+  },
+});
+```
+
+**Transaction lifecycle:**
+1. **Ready** - Transaction is ready to be included
+2. **InBlock** - Transaction is in a block (but not final)
+3. **Finalized** - Transaction is in a finalized block
+4. **Error** - Transaction failed
+
+### Step 9: Handling Errors
+
+Implement robust error handling:
+
+```typescript
+try {
+  const result = await transferTx.signAndSubmit(signer);
+  console.log("Success:", result.txHash);
+} catch (error) {
+  if (error.type === "Invalid") {
+    console.error("Invalid transaction:", error.message);
+  } else if (error.type === "Exhausted") {
+    console.error("Transaction dropped:", error.message);
+  } else {
+    console.error("Unknown error:", error);
+  }
+}
+```
+
+**Common errors:**
+- **Insufficient balance** - Not enough funds for transaction + fees
+- **Invalid nonce** - Transaction nonce conflicts
+- **Module error** - Runtime validation failed
+
+## Testing Your Code
+
+The tutorial includes comprehensive tests demonstrating best practices:
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run with coverage
+npm test -- --coverage
+```
+
+### Understanding the Test Structure
+
+Tests use Vitest to simulate real blockchain interactions:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { api } from "../src/client";
+
+describe("Chain Interactions", () => {
+  it("should read chain information", async () => {
+    const chainInfo = await api.constants.System.Version();
+    expect(chainInfo.spec_name).toBeDefined();
+  });
+
+  it("should query account balance", async () => {
+    const account = await api.query.System.Account.getValue(testAddress);
+    expect(account.data.free).toBeGreaterThanOrEqual(0n);
+  });
+});
+```
+
+### Test Coverage
+
+The included tests demonstrate:
+- Connecting to the chain
+- Reading storage and constants
+- Querying multiple storage items
+- Constructing transactions
+- Error handling scenarios
+
+### Testing Best Practices
+
+1. **Use testnet chains** - Don't test on production data
+2. **Mock when appropriate** - For unit tests, mock blockchain calls
+3. **Test error cases** - Verify error handling works
+4. **Clean up resources** - Disconnect clients after tests
+
+## Building Real Applications
+
+### Example: Balance Checker
+
+```typescript
+async function checkBalance(address: string) {
+  const account = await api.query.System.Account.getValue(address);
+
+  return {
+    free: account.data.free,
+    reserved: account.data.reserved,
+    frozen: account.data.frozen,
+    total: account.data.free + account.data.reserved,
+  };
+}
+```
+
+### Example: Batch Transfers
+
+```typescript
+async function batchTransfer(recipients: Array<{ dest: string; amount: bigint }>) {
+  const calls = recipients.map(({ dest, amount }) =>
+    api.tx.Balances.transfer_allow_death({ dest, value: amount })
+  );
+
+  const batchTx = api.tx.Utility.batch({ calls });
+  return await batchTx.signAndSubmit(signer);
+}
+```
+
+### Example: Event Monitoring
+
+```typescript
+async function monitorTransfers(address: string) {
+  const unsubscribe = api.query.System.Events.watchValue((events) => {
+    for (const event of events) {
+      if (event.type === "Balances.Transfer") {
+        const { from, to, amount } = event.data;
+        if (from === address || to === address) {
+          console.log(`Transfer: ${from} -> ${to}: ${amount}`);
+        }
+      }
+    }
+  });
+
+  return unsubscribe;
+}
+```
+
+## Performance Optimization
+
+### Batching Queries
+
+```typescript
+// Instead of multiple queries
+const balance1 = await api.query.System.Account.getValue(addr1);
+const balance2 = await api.query.System.Account.getValue(addr2);
+
+// Batch them
+const [balance1, balance2] = await Promise.all([
+  api.query.System.Account.getValue(addr1),
+  api.query.System.Account.getValue(addr2),
+]);
+```
+
+### Connection Pooling
+
+```typescript
+// Reuse client connections
+const clientPool = new Map<string, ReturnType<typeof createClient>>();
+
+function getClient(endpoint: string) {
+  if (!clientPool.has(endpoint)) {
+    const provider = getWsProvider(endpoint);
+    clientPool.set(endpoint, createClient(provider));
+  }
+  return clientPool.get(endpoint)!;
+}
+```
+
+## Next Steps
+
+Now that you've completed this tutorial, try:
+
+1. **Extend the Application**
+   - Add more transaction types
+   - Implement account monitoring
+   - Build a transaction history viewer
+
+2. **Advanced Features**
+   - Multi-signature transactions
+   - Proxy accounts
+   - Cross-chain transfers (XCM)
+
+3. **Frontend Integration**
+   - Build a React/Vue interface
+   - Connect browser extensions
+   - Display real-time chain data
+
+4. **Production Deployment**
+   - Add proper error handling
+   - Implement retry logic
+   - Set up monitoring and logging
+
+## Resources
+
+- [Polkadot API Documentation](https://papi.how/)
+- [Polkadot Wiki](https://wiki.polkadot.network/)
+- [Substrate Documentation](https://docs.polkadot.com/)
+- [Polkadot JS Apps](https://polkadot.js.org/apps/) - For chain exploration
+
+## License
+
+MIT OR Apache-2.0

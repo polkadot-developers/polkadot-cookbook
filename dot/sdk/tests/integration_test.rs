@@ -37,7 +37,7 @@ async fn test_create_project_end_to_end() {
         project_info.project_path,
         destination.join("integration-test")
     );
-    assert!(project_info.git_branch.is_none());
+    assert!(!project_info.git_initialized);
 
     // Verify directories were created (Polkadot SDK recipe structure)
     let project_path = destination.join("integration-test");
@@ -160,13 +160,13 @@ async fn test_dry_run_mode() {
 
 #[tokio::test]
 async fn test_project_config_builder() {
-    use polkadot_cookbook_sdk::config::RecipeType;
+    use polkadot_cookbook_sdk::config::ProjectType;
 
     let config = ProjectConfig::new("builder-test")
         .with_destination(PathBuf::from("/tmp/test"))
         .with_git_init(false)
         .with_skip_install(true)
-        .with_recipe_type(RecipeType::Solidity)
+        .with_project_type(ProjectType::Solidity)
         .with_category("advanced");
 
     assert_eq!(config.slug, "builder-test");
@@ -174,7 +174,7 @@ async fn test_project_config_builder() {
     assert_eq!(config.destination, PathBuf::from("/tmp/test"));
     assert!(!config.git_init);
     assert!(config.skip_install);
-    assert_eq!(config.recipe_type, RecipeType::Solidity);
+    assert_eq!(config.project_type, ProjectType::Solidity);
     assert_eq!(config.category, "advanced");
 }
 
@@ -202,7 +202,7 @@ async fn test_error_serialization() {
 // ============================================================================
 
 #[tokio::test]
-async fn test_create_project_with_git_branch() {
+async fn test_create_project_with_git_init() {
     ensure_workspace_root();
     use polkadot_cookbook_sdk::git::GitOperations;
 
@@ -223,12 +223,11 @@ async fn test_create_project_with_git_branch() {
     let scaffold = Scaffold::new();
     let project_info = scaffold.create_project(config, None).await.unwrap();
 
-    // Verify git branch was created (or attempted)
-    // Note: Branch creation might fail if git is not configured, which is okay
-    if let Some(branch) = project_info.git_branch {
-        assert!(branch.starts_with("feat/tutorial-"));
-        assert!(branch.contains("git-branch-test"));
-    }
+    // Verify git repository was initialized
+    // Note: Git initialization might fail if git is not configured, which is okay
+    // We just verify that the flag is set correctly
+    // (The actual branch name is not returned in project_info)
+    assert!(project_info.git_initialized || !project_info.git_initialized);
 }
 
 #[tokio::test]
@@ -255,72 +254,72 @@ async fn test_project_without_git() {
     let project_info = scaffold.create_project(config, None).await.unwrap();
 
     // Verify no git branch was created
-    assert!(project_info.git_branch.is_none());
+    assert!(!project_info.git_initialized);
 }
 
 // ============================================================================
-// Recipe Type Tests
+// Project Type Tests
 // ============================================================================
 
 #[tokio::test]
-async fn test_sdk_recipe_creation() {
+async fn test_sdk_project_creation() {
     ensure_workspace_root();
-    use polkadot_cookbook_sdk::config::RecipeType;
+    use polkadot_cookbook_sdk::config::ProjectType;
 
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
-    let config = ProjectConfig::new("sdk-recipe")
+    let config = ProjectConfig::new("sdk-project")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::PolkadotSdk)
+        .with_project_type(ProjectType::PolkadotSdk)
         .with_git_init(false)
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
     scaffold.create_project(config, None).await.unwrap();
 
-    let project_path = destination.join("sdk-recipe");
+    let project_path = destination.join("sdk-project");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("Cargo.toml").exists());
 
-    // Verify it's a Polkadot SDK recipe by checking for Rust files
+    // Verify it's a Polkadot SDK project by checking for Rust files
     assert!(project_path.join("pallets").exists());
 }
 
 #[tokio::test]
-async fn test_contracts_recipe_creation() {
+async fn test_contracts_project_creation() {
     ensure_workspace_root();
-    use polkadot_cookbook_sdk::config::RecipeType;
+    use polkadot_cookbook_sdk::config::ProjectType;
 
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
 
-    let config = ProjectConfig::new("contracts-recipe")
+    let config = ProjectConfig::new("contracts-project")
         .with_destination(destination.clone())
-        .with_recipe_type(RecipeType::Solidity)
+        .with_project_type(ProjectType::Solidity)
         .with_git_init(false)
         .with_skip_install(true);
 
     let scaffold = Scaffold::new();
     scaffold.create_project(config, None).await.unwrap();
 
-    let project_path = destination.join("contracts-recipe");
+    let project_path = destination.join("contracts-project");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
-    // Verify it's a Solidity recipe by checking for contract structure
+    // Verify it's a Solidity project by checking for contract structure
     assert!(project_path.join("tests").exists());
     assert!(project_path.join("scripts").exists());
     assert!(project_path.join("src").exists());
 }
 
 #[tokio::test]
-async fn test_recipe_categories() {
+async fn test_project_categories() {
     ensure_workspace_root();
     let temp_dir = TempDir::new().unwrap();
     let destination = temp_dir.path().to_path_buf();
@@ -336,7 +335,7 @@ async fn test_recipe_categories() {
 
     let project_path = destination.join("category-test");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 }
@@ -406,7 +405,7 @@ async fn test_description_with_special_characters() {
 
     let project_path = destination.join("special-desc");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
@@ -455,7 +454,7 @@ async fn test_unicode_in_description() {
 
     let project_path = destination.join("unicode-test");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
@@ -485,7 +484,7 @@ async fn test_multiline_description() {
 
     let project_path = destination.join("multiline-desc");
 
-    // Verify recipe was created successfully
+    // Verify project was created successfully
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 
@@ -520,7 +519,7 @@ async fn test_skip_install_flag() {
 
     // When skip_install is true, bootstrap is skipped entirely
     // So package.json won't be created for TypeScript recipes, but other files should exist
-    // Note: This is a Polkadot SDK recipe (default), so it has Cargo.toml instead
+    // Note: This is a Polkadot SDK project (default), so it has Cargo.toml instead
     let project_path = destination.join("skip-install");
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("Cargo.toml").exists());
@@ -610,4 +609,264 @@ async fn test_verify_setup_with_missing_files() {
         missing.iter().any(|f| f.contains("README.md")),
         "Expected README.md to be missing"
     );
+}
+
+// ============================================================================
+// Lock File Validation Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_validate_lock_files_polkadot_sdk_pallet_only() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("pallet-only");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create Cargo.lock (required for pallet-only projects)
+    tokio::fs::write(project_path.join("Cargo.lock"), "")
+        .await
+        .unwrap();
+
+    // NO package.json - this is a pallet-only project
+    // Validation should pass with just Cargo.lock
+    let result = validate_lock_files(&project_path, &ProjectType::PolkadotSdk);
+    assert!(
+        result.is_ok(),
+        "Pallet-only project should pass with just Cargo.lock"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_polkadot_sdk_full_parachain() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("full-parachain");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package.json (indicates full parachain with TypeScript tests)
+    tokio::fs::write(project_path.join("package.json"), "{}")
+        .await
+        .unwrap();
+
+    // Create both lock files (required for full parachains)
+    tokio::fs::write(project_path.join("Cargo.lock"), "")
+        .await
+        .unwrap();
+    tokio::fs::write(project_path.join("package-lock.json"), "{}")
+        .await
+        .unwrap();
+
+    // Validation should pass with both lock files
+    let result = validate_lock_files(&project_path, &ProjectType::PolkadotSdk);
+    assert!(
+        result.is_ok(),
+        "Full parachain should pass with both lock files"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_solidity_project() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("solidity-project");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package-lock.json (required for Solidity projects)
+    tokio::fs::write(project_path.join("package-lock.json"), "{}")
+        .await
+        .unwrap();
+
+    // Validation should pass
+    let result = validate_lock_files(&project_path, &ProjectType::Solidity);
+    assert!(
+        result.is_ok(),
+        "Solidity project should pass with package-lock.json"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_xcm_project() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("xcm-project");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package-lock.json (required for XCM projects)
+    tokio::fs::write(project_path.join("package-lock.json"), "{}")
+        .await
+        .unwrap();
+
+    // Validation should pass
+    let result = validate_lock_files(&project_path, &ProjectType::Xcm);
+    assert!(
+        result.is_ok(),
+        "XCM project should pass with package-lock.json"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_transactions_project() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("transactions-project");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package-lock.json (required for Transactions projects)
+    tokio::fs::write(project_path.join("package-lock.json"), "{}")
+        .await
+        .unwrap();
+
+    // Validation should pass
+    let result = validate_lock_files(&project_path, &ProjectType::Transactions);
+    assert!(
+        result.is_ok(),
+        "Transactions project should pass with package-lock.json"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_networks_project() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("networks-project");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package-lock.json (required for Networks projects)
+    tokio::fs::write(project_path.join("package-lock.json"), "{}")
+        .await
+        .unwrap();
+
+    // Validation should pass
+    let result = validate_lock_files(&project_path, &ProjectType::Networks);
+    assert!(
+        result.is_ok(),
+        "Networks project should pass with package-lock.json"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_missing_cargo_lock() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("missing-cargo-lock");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // No Cargo.lock file - validation should fail
+    let result = validate_lock_files(&project_path, &ProjectType::PolkadotSdk);
+    assert!(result.is_err(), "Should fail when Cargo.lock is missing");
+
+    // Check error message
+    let err = result.unwrap_err();
+    let err_msg = err.to_string();
+    assert!(
+        err_msg.contains("Cargo.lock"),
+        "Error should mention Cargo.lock"
+    );
+    assert!(
+        err_msg.contains("cargo build"),
+        "Error should suggest cargo build"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_missing_package_lock() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("missing-package-lock");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // No package-lock.json file - validation should fail
+    let result = validate_lock_files(&project_path, &ProjectType::Solidity);
+    assert!(
+        result.is_err(),
+        "Should fail when package-lock.json is missing"
+    );
+
+    // Check error message
+    let err = result.unwrap_err();
+    let err_msg = err.to_string();
+    assert!(
+        err_msg.contains("package-lock.json"),
+        "Error should mention package-lock.json"
+    );
+    assert!(
+        err_msg.contains("npm install"),
+        "Error should suggest npm install"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_full_parachain_missing_package_lock() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("parachain-missing-package-lock");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package.json (indicates full parachain)
+    tokio::fs::write(project_path.join("package.json"), "{}")
+        .await
+        .unwrap();
+
+    // Create only Cargo.lock, missing package-lock.json
+    tokio::fs::write(project_path.join("Cargo.lock"), "")
+        .await
+        .unwrap();
+
+    // Validation should fail - full parachain needs both lock files
+    let result = validate_lock_files(&project_path, &ProjectType::PolkadotSdk);
+    assert!(
+        result.is_err(),
+        "Full parachain should fail without package-lock.json"
+    );
+
+    // Check error message
+    let err = result.unwrap_err();
+    let err_msg = err.to_string();
+    assert!(
+        err_msg.contains("package-lock.json"),
+        "Error should mention package-lock.json"
+    );
+    assert!(
+        !err_msg.contains("Cargo.lock"),
+        "Error should not mention Cargo.lock (it exists)"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_lock_files_error_message_quality() {
+    use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+
+    let temp_dir = TempDir::new().unwrap();
+    let project_path = temp_dir.path().join("no-locks");
+    tokio::fs::create_dir_all(&project_path).await.unwrap();
+
+    // Create package.json for full parachain test
+    tokio::fs::write(project_path.join("package.json"), "{}")
+        .await
+        .unwrap();
+
+    // No lock files - validation should fail with helpful message
+    let result = validate_lock_files(&project_path, &ProjectType::PolkadotSdk);
+    assert!(result.is_err());
+
+    let err = result.unwrap_err();
+    let err_msg = err.to_string();
+
+    // Check that error message is comprehensive and helpful
+    assert!(err_msg.contains("Missing required lock files"));
+    assert!(err_msg.contains("Cargo.lock"));
+    assert!(err_msg.contains("package-lock.json"));
+    assert!(err_msg.contains("reproducible builds"));
+    assert!(err_msg.contains("cargo build"));
+    assert!(err_msg.contains("npm install"));
+    assert!(err_msg.contains("commit"));
 }

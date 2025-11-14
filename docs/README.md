@@ -5,12 +5,12 @@ Welcome to the Polkadot Cookbook documentation! This guide will help you find th
 ## Quick Navigation by Role
 
 ### 🚀 New to the Cookbook?
-Start here to get oriented and create your first recipe.
+Start here to get oriented and create your first project.
 
 **Go to:** [`getting-started/`](getting-started/)
 
 - Quick installation guide
-- Create your first recipe tutorial
+- Create your first project tutorial
 - Basic concepts and workflow
 
 ---

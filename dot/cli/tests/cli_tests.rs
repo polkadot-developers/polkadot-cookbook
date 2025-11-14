@@ -73,7 +73,9 @@ fn test_help_command() {
 
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains("Create and manage recipes"))
+        .stdout(predicate::str::contains(
+            "command-line tool for Polkadot development",
+        ))
         .stdout(predicate::str::contains("Usage:"));
 }
 
@@ -88,14 +90,12 @@ fn test_version_command() {
 }
 
 #[test]
-fn test_create_recipe_non_interactive() {
+fn test_create_project_non_interactive() {
     let temp_dir = setup_test_repo();
-    let recipes_dir = temp_dir.path().join("recipes");
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Custom Pallet Storage")
         .arg("--skip-install")
@@ -104,21 +104,22 @@ fn test_create_recipe_non_interactive() {
 
     cmd.assert().success();
 
-    // Verify directory structure
-    assert!(recipes_dir.join("custom-pallet-storage").exists());
-    assert!(recipes_dir.join("custom-pallet-storage/README.md").exists());
-    assert!(recipes_dir.join("custom-pallet-storage/pallets").exists());
+    // Verify directory structure (projects organized by pathway)
+    let project_path = temp_dir
+        .path()
+        .join("recipes/pallets/custom-pallet-storage");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+    assert!(project_path.join("pallets").exists());
 }
 
 #[test]
-fn test_create_recipe_with_create_subcommand() {
+fn test_create_project_with_create_subcommand() {
     let temp_dir = setup_test_repo();
-    let recipes_dir = temp_dir.path().join("recipes");
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Test Subcommand")
         .arg("--skip-install")
@@ -127,8 +128,9 @@ fn test_create_recipe_with_create_subcommand() {
 
     cmd.assert().success();
 
-    assert!(recipes_dir.join("test-subcommand").exists());
-    assert!(recipes_dir.join("test-subcommand/README.md").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/test-subcommand");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
 }
 
 #[test]
@@ -157,7 +159,7 @@ fn test_non_interactive_requires_slug() {
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe").arg("create").arg("--non-interactive");
+    cmd.arg("create").arg("--non-interactive");
 
     cmd.assert()
         .failure()
@@ -165,14 +167,12 @@ fn test_non_interactive_requires_slug() {
 }
 
 #[test]
-fn test_recipe_config_content() {
+fn test_project_config_content() {
     let temp_dir = setup_test_repo();
-    let recipes_dir = temp_dir.path().join("recipes");
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Advanced Pallet Configuration")
         .arg("--skip-install")
@@ -181,9 +181,13 @@ fn test_recipe_config_content() {
 
     cmd.assert().success();
 
-    // Verify README.md frontmatter instead of recipe.config.yml
-    let readme_content =
-        fs::read_to_string(recipes_dir.join("advanced-pallet-configuration/README.md")).unwrap();
+    // Verify README.md frontmatter instead of project metadata
+    let readme_content = fs::read_to_string(
+        temp_dir
+            .path()
+            .join("recipes/pallets/advanced-pallet-configuration/README.md"),
+    )
+    .unwrap();
 
     // Check frontmatter contains expected fields
     assert!(readme_content.contains("title: Advanced Pallet Configuration"));
@@ -193,12 +197,10 @@ fn test_recipe_config_content() {
 #[test]
 fn test_test_file_generated() {
     let temp_dir = setup_test_repo();
-    let recipes_dir = temp_dir.path().join("recipes");
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Test E2E")
         .arg("--skip-install")
@@ -207,22 +209,21 @@ fn test_test_file_generated() {
 
     cmd.assert().success();
 
-    // Polkadot SDK recipes have Rust unit tests in the pallet code, not separate TypeScript tests
+    // Polkadot SDK projects have Rust unit tests in the pallet code, not separate TypeScript tests
     // Just verify the project was created successfully
-    assert!(recipes_dir.join("test-e2e").exists());
-    assert!(recipes_dir.join("test-e2e/README.md").exists());
-    assert!(recipes_dir.join("test-e2e/Cargo.toml").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/test-e2e");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+    assert!(project_path.join("Cargo.toml").exists());
 }
 
 #[test]
 fn test_gitignore_content() {
     let temp_dir = setup_test_repo();
-    let recipes_dir = temp_dir.path().join("recipes");
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Ignore Test")
         .arg("--skip-install")
@@ -231,22 +232,21 @@ fn test_gitignore_content() {
 
     cmd.assert().success();
 
-    // Polkadot SDK recipes use Cargo which has its own .gitignore handling via Cargo.toml
+    // Polkadot SDK projects use Cargo which has its own .gitignore handling via Cargo.toml
     // Only TypeScript-based recipes (XCM, Solidity) have .gitignore files
     // Just verify the project was created successfully
-    assert!(recipes_dir.join("ignore-test").exists());
-    assert!(recipes_dir.join("ignore-test/README.md").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/ignore-test");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
 }
 
 #[test]
 fn test_create_recipe_with_toolchain() {
     let temp_dir = setup_test_repo();
-    let recipes_dir = temp_dir.path().join("recipes");
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Version Test")
         .arg("--skip-install")
@@ -256,13 +256,14 @@ fn test_create_recipe_with_toolchain() {
     cmd.assert().success();
 
     // Verify the project was created successfully
-    assert!(recipes_dir.join("version-test").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/version-test");
+    assert!(project_path.exists());
 
-    // Verify rust-toolchain.toml was created for Polkadot SDK recipe
-    let toolchain_path = recipes_dir.join("version-test/rust-toolchain.toml");
+    // Verify rust-toolchain.toml was created for Polkadot SDK project
+    let toolchain_path = project_path.join("rust-toolchain.toml");
     assert!(
         toolchain_path.exists(),
-        "rust-toolchain.toml should be created for Polkadot SDK recipes"
+        "rust-toolchain.toml should be created for Polkadot SDK projects"
     );
 
     // Verify content matches expected format
@@ -276,19 +277,24 @@ fn test_create_recipe_with_toolchain() {
 }
 
 #[test]
-fn test_invalid_working_directory() {
-    // Create a temp dir that doesn't have a recipes/ folder
+fn test_create_in_any_directory() {
+    // CLI can now create projects in any directory, not just cookbook repos
     let temp_dir = TempDir::new().unwrap();
 
     let mut cmd = Command::cargo_bin("dot").unwrap();
     cmd.current_dir(temp_dir.path());
-    cmd.arg("recipe")
-        .arg("create")
+    cmd.arg("create")
         .arg("--title")
         .arg("Testing Directory Validation")
+        .arg("--skip-install")
+        .arg("--no-git")
         .arg("--non-interactive");
 
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("Invalid working directory"));
+    cmd.assert().success();
+
+    // Verify project was created in pathway structure
+    assert!(temp_dir
+        .path()
+        .join("recipes/pallets/testing-directory-validation")
+        .exists());
 }

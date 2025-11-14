@@ -1,6 +1,6 @@
 //! # Polkadot Cookbook SDK
 //!
-//! SDK library for Polkadot Cookbook - programmatic access to recipe scaffolding,
+//! SDK library for Polkadot Cookbook - programmatic access to project scaffolding,
 //! configuration management, and testing utilities.
 //!
 //! ## Lint Configuration
@@ -70,7 +70,7 @@
 //! ```
 
 // Re-export commonly used types
-pub use config::{ProjectConfig, ProjectInfo, RecipeConfig, RecipeType};
+pub use config::{ProjectConfig, ProjectInfo, ProjectMetadata, ProjectType};
 pub use error::{CookbookError, Result};
 pub use scaffold::{Bootstrap, Scaffold};
 
@@ -80,7 +80,7 @@ pub mod constants;
 /// Error types and result aliases
 pub mod error;
 
-/// Configuration management for recipes
+/// Configuration management for projects
 pub mod config;
 
 /// Git operations wrapper
@@ -92,10 +92,10 @@ pub mod templates;
 /// Project scaffolding logic
 pub mod scaffold;
 
-/// Metadata extraction and recipe detection
+/// Metadata extraction and project detection
 pub mod metadata;
 
-/// Dependency checking for recipe pathways
+/// Dependency checking for project pathways
 pub mod dependencies;
 
 // Internal prelude for convenience

@@ -60,8 +60,8 @@ fn test_readme_template_with_different_slugs() {
         let readme = ReadmeTemplate::new(slug);
         let content = readme.generate();
 
-        // Should contain frontmatter
-        assert!(content.contains("---\n"));
+        // Should start with heading
+        assert!(content.starts_with("# "));
 
         // Should contain slug in path
         assert!(content.contains(&format!("cd recipes/{}", slug)));

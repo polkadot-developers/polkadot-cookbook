@@ -19,68 +19,68 @@ dot [GLOBAL_FLAGS] <COMMAND> [COMMAND_FLAGS]
 
 ## Commands
 
-### `recipe create`
+### `create`
 
-Create a new recipe with scaffolded structure.
+Create a new project with scaffolded structure.
 
 **Usage:**
 ```bash
-dot recipe create [OPTIONS]
+dot create [OPTIONS]
 ```
 
 **Interactive Mode (Recommended):**
 ```bash
-dot recipe create
+dot create
 ```
 
 Launches an interactive prompt that guides you through:
-1. Pathway selection (Custom Parachain, Smart Contract, Basic Interaction, Cross-chain Interaction, Polkadot Network)
-2. Recipe title
+1. Pathway selection (Parachain, Smart Contract, Chain Transactions, Cross-Chain Transactions, Polkadot Networks)
+2. Project title
 
 **Non-Interactive Mode:**
 ```bash
-dot recipe create --title "My Recipe" --non-interactive [OPTIONS]
+dot create --title "My Project" --non-interactive [OPTIONS]
 ```
 
 **Options:**
 
 | Flag | Description | Required | Default |
 |------|-------------|----------|---------|
-| `--title <TITLE>` | Recipe title | Yes (non-interactive) | - |
-| `--pathway <PATHWAY>` | Recipe pathway | No | parachain |
+| `--title <TITLE>` | Project title | Yes (non-interactive) | - |
+| `--pathway <PATHWAY>` | Project pathway | No | parachain |
 | `--skip-install` | Skip npm dependency installation | No | false |
 | `--no-git` | Skip git branch creation | No | false |
 | `--pallet-only` | Pallet-only mode (no runtime, no PAPI) | No | false |
 | `--non-interactive` | Non-interactive mode | No | false |
 
 **Pathway Options:**
-- `parachain` - Custom Parachain: Build a custom parachain with PAPI integration
+- `pallets` - Parachain: Build a full parachain with custom pallets and PAPI integration
 - `contracts` - Smart Contract: Build, test, and run Solidity smart contracts
-- `basic-interaction` - Basic Interaction: Single-chain transactions and state queries with PAPI
-- `xcm` - Cross-chain Interaction: Cross-chain asset transfers and cross-chain calls with Chopsticks
-- `testing` - Polkadot Network: Run a Polkadot network locally with Zombienet or Chopsticks
+- `transactions` - Chain Transactions: Single-chain transactions and state queries with PAPI
+- `xcm` - Cross-Chain Transactions: Cross-chain asset transfers and cross-chain calls with Chopsticks
+- `networks` - Polkadot Networks: Run a Polkadot network locally with Zombienet or Chopsticks
 
 **Examples:**
 
 ```bash
 # Interactive mode (recommended)
-dot recipe create
+dot create
 
-# Non-interactive parachain recipe
-dot recipe create --title "My Parachain" --pathway parachain --non-interactive
+# Non-interactive parachain project
+dot create --title "My Parachain" --pathway parachain --non-interactive
 
 # Pallet-only mode (advanced, no runtime)
-dot recipe create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+dot create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
 
 # Smart contracts recipe
-dot recipe create --title "My Contract" --pathway contracts --non-interactive
+dot create --title "My Contract" --pathway contracts --non-interactive
 
 # Skip npm install for faster creation
-dot recipe create --title "Quick Test" --pathway basic-interaction --skip-install --non-interactive
+dot create --title "Quick Test" --pathway basic-interaction --skip-install --non-interactive
 
 # CI/CD mode (skip git branch creation)
-dot recipe create \
-  --title "My Recipe" \
+dot create \
+  --title "My Project" \
   --pathway parachain \
   --skip-install \
   --no-git \
@@ -125,7 +125,7 @@ recipes/my-contract/
 └── scripts/               # Deployment scripts
 ```
 
-Note: Structure varies by recipe pathway. See pathway-specific READMEs for details.
+Note: Structure varies by project pathway. See pathway-specific READMEs for details.
 
 **Exit Codes:**
 - `0` - Success
@@ -133,13 +133,13 @@ Note: Structure varies by recipe pathway. See pathway-specific READMEs for detai
 
 ---
 
-### `recipe submit`
+### `submit`
 
 Submit recipe as a pull request (requires GitHub CLI).
 
 **Usage:**
 ```bash
-dot recipe submit
+dot submit
 ```
 
 **Prerequisites:**
@@ -180,13 +180,13 @@ git config --global user.email "your.email@example.com"
 
 ---
 
-### `recipe test`
+### `test`
 
 Run tests for a recipe.
 
 **Usage:**
 ```bash
-dot recipe test <SLUG>
+dot test <SLUG>
 ```
 
 **Arguments:**
@@ -200,10 +200,10 @@ dot recipe test <SLUG>
 **Examples:**
 ```bash
 # Test specific recipe
-dot recipe test basic-pallet
+dot test basic-pallet
 
 # Test current directory recipe
-dot recipe test .
+dot test .
 ```
 
 **Exit Codes:**
@@ -226,10 +226,10 @@ The CLI respects these environment variables:
 
 ```bash
 # Enable debug logging
-RUST_LOG=debug dot recipe create
+RUST_LOG=debug dot create
 
 # Use specific GitHub token
-GITHUB_TOKEN=ghp_xxx dot recipe submit
+GITHUB_TOKEN=ghp_xxx dot submit
 
 # Disable colors
 ```
@@ -253,9 +253,6 @@ Future configuration options:
 **rust-toolchain.toml** (repository root and per recipe)
 - Rust version specification
 
-**recipe.config.yml** (per recipe)
-- Recipe metadata
-- See [Recipe Config Schema](../reference/recipe-config-schema.md)
 
 ---
 
@@ -286,7 +283,7 @@ chmod +x target/release/dot
 
 ### GitHub Authentication Failed
 
-**Symptom:** `dot recipe submit` fails with auth error
+**Symptom:** `dot submit` fails with auth error
 
 **Solution:**
 ```bash

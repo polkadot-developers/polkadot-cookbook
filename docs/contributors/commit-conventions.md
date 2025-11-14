@@ -127,7 +127,7 @@ A change is breaking if it:
 ### Features (MINOR bump)
 
 ```bash
-# New recipe
+# New project
 git commit -m "feat(recipe): add teleport assets example"
 
 # New CLI feature

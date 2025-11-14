@@ -20,17 +20,9 @@ impl ReadmeTemplate {
 impl Template for ReadmeTemplate {
     fn generate(&self) -> String {
         format!(
-            r#"---
-title: {}
-description: Describe what this recipe teaches in one sentence.
-difficulty: Beginner
-content_type: tutorial
-categories: Basics
----
+            r#"# {}
 
-# {}
-
-Describe the goal, prerequisites, and step-by-step instructions for this recipe.
+Describe the goal, prerequisites, and step-by-step instructions for this project.
 
 ## Prerequisites
 
@@ -71,7 +63,7 @@ npm run test
 - Write comprehensive tests in `tests/`
 - Update this README with detailed instructions
 "#,
-            self.title, self.title, self.slug, self.slug
+            self.title, self.slug, self.slug
         )
     }
 }
@@ -86,9 +78,6 @@ mod tests {
         let readme = template.generate();
         assert!(readme.contains("# My Recipe"));
         assert!(readme.contains("cd recipes/my-recipe"));
-        assert!(readme.contains("---\ntitle: My Recipe"));
-        assert!(readme.contains("difficulty:"));
-        assert!(readme.contains("content_type:"));
     }
 
     #[test]
