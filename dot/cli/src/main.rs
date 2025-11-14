@@ -1805,7 +1805,7 @@ fn get_project_path(slug: Option<String>) -> Result<PathBuf> {
 
     if let Some(slug) = slug {
         // Search for project in pathway subdirectories
-        let pathways = ["pallets", "contracts", "transactions", "xcm", "testing"];
+        let pathways = ["pallets", "contracts", "transactions", "xcm", "networks"];
 
         for pathway in &pathways {
             let path = repo_root.join("recipes").join(pathway).join(&slug);

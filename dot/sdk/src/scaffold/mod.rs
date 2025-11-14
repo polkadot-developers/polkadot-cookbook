@@ -656,6 +656,7 @@ impl Default for Scaffold {
 mod tests {
     use super::*;
     use crate::config::ProjectType;
+    use serial_test::serial;
     use tempfile::TempDir;
 
     #[tokio::test]
@@ -691,6 +692,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_create_files() {
         // This test needs to run from workspace root where templates/ directory exists
         // Change to workspace root for this test

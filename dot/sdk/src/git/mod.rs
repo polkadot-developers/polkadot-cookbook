@@ -131,6 +131,7 @@ impl GitOperations {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     #[test]
     fn test_branch_name_format() {
@@ -173,6 +174,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_current_branch_not_in_repo() {
         use tempfile::TempDir;
 
@@ -195,6 +197,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_create_branch_in_repo() {
         use tempfile::TempDir;
 
@@ -226,6 +229,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_create_branch_already_exists() {
         use tempfile::TempDir;
 
@@ -266,6 +270,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_create_branch_not_in_repo() {
         use tempfile::TempDir;
 
@@ -288,6 +293,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[serial]
     async fn test_is_git_repo_in_non_repo() {
         use tempfile::TempDir;
 

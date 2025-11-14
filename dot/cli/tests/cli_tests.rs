@@ -104,16 +104,13 @@ fn test_create_project_non_interactive() {
 
     cmd.assert().success();
 
-    // Verify directory structure (recipes now created in current directory)
-    assert!(temp_dir.path().join("custom-pallet-storage").exists());
-    assert!(temp_dir
+    // Verify directory structure (projects organized by pathway)
+    let project_path = temp_dir
         .path()
-        .join("custom-pallet-storage/README.md")
-        .exists());
-    assert!(temp_dir
-        .path()
-        .join("custom-pallet-storage/pallets")
-        .exists());
+        .join("recipes/pallets/custom-pallet-storage");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+    assert!(project_path.join("pallets").exists());
 }
 
 #[test]
@@ -131,8 +128,9 @@ fn test_create_project_with_create_subcommand() {
 
     cmd.assert().success();
 
-    assert!(temp_dir.path().join("test-subcommand").exists());
-    assert!(temp_dir.path().join("test-subcommand/README.md").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/test-subcommand");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
 }
 
 #[test]
@@ -187,7 +185,7 @@ fn test_project_config_content() {
     let readme_content = fs::read_to_string(
         temp_dir
             .path()
-            .join("advanced-pallet-configuration/README.md"),
+            .join("recipes/pallets/advanced-pallet-configuration/README.md"),
     )
     .unwrap();
 
@@ -213,9 +211,10 @@ fn test_test_file_generated() {
 
     // Polkadot SDK projects have Rust unit tests in the pallet code, not separate TypeScript tests
     // Just verify the project was created successfully
-    assert!(temp_dir.path().join("test-e2e").exists());
-    assert!(temp_dir.path().join("test-e2e/README.md").exists());
-    assert!(temp_dir.path().join("test-e2e/Cargo.toml").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/test-e2e");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
+    assert!(project_path.join("Cargo.toml").exists());
 }
 
 #[test]
@@ -236,8 +235,9 @@ fn test_gitignore_content() {
     // Polkadot SDK projects use Cargo which has its own .gitignore handling via Cargo.toml
     // Only TypeScript-based recipes (XCM, Solidity) have .gitignore files
     // Just verify the project was created successfully
-    assert!(temp_dir.path().join("ignore-test").exists());
-    assert!(temp_dir.path().join("ignore-test/README.md").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/ignore-test");
+    assert!(project_path.exists());
+    assert!(project_path.join("README.md").exists());
 }
 
 #[test]
@@ -256,10 +256,11 @@ fn test_create_recipe_with_toolchain() {
     cmd.assert().success();
 
     // Verify the project was created successfully
-    assert!(temp_dir.path().join("version-test").exists());
+    let project_path = temp_dir.path().join("recipes/pallets/version-test");
+    assert!(project_path.exists());
 
     // Verify rust-toolchain.toml was created for Polkadot SDK project
-    let toolchain_path = temp_dir.path().join("version-test/rust-toolchain.toml");
+    let toolchain_path = project_path.join("rust-toolchain.toml");
     assert!(
         toolchain_path.exists(),
         "rust-toolchain.toml should be created for Polkadot SDK projects"
@@ -291,9 +292,9 @@ fn test_create_in_any_directory() {
 
     cmd.assert().success();
 
-    // Verify project was created
+    // Verify project was created in pathway structure
     assert!(temp_dir
         .path()
-        .join("testing-directory-validation")
+        .join("recipes/pallets/testing-directory-validation")
         .exists());
 }

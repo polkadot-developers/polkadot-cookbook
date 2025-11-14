@@ -126,8 +126,18 @@ impl ProjectConfig {
     }
 
     /// Get the full project path
+    ///
+    /// If a pathway is set, the path will be: destination/recipes/{pathway}/{slug}
+    /// Otherwise, it will be: destination/{slug}
     pub fn project_path(&self) -> PathBuf {
-        self.destination.join(&self.slug)
+        if let Some(pathway) = &self.pathway {
+            self.destination
+                .join("recipes")
+                .join(pathway.to_folder_name())
+                .join(&self.slug)
+        } else {
+            self.destination.join(&self.slug)
+        }
     }
 }
 

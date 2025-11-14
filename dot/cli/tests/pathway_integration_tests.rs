@@ -13,7 +13,7 @@
 //! - TypeScript/Node version compatibility (for TS-based recipes)
 //!
 //! Generated example recipes:
-//! - recipes/parachain-example/                (Full parachain with PAPI tests and XCM)
+//! - recipes/pallets/parachain-example/        (Full parachain with PAPI tests and XCM)
 //! - recipes/pallets/pallet-example/           (Pallet-only mode, no runtime)
 //! - recipes/contracts/contracts-example/      (Solidity contracts)
 //! - recipes/transactions/transactions-example/ (Basic PAPI interactions)
@@ -185,7 +185,7 @@ async fn test_parachain_example_end_to_end() {
 
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
-        .current_dir(&recipes_dir)
+        .current_dir(&repo_root)
         .arg("create")
         .arg("--title")
         .arg("Parachain Example")
@@ -197,7 +197,7 @@ async fn test_parachain_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root.join("recipes").join(project_name);
+    let project_path = repo_root.join("recipes").join("pallets").join(project_name);
     assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
         project_path.join("README.md").exists(),
@@ -740,9 +740,7 @@ fn test_all_examples_create_only() {
         cleanup_project(expected_slug);
 
         let mut cmd = Command::cargo_bin("dot").unwrap();
-        let working_dir = repo_root.join("recipes").join(pathway);
-        std::fs::create_dir_all(&working_dir).unwrap();
-        cmd.current_dir(&working_dir)
+        cmd.current_dir(&repo_root)
             .arg("create")
             .arg("--title")
             .arg(title)
