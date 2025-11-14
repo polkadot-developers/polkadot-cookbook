@@ -1,7 +1,6 @@
 /// Input validation utilities
 use crate::error::{CookbookError, Result};
 use regex::Regex;
-use std::path::Path;
 
 /// Validates that the slug follows the correct format:
 /// - lowercase letters and numbers only
@@ -113,23 +112,6 @@ pub fn validate_title(title: &str) -> Result<()> {
     if title.trim().len() < 3 {
         return Err(CookbookError::ValidationError(
             "Recipe title is too short. Use a descriptive name (minimum 3 characters).".to_string(),
-        ));
-    }
-
-    Ok(())
-}
-
-/// Validates that the script is being run from the repository root
-pub fn validate_working_directory() -> Result<()> {
-    if !Path::new("recipes").exists() {
-        return Err(CookbookError::WorkingDirectoryError(
-            "This must be run from the repository root! Expected directory structure: ./recipes/, ./Cargo.toml, etc.".to_string()
-        ));
-    }
-
-    if !Path::new("Cargo.toml").exists() {
-        return Err(CookbookError::WorkingDirectoryError(
-            "Cargo.toml not found. Are you in the correct repository?".to_string(),
         ));
     }
 

@@ -66,26 +66,17 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create and manage recipes
-    Recipe {
-        #[command(subcommand)]
-        command: RecipeCommands,
-    },
-}
-
-#[derive(Subcommand)]
-enum RecipeCommands {
-    /// Create a new recipe (interactive)
+    /// Create a new project (interactive)
     Create,
-    /// Run recipe tests
+    /// Run project tests
     Test {
-        /// Recipe slug (defaults to current directory)
+        /// Project slug (defaults to current directory)
         #[arg(value_name = "SLUG")]
         slug: Option<String>,
     },
-    /// Submit a recipe as a pull request
+    /// Submit a project as a pull request to polkadot-cookbook
     Submit {
-        /// Recipe slug (defaults to current directory)
+        /// Project slug (defaults to current directory)
         #[arg(value_name = "SLUG")]
         slug: Option<String>,
 
@@ -114,25 +105,23 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Recipe { command } => match command {
-            RecipeCommands::Create => {
-                handle_create(
-                    cli.title,
-                    cli.pathway,
-                    cli.skip_install,
-                    cli.no_git,
-                    cli.pallet_only,
-                    cli.non_interactive,
-                )
-                .await?;
-            }
-            RecipeCommands::Test { slug } => {
-                handle_recipe_test(slug).await?;
-            }
-            RecipeCommands::Submit { slug, title, body } => {
-                handle_recipe_submit(slug, title, body).await?;
-            }
-        },
+        Commands::Create => {
+            handle_create(
+                cli.title,
+                cli.pathway,
+                cli.skip_install,
+                cli.no_git,
+                cli.pallet_only,
+                cli.non_interactive,
+            )
+            .await?;
+        }
+        Commands::Test { slug } => {
+            handle_recipe_test(slug).await?;
+        }
+        Commands::Submit { slug, title, body } => {
+            handle_recipe_submit(slug, title, body).await?;
+        }
     }
 
     Ok(())
@@ -156,14 +145,6 @@ async fn handle_create(
 
     // Interactive mode with cliclack
     clear_screen()?;
-
-    // Validate working directory first
-    if let Err(e) = polkadot_cookbook_sdk::config::validate_working_directory() {
-        outro_cancel(format!(
-            "❌ Invalid working directory: {e}\n\nPlease run this command from the repository root."
-        ))?;
-        std::process::exit(1);
-    }
 
     // Add spacing before intro
     println!("\n");
@@ -332,7 +313,7 @@ async fn handle_create(
     };
 
     // Calculate derived values for the summary
-    let project_path = PathBuf::from("recipes").join(&slug);
+    let project_path = PathBuf::from(".").join(&slug);
     let branch_name = if create_git_branch {
         format!("feat/{slug}")
     } else {
@@ -344,7 +325,7 @@ async fn handle_create(
         RecipePathway::Parachain => {
             if pallet_only {
                 format!(
-                    "recipes/{}/\n\
+                    "{}/\n\
                      ├── README.md               (Pallet development guide)\n\
                      ├── Cargo.toml              (Workspace config)\n\
                      ├── rust-toolchain.toml     (Rust version)\n\
@@ -361,7 +342,7 @@ async fn handle_create(
                 )
             } else {
                 format!(
-                    "recipes/{}/\n\
+                    "{}/\n\
                      ├── README.md               (Full tutorial)\n\
                      ├── Cargo.toml              (Workspace config)\n\
                      ├── package.json            (PAPI dependencies)\n\
@@ -386,7 +367,7 @@ async fn handle_create(
         }
         RecipePathway::Contracts => {
             format!(
-                "recipes/{}/\n\
+                "{}/\n\
                  ├── README.md\n\
                  ├── package.json\n\
                  ├── hardhat.config.ts\n\
@@ -402,7 +383,7 @@ async fn handle_create(
         }
         RecipePathway::BasicInteraction => {
             format!(
-                "recipes/{}/\n\
+                "{}/\n\
                  ├── README.md\n\
                  ├── package.json\n\
                  ├── tsconfig.json\n\
@@ -416,7 +397,7 @@ async fn handle_create(
         }
         RecipePathway::Xcm => {
             format!(
-                "recipes/{}/\n\
+                "{}/\n\
                  ├── README.md\n\
                  ├── package.json\n\
                  ├── chopsticks.yml\n\
@@ -431,7 +412,7 @@ async fn handle_create(
         }
         RecipePathway::Testing => {
             format!(
-                "recipes/{}/\n\
+                "{}/\n\
                  ├── README.md\n\
                  ├── package.json\n\
                  ├── configs/\n\
@@ -498,7 +479,7 @@ async fn handle_create(
     // Create project configuration
     let mut config = ProjectConfig::new(&slug)
         .with_title(&title)
-        .with_destination(PathBuf::from("recipes"))
+        .with_destination(PathBuf::from("."))
         .with_git_init(create_git_branch)
         .with_skip_install(skip_install)
         .with_recipe_type(recipe_type)
@@ -688,13 +669,6 @@ async fn run_non_interactive(
     // Generate slug from title
     let slug = polkadot_cookbook_sdk::config::title_to_slug(title);
 
-    // Validate working directory
-    if let Err(e) = polkadot_cookbook_sdk::config::validate_working_directory() {
-        eprintln!("❌ Invalid working directory: {e}");
-        eprintln!("Please run this command from the repository root.");
-        std::process::exit(1);
-    }
-
     // Parse pathway to recipe type
     let recipe_type = if let Some(p) = pathway {
         match p.as_str() {
@@ -750,7 +724,7 @@ async fn run_non_interactive(
     // Create project configuration with provided or default values
     let mut config = ProjectConfig::new(&slug)
         .with_title(title)
-        .with_destination(PathBuf::from("recipes"))
+        .with_destination(PathBuf::from("."))
         .with_git_init(!no_git)
         .with_skip_install(skip_install)
         .with_recipe_type(recipe_type)

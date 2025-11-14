@@ -10,7 +10,7 @@ pub mod validation;
 pub use recipe::{RecipeConfig, RecipePathway, RecipeType};
 pub use validation::{
     is_valid_slug, slug_to_title, title_to_slug, validate_project_config, validate_slug,
-    validate_title, validate_working_directory,
+    validate_title,
 };
 
 /// Configuration for creating a new recipe
@@ -66,7 +66,7 @@ impl ProjectConfig {
         Self {
             slug,
             title,
-            destination: PathBuf::from("recipes"),
+            destination: PathBuf::from("."),
             git_init: true,
             skip_install: false,
             recipe_type: RecipeType::PolkadotSdk,
