@@ -1,0 +1,42 @@
+# Chopsticks Configuration for Parachain Testing
+#
+# This config allows you to test your parachain locally alongside Paseo relay chain
+# and Asset Hub, useful for XCM interactions and local development.
+#
+# Prerequisites:
+# - Install Chopsticks: npm install -g @acala-network/chopsticks
+#
+# Usage:
+# - Start all chains: npx @acala-network/chopsticks --config=chopsticks.yml
+# - Access relay chain at http://localhost:8000
+# - Access Asset Hub at http://localhost:8001
+# - Access your parachain at http://localhost:8002
+
+relaychain:
+  # Paseo testnet relay chain
+  endpoint: wss://paseo-rpc.dwellir.com
+  db: ./db-relay.sqlite
+  port: 8000
+  block: latest
+
+parachains:
+  # Paseo Asset Hub (paraId 1000)
+  - endpoint: wss://paseo-asset-hub-rpc.dwellir.com
+    paraId: 1000
+    port: 8001
+    block: latest
+    db: ./db-asset-hub.sqlite
+
+  # Your local parachain (uncomment and configure after building)
+  # - parachain: ./target/release/{{PROJECT_SLUG}}
+  #   paraId: 2000
+  #   port: 8002
+  #   db: ./db-parachain.sqlite
+  #   # Genesis state from your chain spec
+  #   # genesis-state: ./chain-spec.json
+
+# Notes:
+# - Replace {{PROJECT_SLUG}} with your actual binary name
+# - Generate chain spec with: ./target/release/{{PROJECT_SLUG}} build-spec --disable-default-bootnode > chain-spec.json
+# - For custom parachain setup, see: https://github.com/AcalaNetwork/chopsticks#readme
+# - Database files (.sqlite) are stored locally and can be deleted to reset state

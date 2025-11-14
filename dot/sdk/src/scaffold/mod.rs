@@ -477,11 +477,16 @@ impl Scaffold {
                     continue;
                 }
 
-                // Skip XCM zombienet config in pallet-only mode
+                // Skip XCM zombienet config and chopsticks config in pallet-only mode
                 if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk) {
                     let xcm_files = ["zombienet-xcm.toml", "zombienet-xcm.toml.template"];
+                    let chopsticks_files = ["chopsticks.yml", "chopsticks.yml.template"];
                     if xcm_files.contains(&file_name) {
                         debug!("Skipping XCM zombienet config in pallet-only mode");
+                        continue;
+                    }
+                    if chopsticks_files.contains(&file_name) {
+                        debug!("Skipping chopsticks config in pallet-only mode");
                         continue;
                     }
                 }

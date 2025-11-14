@@ -357,52 +357,53 @@ async fn handle_create(
             if pallet_only {
                 format!(
                     "{}/\n\
-                     ├── README.md               (Pallet development guide)\n\
-                     ├── Cargo.toml              (Workspace config)\n\
-                     ├── rust-toolchain.toml     (Rust version)\n\
-                     └── pallets/\n\
-                         └── template/\n\
-                             ├── Cargo.toml      (Pallet dependencies)\n\
-                             └── src/\n\
-                                 ├── lib.rs      (Main pallet logic)\n\
-                                 ├── mock.rs     (Test runtime)\n\
-                                 ├── tests.rs    (Unit tests)\n\
-                                 ├── benchmarking.rs\n\
-                                 └── weights.rs",
+                     ├── README.md                    Pallet development guide and usage\n\
+                     ├── Cargo.toml                   Rust workspace configuration\n\
+                     ├── rust-toolchain.toml          Specifies Rust version for consistency\n\
+                     └── pallets/                     Custom pallet directory\n\
+                         └── template/                Example pallet implementation\n\
+                             ├── Cargo.toml           Pallet dependencies\n\
+                             └── src/                 Pallet source code\n\
+                                 ├── lib.rs           Main pallet logic and extrinsics\n\
+                                 ├── mock.rs          Mock runtime for testing\n\
+                                 ├── tests.rs         Unit and integration tests\n\
+                                 ├── benchmarking.rs  Performance benchmarks\n\
+                                 └── weights.rs       Weight calculations for extrinsics",
                     slug
                 )
             } else {
                 format!(
                     "{}/\n\
-                     ├── README.md\n\
-                     ├── Cargo.toml              (Workspace config)\n\
-                     ├── rust-toolchain.toml     (Rust version)\n\
-                     ├── package.json            (PAPI dependencies)\n\
-                     ├── tsconfig.json\n\
-                     ├── vitest.config.ts\n\
-                     ├── LICENSE\n\
-                     ├── Dockerfile\n\
-                     ├── runtime/                (Parachain runtime)\n\
-                     │   ├── Cargo.toml\n\
-                     │   ├── build.rs\n\
-                     │   └── src/\n\
-                     ├── node/                   (Node implementation)\n\
-                     │   ├── Cargo.toml\n\
-                     │   ├── build.rs\n\
-                     │   └── src/\n\
-                     ├── pallets/                (Custom pallets)\n\
-                     │   └── template/\n\
-                     │       ├── Cargo.toml\n\
-                     │       └── src/\n\
-                     ├── scripts/                (Helper scripts)\n\
-                     │   ├── generate-spec.sh\n\
-                     │   ├── setup-zombienet-binaries.sh\n\
-                     │   └── start-dev-node.sh\n\
-                     ├── tests/                  (PAPI integration tests)\n\
-                     │   └── template-pallet.test.ts\n\
-                     ├── zombienet.toml          (Network configs)\n\
-                     ├── zombienet-omni-node.toml\n\
-                     └── zombienet-xcm.toml\n\n\
+                     ├── README.md                        Project documentation and guide\n\
+                     ├── Cargo.toml                       Rust workspace configuration\n\
+                     ├── rust-toolchain.toml              Specifies Rust version for consistency\n\
+                     ├── package.json                     Node.js dependencies for PAPI tests\n\
+                     ├── tsconfig.json                    TypeScript compiler configuration\n\
+                     ├── vitest.config.ts                 Test framework configuration\n\
+                     ├── chopsticks.yml                   Chopsticks config for local testing with Paseo\n\
+                     ├── LICENSE                          Project license (MIT/Apache-2.0)\n\
+                     ├── Dockerfile                       Container image definition\n\
+                     ├── runtime/                         Parachain runtime implementation\n\
+                     │   ├── Cargo.toml                   Runtime dependencies and features\n\
+                     │   ├── build.rs                     Build script for WASM compilation\n\
+                     │   └── src/                         Runtime logic (pallets, configs)\n\
+                     ├── node/                            Node binary implementation\n\
+                     │   ├── Cargo.toml                   Node dependencies\n\
+                     │   ├── build.rs                     Node build script\n\
+                     │   └── src/                         CLI, RPC, and service logic\n\
+                     ├── pallets/                         Custom pallets for your chain\n\
+                     │   └── template/                    Example pallet template\n\
+                     │       ├── Cargo.toml               Pallet dependencies\n\
+                     │       └── src/                     Pallet logic, tests, benchmarks\n\
+                     ├── scripts/                         Utility scripts for development\n\
+                     │   ├── generate-spec.sh             Generate chain specification\n\
+                     │   ├── setup-zombienet-binaries.sh  Download zombienet binaries\n\
+                     │   └── start-dev-node.sh            Start local development node\n\
+                     ├── tests/                           Integration tests using PAPI\n\
+                     │   └── template-pallet.test.ts      Example pallet tests\n\
+                     ├── zombienet.toml                   Local network configuration\n\
+                     ├── zombienet-omni-node.toml         Omni-node based network setup\n\
+                     └── zombienet-xcm.toml               XCM testing network configuration\n\n\
                      Based on: polkadot-sdk-parachain-template\n\
                      Polkadot SDK: v2503.0.1\n\
                      Release: https://github.com/paritytech/polkadot-sdk/releases/tag/polkadot-v2503.0.1",
@@ -413,58 +414,58 @@ async fn handle_create(
         ProjectPathway::Contracts => {
             format!(
                 "{}/\n\
-                 ├── README.md\n\
-                 ├── package.json\n\
-                 ├── hardhat.config.ts\n\
-                 ├── contracts/\n\
-                 │   └── Contract.sol\n\
-                 ├── scripts/\n\
-                 │   └── deploy.ts\n\
-                 ├── tests/\n\
-                 │   └── Contract.test.ts\n\
-                 └── src/",
+                 ├── README.md               Project documentation and guide\n\
+                 ├── package.json            Dependencies for Hardhat and testing\n\
+                 ├── hardhat.config.ts       Hardhat configuration for Ethereum tooling\n\
+                 ├── contracts/              Solidity smart contracts\n\
+                 │   └── Contract.sol        Example smart contract\n\
+                 ├── scripts/                Deployment and interaction scripts\n\
+                 │   └── deploy.ts           Contract deployment script\n\
+                 ├── tests/                  Contract tests\n\
+                 │   └── Contract.test.ts    Example contract tests\n\
+                 └── src/                    Additional TypeScript source files",
                 slug
             )
         }
         ProjectPathway::Transactions => {
             format!(
                 "{}/\n\
-                 ├── README.md\n\
-                 ├── package.json\n\
-                 ├── tsconfig.json\n\
-                 ├── vitest.config.ts\n\
-                 ├── src/\n\
-                 │   └── example.ts\n\
-                 └── tests/\n\
-                     └── example.test.ts",
+                 ├── README.md            Project documentation and guide\n\
+                 ├── package.json         PAPI and testing dependencies\n\
+                 ├── tsconfig.json        TypeScript compiler configuration\n\
+                 ├── vitest.config.ts     Test framework configuration\n\
+                 ├── src/                 Transaction building and helpers\n\
+                 │   └── example.ts       Example transaction implementation\n\
+                 └── tests/               Integration tests\n\
+                     └── example.test.ts  Example transaction tests",
                 slug
             )
         }
         ProjectPathway::Xcm => {
             format!(
                 "{}/\n\
-                 ├── README.md\n\
-                 ├── package.json\n\
-                 ├── chopsticks.yml\n\
-                 ├── tsconfig.json\n\
-                 ├── vitest.config.ts\n\
-                 ├── src/\n\
-                 │   └── xcm-helpers.ts\n\
-                 └── tests/\n\
-                     └── xcm.test.ts",
+                 ├── README.md             Project documentation and guide\n\
+                 ├── package.json          PAPI and Chopsticks dependencies\n\
+                 ├── chopsticks.yml        Local multi-chain testing configuration\n\
+                 ├── tsconfig.json         TypeScript compiler configuration\n\
+                 ├── vitest.config.ts      Test framework configuration\n\
+                 ├── src/                  XCM message building helpers\n\
+                 │   └── xcm-helpers.ts    XCM utility functions\n\
+                 └── tests/                Cross-chain interaction tests\n\
+                     └── xcm.test.ts       XCM transfer tests",
                 slug
             )
         }
         ProjectPathway::Networks => {
             format!(
                 "{}/\n\
-                 ├── README.md\n\
-                 ├── package.json\n\
-                 ├── configs/\n\
-                 │   ├── chopsticks.yml\n\
-                 │   └── network.toml\n\
-                 └── tests/\n\
-                     └── network.test.ts",
+                 ├── README.md               Project documentation and guide\n\
+                 ├── package.json            Testing dependencies\n\
+                 ├── configs/                Network configuration files\n\
+                 │   ├── chopsticks.yml      Chopsticks multi-chain setup\n\
+                 │   └── network.toml        Zombienet network specification\n\
+                 └── tests/                  Network infrastructure tests\n\
+                     └── network.test.ts     Network connectivity tests",
                 slug
             )
         }
