@@ -275,15 +275,8 @@ async fn handle_create(
         description.trim().to_string()
     };
 
-    // Prompt for git branch creation (only if not specified via flag)
-    let create_git_branch = if no_git {
-        false
-    } else {
-        let git_question = "Create a git branch for this recipe?"
-            .polkadot_pink()
-            .to_string();
-        confirm(&git_question).initial_value(true).interact()?
-    };
+    // Git branch creation is default (unless --no-git flag is used)
+    let create_git_branch = !no_git;
 
     // Prompt for npm install (only if not specified via flag)
     let skip_install = if skip_install {
