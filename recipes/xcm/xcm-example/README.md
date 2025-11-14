@@ -1,7 +1,7 @@
 ---
 title: XCM Example
 description: Replace with a short description.
-
+pathway: xcm
 ---
 
 # XCM Example

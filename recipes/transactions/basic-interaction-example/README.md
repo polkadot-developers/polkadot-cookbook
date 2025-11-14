@@ -1,7 +1,7 @@
 ---
 title: Basic Interaction Example
 description: Replace with a short description.
-
+pathway: transactions
 ---
 
 # Basic Interaction Example

@@ -79,7 +79,7 @@ impl Dependency {
 /// Get required dependencies for a pathway
 pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
     match pathway {
-        RecipePathway::Parachain => vec![
+        RecipePathway::Pallets => vec![
             Dependency {
                 name: "Rust".to_string(),
                 command: "rustc".to_string(),
@@ -125,7 +125,7 @@ pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
                 install_instructions: "npm install -g hardhat (optional - can be installed per-project)".to_string(),
             },
         ],
-        RecipePathway::Xcm | RecipePathway::BasicInteraction | RecipePathway::Testing => vec![
+        RecipePathway::Xcm | RecipePathway::Transactions | RecipePathway::Networks => vec![
             Dependency {
                 name: "Node.js".to_string(),
                 command: "node".to_string(),
@@ -165,8 +165,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parachain_dependencies() {
-        let deps = get_pathway_dependencies(&RecipePathway::Parachain);
+    fn test_pallets_dependencies() {
+        let deps = get_pathway_dependencies(&RecipePathway::Pallets);
         assert_eq!(deps.len(), 2);
         assert_eq!(deps[0].name, "Rust");
         assert_eq!(deps[1].name, "Cargo");

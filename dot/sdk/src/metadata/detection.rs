@@ -8,7 +8,7 @@ use std::path::Path;
 /// - `polkadot-sdk`: Has Cargo.toml at root (and pallets/ directory)
 /// - `solidity`: Has package.json with hardhat dependency
 /// - `xcm`: Has chopsticks configuration (chopsticks.yml or .chopsticks directory)
-/// - `basic-interaction`: Has package.json without hardhat/chopsticks
+/// - `transactions`: Has package.json without hardhat/chopsticks
 /// - `testing`: Has zombienet configuration files
 pub async fn detect_recipe_type(
     recipe_path: impl AsRef<Path>,
@@ -41,13 +41,13 @@ pub async fn detect_recipe_type(
             return Ok(RecipeType::Xcm);
         }
 
-        // Default TypeScript recipe is basic interaction
-        return Ok(RecipeType::BasicInteraction);
+        // Default TypeScript recipe is transactions
+        return Ok(RecipeType::Transactions);
     }
 
     // Check for zombienet (Testing infrastructure)
     if path.join("zombienet.toml").exists() || path.join("network.toml").exists() {
-        return Ok(RecipeType::Testing);
+        return Ok(RecipeType::Networks);
     }
 
     Err(RecipeDetectionError::UnknownRecipeType)
@@ -134,7 +134,7 @@ mod tests {
         fs::write(recipe_path.join("package.json"), package_json).unwrap();
 
         let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::BasicInteraction);
+        assert_eq!(result, RecipeType::Transactions);
     }
 
     #[tokio::test]
@@ -146,7 +146,7 @@ mod tests {
         fs::write(recipe_path.join("zombienet.toml"), "# test config").unwrap();
 
         let result = detect_recipe_type(recipe_path).await.unwrap();
-        assert_eq!(result, RecipeType::Testing);
+        assert_eq!(result, RecipeType::Networks);
     }
 
     #[tokio::test]

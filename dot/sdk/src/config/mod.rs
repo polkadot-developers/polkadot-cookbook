@@ -156,7 +156,7 @@ mod tests {
         let config = ProjectConfig::new("my-recipe");
         assert_eq!(config.slug, "my-recipe");
         assert_eq!(config.title, "My Recipe");
-        assert_eq!(config.destination, PathBuf::from("recipes"));
+        assert_eq!(config.destination, PathBuf::from("."));
         assert!(config.git_init);
         assert!(!config.skip_install);
         assert_eq!(config.pathway, None);
@@ -184,6 +184,6 @@ mod tests {
     #[test]
     fn test_project_path() {
         let config = ProjectConfig::new("my-recipe");
-        assert_eq!(config.project_path(), PathBuf::from("recipes/my-recipe"));
+        assert_eq!(config.project_path(), PathBuf::from("./my-recipe"));
     }
 }

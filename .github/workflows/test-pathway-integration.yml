@@ -21,10 +21,10 @@ on:
       - 'dot/sdk/src/**'
       # Template-specific changes - only run affected template tests
       - 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**'
-      - 'dot/sdk/templates/recipe-templates/basic-interaction-template/**'
+      - 'dot/sdk/templates/recipe-templates/transactions-template/**'
       - 'dot/sdk/templates/recipe-templates/solidity-template/**'
       - 'dot/sdk/templates/recipe-templates/xcm-template/**'
-      - 'dot/sdk/templates/recipe-templates/testing-template/**'
+      - 'dot/sdk/templates/recipe-templates/networks-template/**'
 
   # Allow manual trigger
   workflow_dispatch:
@@ -73,7 +73,7 @@ jobs:
         with:
           path: |
             ~/.npm
-            recipes/*/node_modules
+            recipes/*/*/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
@@ -84,8 +84,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            recipes/*/target/release/wbuild
-            recipes/*/target/release/*.wasm
+            recipes/*/*/target/release/wbuild
+            recipes/*/*/target/release/*.wasm
           key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/recipe-templates/polkadot-sdk-template/runtime/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/pallets/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-runtime-wasm-
@@ -141,7 +141,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pallet-example
-          path: recipes/pallet-example/
+          path: recipes/pallets/pallet-example/
           if-no-files-found: warn
           retention-days: 7
 
@@ -150,16 +150,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: contracts-example
-          path: recipes/contracts-example/
+          path: recipes/contracts/contracts-example/
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Upload basic-interaction-example artifact
+      - name: Upload transactions-example artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: basic-interaction-example
-          path: recipes/basic-interaction-example/
+          name: transactions-example
+          path: recipes/transactions/transactions-example/
           if-no-files-found: warn
           retention-days: 7
 
@@ -168,7 +168,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xcm-example
-          path: recipes/xcm-example/
+          path: recipes/xcm/xcm-example/
           if-no-files-found: warn
           retention-days: 7
 
@@ -177,7 +177,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: infra-example
-          path: recipes/infra-example/
+          path: recipes/networks/infra-example/
           if-no-files-found: warn
           retention-days: 7
 

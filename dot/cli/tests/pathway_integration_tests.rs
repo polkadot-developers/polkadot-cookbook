@@ -13,12 +13,12 @@
 //! - TypeScript/Node version compatibility (for TS-based recipes)
 //!
 //! Generated example recipes:
-//! - recipes/parachain-example/        (Full parachain with PAPI tests and XCM)
-//! - recipes/pallet-example/           (Pallet-only mode, no runtime)
-//! - recipes/contracts-example/        (Solidity contracts)
-//! - recipes/basic-interaction-example/ (Basic PAPI interactions)
-//! - recipes/xcm-example/              (XCM with Chopsticks)
-//! - recipes/infra-example/            (Zombienet/Chopsticks configs)
+//! - recipes/parachain-example/                (Full parachain with PAPI tests and XCM)
+//! - recipes/pallets/pallet-example/           (Pallet-only mode, no runtime)
+//! - recipes/contracts/contracts-example/      (Solidity contracts)
+//! - recipes/transactions/transactions-example/ (Basic PAPI interactions)
+//! - recipes/xcm/xcm-example/                  (XCM with Chopsticks)
+//! - recipes/networks/infra-example/           (Zombienet/Chopsticks configs)
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -44,11 +44,24 @@ fn get_repo_root() -> PathBuf {
 /// Clean up an existing example recipe if it exists
 fn cleanup_recipe(recipe_name: &str) {
     let repo_root = get_repo_root();
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
 
-    if recipe_path.exists() {
-        std::fs::remove_dir_all(&recipe_path)
-            .unwrap_or_else(|e| eprintln!("Warning: Failed to remove {}: {}", recipe_name, e));
+    // Search in all pathway subdirectories
+    let pathways = ["contracts", "pallets", "transactions", "xcm", "networks"];
+
+    for pathway in &pathways {
+        let recipe_path = repo_root.join("recipes").join(pathway).join(recipe_name);
+        if recipe_path.exists() {
+            std::fs::remove_dir_all(&recipe_path)
+                .unwrap_or_else(|e| eprintln!("Warning: Failed to remove {}: {}", recipe_name, e));
+        }
+    }
+
+    // Also check legacy location (directly in recipes/)
+    let legacy_path = repo_root.join("recipes").join(recipe_name);
+    if legacy_path.exists() {
+        std::fs::remove_dir_all(&legacy_path).unwrap_or_else(|e| {
+            eprintln!("Warning: Failed to remove {} (legacy): {}", recipe_name, e)
+        });
     }
 }
 
@@ -167,15 +180,17 @@ async fn test_parachain_example_end_to_end() {
 
     // Step 1: Create a Parachain recipe (default mode: full parachain + PAPI)
     println!("📦 Step 1/5: Creating parachain recipe...");
+    let recipes_dir = repo_root.join("recipes");
+    std::fs::create_dir_all(&recipes_dir).unwrap();
+
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
-        .current_dir(&repo_root)
-        .arg("recipe")
+        .current_dir(&recipes_dir)
         .arg("create")
         .arg("--title")
         .arg("Parachain Example")
         .arg("--pathway")
-        .arg("parachain")
+        .arg("pallets")
         .arg("--skip-install") // Skip npm install for faster CI
         .arg("--no-git")
         .arg("--non-interactive");
@@ -425,12 +440,11 @@ fn test_pallet_example_end_to_end() {
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("create")
         .arg("--title")
         .arg("Pallet Example")
         .arg("--pathway")
-        .arg("parachain")
+        .arg("pallets")
         .arg("--pallet-only") // Pallet-only mode: no runtime, no PAPI
         .arg("--skip-install")
         .arg("--no-git")
@@ -438,7 +452,7 @@ fn test_pallet_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
+    let recipe_path = repo_root.join("recipes").join("pallets").join(recipe_name);
     assert!(recipe_path.exists(), "Recipe directory should exist");
     assert!(
         recipe_path.join("Cargo.toml").exists(),
@@ -470,7 +484,6 @@ fn test_pallet_example_end_to_end() {
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("test")
         .arg(recipe_name)
         .timeout(std::time::Duration::from_secs(600));
@@ -495,7 +508,6 @@ fn test_contracts_example_end_to_end() {
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("create")
         .arg("--title")
         .arg("Contracts Example")
@@ -506,7 +518,10 @@ fn test_contracts_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
+    let recipe_path = repo_root
+        .join("recipes")
+        .join("contracts")
+        .join(recipe_name);
     assert!(recipe_path.exists(), "Recipe directory should exist");
     assert!(
         recipe_path.join("README.md").exists(),
@@ -526,11 +541,10 @@ fn test_contracts_example_end_to_end() {
     );
     assert!(recipe_path.join("tests").exists(), "tests/ should exist");
 
-    // Step 2: Run tests using `dot recipe test`
+    // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("test")
         .arg(recipe_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
@@ -543,7 +557,7 @@ fn test_contracts_example_end_to_end() {
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_basic_interaction_example_end_to_end() {
     let repo_root = get_repo_root();
-    let recipe_name = "basic-interaction-example";
+    let recipe_name = "transactions-example";
 
     // Clean up any existing example
     cleanup_recipe(recipe_name);
@@ -552,18 +566,20 @@ fn test_basic_interaction_example_end_to_end() {
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("create")
         .arg("--title")
-        .arg("Basic Interaction Example")
+        .arg("Transactions Example")
         .arg("--pathway")
-        .arg("basic-interaction")
+        .arg("transactions")
         .arg("--no-git")
         .arg("--non-interactive");
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
+    let recipe_path = repo_root
+        .join("recipes")
+        .join("transactions")
+        .join(recipe_name);
     assert!(recipe_path.exists(), "Recipe directory should exist");
     assert!(
         recipe_path.join("README.md").exists(),
@@ -580,11 +596,10 @@ fn test_basic_interaction_example_end_to_end() {
     assert!(recipe_path.join("src").exists(), "src/ should exist");
     assert!(recipe_path.join("tests").exists(), "tests/ should exist");
 
-    // Step 2: Run tests using `dot recipe test`
+    // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("test")
         .arg(recipe_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
@@ -606,7 +621,6 @@ fn test_xcm_example_end_to_end() {
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("create")
         .arg("--title")
         .arg("XCM Example")
@@ -617,7 +631,7 @@ fn test_xcm_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
+    let recipe_path = repo_root.join("recipes").join("xcm").join(recipe_name);
     assert!(recipe_path.exists(), "Recipe directory should exist");
     assert!(
         recipe_path.join("README.md").exists(),
@@ -634,11 +648,10 @@ fn test_xcm_example_end_to_end() {
     assert!(recipe_path.join("src").exists(), "src/ should exist");
     assert!(recipe_path.join("tests").exists(), "tests/ should exist");
 
-    // Step 2: Run tests using `dot recipe test`
+    // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("test")
         .arg(recipe_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
@@ -660,18 +673,17 @@ fn test_infra_example_end_to_end() {
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("create")
         .arg("--title")
         .arg("Infra Example")
         .arg("--pathway")
-        .arg("testing")
+        .arg("networks")
         .arg("--no-git")
         .arg("--non-interactive");
 
     create_cmd.assert().success();
 
-    let recipe_path = repo_root.join("recipes").join(recipe_name);
+    let recipe_path = repo_root.join("recipes").join("networks").join(recipe_name);
     assert!(recipe_path.exists(), "Recipe directory should exist");
     assert!(
         recipe_path.join("README.md").exists(),
@@ -687,11 +699,10 @@ fn test_infra_example_end_to_end() {
     );
     assert!(recipe_path.join("tests").exists(), "tests/ should exist");
 
-    // Step 2: Run tests using `dot recipe test`
+    // Step 2: Run tests using `dot test`
     let mut test_cmd = Command::cargo_bin("dot").unwrap();
     test_cmd
         .current_dir(&repo_root)
-        .arg("recipe")
         .arg("test")
         .arg(recipe_name)
         .timeout(std::time::Duration::from_secs(300)); // 5 minute timeout
@@ -707,22 +718,18 @@ fn test_all_examples_create_only() {
 
     let pathways = vec![
         (
-            "parachain",
-            "Parachain Example Smoke",
-            "parachain-example-smoke",
-        ),
-        (
             "contracts",
             "Contracts Example Smoke",
             "contracts-example-smoke",
         ),
+        ("pallets", "Pallets Example Smoke", "pallets-example-smoke"),
         (
-            "basic-interaction",
-            "Basic Interaction Example Smoke",
-            "basic-interaction-example-smoke",
+            "transactions",
+            "Transactions Example Smoke",
+            "transactions-example-smoke",
         ),
         ("xcm", "XCM Example Smoke", "xcm-example-smoke"),
-        ("testing", "Infra Example Smoke", "infra-example-smoke"),
+        ("networks", "Infra Example Smoke", "infra-example-smoke"),
     ];
 
     for (pathway, title, expected_slug) in pathways {
@@ -730,8 +737,9 @@ fn test_all_examples_create_only() {
         cleanup_recipe(expected_slug);
 
         let mut cmd = Command::cargo_bin("dot").unwrap();
-        cmd.current_dir(&repo_root)
-            .arg("recipe")
+        let working_dir = repo_root.join("recipes").join(pathway);
+        std::fs::create_dir_all(&working_dir).unwrap();
+        cmd.current_dir(&working_dir)
             .arg("create")
             .arg("--title")
             .arg(title)
@@ -743,7 +751,7 @@ fn test_all_examples_create_only() {
 
         cmd.assert().success();
 
-        let recipe_path = repo_root.join("recipes").join(expected_slug);
+        let recipe_path = repo_root.join("recipes").join(pathway).join(expected_slug);
         assert!(
             recipe_path.exists(),
             "Recipe directory for {} should exist",

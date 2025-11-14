@@ -13,32 +13,32 @@ pub enum RecipeType {
     Solidity,
     /// XCM cross-chain interactions (Chopsticks)
     Xcm,
-    /// Basic chain interactions (PAPI, single-chain transactions)
-    #[serde(rename = "basic-interaction")]
-    BasicInteraction,
-    /// Testing infrastructure (Zombienet, Chopsticks configs)
-    Testing,
+    /// Chain transactions (PAPI, single-chain transactions)
+    #[serde(rename = "transactions")]
+    Transactions,
+    /// Network infrastructure (Zombienet, Chopsticks configs)
+    Networks,
 }
 
 /// Recipe pathway classification (high-level categorization)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RecipePathway {
-    /// Parachain development pathway
-    #[serde(rename = "parachain")]
-    Parachain,
+    /// Pallet development pathway (Polkadot SDK pallets)
+    #[serde(rename = "pallets")]
+    Pallets,
     /// Smart contracts pathway
     #[serde(rename = "contracts")]
     Contracts,
-    /// Basic chain interactions pathway
-    #[serde(rename = "basic-interaction")]
-    BasicInteraction,
+    /// Chain transactions pathway
+    #[serde(rename = "transactions")]
+    Transactions,
     /// Cross-chain messaging pathway
     #[serde(rename = "xcm")]
     Xcm,
-    /// Testing infrastructure pathway
-    #[serde(rename = "testing")]
-    Testing,
+    /// Network infrastructure pathway
+    #[serde(rename = "networks")]
+    Networks,
     /// Request a new template (CLI-only, triggers GitHub issue flow)
     #[serde(rename = "request-new")]
     RequestNew,
@@ -48,11 +48,11 @@ impl RecipePathway {
     /// Convert pathway to folder name for organizing recipes
     pub fn to_folder_name(&self) -> &'static str {
         match self {
-            RecipePathway::Parachain => "parachain",
+            RecipePathway::Pallets => "pallets",
             RecipePathway::Contracts => "contracts",
-            RecipePathway::BasicInteraction => "basic-interaction",
+            RecipePathway::Transactions => "transactions",
             RecipePathway::Xcm => "xcm",
-            RecipePathway::Testing => "testing",
+            RecipePathway::Networks => "networks",
             RecipePathway::RequestNew => "request-new",
         }
     }
@@ -147,11 +147,11 @@ impl RecipeConfig {
 
         // Map recipe type to pathway
         let pathway = Some(match recipe_type {
-            RecipeType::PolkadotSdk => RecipePathway::Parachain,
+            RecipeType::PolkadotSdk => RecipePathway::Pallets,
             RecipeType::Solidity => RecipePathway::Contracts,
             RecipeType::Xcm => RecipePathway::Xcm,
-            RecipeType::BasicInteraction => RecipePathway::BasicInteraction,
-            RecipeType::Testing => RecipePathway::Testing,
+            RecipeType::Transactions => RecipePathway::Transactions,
+            RecipeType::Networks => RecipePathway::Networks,
         });
 
         Ok(Self {
@@ -214,36 +214,36 @@ mod tests {
         let json = serde_json::to_string(&xcm).unwrap();
         assert_eq!(json, "\"xcm\"");
 
-        let basic = RecipeType::BasicInteraction;
-        let json = serde_json::to_string(&basic).unwrap();
-        assert_eq!(json, "\"basic-interaction\"");
+        let transactions = RecipeType::Transactions;
+        let json = serde_json::to_string(&transactions).unwrap();
+        assert_eq!(json, "\"transactions\"");
 
-        let testing = RecipeType::Testing;
-        let json = serde_json::to_string(&testing).unwrap();
-        assert_eq!(json, "\"testing\"");
+        let networks = RecipeType::Networks;
+        let json = serde_json::to_string(&networks).unwrap();
+        assert_eq!(json, "\"networks\"");
     }
 
     #[test]
     fn test_pathway_serialization() {
-        let parachain = RecipePathway::Parachain;
-        let json = serde_json::to_string(&parachain).unwrap();
-        assert_eq!(json, "\"parachain\"");
+        let pallets = RecipePathway::Pallets;
+        let json = serde_json::to_string(&pallets).unwrap();
+        assert_eq!(json, "\"pallets\"");
 
         let contracts = RecipePathway::Contracts;
         let json = serde_json::to_string(&contracts).unwrap();
         assert_eq!(json, "\"contracts\"");
 
-        let basic = RecipePathway::BasicInteraction;
-        let json = serde_json::to_string(&basic).unwrap();
-        assert_eq!(json, "\"basic-interaction\"");
+        let transactions = RecipePathway::Transactions;
+        let json = serde_json::to_string(&transactions).unwrap();
+        assert_eq!(json, "\"transactions\"");
 
         let xcm = RecipePathway::Xcm;
         let json = serde_json::to_string(&xcm).unwrap();
         assert_eq!(json, "\"xcm\"");
 
-        let testing = RecipePathway::Testing;
-        let json = serde_json::to_string(&testing).unwrap();
-        assert_eq!(json, "\"testing\"");
+        let networks = RecipePathway::Networks;
+        let json = serde_json::to_string(&networks).unwrap();
+        assert_eq!(json, "\"networks\"");
     }
 
     #[test]
@@ -255,7 +255,7 @@ mod tests {
 
     #[test]
     fn test_recipe_pathway_clone() {
-        let original = RecipePathway::Parachain;
+        let original = RecipePathway::Pallets;
         let cloned = original.clone();
         assert_eq!(original, cloned);
     }
@@ -269,7 +269,7 @@ mod tests {
 
     #[test]
     fn test_recipe_pathway_copy() {
-        let original = RecipePathway::Parachain;
+        let original = RecipePathway::Pallets;
         let copied = original;
         assert_eq!(original, copied);
     }
@@ -283,17 +283,17 @@ mod tests {
 
     #[test]
     fn test_recipe_pathway_debug() {
-        let parachain = RecipePathway::Parachain;
-        let debug_str = format!("{:?}", parachain);
-        assert!(debug_str.contains("Parachain"));
+        let pallets = RecipePathway::Pallets;
+        let debug_str = format!("{:?}", pallets);
+        assert!(debug_str.contains("Pallets"));
     }
 
     #[test]
     fn test_recipe_config_with_pathway() {
         let mut config = RecipeConfig::new("My Recipe", "my-recipe", RecipeType::PolkadotSdk);
-        config.pathway = Some(RecipePathway::Parachain);
+        config.pathway = Some(RecipePathway::Pallets);
 
-        assert_eq!(config.pathway, Some(RecipePathway::Parachain));
+        assert_eq!(config.pathway, Some(RecipePathway::Pallets));
     }
 
     #[test]
@@ -351,7 +351,7 @@ This is a test recipe.
         assert_eq!(config.slug, "test-recipe");
         assert_eq!(config.description, "A test recipe for testing");
         assert_eq!(config.recipe_type, RecipeType::PolkadotSdk);
-        assert_eq!(config.pathway, Some(RecipePathway::Parachain));
+        assert_eq!(config.pathway, Some(RecipePathway::Pallets));
     }
 
     #[tokio::test]

@@ -1,7 +1,7 @@
 ---
 title: Pallet Example
 description: Replace with a short description.
-pathway: parachain
+pathway: pallets
 ---
 
 # Pallet Example

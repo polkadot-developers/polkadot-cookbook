@@ -16,10 +16,10 @@ static XCM_TEMPLATE: Dir<'_> =
     include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/xcm-template");
 static SOLIDITY_TEMPLATE: Dir<'_> =
     include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/solidity-template");
-static BASIC_INTERACTION_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/basic-interaction-template");
-static TESTING_TEMPLATE: Dir<'_> =
-    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/testing-template");
+static TRANSACTIONS_TEMPLATE: Dir<'_> =
+    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/transactions-template");
+static NETWORKS_TEMPLATE: Dir<'_> =
+    include_dir!("$CARGO_MANIFEST_DIR/templates/recipe-templates/networks-template");
 
 pub mod bootstrap;
 
@@ -130,7 +130,7 @@ impl Scaffold {
         if !config.skip_install
             && matches!(
                 config.recipe_type,
-                RecipeType::Xcm | RecipeType::BasicInteraction | RecipeType::Testing
+                RecipeType::Xcm | RecipeType::Transactions | RecipeType::Networks
             )
         {
             let bootstrap = Bootstrap::new(project_path.clone());
@@ -222,12 +222,12 @@ impl Scaffold {
                 // Template will create src/ and tests/ directories
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::BasicInteraction => {
-                // For basic interaction recipes (TypeScript + PAPI)
+            RecipeType::Transactions => {
+                // For transaction recipes (TypeScript + PAPI)
                 // Template will create src/ and tests/ directories
                 vec![project_path.to_path_buf()]
             }
-            RecipeType::Testing => {
+            RecipeType::Networks => {
                 // For testing infrastructure recipes (Zombienet/Chopsticks configs)
                 // Template will create configs/, scripts/, tests/ directories
                 vec![project_path.to_path_buf()]
@@ -278,11 +278,11 @@ impl Scaffold {
                 self.create_xcm_files(project_path, config, rust_version)
                     .await?;
             }
-            RecipeType::BasicInteraction => {
+            RecipeType::Transactions => {
                 self.create_basic_interaction_files(project_path, config, rust_version)
                     .await?;
             }
-            RecipeType::Testing => {
+            RecipeType::Networks => {
                 self.create_testing_files(project_path, config, rust_version)
                     .await?;
             }
@@ -346,28 +346,23 @@ impl Scaffold {
         config: &ProjectConfig,
         rust_version: &str,
     ) -> Result<()> {
-        debug!("Creating Basic Interaction template files");
+        debug!("Creating Transactions template files");
 
-        self.copy_embedded_template(
-            &BASIC_INTERACTION_TEMPLATE,
-            project_path,
-            config,
-            rust_version,
-        )
-        .await?;
+        self.copy_embedded_template(&TRANSACTIONS_TEMPLATE, project_path, config, rust_version)
+            .await?;
         Ok(())
     }
 
-    /// Create files for Testing Infrastructure recipes (Zombienet/Chopsticks)
+    /// Create files for Network Infrastructure recipes (Zombienet/Chopsticks)
     async fn create_testing_files(
         &self,
         project_path: &Path,
         config: &ProjectConfig,
         rust_version: &str,
     ) -> Result<()> {
-        debug!("Creating Testing Infrastructure template files");
+        debug!("Creating Network Infrastructure template files");
 
-        self.copy_embedded_template(&TESTING_TEMPLATE, project_path, config, rust_version)
+        self.copy_embedded_template(&NETWORKS_TEMPLATE, project_path, config, rust_version)
             .await?;
         Ok(())
     }
@@ -407,11 +402,11 @@ impl Scaffold {
                     .as_ref()
                     .map(|p| {
                         let value = match p {
-                            crate::config::RecipePathway::Parachain => "parachain",
+                            crate::config::RecipePathway::Pallets => "pallets",
                             crate::config::RecipePathway::Contracts => "contracts",
-                            crate::config::RecipePathway::BasicInteraction => "basic-interaction",
+                            crate::config::RecipePathway::Transactions => "transactions",
                             crate::config::RecipePathway::Xcm => "xcm",
-                            crate::config::RecipePathway::Testing => "testing",
+                            crate::config::RecipePathway::Networks => "networks",
                             crate::config::RecipePathway::RequestNew => {
                                 unreachable!("RequestNew pathway should never reach scaffold code")
                             }
@@ -756,8 +751,8 @@ mod tests {
         let project_path = temp_dir.path().join("basic-interaction-test");
         tokio::fs::create_dir_all(&project_path).await.unwrap();
 
-        let config = ProjectConfig::new("basic-interaction-test")
-            .with_recipe_type(RecipeType::BasicInteraction);
+        let config =
+            ProjectConfig::new("basic-interaction-test").with_recipe_type(RecipeType::Transactions);
 
         let scaffold = Scaffold::new();
         let result = scaffold.create_files(&project_path, &config, "1.86").await;
@@ -785,7 +780,7 @@ mod tests {
         tokio::fs::create_dir_all(&project_path).await.unwrap();
 
         let config =
-            ProjectConfig::new("testing-recipe-test").with_recipe_type(RecipeType::Testing);
+            ProjectConfig::new("testing-recipe-test").with_recipe_type(RecipeType::Networks);
 
         let scaffold = Scaffold::new();
         let result = scaffold.create_files(&project_path, &config, "1.86").await;
