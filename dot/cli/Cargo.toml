@@ -14,8 +14,8 @@ name = "dot"
 path = "src/main.rs"
 
 [dependencies]
-# SDK library
-sdk = { path = "../sdk" }
+# SDK library - version must match exactly to enforce single dependency model
+sdk = { version = "=0.5.0", path = "../sdk" }
 
 # Async runtime
 tokio.workspace = true
@@ -39,9 +39,9 @@ octocrab.workspace = true
 tempfile.workspace = true
 
 [dev-dependencies]
-assert_cmd = "2.0"
-predicates = "3.1"
-tempfile = "3.13"
-cargo-husky = { version = "1", features = ["user-hooks"] }
-tokio = { version = "1", features = ["full"] }
-serial_test = "3"
+assert_cmd = "=2.0.16"
+predicates = "=3.1.2"
+tempfile.workspace = true
+cargo-husky = { version = "=1.0.1", features = ["user-hooks"] }
+tokio = { workspace = true, features = ["full"] }
+serial_test.workspace = true

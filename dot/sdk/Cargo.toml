@@ -42,7 +42,7 @@ regex.workspace = true
 git2.workspace = true
 
 # Template embedding
-include_dir = "0.7"
+include_dir = "=0.7.4"
 
 [dev-dependencies]
 tempfile.workspace = true
