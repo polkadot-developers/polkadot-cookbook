@@ -49,15 +49,15 @@ dot recipe create
 **1. Select Pathway**
 ```
 ? What would you like to build?
-  ❯ Custom Parachain (Polkadot SDK)
-    Smart Contract (Solidity)
-    Basic Interaction
-    Cross-chain Interaction (XCM)
-    Polkadot Network (Zombienet / Chopsticks)
+  ❯ Smart Contract (Solidity)
+    Parachain (Polkadot SDK)
+    Chain Transactions
+    Cross-chain Transactions (XCM)
+    Polkadot Networks (Zombienet / Chopsticks)
     None of these - Request new template
 ```
 
-For this tutorial, select **Custom Parachain (Polkadot SDK)**.
+For this tutorial, select **Parachain (Polkadot SDK)**.
 
 **2. Enter Recipe Title**
 ```

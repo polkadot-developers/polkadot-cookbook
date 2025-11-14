@@ -34,7 +34,7 @@ dot recipe create
 ```
 
 Launches an interactive prompt that guides you through:
-1. Pathway selection (Custom Parachain, Smart Contract, Basic Interaction, Cross-chain Interaction, Polkadot Network)
+1. Pathway selection (Parachain, Smart Contract, Chain Transactions, Cross-chain Transactions, Polkadot Networks)
 2. Recipe title
 
 **Non-Interactive Mode:**
@@ -54,11 +54,11 @@ dot recipe create --title "My Recipe" --non-interactive [OPTIONS]
 | `--non-interactive` | Non-interactive mode | No | false |
 
 **Pathway Options:**
-- `parachain` - Custom Parachain: Build a custom parachain with PAPI integration
+- `pallets` - Parachain: Build a full parachain with custom pallets and PAPI integration
 - `contracts` - Smart Contract: Build, test, and run Solidity smart contracts
-- `basic-interaction` - Basic Interaction: Single-chain transactions and state queries with PAPI
-- `xcm` - Cross-chain Interaction: Cross-chain asset transfers and cross-chain calls with Chopsticks
-- `testing` - Polkadot Network: Run a Polkadot network locally with Zombienet or Chopsticks
+- `transactions` - Chain Transactions: Single-chain transactions and state queries with PAPI
+- `xcm` - Cross-chain Transactions: Cross-chain asset transfers and cross-chain calls with Chopsticks
+- `networks` - Polkadot Networks: Run a Polkadot network locally with Zombienet or Chopsticks
 
 **Examples:**
 

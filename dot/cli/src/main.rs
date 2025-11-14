@@ -270,11 +270,8 @@ async fn handle_create(
     let slug = polkadot_cookbook_sdk::config::title_to_slug(&title);
 
     // Step 3: Prompt for description
-    let description_question = "Brief description".polkadot_pink().to_string();
-    let hint_text = "(1-2 sentences, 120-160 characters for SEO)"
-        .dimmed()
-        .to_string();
-    let description: String = input(format!("{description_question} {hint_text}"))
+    let description_question = "Description".polkadot_pink().to_string();
+    let description: String = input(&description_question)
         .placeholder("Learn how to build a custom NFT pallet with minting, transfers, and storage")
         .default_input("")
         .interact()?;
@@ -322,14 +319,21 @@ async fn handle_create(
             } else {
                 format!(
                     "{}/\n\
-                     ├── README.md               (Full tutorial)\n\
+                     ├── README.md\n\
                      ├── Cargo.toml              (Workspace config)\n\
+                     ├── rust-toolchain.toml     (Rust version)\n\
                      ├── package.json            (PAPI dependencies)\n\
+                     ├── tsconfig.json\n\
+                     ├── vitest.config.ts\n\
+                     ├── LICENSE\n\
+                     ├── Dockerfile\n\
                      ├── runtime/                (Parachain runtime)\n\
                      │   ├── Cargo.toml\n\
+                     │   ├── build.rs\n\
                      │   └── src/\n\
                      ├── node/                   (Node implementation)\n\
                      │   ├── Cargo.toml\n\
+                     │   ├── build.rs\n\
                      │   └── src/\n\
                      ├── pallets/                (Custom pallets)\n\
                      │   └── template/\n\
@@ -337,9 +341,16 @@ async fn handle_create(
                      │       └── src/\n\
                      ├── scripts/                (Helper scripts)\n\
                      │   ├── generate-spec.sh\n\
+                     │   ├── setup-zombienet-binaries.sh\n\
                      │   └── start-dev-node.sh\n\
-                     └── tests/                  (PAPI integration tests)\n\
-                         └── template-pallet.test.ts",
+                     ├── tests/                  (PAPI integration tests)\n\
+                     │   └── template-pallet.test.ts\n\
+                     ├── zombienet.toml          (Network configs)\n\
+                     ├── zombienet-omni-node.toml\n\
+                     └── zombienet-xcm.toml\n\n\
+                     Based on: polkadot-sdk-parachain-template\n\
+                     Polkadot SDK: v2503.0.1\n\
+                     Release: https://github.com/paritytech/polkadot-sdk/releases/tag/polkadot-v2503.0.1",
                     slug
                 )
             }
