@@ -40,3 +40,5 @@ assert_cmd = "2.0"
 predicates = "3.1"
 tempfile = "3.13"
 cargo-husky = { version = "1", features = ["user-hooks"] }
+tokio = { version = "1", features = ["full"] }
+serial_test = "3"

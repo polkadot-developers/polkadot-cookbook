@@ -39,3 +39,52 @@ pub fn list_available_templates() -> Vec<TemplateInfo> {
         },
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_list_available_templates() {
+        let templates = list_available_templates();
+
+        assert_eq!(templates.len(), 2);
+
+        // Check SDK template
+        assert_eq!(templates[0].id, "sdk");
+        assert_eq!(templates[0].name, "Polkadot SDK Recipe");
+        assert!(templates[0].description.contains("Polkadot SDK"));
+
+        // Check contracts template
+        assert_eq!(templates[1].id, "contracts");
+        assert_eq!(templates[1].name, "Smart Contracts Recipe");
+        assert!(templates[1].description.contains("smart contracts"));
+    }
+
+    #[test]
+    fn test_template_info_clone() {
+        let info = TemplateInfo {
+            id: "test".to_string(),
+            name: "Test Template".to_string(),
+            description: "Test description".to_string(),
+        };
+
+        let cloned = info.clone();
+        assert_eq!(cloned.id, "test");
+        assert_eq!(cloned.name, "Test Template");
+        assert_eq!(cloned.description, "Test description");
+    }
+
+    #[test]
+    fn test_template_info_debug() {
+        let info = TemplateInfo {
+            id: "test".to_string(),
+            name: "Test Template".to_string(),
+            description: "Test description".to_string(),
+        };
+
+        let debug_str = format!("{:?}", info);
+        assert!(debug_str.contains("test"));
+        assert!(debug_str.contains("Test Template"));
+    }
+}

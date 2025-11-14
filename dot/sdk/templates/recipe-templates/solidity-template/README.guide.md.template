@@ -70,7 +70,7 @@ Generates:
 
 ### Testing
 
-Test file in `test/Contract.test.ts`:
+Test file in `tests/Contract.test.ts`:
 
 ```typescript
 import { expect } from "chai";
@@ -285,37 +285,6 @@ function batchUpdate(uint256[] calldata values) external {
 - ✅ Event emission for state changes
 - ✅ Use latest Solidity version
 - ✅ Test all edge cases
-
-## Troubleshooting
-
-### Common Issues
-
-**Compilation fails:**
-- Check Solidity version matches pragma
-- Verify all imports are correct
-- Clear cache: `npx hardhat clean`
-
-**Tests timeout:**
-- Increase timeout in test config
-- Check async/await usage
-- Verify network connection
-
-**Deployment fails:**
-- Ensure account has sufficient funds
-- Check gas limit settings
-- Verify network configuration
-
-**Transaction reverts:**
-- Check require/revert messages
-- Verify function parameters
-- Review transaction logs
-
-## Resources
-
-- [Polkadot SDK Documentation](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
-- [Solidity Docs](https://docs.soliditylang.org/)
-- [Ethers.js Docs](https://docs.ethers.org/)
-- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
 
 ## License
 

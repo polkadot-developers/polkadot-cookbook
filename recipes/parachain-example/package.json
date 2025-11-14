@@ -1,0 +1,39 @@
+{
+  "name": "parachain-example",
+  "version": "1.0.0",
+  "description": "Replace with a short description.",
+  "type": "module",
+  "scripts": {
+    "build:runtime": "cargo build --release",
+    "generate:spec": "./scripts/generate-spec.sh",
+    "generate:types": "papi",
+    "start:node": "./scripts/start-dev-node.sh",
+    "setup:zombienet": "./scripts/setup-zombienet-binaries.sh",
+    "zombienet:basic": "zombienet spawn zombienet-basic.toml",
+    "zombienet:xcm": "zombienet spawn zombienet-xcm.toml",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "polkadot",
+    "substrate",
+    "runtime",
+    "papi",
+    "parachain"
+  ],
+  "author": "",
+  "license": "MIT OR Apache-2.0",
+  "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-labs/hdkd": "^0.0.10",
+    "@polkadot-labs/hdkd-helpers": "^0.0.10",
+    "polkadot-api": "^1.20.0"
+  },
+  "devDependencies": {
+    "@polkadot-api/cli": "^0.15.3",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

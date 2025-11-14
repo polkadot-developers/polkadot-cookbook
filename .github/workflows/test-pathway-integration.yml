@@ -1,0 +1,203 @@
+name: Pathway Integration Tests
+
+on:
+  # Run weekly to catch dependency/Rust version issues
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at midnight UTC
+
+  # Run on releases
+  release:
+    types: [published]
+
+  # Run on PRs that touch critical files
+  # Smart path filtering: only run tests for templates that actually changed
+  pull_request:
+    paths:
+      # Global toolchain/workflow changes - run all tests
+      - 'rust-toolchain.toml'
+      - 'dot/cli/tests/pathway_integration_tests.rs'
+      - '.github/workflows/test-pathway-integration.yml'
+      # Core SDK changes - run all tests
+      - 'dot/sdk/src/**'
+      # Template-specific changes - only run affected template tests
+      - 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**'
+      - 'dot/sdk/templates/recipe-templates/basic-interaction-template/**'
+      - 'dot/sdk/templates/recipe-templates/solidity-template/**'
+      - 'dot/sdk/templates/recipe-templates/xcm-template/**'
+      - 'dot/sdk/templates/recipe-templates/testing-template/**'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  test-pathways:
+    name: Test All Recipe Pathways
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # Integration tests can take a while
+
+    # Performance optimizations:
+    # 1. Path-based triggers: Only run when relevant template files change
+    # 2. Runtime WASM caching: Avoid 15+ minute rebuilds when runtime code unchanged
+    # 3. Cargo/Node caching: Speed up dependency installation
+    # Result: Most PRs skip this workflow, and when it runs, cached builds are 10x faster
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt, clippy, rust-src
+          target: wasm32-unknown-unknown
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-integration-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-integration-
+            ${{ runner.os }}-cargo-
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            recipes/*/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Cache compiled runtime WASM to avoid 15+ minute rebuilds
+      # This is the biggest time saver for parachain tests
+      - name: Cache compiled runtime artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            recipes/*/target/release/wbuild
+            recipes/*/target/release/*.wasm
+          key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/recipe-templates/polkadot-sdk-template/runtime/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/pallets/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-runtime-wasm-
+
+      - name: Build CLI
+        run: cargo build --release --package cli --locked
+
+      - name: Add CLI to PATH
+        run: echo "${{ github.workspace }}/target/release" >> $GITHUB_PATH
+
+      - name: Install protobuf compiler
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Cache polkadot tools
+        uses: actions/cache@v4
+        id: cache-polkadot-tools
+        with:
+          path: |
+            ~/.cargo/bin/polkadot-omni-node
+            ~/.cargo/bin/chain-spec-builder
+          key: ${{ runner.os }}-polkadot-tools-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-polkadot-tools-
+
+      - name: Install polkadot-omni-node
+        if: steps.cache-polkadot-tools.outputs.cache-hit != 'true'
+        run: cargo install polkadot-omni-node --locked
+        env:
+          RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
+
+      - name: Install chain-spec-builder
+        if: steps.cache-polkadot-tools.outputs.cache-hit != 'true'
+        run: cargo install staging-chain-spec-builder --locked
+        env:
+          RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
+
+      - name: Run pathway integration tests
+        run: cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Upload parachain-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parachain-example
+          path: recipes/parachain-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload pallet-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pallet-example
+          path: recipes/pallet-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload contracts-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contracts-example
+          path: recipes/contracts-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload basic-interaction-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: basic-interaction-example
+          path: recipes/basic-interaction-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload xcm-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcm-example
+          path: recipes/xcm-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload infra-example artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: infra-example
+          path: recipes/infra-example/
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Note: We keep the generated examples in the workspace
+      # These can be committed to keep examples fresh and up-to-date
+
+  test-summary:
+    name: Integration Test Summary
+    needs: test-pathways
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-pathways.result }}" == "success" ]; then
+            echo "✅ All pathway integration tests passed!"
+            echo "All recipe templates generate working code with passing tests."
+          else
+            echo "❌ Some pathway integration tests failed!"
+            echo "Check the logs above for details."
+            exit 1
+          fi

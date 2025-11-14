@@ -324,16 +324,16 @@ const claimTx = api.tx.PolkadotXcm.claim_assets({
 
 ```yaml
 relay_chain:
-  endpoint: wss://westend-rpc.polkadot.io
+  endpoint: wss://paseo-rpc.dwellir.com
   block: latest
 
 parachains:
   - id: 1000
-    endpoint: wss://westend-asset-hub-rpc.polkadot.io
+    endpoint: wss://paseo-asset-hub-rpc.dwellir.com
     block: latest
 
   - id: 1002
-    endpoint: wss://westend-collectives-rpc.polkadot.io
+    endpoint: wss://paseo-collectives-rpc.dwellir.com
     block: latest
 ```
 
@@ -348,8 +348,8 @@ describe("XCM Transfers", () => {
 
   beforeAll(async () => {
     const chains = await setupChains({
-      relaychain: "westend",
-      parachains: [{ paraId: 1000, chain: "westend-asset-hub" }]
+      relaychain: "paseo",
+      parachains: [{ paraId: 1000, chain: "paseo-asset-hub" }]
     });
 
     relayChain = chains.relaychain;
@@ -597,9 +597,9 @@ import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider/web";
 
 const chains = {
-  relay: createClient(getWsProvider("wss://westend-rpc.polkadot.io")),
-  assetHub: createClient(getWsProvider("wss://westend-asset-hub-rpc.polkadot.io")),
-  collectives: createClient(getWsProvider("wss://westend-collectives-rpc.polkadot.io"))
+  relay: createClient(getWsProvider("wss://paseo-rpc.dwellir.com")),
+  assetHub: createClient(getWsProvider("wss://paseo-asset-hub-rpc.dwellir.com")),
+  collectives: createClient(getWsProvider("wss://paseo-collectives-rpc.dwellir.com"))
 };
 
 // Get typed APIs
@@ -632,47 +632,6 @@ function monitorAllChains(chains: Record<string, Client>) {
 - Add fee buffers for reliability
 - Track XCM message lifecycle
 - Clean up subscriptions
-
-## Troubleshooting
-
-### Transfer Not Arriving
-
-1. Check destination chain supports the asset
-2. Verify asset is registered on destination
-3. Ensure sufficient fees
-4. Check for trapped assets
-5. Monitor events on both chains
-
-### Assets Trapped
-
-```typescript
-// Query trapped assets
-const trapped = await api.query.PolkadotXcm.AssetTraps.getEntries();
-
-// Claim them
-await api.tx.PolkadotXcm.claim_assets({ assets, beneficiary }).signAndSubmit(signer);
-```
-
-### Chopsticks Issues
-
-```bash
-# Clear cache
-rm -rf .chopsticks
-
-# Use specific block
-# In chopsticks.yml: block: 12345678
-
-# Check logs
-npm run chopsticks -- --log-level=debug
-```
-
-## Resources
-
-- [XCM Docs](https://wiki.polkadot.network/docs/learn-xcm)
-- [XCM Format](https://github.com/paritytech/xcm-format)
-- [Chopsticks](https://github.com/AcalaNetwork/chopsticks)
-- [Asset Transfer API](https://github.com/paritytech/asset-transfer-api)
-- [XCM Playground](https://github.com/paritytech/xcm-playground)
 
 ## License
 

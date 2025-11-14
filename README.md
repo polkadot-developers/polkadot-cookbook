@@ -13,7 +13,9 @@
   </div>
 </div>
 
-**Practical, tested recipes for Polkadot SDK development**
+**Practical, tested recipes for building on Polkadot**
+
+Build runtime logic, smart contracts, dApps, and cross-chain applications with working code examples.
 
 [**Browse Recipes**](#recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#documentation)
 
@@ -33,45 +35,47 @@
 
 The Polkadot Cookbook provides recipes across 5 pathways of Polkadot development:
 
-### <img src=".github/media/icons/runtime-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/runtime-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Runtime Development (Polkadot SDK)
+### <img src=".github/media/icons/runtime-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/runtime-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Parachain
 
-Build custom FRAME pallets and runtime logic with Rust.
+Build custom parachains with FRAME pallets, runtime logic, and PAPI integration testing.
 
-| Recipe | Description | Difficulty |
-|----------|-------------|------------|
-| [**Basic Pallet**](recipes/basic-pallet) | Create a custom FRAME pallet with storage and events | <img src=".github/media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".github/media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| Recipe | Description | Pathway |
+|----------|-------------|--------|
+| [**parachain-example**](recipes/parachain-example) | Full parachain development environment with 12+ pallets, custom logic, and TypeScript tests | Parachain |
 
-### <img src=".github/media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Smart Contracts (Solidity)
+### <img src=".github/media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Contracts
 
-Deploy and interact with Solidity contracts.
+Deploy and interact with Solidity smart contracts on Polkadot parachains.
 
-| Recipe | Description | Difficulty |
-|----------|-------------|------------|
-| [**Simple Counter**](recipes/simple-counter) | A simple counter smart contract in Solidity | <img src=".github/media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".github/media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| Recipe | Description | Pathway |
+|----------|-------------|--------|
+| [**contracts-example**](recipes/contracts-example) | Template for Solidity contracts with Hardhat and deployment scripts | Contracts |
 
 ### <img src=".github/media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Basic Interactions
 
-Single-chain transaction submission and state queries with PAPI.
+Single-chain transaction submission and state queries using the Polkadot API.
 
-| Recipe | Description | Difficulty |
-|----------|-------------|------------|
-| *Coming soon* | Balance transfers, batch operations, proxy calls | - |
+| Recipe | Description | Pathway |
+|----------|-------------|--------|
+| [**basic-interaction-example**](recipes/basic-interaction-example) | Template for chain interactions with Polkadot API (TypeScript) | Basic Interaction |
 
-### <img src=".github/media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> XCM (Cross-Chain Messaging)
+### <img src=".github/media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> XCM
 
-Asset transfers and cross-chain communication with Chopsticks.
+Cross-chain asset transfers and messaging between parachains.
 
-| Recipe | Description | Difficulty |
-|----------|-------------|------------|
-| [**Teleport Assets**](recipes/teleport-assets) | Teleport assets between parachains using XCM v5 and PAPI | <img src=".github/media/icons/beginner-dark.svg#gh-dark-mode-only" width="14" height="14" alt="" /> <img src=".github/media/icons/beginner-light.svg#gh-light-mode-only" width="14" height="14" alt="" /> Beginner |
+| Recipe | Description | Pathway |
+|----------|-------------|--------|
+| [**xcm-example**](recipes/xcm-example) | Template for XCM messaging with Chopsticks local testing | XCM |
 
-### <img src=".github/media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Testing Infrastructure
+### <img src=".github/media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Polkadot Infrastructure
 
-Zombienet and Chopsticks configurations for network testing.
+Testing infrastructure with Zombienet and Chopsticks for local network development.
 
-| Recipe | Description | Difficulty |
-|----------|-------------|------------|
-| *Coming soon* | Parachain test network, fork testing setups | - |
+| Recipe | Description | Pathway |
+|----------|-------------|--------|
+| [**infra-example**](recipes/infra-example) | Template for Zombienet and Chopsticks network configurations | Infrastructure |
+
+> **Note:** Example recipes are auto-generated by our integration tests to ensure templates stay fresh and validated. They are regenerated regularly to match the latest Rust version and dependencies.
 
 > <img src=".github/media/icons/idea-dark.svg#gh-dark-mode-only" width="18" height="18" alt="" /> <img src=".github/media/icons/idea-light.svg#gh-light-mode-only" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
@@ -85,26 +89,42 @@ Zombienet and Chopsticks configurations for network testing.
 
 Each recipe is self-contained with working code and tests. Commands vary by recipe type:
 
-**Polkadot SDK (Rust)**
+**Parachain (Rust + TypeScript/PAPI)**
 ```bash
-cd polkadot-cookbook/recipes/basic-pallet
-cargo test              # Run tests
-cargo build --release   # Build the pallet
+cd polkadot-cookbook/recipes/parachain-example
+cargo test              # Run pallet unit tests
+npm run build:runtime   # Build parachain runtime
+npm run start:node      # Start local node
+npm test                # Run PAPI integration tests
 ```
 
-**Smart Contracts (Solidity)**
+**Contracts (Solidity)**
 ```bash
-cd polkadot-cookbook/recipes/simple-counter
+cd polkadot-cookbook/recipes/contracts-example
 npm install            # Install dependencies
 npm run compile        # Compile contracts
 npm test              # Run tests
 ```
 
-**Cross-Chain (XCM)**
+**Basic Interactions (TypeScript)**
 ```bash
-cd polkadot-cookbook/recipes/teleport-assets
+cd polkadot-cookbook/recipes/basic-interaction-example
+npm install           # Install dependencies
+npm test             # Run tests
+```
+
+**XCM (TypeScript)**
+```bash
+cd polkadot-cookbook/recipes/xcm-example
 npm install           # Install dependencies
 npm test             # Run tests with Chopsticks
+```
+
+**Polkadot Infrastructure (TypeScript)**
+```bash
+cd polkadot-cookbook/recipes/infra-example
+npm install           # Install dependencies
+npm test             # Run tests
 ```
 
 > **Tip:** Check each recipe's README.md for specific instructions.
@@ -183,11 +203,11 @@ dot recipe submit my-pallet
 ```
 
 The CLI supports five recipe pathways:
-- **Runtime Development** - Build custom FRAME pallets with Rust
-- **Smart Contracts** - Deploy Solidity contracts
-- **Basic Interactions** - Single-chain transactions with PAPI (TypeScript)
-- **XCM** - Cross-chain messaging with Chopsticks (TypeScript)
-- **Testing Infrastructure** - Zombienet and Chopsticks configurations
+- **Custom Parachain** - Build a custom parachain with PAPI integration
+- **Smart Contract** - Build, test, and run Solidity smart contracts
+- **Basic Interaction** - Single-chain transactions and state queries with PAPI
+- **Cross-chain Interaction** - Cross-chain asset transfers and cross-chain calls with Chopsticks
+- **Polkadot Network** - Run a Polkadot network locally with Zombienet or Chopsticks
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
@@ -205,9 +225,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 - [SDK Library](dot/sdk/) - Programmatic API for tool developers
 
 ### For Maintainers
-- [Architecture](docs/architecture.md) - System design and architecture
-- [Testing](docs/testing.md) - Testing guide
-- [Workflows](docs/workflows.md) - CI/CD and automation
+- **Regenerating Example Recipes** - Example recipes are auto-generated by integration tests:
+  ```bash
+  cargo test --package cli --test pathway_integration_tests -- --ignored
+  ```
+  This creates fresh examples in `recipes/*-example/` that validate templates work with the current Rust version and dependencies.
+- Integration tests run automatically on:
+  - Releases
+  - Weekly schedule
+  - PRs touching `rust-toolchain.toml` or templates
 
 <hr />
 

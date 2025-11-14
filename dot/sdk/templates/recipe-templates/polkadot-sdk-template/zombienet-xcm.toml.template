@@ -1,0 +1,61 @@
+# Multi-Parachain Zombienet Configuration for XCM Testing
+#
+# This configuration sets up a local testnet with:
+# - 2 relay chain validators (Alice, Bob) on Paseo
+# - 2 parachains for cross-chain messaging (IDs 1000 and 2000)
+#
+# Perfect for testing XCM patterns like:
+# - Cross-chain asset transfers
+# - Remote execution
+# - Multi-hop messaging
+#
+# Usage:
+#   npm run setup:zombienet  # One-time setup
+#   zombienet spawn zombienet-xcm.toml
+#
+# Prerequisites (handled by setup script):
+#   - polkadot (relay chain): Auto-downloaded on Linux via zombienet setup
+#   - polkadot-omni-node (both parachains): Installed via cargo
+#   - zombienet CLI: npm install -g @zombienet/cli
+
+[relaychain]
+default_command = "polkadot"
+chain = "paseo-local"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+ws_port = 9944
+rpc_port = 9933
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+ws_port = 9955
+rpc_port = 9934
+
+# Parachain 1000: Generic parachain for XCM source
+[[parachains]]
+id = 1000
+chain_spec_path = "./dev_chain_spec.json"
+cumulus_based = true
+
+[parachains.collator]
+name = "parachain-1000-collator"
+ws_port = 9988
+rpc_port = 9987
+command = "polkadot-omni-node"
+args = ["--collator"]
+
+# Parachain 2000: Your custom parachain (XCM destination)
+[[parachains]]
+id = 2000
+chain_spec_path = "./dev_chain_spec.json"
+cumulus_based = true
+
+[parachains.collator]
+name = "{{slug}}-collator"
+ws_port = 9998
+rpc_port = 9997
+command = "polkadot-omni-node"
+args = ["--collator"]

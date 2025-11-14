@@ -52,7 +52,12 @@ dot recipe create [OPTIONS]
 
 **Options:**
 - `--title <TITLE>` - Recipe title (required in non-interactive mode)
-- `--pathway <PATHWAY>` - Recipe pathway: runtime, contracts, basic-interaction, xcm, testing
+- `--pathway <PATHWAY>` - Recipe pathway:
+  - `runtime` - Polkadot SDK/FRAME pallet development
+  - `contracts` - Solidity smart contracts
+  - `basic-interaction` - Polkadot API interactions
+  - `xcm` - Cross-chain messaging
+  - `testing` - Network infrastructure (Zombienet/Chopsticks)
 - `--difficulty <DIFFICULTY>` - Difficulty level: beginner, intermediate, advanced
 - `--content-type <TYPE>` - Content type: tutorial, guide
 - `--skip-install` - Skip npm dependency installation
@@ -75,54 +80,84 @@ dot recipe create --title "My Recipe" --pathway runtime --difficulty beginner --
 ```
 
 **What it creates:**
+
+The structure varies by pathway:
+
+**Runtime:**
 ```
 recipes/my-recipe/
-├── README.md              # Recipe content
-├── recipe.config.yml    # Metadata
-├── package.json           # npm dependencies (TypeScript recipes)
+├── README.md              # Recipe documentation
+├── Cargo.toml             # Rust workspace
+├── rust-toolchain.toml    # Rust version pinning
+└── pallets/               # FRAME pallets
+    └── template/
+        ├── Cargo.toml
+        └── src/
+            ├── lib.rs     # Pallet implementation
+            ├── mock.rs    # Test runtime
+            └── tests.rs   # Unit tests
+```
+
+**Contracts/Basic Interactions/XCM/Infrastructure:**
+```
+recipes/my-recipe/
+├── README.md              # Recipe documentation
+├── package.json           # npm dependencies
 ├── tsconfig.json          # TypeScript config
-├── vitest.config.ts       # Test config
+├── vitest.config.ts       # Test config (or hardhat.config.ts)
 ├── src/                   # Implementation code
 ├── tests/                 # Test files
-└── scripts/               # Deployment scripts (Solidity recipes)
+└── scripts/               # Deployment scripts (Contracts only)
 ```
-Note: Structure varies by recipe type (Runtime, Solidity, XCM, etc.).
 
 ## Common Workflows
 
 ### Contributing a Recipe
 
+**Runtime pathway (Rust):**
 ```bash
 # 1. Create recipe structure
-dot recipe create --title "My Awesome Recipe"
+dot recipe create --title "Custom Storage Pallet" --pathway runtime
 
 # 2. Write content
-cd recipes/my-awesome-recipe
+cd recipes/custom-storage-pallet
+code README.md
+
+# 3. Implement pallet
+code pallets/template/src/lib.rs
+
+# 4. Test locally
+cargo test
+
+# 5. Commit and push
+git add -A
+git commit -m "feat(recipe): add custom storage pallet"
+git push origin recipe/custom-storage-pallet
+```
+
+**TypeScript pathways (Contracts/Basic Interactions/XCM/Infrastructure):**
+```bash
+# 1. Create recipe structure
+dot recipe create --title "Token Transfer" --pathway basic-interaction
+
+# 2. Write content
+cd recipes/token-transfer
 code README.md
 
 # 3. Implement code
-code src/lib.rs
+code src/transfer.ts
 
 # 4. Write tests
-code tests/recipe.test.ts
+code tests/transfer.test.ts
 
 # 5. Test locally
 npm test
 
 # 6. Commit and push
 git add -A
-git commit -m "feat(recipe): add my awesome recipe"
-git push origin recipe/my-awesome-recipe
+git commit -m "feat(recipe): add token transfer example"
+git push origin recipe/token-transfer
 ```
-
-## Configuration
-
-### Recipe Metadata
-
-Edit `recipes/<slug>/recipe.config.yml` to configure:
-- Recipe name and description
-- Category (polkadot-sdk-cookbook or contracts-cookbook)
-- Build and runtime settings
 
 ## Troubleshooting
 

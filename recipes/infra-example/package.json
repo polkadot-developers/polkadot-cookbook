@@ -1,0 +1,33 @@
+{
+  "name": "infra-example",
+  "version": "1.0.0",
+  "description": "Replace with a short description.",
+  "type": "module",
+  "scripts": {
+    "zombienet": "zombienet spawn configs/network.toml",
+    "chopsticks": "chopsticks xcm --config=configs/chopsticks.yml",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "polkadot",
+    "zombienet",
+    "chopsticks",
+    "testing",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "MIT OR Apache-2.0",
+  "devDependencies": {
+    "@acala-network/chopsticks": "^1.2.3",
+    "@acala-network/chopsticks-testing": "^1.2.3",
+    "@types/node": "^20.19.25",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
+  },
+  "dependencies": {
+    "@polkadot/api": "^16.5.2",
+    "ws": "^8.18.3"
+  }
+}

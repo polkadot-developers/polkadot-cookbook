@@ -57,7 +57,7 @@ contracts/          # Solidity smart contracts
 ├── Contract.sol    # Main contract implementation
 scripts/            # Deployment scripts
 ├── deploy.ts       # Automated deployment
-test/               # Contract tests
+tests/              # Contract tests
 ├── Contract.test.ts # Test suite
 ```
 
@@ -320,40 +320,6 @@ Extend your knowledge:
    - Interact with FRAME pallets
    - Use XCM for cross-chain calls
    - Bridge assets between chains
-
-## Troubleshooting
-
-### Compilation Errors
-
-**Error:** `Source file requires different compiler version`
-- **Solution:** Update pragma statement in contract
-
-**Error:** `Identifier not found`
-- **Solution:** Import missing contracts or interfaces
-
-### Deployment Issues
-
-**Error:** `Insufficient funds for gas`
-- **Solution:** Fund your account with native tokens
-
-**Error:** `Transaction reverted`
-- **Solution:** Check constructor requirements and parameters
-
-### Testing Failures
-
-**Error:** `Expected X but got Y`
-- **Solution:** Verify contract state before assertions
-
-**Error:** `Timeout waiting for transaction`
-- **Solution:** Increase gas limit or check node connection
-
-## Resources
-
-- [Polkadot SDK Documentation](https://paritytech.github.io/polkadot-sdk/master/polkadot_sdk_docs/index.html)
-- [Solidity Documentation](https://docs.soliditylang.org/)
-- [Ethers.js Documentation](https://docs.ethers.org/)
-- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
-- [Ethereum Security Best Practices](https://consensys.github.io/smart-contract-best-practices/)
 
 ## License
 

@@ -131,4 +131,87 @@ description: [unclosed bracket
         let result = parse_frontmatter(markdown);
         assert!(matches!(result, Err(FrontmatterError::YamlParseError(_))));
     }
+
+    #[test]
+    fn test_frontmatter_data_clone() {
+        let data = FrontmatterData {
+            title: "Test Title".to_string(),
+            description: "Test Description".to_string(),
+        };
+
+        let cloned = data.clone();
+        assert_eq!(cloned.title, "Test Title");
+        assert_eq!(cloned.description, "Test Description");
+    }
+
+    #[test]
+    fn test_frontmatter_data_partial_eq() {
+        let data1 = FrontmatterData {
+            title: "Test".to_string(),
+            description: "Description".to_string(),
+        };
+
+        let data2 = FrontmatterData {
+            title: "Test".to_string(),
+            description: "Description".to_string(),
+        };
+
+        let data3 = FrontmatterData {
+            title: "Different".to_string(),
+            description: "Description".to_string(),
+        };
+
+        assert_eq!(data1, data2);
+        assert_ne!(data1, data3);
+    }
+
+    #[test]
+    fn test_frontmatter_data_debug() {
+        let data = FrontmatterData {
+            title: "Test".to_string(),
+            description: "Desc".to_string(),
+        };
+
+        let debug_str = format!("{:?}", data);
+        assert!(debug_str.contains("FrontmatterData"));
+        assert!(debug_str.contains("Test"));
+        assert!(debug_str.contains("Desc"));
+    }
+
+    #[test]
+    fn test_frontmatter_data_serialization() {
+        let data = FrontmatterData {
+            title: "Test Title".to_string(),
+            description: "Test Description".to_string(),
+        };
+
+        let json = serde_json::to_string(&data).unwrap();
+        assert!(json.contains("Test Title"));
+        assert!(json.contains("Test Description"));
+
+        let deserialized: FrontmatterData = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized, data);
+    }
+
+    #[test]
+    fn test_frontmatter_error_display() {
+        let err1 = FrontmatterError::NoFrontmatter;
+        assert!(err1.to_string().contains("No frontmatter"));
+
+        let err2 = FrontmatterError::UnclosedFrontmatter;
+        assert!(err2.to_string().contains("not closed"));
+
+        let err3 = FrontmatterError::YamlParseError("test error".to_string());
+        assert!(err3.to_string().contains("test error"));
+
+        let err4 = FrontmatterError::IoError("io error".to_string());
+        assert!(err4.to_string().contains("io error"));
+    }
+
+    #[test]
+    fn test_frontmatter_error_debug() {
+        let err = FrontmatterError::NoFrontmatter;
+        let debug_str = format!("{:?}", err);
+        assert!(debug_str.contains("NoFrontmatter"));
+    }
 }
