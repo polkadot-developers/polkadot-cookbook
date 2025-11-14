@@ -20,11 +20,11 @@ on:
       # Core SDK changes - run all tests
       - 'dot/sdk/src/**'
       # Template-specific changes - only run affected template tests
-      - 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**'
-      - 'dot/sdk/templates/recipe-templates/transactions-template/**'
-      - 'dot/sdk/templates/recipe-templates/solidity-template/**'
-      - 'dot/sdk/templates/recipe-templates/xcm-template/**'
-      - 'dot/sdk/templates/recipe-templates/networks-template/**'
+      - 'dot/sdk/templates/project-templates/polkadot-sdk-template/**'
+      - 'dot/sdk/templates/project-templates/transactions-template/**'
+      - 'dot/sdk/templates/project-templates/solidity-template/**'
+      - 'dot/sdk/templates/project-templates/xcm-template/**'
+      - 'dot/sdk/templates/project-templates/networks-template/**'
 
   # Allow manual trigger
   workflow_dispatch:
@@ -33,12 +33,13 @@ jobs:
   test-pathways:
     name: Test All Recipe Pathways
     runs-on: ubuntu-latest
-    timeout-minutes: 60  # Integration tests can take a while
+    timeout-minutes: 90  # Integration tests can take a while with cold cache
 
     # Performance optimizations:
     # 1. Path-based triggers: Only run when relevant template files change
     # 2. Runtime WASM caching: Avoid 15+ minute rebuilds when runtime code unchanged
     # 3. Cargo/Node caching: Speed up dependency installation
+    # 4. Polkadot tools version-based caching: Avoid rebuilding external tools
     # Result: Most PRs skip this workflow, and when it runs, cached builds are 10x faster
 
     steps:
@@ -50,6 +51,16 @@ jobs:
         with:
           components: rustfmt, clippy, rust-src
           target: wasm32-unknown-unknown
+          # Enable sccache for faster Rust compilation
+          cache: true
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Configure sccache
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -86,7 +97,7 @@ jobs:
           path: |
             recipes/*/*/target/release/wbuild
             recipes/*/*/target/release/*.wasm
-          key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/recipe-templates/polkadot-sdk-template/runtime/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/pallets/**/*.rs', 'dot/sdk/templates/recipe-templates/polkadot-sdk-template/**/Cargo.toml') }}
+          key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/project-templates/polkadot-sdk-template/runtime/**/*.rs', 'dot/sdk/templates/project-templates/polkadot-sdk-template/pallets/**/*.rs', 'dot/sdk/templates/project-templates/polkadot-sdk-template/**/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-runtime-wasm-
 
@@ -106,8 +117,11 @@ jobs:
           path: |
             ~/.cargo/bin/polkadot-omni-node
             ~/.cargo/bin/chain-spec-builder
-          key: ${{ runner.os }}-polkadot-tools-${{ hashFiles('**/Cargo.lock') }}
+          # Use stable version-based key to avoid rebuilding on every Cargo.lock change
+          # Update the version string when you need to force a rebuild
+          key: ${{ runner.os }}-polkadot-tools-v1.18-stable
           restore-keys: |
+            ${{ runner.os }}-polkadot-tools-v1.18-
             ${{ runner.os }}-polkadot-tools-
 
       - name: Install polkadot-omni-node
@@ -115,17 +129,23 @@ jobs:
         run: cargo install polkadot-omni-node --locked
         env:
           RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
+          RUSTC_WRAPPER: sccache  # Use sccache for compilation
 
       - name: Install chain-spec-builder
         if: steps.cache-polkadot-tools.outputs.cache-hit != 'true'
         run: cargo install staging-chain-spec-builder --locked
         env:
           RUSTFLAGS: ""  # Don't treat warnings as errors for external crates
+          RUSTC_WRAPPER: sccache  # Use sccache for compilation
 
       - name: Run pathway integration tests
         run: cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
         env:
           RUST_BACKTRACE: 1
+
+      - name: Show sccache stats
+        if: always()
+        run: sccache --show-stats
 
       - name: Upload parachain-example artifact
         if: always()
