@@ -236,7 +236,7 @@ async fn handle_create(
     let intro_text = format!("{}", "dot CLI".polkadot_pink().bold());
     intro(&intro_text)?;
 
-    let note_title = "Recipe Setup".polkadot_pink().to_string();
+    let note_title = "Polkadot Project Setup".polkadot_pink().to_string();
     note(
         &note_title,
         "Let's create your new Polkadot project. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
