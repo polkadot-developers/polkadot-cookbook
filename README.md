@@ -206,7 +206,7 @@ The CLI supports five recipe pathways:
 - **Smart Contract** - Build, test, and run Solidity smart contracts
 - **Parachain** - Build a full parachain with custom pallets and PAPI integration
 - **Chain Transactions** - Single-chain transactions and state queries with PAPI
-- **Cross-chain Transactions** - Cross-chain asset transfers and cross-chain calls with Chopsticks
+- **Cross-Chain Transactions** - Cross-chain asset transfers and cross-chain calls with Chopsticks
 - **Polkadot Networks** - Run a Polkadot network locally with Zombienet or Chopsticks
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.

@@ -52,7 +52,7 @@ dot recipe create
   ❯ Smart Contract (Solidity)
     Parachain (Polkadot SDK)
     Chain Transactions
-    Cross-chain Transactions (XCM)
+    Cross-Chain Transactions (XCM)
     Polkadot Networks (Zombienet / Chopsticks)
     None of these - Request new template
 ```

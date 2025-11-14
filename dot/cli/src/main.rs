@@ -281,7 +281,7 @@ async fn handle_create(
             )
             .item(
                 RecipePathway::Xcm,
-                "Cross-chain Transactions (XCM)",
+                "Cross-Chain Transactions (XCM)",
                 "Cross-chain asset transfers and cross-chain calls with Chopsticks",
             )
             .item(
@@ -501,7 +501,7 @@ async fn handle_create(
                 }
                 RecipePathway::Contracts => "Smart Contract",
                 RecipePathway::Transactions => "Chain Transactions",
-                RecipePathway::Xcm => "Cross-chain Transactions",
+                RecipePathway::Xcm => "Cross-Chain Transactions",
                 RecipePathway::Networks => "Polkadot Networks",
             },
             "Location:".polkadot_pink(),
@@ -1292,7 +1292,7 @@ async fn handle_standalone_submit(
         )
         .item(
             RecipePathway::Xcm,
-            "Cross-chain Transactions",
+            "Cross-Chain Transactions",
             "Cross-chain messaging with XCM and Chopsticks",
         )
         .item(
