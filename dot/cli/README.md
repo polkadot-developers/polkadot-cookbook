@@ -28,7 +28,7 @@ export PATH="$PATH:/path/to/polkadot-cookbook/target/release"
 ### Create a Recipe (Interactive)
 
 ```bash
-dot recipe create
+dot create
 ```
 
 This launches an interactive prompt that guides you through recipe creation.
@@ -36,18 +36,18 @@ This launches an interactive prompt that guides you through recipe creation.
 ### Create a Recipe (Non-Interactive)
 
 ```bash
-dot recipe create --title "My Awesome Recipe" --non-interactive
+dot create --title "My Awesome Recipe" --non-interactive
 ```
 
 ## Commands
 
-### `recipe create`
+### `create`
 
 Create a new recipe with scaffolded structure.
 
 **Usage:**
 ```bash
-dot recipe create [OPTIONS]
+dot create [OPTIONS]
 ```
 
 **Options:**
@@ -67,16 +67,16 @@ dot recipe create [OPTIONS]
 **Examples:**
 ```bash
 # Interactive mode (recommended)
-dot recipe create
+dot create
 
 # Non-interactive with title (slug auto-generated)
-dot recipe create --title "Custom Pallet Recipe"
+dot create --title "Custom Pallet Recipe"
 
 # Skip installation for faster creation
-dot recipe create --title "My Recipe" --skip-install --non-interactive
+dot create --title "My Recipe" --skip-install --non-interactive
 
 # CI/CD mode with full options
-dot recipe create --title "My Recipe" --pathway runtime --difficulty beginner --non-interactive --skip-install
+dot create --title "My Recipe" --pathway runtime --difficulty beginner --non-interactive --skip-install
 ```
 
 **What it creates:**
@@ -117,7 +117,7 @@ recipes/my-recipe/
 **Runtime pathway (Rust):**
 ```bash
 # 1. Create recipe structure
-dot recipe create --title "Custom Storage Pallet" --pathway runtime
+dot create --title "Custom Storage Pallet" --pathway runtime
 
 # 2. Write content
 cd recipes/custom-storage-pallet
@@ -138,7 +138,7 @@ git push origin recipe/custom-storage-pallet
 **TypeScript pathways (Contracts/Basic Interactions/XCM/Infrastructure):**
 ```bash
 # 1. Create recipe structure
-dot recipe create --title "Token Transfer" --pathway basic-interaction
+dot create --title "Token Transfer" --pathway basic-interaction
 
 # 2. Write content
 cd recipes/token-transfer
@@ -169,7 +169,7 @@ git push origin recipe/token-transfer
 
 ```bash
 cd /path/to/polkadot-cookbook
-dot recipe create --title "My Recipe"
+dot create --title "My Recipe"
 ```
 
 ### "Title argument is required"
@@ -179,7 +179,7 @@ dot recipe create --title "My Recipe"
 **Solution:** Provide --title argument
 
 ```bash
-dot recipe create --title "My Recipe" --non-interactive
+dot create --title "My Recipe" --non-interactive
 ```
 
 ## Development

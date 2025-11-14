@@ -41,7 +41,7 @@ The CLI provides an interactive mode that guides you through recipe creation.
 ### Run the Create Command
 
 ```bash
-dot recipe create
+dot create
 ```
 
 ### Interactive Prompts
@@ -424,7 +424,7 @@ feat(recipe): <description>
 Once your recipe is complete and tested, submit it for review:
 
 ```bash
-dot recipe submit my-first-parachain
+dot submit my-first-parachain
 ```
 
 ### What the Submit Command Does
@@ -488,7 +488,7 @@ The PR will automatically update with your changes.
 ### Smart Contract (Solidity)
 
 ```bash
-dot recipe create
+dot create
 # Select: Smart Contract (Solidity)
 # Title: My First Contract
 ```
@@ -515,7 +515,7 @@ npm test            # Run tests
 ### Basic Interaction (PAPI)
 
 ```bash
-dot recipe create
+dot create
 # Select: Basic Interaction
 # Title: Query Chain State
 ```
@@ -543,7 +543,7 @@ npm test
 For advanced users building just a pallet (no runtime):
 
 ```bash
-dot recipe create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+dot create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
 ```
 
 **Generated structure:**
@@ -599,7 +599,7 @@ Congratulations! You've created your first recipe. Here's what to explore next:
 
 ### Recipe Creation Failed
 
-**Symptom:** `dot recipe create` fails with error
+**Symptom:** `dot create` fails with error
 
 **Common causes:**
 - Git not configured
@@ -665,7 +665,7 @@ npm test
 
 ### GitHub Authentication Failed
 
-**Symptom:** `dot recipe submit` fails with auth error
+**Symptom:** `dot submit` fails with auth error
 
 **Solution:**
 ```bash
@@ -684,7 +684,7 @@ gh auth token
 ## Summary
 
 You've learned how to:
-- ✅ Create a recipe with `dot recipe create`
+- ✅ Create a recipe with `dot create`
 - ✅ Understand the generated file structure
 - ✅ Build and test a parachain
 - ✅ Run PAPI integration tests

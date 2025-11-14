@@ -104,7 +104,7 @@ sudo dnf install git
 
 **Symptom:**
 ```bash
-$ dot recipe submit
+$ dot submit
 Error: GitHub CLI not authenticated
 ```
 
@@ -133,7 +133,7 @@ gh auth status
 
 **Symptom:**
 ```bash
-$ dot recipe create
+$ dot create
 Error: Recipe directory already exists: recipes/my-recipe
 ```
 
@@ -143,12 +143,12 @@ Error: Recipe directory already exists: recipes/my-recipe
 
 ```bash
 # Option 1: Use different name
-dot recipe create
+dot create
 # Enter different title
 
 # Option 2: Remove existing directory
 rm -rf recipes/my-recipe
-dot recipe create
+dot create
 
 # Option 3: Continue working on existing recipe
 cd recipes/my-recipe
@@ -186,7 +186,7 @@ cd recipes/my-recipe
 npm install
 
 # Use --skip-install flag
-dot recipe create --skip-install
+dot create --skip-install
 cd recipes/my-recipe
 npm install
 ```
@@ -206,7 +206,7 @@ Recipe created but no git branch
 git init
 
 # Or use --no-git flag
-dot recipe create --no-git
+dot create --no-git
 ```
 
 ---
@@ -667,7 +667,7 @@ git push --force-with-lease
 
 **Symptom:**
 ```bash
-$ dot recipe submit
+$ dot submit
 Error: Failed to create pull request
 ```
 

@@ -298,7 +298,7 @@ jobs:
       - name: Test CLI - Valid recipe creation
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          cargo run --package cli --locked -- recipe create --title "Testing CLI Validation" --skip-install --no-git --non-interactive
+          cargo run --package cli --locked -- create --title "Testing CLI Validation" --skip-install --no-git --non-interactive
           if [ ! -f "recipes/testing-cli-validation/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
@@ -308,7 +308,7 @@ jobs:
       - name: Test CLI - Missing required title
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
-          if cargo run --package cli --locked -- recipe create --non-interactive 2>&1 | grep -q "Title argument"; then
+          if cargo run --package cli --locked -- create --non-interactive 2>&1 | grep -q "Title argument"; then
             echo "✓ Missing title error message found"
             exit 0
           else

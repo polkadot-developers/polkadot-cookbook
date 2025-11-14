@@ -64,9 +64,9 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 
 ### Commands
 
-- `recipe create` - Create a new recipe with interactive prompts
-- `recipe test` - Test a recipe
-- `recipe submit` - Submit recipe as pull request
+- `create` - Create a new recipe with interactive prompts
+- `test` - Test a recipe
+- `submit` - Submit recipe as pull request
 
 ### Features
 
@@ -82,16 +82,16 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 
 ```bash
 # Create recipe - Interactive mode (prompts for options)
-dot recipe create
+dot create
 
 # Non-interactive mode with title
-dot recipe create --title "My Recipe"
+dot create --title "My Recipe"
 
 # With options
-dot recipe create --title "My Recipe" --skip-install --no-git --non-interactive
+dot create --title "My Recipe" --skip-install --no-git --non-interactive
 
 # Non-interactive mode for CI/CD
-dot recipe create --title "My Recipe" --non-interactive
+dot create --title "My Recipe" --non-interactive
 
 # View global dependency versions
 

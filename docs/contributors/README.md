@@ -26,7 +26,7 @@ If you're new to contributing, follow this path:
 1. **Install the CLI** - See [Getting Started](../getting-started/installation.md)
 2. **Read the Workflow** - Understand the [contribution workflow](workflow.md)
 3. **Check Guidelines** - Review [recipe guidelines](recipe-guidelines.md)
-4. **Create a Recipe** - Use `dot recipe create`
+4. **Create a Recipe** - Use `dot create`
 5. **Follow Standards** - Use [conventional commits](commit-conventions.md)
 6. **Test Thoroughly** - Follow [testing guide](testing-recipes.md)
 7. **Submit PR** - Follow the [workflow guide](workflow.md)

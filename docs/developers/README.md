@@ -48,12 +48,12 @@ The `dot` CLI provides commands for creating and managing recipes:
 
 ```bash
 # Create a new recipe
-dot recipe create --title "My Recipe"
+dot create --title "My Recipe"
 
 # View versions
 
 # Submit recipe for review
-dot recipe submit
+dot submit
 ```
 
 [→ Complete CLI Reference](cli-reference.md)

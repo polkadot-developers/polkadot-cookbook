@@ -84,7 +84,7 @@ The CLI automatically creates a new branch for your recipe:
 
 ```bash
 # Interactive mode
-dot recipe create
+dot create
 
 # The CLI will:
 # 1. Create recipes/your-recipe/
@@ -305,7 +305,7 @@ git push -u origin recipe/your-recipe
 
 **Option A: Using the CLI (Recommended)**
 ```bash
-dot recipe submit
+dot submit
 ```
 
 The CLI will:
@@ -452,7 +452,7 @@ git checkout master
 git pull upstream master
 
 # Create new recipe
-dot recipe create
+dot create
 ```
 
 ---
@@ -594,7 +594,7 @@ cd polkadot-cookbook
 git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
 
 # Create recipe
-dot recipe create
+dot create
 
 # Test
 npm test                 # TypeScript
@@ -606,7 +606,7 @@ git commit -m "feat(recipe): description"
 
 # Submit
 git push -u origin branch-name
-dot recipe submit
+dot submit
 
 # Update fork
 git checkout master

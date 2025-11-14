@@ -19,18 +19,18 @@ dot [GLOBAL_FLAGS] <COMMAND> [COMMAND_FLAGS]
 
 ## Commands
 
-### `recipe create`
+### `create`
 
 Create a new recipe with scaffolded structure.
 
 **Usage:**
 ```bash
-dot recipe create [OPTIONS]
+dot create [OPTIONS]
 ```
 
 **Interactive Mode (Recommended):**
 ```bash
-dot recipe create
+dot create
 ```
 
 Launches an interactive prompt that guides you through:
@@ -39,7 +39,7 @@ Launches an interactive prompt that guides you through:
 
 **Non-Interactive Mode:**
 ```bash
-dot recipe create --title "My Recipe" --non-interactive [OPTIONS]
+dot create --title "My Recipe" --non-interactive [OPTIONS]
 ```
 
 **Options:**
@@ -64,22 +64,22 @@ dot recipe create --title "My Recipe" --non-interactive [OPTIONS]
 
 ```bash
 # Interactive mode (recommended)
-dot recipe create
+dot create
 
 # Non-interactive parachain recipe
-dot recipe create --title "My Parachain" --pathway parachain --non-interactive
+dot create --title "My Parachain" --pathway parachain --non-interactive
 
 # Pallet-only mode (advanced, no runtime)
-dot recipe create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+dot create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
 
 # Smart contracts recipe
-dot recipe create --title "My Contract" --pathway contracts --non-interactive
+dot create --title "My Contract" --pathway contracts --non-interactive
 
 # Skip npm install for faster creation
-dot recipe create --title "Quick Test" --pathway basic-interaction --skip-install --non-interactive
+dot create --title "Quick Test" --pathway basic-interaction --skip-install --non-interactive
 
 # CI/CD mode (skip git branch creation)
-dot recipe create \
+dot create \
   --title "My Recipe" \
   --pathway parachain \
   --skip-install \
@@ -133,13 +133,13 @@ Note: Structure varies by recipe pathway. See pathway-specific READMEs for detai
 
 ---
 
-### `recipe submit`
+### `submit`
 
 Submit recipe as a pull request (requires GitHub CLI).
 
 **Usage:**
 ```bash
-dot recipe submit
+dot submit
 ```
 
 **Prerequisites:**
@@ -180,13 +180,13 @@ git config --global user.email "your.email@example.com"
 
 ---
 
-### `recipe test`
+### `test`
 
 Run tests for a recipe.
 
 **Usage:**
 ```bash
-dot recipe test <SLUG>
+dot test <SLUG>
 ```
 
 **Arguments:**
@@ -200,10 +200,10 @@ dot recipe test <SLUG>
 **Examples:**
 ```bash
 # Test specific recipe
-dot recipe test basic-pallet
+dot test basic-pallet
 
 # Test current directory recipe
-dot recipe test .
+dot test .
 ```
 
 **Exit Codes:**
@@ -226,10 +226,10 @@ The CLI respects these environment variables:
 
 ```bash
 # Enable debug logging
-RUST_LOG=debug dot recipe create
+RUST_LOG=debug dot create
 
 # Use specific GitHub token
-GITHUB_TOKEN=ghp_xxx dot recipe submit
+GITHUB_TOKEN=ghp_xxx dot submit
 
 # Disable colors
 ```
@@ -286,7 +286,7 @@ chmod +x target/release/dot
 
 ### GitHub Authentication Failed
 
-**Symptom:** `dot recipe submit` fails with auth error
+**Symptom:** `dot submit` fails with auth error
 
 **Solution:**
 ```bash
