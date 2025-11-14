@@ -618,7 +618,7 @@ git push origin master
 
 ### Helpful Links
 
-- **[First Recipe Tutorial](../getting-started/first-recipe.md)** - Step-by-step walkthrough
+- **[First Recipe Tutorial](../getting-started/first-project.md)** - Step-by-step walkthrough
 - **[Recipe Guidelines](recipe-guidelines.md)** - Structure and style requirements
 - **[Recipe Development Guide](recipe-development.md)** - Best practices
 - **[Testing Guide](testing-recipes.md)** - Testing strategies

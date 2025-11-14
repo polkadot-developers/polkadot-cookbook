@@ -9,7 +9,7 @@ The Polkadot Cookbook is a collection of tested, production-ready code examples 
 ## Quick Links
 
 - **[Installation Guide](installation.md)** - Install the `dot` CLI tool
-- **[First Recipe Tutorial](first-recipe.md)** - Create your first recipe
+- **[First Recipe Tutorial](first-project.md)** - Create your first recipe
 - **[Main README](../../README.md)** - Browse available recipes
 
 ## What You'll Learn
@@ -22,7 +22,7 @@ Install the `dot` CLI tool to create and manage recipes.
 ### 2. Create Your First Recipe (15 minutes)
 Follow a step-by-step tutorial to create, test, and submit your first recipe.
 
-[→ Go to First Recipe Tutorial](first-recipe.md)
+[→ Go to First Recipe Tutorial](first-project.md)
 
 ### 3. Next Steps
 Once you've created your first recipe, explore:
