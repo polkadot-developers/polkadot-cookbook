@@ -183,7 +183,7 @@ fn test_project_config_content() {
 
     cmd.assert().success();
 
-    // Verify README.md frontmatter instead of recipe.config.yml
+    // Verify README.md frontmatter instead of project metadata
     let readme_content = fs::read_to_string(
         temp_dir
             .path()
@@ -211,7 +211,7 @@ fn test_test_file_generated() {
 
     cmd.assert().success();
 
-    // Polkadot SDK recipes have Rust unit tests in the pallet code, not separate TypeScript tests
+    // Polkadot SDK projects have Rust unit tests in the pallet code, not separate TypeScript tests
     // Just verify the project was created successfully
     assert!(temp_dir.path().join("test-e2e").exists());
     assert!(temp_dir.path().join("test-e2e/README.md").exists());
@@ -233,7 +233,7 @@ fn test_gitignore_content() {
 
     cmd.assert().success();
 
-    // Polkadot SDK recipes use Cargo which has its own .gitignore handling via Cargo.toml
+    // Polkadot SDK projects use Cargo which has its own .gitignore handling via Cargo.toml
     // Only TypeScript-based recipes (XCM, Solidity) have .gitignore files
     // Just verify the project was created successfully
     assert!(temp_dir.path().join("ignore-test").exists());
@@ -258,11 +258,11 @@ fn test_create_recipe_with_toolchain() {
     // Verify the project was created successfully
     assert!(temp_dir.path().join("version-test").exists());
 
-    // Verify rust-toolchain.toml was created for Polkadot SDK recipe
+    // Verify rust-toolchain.toml was created for Polkadot SDK project
     let toolchain_path = temp_dir.path().join("version-test/rust-toolchain.toml");
     assert!(
         toolchain_path.exists(),
-        "rust-toolchain.toml should be created for Polkadot SDK recipes"
+        "rust-toolchain.toml should be created for Polkadot SDK projects"
     );
 
     // Verify content matches expected format

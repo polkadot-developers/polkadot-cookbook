@@ -139,7 +139,7 @@ impl Scaffold {
             // Solidity projects come with their own package.json and dependencies
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
-                debug!("Installing Solidity recipe dependencies");
+                debug!("Installing Solidity project dependencies");
                 // Show npm install output in real-time (like create-react-app)
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
@@ -154,17 +154,17 @@ impl Scaffold {
                         debug!("Solidity dependencies installed successfully");
                     }
                     Ok(status) => {
-                        warn!("npm install failed for Solidity recipe: {}", status);
+                        warn!("npm install failed for Solidity project: {}", status);
                     }
                     Err(e) => {
-                        warn!("Failed to run npm install for Solidity recipe: {}", e);
+                        warn!("Failed to run npm install for Solidity project: {}", e);
                     }
                 }
             }
         } else if matches!(config.project_type, ProjectType::PolkadotSdk) {
             // Parachain projects: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
-                debug!("Installing Parachain recipe PAPI dependencies");
+                debug!("Installing Parachain project PAPI dependencies");
                 // Show npm install output in real-time (like create-react-app)
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
@@ -179,10 +179,10 @@ impl Scaffold {
                         debug!("PAPI dependencies installed successfully");
                     }
                     Ok(status) => {
-                        warn!("npm install failed for Parachain recipe: {}", status);
+                        warn!("npm install failed for Parachain project: {}", status);
                     }
                     Err(e) => {
-                        warn!("Failed to run npm install for Parachain recipe: {}", e);
+                        warn!("Failed to run npm install for Parachain project: {}", e);
                     }
                 }
             } else if config.pallet_only {
@@ -211,7 +211,7 @@ impl Scaffold {
         project_type: ProjectType,
     ) -> Result<()> {
         debug!(
-            "Creating directory structure at: {} for recipe type: {:?}",
+            "Creating directory structure at: {} for project type: {:?}",
             project_path.display(),
             project_type
         );
@@ -778,11 +778,11 @@ mod tests {
         std::env::set_current_dir(workspace_root).unwrap();
 
         let temp_dir = TempDir::new().unwrap();
-        let project_path = temp_dir.path().join("testing-recipe-test");
+        let project_path = temp_dir.path().join("testing-project-test");
         tokio::fs::create_dir_all(&project_path).await.unwrap();
 
         let config =
-            ProjectConfig::new("testing-recipe-test").with_project_type(ProjectType::Networks);
+            ProjectConfig::new("testing-project-test").with_project_type(ProjectType::Networks);
 
         let scaffold = Scaffold::new();
         let result = scaffold.create_files(&project_path, &config, "1.86").await;

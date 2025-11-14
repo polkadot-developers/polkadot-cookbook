@@ -1,13 +1,13 @@
-//! End-to-end integration tests for all recipe pathways
+//! End-to-end integration tests for all project pathways
 //!
-//! These tests validate the complete user workflow by creating real example recipes:
-//! 1. `dot create` - Create a recipe for each pathway in recipes/ directory
-//! 2. `dot test` - Run tests on the created recipe
+//! These tests validate the complete user workflow by creating real example projects:
+//! 1. `dot create` - Create a project for each pathway in recipes/ directory
+//! 2. `dot test` - Run tests on the created project
 //! 3. Verify all tests pass
 //!
 //! This ensures that:
 //! - Templates generate valid, working code
-//! - Generated recipes compile successfully
+//! - Generated projects compile successfully
 //! - Generated tests pass
 //! - Rust version compatibility (for Rust-based recipes)
 //! - TypeScript/Node version compatibility (for TS-based recipes)
@@ -161,7 +161,7 @@ impl Drop for TestNode {
     }
 }
 
-/// Test Parachain pathway: Create recipe with default mode (full parachain + PAPI)
+/// Test /// Test Parachain pathway: Create recipe pathway: Create project with default mode (full parachain + PAPI)
 /// This test validates the complete developer workflow:
 /// 1. Create recipe
 /// 2. Compile runtime
@@ -494,7 +494,7 @@ fn test_pallet_example_end_to_end() {
         .stdout(predicate::str::contains("test result: ok"));
 }
 
-/// Test Contracts pathway: Create recipe and run tests
+/// Test /// Test Contracts pathway: Create project pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_contracts_example_end_to_end() {
@@ -552,7 +552,7 @@ fn test_contracts_example_end_to_end() {
     test_cmd.assert().success();
 }
 
-/// Test BasicInteraction pathway: Create recipe and run tests
+/// Test /// Test BasicInteraction pathway: Create project pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_basic_interaction_example_end_to_end() {
@@ -607,7 +607,7 @@ fn test_basic_interaction_example_end_to_end() {
     test_cmd.assert().success();
 }
 
-/// Test XCM pathway: Create recipe and run tests
+/// Test /// Test XCM pathway: Create project pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_xcm_example_end_to_end() {
@@ -659,7 +659,7 @@ fn test_xcm_example_end_to_end() {
     test_cmd.assert().success();
 }
 
-/// Test Polkadot Infrastructure pathway: Create recipe and run tests
+/// Test /// Test Polkadot Infrastructure pathway: Create project pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
 fn test_infra_example_end_to_end() {

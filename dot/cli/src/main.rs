@@ -1279,7 +1279,7 @@ async fn handle_standalone_submit(
             Err(_) => "Unknown",
         };
 
-    // Prompt for pathway to organize the recipe
+    // Prompt for pathway to organize the project
     let pathway_question = "Which pathway does this recipe belong to?"
         .polkadot_pink()
         .to_string();
