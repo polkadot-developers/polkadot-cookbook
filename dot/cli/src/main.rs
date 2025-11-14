@@ -71,6 +71,46 @@ enum Commands {
         #[arg(long, default_value = "false")]
         non_interactive: bool,
     },
+    /// Create a new smart contract project
+    Contract {
+        /// Project title
+        #[arg(long)]
+        title: Option<String>,
+
+        /// Skip npm install
+        #[arg(long, default_value = "false")]
+        skip_install: bool,
+
+        /// Skip git branch creation
+        #[arg(long, default_value = "false")]
+        no_git: bool,
+
+        /// Non-interactive mode (use defaults, require title argument)
+        #[arg(long, default_value = "false")]
+        non_interactive: bool,
+    },
+    /// Create a new parachain project
+    Parachain {
+        /// Project title
+        #[arg(long)]
+        title: Option<String>,
+
+        /// Skip npm install
+        #[arg(long, default_value = "false")]
+        skip_install: bool,
+
+        /// Skip git branch creation
+        #[arg(long, default_value = "false")]
+        no_git: bool,
+
+        /// Pallet-only mode: no runtime, no PAPI (advanced users)
+        #[arg(long, default_value = "false")]
+        pallet_only: bool,
+
+        /// Non-interactive mode (use defaults, require title argument)
+        #[arg(long, default_value = "false")]
+        non_interactive: bool,
+    },
     /// Run project tests
     Test {
         /// Project slug (defaults to current directory)
@@ -126,6 +166,39 @@ async fn main() -> Result<()> {
             )
             .await?;
         }
+        Commands::Contract {
+            title,
+            skip_install,
+            no_git,
+            non_interactive,
+        } => {
+            handle_create(
+                title,
+                Some("contracts".to_string()),
+                skip_install,
+                no_git,
+                false, // pallet_only not applicable for contracts
+                non_interactive,
+            )
+            .await?;
+        }
+        Commands::Parachain {
+            title,
+            skip_install,
+            no_git,
+            pallet_only,
+            non_interactive,
+        } => {
+            handle_create(
+                title,
+                Some("pallets".to_string()),
+                skip_install,
+                no_git,
+                pallet_only,
+                non_interactive,
+            )
+            .await?;
+        }
         Commands::Test { slug } => {
             handle_recipe_test(slug).await?;
         }
@@ -160,13 +233,13 @@ async fn handle_create(
     println!("\n");
 
     // Polkadot-themed intro
-    let intro_text = format!("{}", "Polkadot Cookbook".polkadot_pink().bold());
+    let intro_text = format!("{}", "dot CLI".polkadot_pink().bold());
     intro(&intro_text)?;
 
     let note_title = "Recipe Setup".polkadot_pink().to_string();
     note(
         &note_title,
-        "Let's create your new Polkadot recipe. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
+        "Let's create your new Polkadot project. This will scaffold the project structure,\ngenerate template files, and set up the testing environment.",
     )?;
 
     // Step 1: Ask for pathway first (so users know what they can build)
@@ -197,36 +270,7 @@ async fn handle_create(
             "Polkadot Networks (Zombienet / Chopsticks)",
             "Run Polkadot networks locally for testing",
         )
-        .item(
-            RecipePathway::RequestNew,
-            "None of these - Request new template",
-            "Don't see what you need? Request a new recipe template",
-        )
         .interact()?;
-
-    // Handle "Request New Template" selection
-    if pathway == RecipePathway::RequestNew {
-        outro_cancel(format!(
-            "🎯 Request a New Recipe Template\n\n\
-            We'd love to support your use case! Please create a GitHub issue:\n\n\
-            {} {}\n\n\
-            Include in your issue:\n\
-            {} What kind of recipe you want to create\n\
-            {} What technology/framework it involves\n\
-            {} Example use cases\n\
-            {} Any specific requirements\n\n\
-            We'll review your request and add the template if it fits the cookbook!",
-            "→".polkadot_pink(),
-            "https://github.com/paritytech/polkadot-cookbook/issues/new"
-                .polkadot_pink()
-                .bold(),
-            "•".polkadot_pink(),
-            "•".polkadot_pink(),
-            "•".polkadot_pink(),
-            "•".polkadot_pink(),
-        ))?;
-        std::process::exit(0);
-    }
 
     // Map pathway to recipe type (for template selection)
     let recipe_type = match pathway {
@@ -235,10 +279,6 @@ async fn handle_create(
         RecipePathway::Transactions => RecipeType::Transactions,
         RecipePathway::Xcm => RecipeType::Xcm,
         RecipePathway::Networks => RecipeType::Networks,
-        RecipePathway::RequestNew => {
-            // This should never be reached since we exit above
-            unreachable!("RequestNew pathway should have been handled before reaching here")
-        }
     };
 
     // Interactive mode always creates full parachain
@@ -413,9 +453,6 @@ async fn handle_create(
                 slug
             )
         }
-        RecipePathway::RequestNew => {
-            unreachable!("RequestNew should have been handled before summary")
-        }
     };
 
     // Show configuration summary and get confirmation
@@ -446,9 +483,6 @@ async fn handle_create(
                 RecipePathway::Transactions => "Chain Transactions",
                 RecipePathway::Xcm => "Cross-chain Transactions",
                 RecipePathway::Networks => "Polkadot Networks",
-                RecipePathway::RequestNew => {
-                    unreachable!("RequestNew should have been handled before summary")
-                }
             },
             "Location:".polkadot_pink(),
             project_path.display(),

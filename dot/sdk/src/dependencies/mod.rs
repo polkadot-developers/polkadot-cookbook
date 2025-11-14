@@ -148,7 +148,6 @@ pub fn get_pathway_dependencies(pathway: &RecipePathway) -> Vec<Dependency> {
                 install_instructions: "npx is installed with npm".to_string(),
             },
         ],
-        RecipePathway::RequestNew => vec![], // No dependencies for request-new
     }
 }
 
@@ -187,12 +186,6 @@ mod tests {
         let deps = get_pathway_dependencies(&RecipePathway::Xcm);
         assert_eq!(deps.len(), 3);
         assert_eq!(deps[0].name, "Node.js");
-    }
-
-    #[test]
-    fn test_request_new_no_dependencies() {
-        let deps = get_pathway_dependencies(&RecipePathway::RequestNew);
-        assert_eq!(deps.len(), 0);
     }
 
     #[test]

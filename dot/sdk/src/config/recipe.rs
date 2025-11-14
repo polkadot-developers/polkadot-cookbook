@@ -39,9 +39,6 @@ pub enum RecipePathway {
     /// Network infrastructure pathway
     #[serde(rename = "networks")]
     Networks,
-    /// Request a new template (CLI-only, triggers GitHub issue flow)
-    #[serde(rename = "request-new")]
-    RequestNew,
 }
 
 impl RecipePathway {
@@ -53,7 +50,6 @@ impl RecipePathway {
             RecipePathway::Transactions => "transactions",
             RecipePathway::Xcm => "xcm",
             RecipePathway::Networks => "networks",
-            RecipePathway::RequestNew => "request-new",
         }
     }
 }

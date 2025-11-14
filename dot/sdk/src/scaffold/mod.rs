@@ -392,41 +392,36 @@ impl Scaffold {
             debug!("Copying embedded template to {}", dest_dir.display());
 
             // Helper function to process file content
-            let process_content = |content: &str,
-                                   config: &ProjectConfig,
-                                   rust_version: &str|
-             -> String {
-                // Format optional fields as YAML lines or empty strings
-                let pathway_line = config
-                    .pathway
-                    .as_ref()
-                    .map(|p| {
-                        let value = match p {
-                            crate::config::RecipePathway::Pallets => "pallets",
-                            crate::config::RecipePathway::Contracts => "contracts",
-                            crate::config::RecipePathway::Transactions => "transactions",
-                            crate::config::RecipePathway::Xcm => "xcm",
-                            crate::config::RecipePathway::Networks => "networks",
-                            crate::config::RecipePathway::RequestNew => {
-                                unreachable!("RequestNew pathway should never reach scaffold code")
-                            }
-                        };
-                        format!("pathway: {value}")
-                    })
-                    .unwrap_or_default();
+            let process_content =
+                |content: &str, config: &ProjectConfig, rust_version: &str| -> String {
+                    // Format optional fields as YAML lines or empty strings
+                    let pathway_line = config
+                        .pathway
+                        .as_ref()
+                        .map(|p| {
+                            let value = match p {
+                                crate::config::RecipePathway::Pallets => "pallets",
+                                crate::config::RecipePathway::Contracts => "contracts",
+                                crate::config::RecipePathway::Transactions => "transactions",
+                                crate::config::RecipePathway::Xcm => "xcm",
+                                crate::config::RecipePathway::Networks => "networks",
+                            };
+                            format!("pathway: {value}")
+                        })
+                        .unwrap_or_default();
 
-                // Convert slug hyphens to underscores for Rust identifiers
-                let slug_underscore = config.slug.replace("-", "_");
+                    // Convert slug hyphens to underscores for Rust identifiers
+                    let slug_underscore = config.slug.replace("-", "_");
 
-                content
-                    .replace("{{slug}}", &config.slug)
-                    .replace("{{slug_underscore}}", &slug_underscore)
-                    .replace("{{title}}", &config.title)
-                    .replace("{{description}}", &config.description)
-                    .replace("{{category}}", &config.category)
-                    .replace("{{rust_version}}", rust_version)
-                    .replace("{{pathway}}", &pathway_line)
-            };
+                    content
+                        .replace("{{slug}}", &config.slug)
+                        .replace("{{slug_underscore}}", &slug_underscore)
+                        .replace("{{title}}", &config.title)
+                        .replace("{{description}}", &config.description)
+                        .replace("{{category}}", &config.category)
+                        .replace("{{rust_version}}", rust_version)
+                        .replace("{{pathway}}", &pathway_line)
+                };
 
             // Process all files in the embedded directory
             for file in template_dir.files() {
