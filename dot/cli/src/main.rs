@@ -844,6 +844,25 @@ async fn handle_recipe_submit(
     title: Option<String>,
     body: Option<String>,
 ) -> Result<()> {
+    clear_screen()?;
+
+    // Determine if we're in standalone mode or cookbook repo mode
+    let is_standalone =
+        !std::path::Path::new("recipes").exists() || !std::path::Path::new("Cargo.toml").exists();
+
+    if is_standalone {
+        handle_standalone_submit(slug, title, body).await
+    } else {
+        handle_cookbook_repo_submit(slug, title, body).await
+    }
+}
+
+/// Handle submission from within the polkadot-cookbook repository
+async fn handle_cookbook_repo_submit(
+    slug: Option<String>,
+    title: Option<String>,
+    body: Option<String>,
+) -> Result<()> {
     let recipe_path = get_recipe_path(slug.clone())?;
     let recipe_slug = recipe_path
         .file_name()
@@ -852,7 +871,6 @@ async fn handle_recipe_submit(
         .unwrap()
         .to_string();
 
-    clear_screen()?;
     intro(format!("📤 Submit Recipe: {}", recipe_slug.polkadot_pink()))?;
 
     // Get GitHub token
@@ -1085,6 +1103,355 @@ async fn handle_recipe_submit(
     ))?;
 
     Ok(())
+}
+
+/// Handle submission from standalone project (outside cookbook repo)
+async fn handle_standalone_submit(
+    slug: Option<String>,
+    title: Option<String>,
+    body: Option<String>,
+) -> Result<()> {
+    // Get current directory as the project path
+    let project_path = std::env::current_dir()?;
+    let project_slug = slug.unwrap_or_else(|| {
+        project_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("my-project")
+            .to_string()
+    });
+
+    intro(format!(
+        "📤 Submit Project: {}",
+        project_slug.polkadot_pink()
+    ))?;
+
+    note(
+        "Standalone Mode",
+        "Detected standalone project. Will fork and clone polkadot-cookbook repo.",
+    )?;
+
+    // Get GitHub token
+    let github_token = match get_github_token() {
+        Ok(token) => token,
+        Err(e) => {
+            outro_cancel(format!(
+                "GitHub authentication required.\n\n\
+                 Error: {e}\n\n\
+                 Please set GITHUB_TOKEN environment variable:\n\
+                 export GITHUB_TOKEN=ghp_your_token_here\n\n\
+                 Or authenticate with GitHub CLI:\n\
+                 gh auth login\n\n\
+                 Create a token at: https://github.com/settings/tokens/new\n\
+                 Required scopes: repo, workflow"
+            ))?;
+            std::process::exit(1);
+        }
+    };
+
+    // Read project metadata from frontmatter
+    let readme_path = project_path.join("README.md");
+    let (project_name, project_desc) =
+        match polkadot_cookbook_sdk::metadata::parse_frontmatter_from_file(&readme_path).await {
+            Ok(frontmatter) => (frontmatter.title, frontmatter.description),
+            Err(_) => (
+                project_slug.clone(),
+                "A new Polkadot Cookbook recipe".to_string(),
+            ),
+        };
+
+    // Auto-detect recipe type
+    let recipe_type = match polkadot_cookbook_sdk::metadata::detect_recipe_type(&project_path).await
+    {
+        Ok(t) => match t {
+            polkadot_cookbook_sdk::config::RecipeType::PolkadotSdk => "Polkadot SDK",
+            polkadot_cookbook_sdk::config::RecipeType::Solidity => "Solidity",
+            polkadot_cookbook_sdk::config::RecipeType::Xcm => "XCM",
+            polkadot_cookbook_sdk::config::RecipeType::BasicInteraction => "Basic Interactions",
+            polkadot_cookbook_sdk::config::RecipeType::Testing => "Testing Infrastructure",
+        },
+        Err(_) => "Unknown",
+    };
+
+    note(
+        "Project Info",
+        format!(
+            "Name:        {}\nSlug:        {}\nType:        {}",
+            project_name.polkadot_pink(),
+            project_slug.polkadot_pink(),
+            recipe_type,
+        ),
+    )?;
+
+    // Generate default PR title and body
+    let default_title = title.unwrap_or_else(|| format!("feat(recipe): add {project_slug}"));
+    let default_body = body.unwrap_or_else(|| {
+        format!(
+            "## Summary\n\n\
+             This PR adds a new {recipe_type} recipe: **{project_name}**\n\n\
+             {project_desc}\n\n\
+             ## Recipe Details\n\n\
+             - **Type**: {recipe_type}\n\
+             - **Slug**: `{project_slug}`\n\n\
+             ## Testing\n\n\
+             - [ ] All tests pass\n\
+             - [ ] Code is properly formatted\n\
+             - [ ] Documentation is complete\n\n\
+             ## Notes\n\n\
+             This recipe is ready for review and does not require a prior proposal issue. \
+             The Polkadot Cookbook accepts direct recipe contributions via PR."
+        )
+    });
+
+    note(
+        "Pull Request Preview",
+        format!(
+            "Title:\n{}\n\nDescription:\n{}",
+            default_title.polkadot_pink(),
+            default_body.dimmed()
+        ),
+    )?;
+
+    // Confirm submission
+    let should_continue = confirm("Continue with submission?".polkadot_pink().to_string())
+        .initial_value(true)
+        .interact()?;
+
+    if !should_continue {
+        outro_cancel("Submission cancelled")?;
+        std::process::exit(0);
+    }
+
+    let sp = spinner();
+    let octocrab = octocrab::Octocrab::builder()
+        .personal_token(github_token.clone())
+        .build()?;
+
+    // Step 1: Fork paritytech/polkadot-cookbook if not already forked
+    sp.start("Forking paritytech/polkadot-cookbook...");
+
+    let fork_result = octocrab
+        .repos("paritytech", "polkadot-cookbook")
+        .create_fork()
+        .send()
+        .await;
+
+    let fork = match fork_result {
+        Ok(fork) => {
+            sp.stop("✅ Repository forked (or already exists)");
+            fork
+        }
+        Err(e) => {
+            // Fork might already exist, try to get the user's fork
+            let user = match octocrab.current().user().await {
+                Ok(u) => u,
+                Err(_) => {
+                    sp.stop("❌ Failed to fork repository");
+                    outro_cancel(format!("Fork error: {e}"))?;
+                    std::process::exit(1);
+                }
+            };
+
+            match octocrab.repos(&user.login, "polkadot-cookbook").get().await {
+                Ok(existing_fork) => {
+                    sp.stop("✅ Using existing fork");
+                    existing_fork
+                }
+                Err(_) => {
+                    sp.stop("❌ Failed to fork repository");
+                    outro_cancel(format!("Fork error: {e}"))?;
+                    std::process::exit(1);
+                }
+            }
+        }
+    };
+
+    let fork_owner = fork.owner.as_ref().unwrap().login.clone();
+    let clone_url = fork.clone_url.as_ref().unwrap().to_string();
+
+    // Step 2: Clone the fork to a temp directory
+    sp.start("Cloning forked repository...");
+
+    let temp_dir = tempfile::tempdir()?;
+    let temp_path = temp_dir.path();
+
+    let clone_output = std::process::Command::new("git")
+        .args(["clone", &clone_url, temp_path.to_str().unwrap()])
+        .output()?;
+
+    if !clone_output.status.success() {
+        sp.stop("❌ Failed to clone repository");
+        let stderr = String::from_utf8_lossy(&clone_output.stderr);
+        outro_cancel(format!("Clone error: {stderr}"))?;
+        std::process::exit(1);
+    }
+
+    sp.stop("✅ Repository cloned");
+
+    // Step 3: Copy project to recipes/{slug}/
+    sp.start(format!("Copying project to recipes/{}...", project_slug));
+
+    let recipes_dir = temp_path.join("recipes");
+    let dest_dir = recipes_dir.join(&project_slug);
+
+    // Create recipes directory if it doesn't exist
+    tokio::fs::create_dir_all(&recipes_dir).await?;
+
+    // Copy project directory
+    copy_dir_recursive(&project_path, &dest_dir).await?;
+
+    sp.stop(format!("✅ Project copied to recipes/{}", project_slug));
+
+    // Step 4: Create branch, commit, and push
+    let branch_name = format!("feat/recipe-{}", project_slug);
+
+    sp.start(format!("Creating branch {}...", branch_name));
+
+    // Create and checkout branch
+    let checkout_output = std::process::Command::new("git")
+        .args(["checkout", "-b", &branch_name])
+        .current_dir(temp_path)
+        .output()?;
+
+    if !checkout_output.status.success() {
+        sp.stop("❌ Failed to create branch");
+        let stderr = String::from_utf8_lossy(&checkout_output.stderr);
+        outro_cancel(format!("Branch creation error: {stderr}"))?;
+        std::process::exit(1);
+    }
+
+    sp.stop(format!("✅ Branch {} created", branch_name));
+
+    // Add files
+    sp.start("Committing changes...");
+
+    let add_output = std::process::Command::new("git")
+        .args(["add", "."])
+        .current_dir(temp_path)
+        .output()?;
+
+    if !add_output.status.success() {
+        sp.stop("❌ Failed to add files");
+        std::process::exit(1);
+    }
+
+    // Commit
+    let commit_msg = format!("feat(recipe): add {}", project_slug);
+    let commit_output = std::process::Command::new("git")
+        .args(["commit", "-m", &commit_msg])
+        .current_dir(temp_path)
+        .output()?;
+
+    if !commit_output.status.success() {
+        sp.stop("❌ Failed to commit changes");
+        let stderr = String::from_utf8_lossy(&commit_output.stderr);
+        outro_cancel(format!("Commit error: {stderr}"))?;
+        std::process::exit(1);
+    }
+
+    sp.stop("✅ Changes committed");
+
+    // Push
+    sp.start(format!("Pushing to {}...", fork_owner));
+
+    let push_output = std::process::Command::new("git")
+        .args(["push", "-u", "origin", &branch_name])
+        .current_dir(temp_path)
+        .output()?;
+
+    if !push_output.status.success() {
+        sp.stop("❌ Failed to push branch");
+        let stderr = String::from_utf8_lossy(&push_output.stderr);
+        outro_cancel(format!("Push error: {stderr}"))?;
+        std::process::exit(1);
+    }
+
+    sp.stop(format!("✅ Pushed to {}/{}", fork_owner, branch_name));
+
+    // Step 5: Create PR to paritytech/polkadot-cookbook
+    sp.start("Creating pull request...");
+
+    let pr_result = octocrab
+        .pulls("paritytech", "polkadot-cookbook")
+        .create(
+            &default_title,
+            format!("{}:{}", fork_owner, branch_name),
+            "master",
+        )
+        .body(&default_body)
+        .send()
+        .await;
+
+    let pr = match pr_result {
+        Ok(pr) => pr,
+        Err(e) => {
+            sp.stop("❌ Failed to create pull request");
+            note("Error", format!("{e}"))?;
+            outro_cancel(
+                "PR creation failed. Please check:\n\
+                 • Your GitHub token has 'repo' permissions\n\
+                 • You don't already have an open PR for this recipe",
+            )?;
+            std::process::exit(1);
+        }
+    };
+
+    let pr_url = pr.html_url.map(|u| u.to_string()).unwrap_or_else(|| {
+        format!(
+            "https://github.com/paritytech/polkadot-cookbook/pull/{}",
+            pr.number
+        )
+    });
+
+    sp.stop("✅ Pull request created!");
+
+    note("Success", format!("PR URL: {}", pr_url.polkadot_pink()))?;
+
+    outro(format!(
+        "🎉 Recipe submitted successfully!\n\n\
+         Your recipe will be reviewed by maintainers.\n\
+         View your PR at: {}",
+        pr_url.polkadot_pink()
+    ))?;
+
+    // Cleanup temp directory (automatically handled by Drop)
+    Ok(())
+}
+
+/// Recursively copy a directory
+fn copy_dir_recursive<'a>(
+    src: &'a std::path::Path,
+    dst: &'a std::path::Path,
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + 'a>> {
+    Box::pin(async move {
+        tokio::fs::create_dir_all(dst).await?;
+
+        let mut entries = tokio::fs::read_dir(src).await?;
+        while let Some(entry) = entries.next_entry().await? {
+            let file_type = entry.file_type().await?;
+            let src_path = entry.path();
+            let file_name = entry.file_name();
+
+            // Skip hidden files and .git directory
+            if file_name
+                .to_str()
+                .map(|s| s.starts_with('.'))
+                .unwrap_or(false)
+            {
+                continue;
+            }
+
+            let dst_path = dst.join(&file_name);
+
+            if file_type.is_dir() {
+                copy_dir_recursive(&src_path, &dst_path).await?;
+            } else {
+                tokio::fs::copy(&src_path, &dst_path).await?;
+            }
+        }
+
+        Ok(())
+    })
 }
 
 /// Get GitHub token from environment variable or gh CLI
