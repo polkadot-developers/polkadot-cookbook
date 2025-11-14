@@ -517,8 +517,8 @@ impl Scaffold {
                     continue;
                 }
 
-                // Handle README templates - use tutorial version by default
-                if file_name == "README.tutorial.md.template" {
+                // Handle full README template for polkadot-sdk
+                if file_name == "README.full.md.template" {
                     if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk)
                     {
                         continue;
@@ -527,17 +527,11 @@ impl Scaffold {
                     let content =
                         file.contents_utf8()
                             .ok_or_else(|| CookbookError::FileSystemError {
-                                message: "Failed to read tutorial README template as UTF-8"
-                                    .to_string(),
+                                message: "Failed to read full README template as UTF-8".to_string(),
                                 path: Some(file_path.to_path_buf()),
                             })?;
                     let processed_content = process_content(content, config, rust_version);
                     self.write_file(&dest_path, &processed_content).await?;
-                    continue;
-                }
-
-                // Skip guide version
-                if file_name == "README.guide.md.template" {
                     continue;
                 }
 

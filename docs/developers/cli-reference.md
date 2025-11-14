@@ -253,9 +253,6 @@ Future configuration options:
 **rust-toolchain.toml** (repository root and per recipe)
 - Rust version specification
 
-**recipe.config.yml** (per recipe)
-- Recipe metadata
-- See [Recipe Config Schema](../reference/recipe-config-schema.md)
 
 ---
 
