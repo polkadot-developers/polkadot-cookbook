@@ -1,6 +1,7 @@
 /// Input validation utilities
 use crate::error::{CookbookError, Result};
 use regex::Regex;
+use std::path::Path;
 
 /// Validates that the slug follows the correct format:
 /// - lowercase letters and numbers only
@@ -113,6 +114,85 @@ pub fn validate_title(title: &str) -> Result<()> {
         return Err(CookbookError::ValidationError(
             "Recipe title is too short. Use a descriptive name (minimum 3 characters).".to_string(),
         ));
+    }
+
+    Ok(())
+}
+
+/// Validates that required lock files exist for the project type
+///
+/// Lock files ensure reproducible builds and are required for all submissions:
+/// - Rust projects (PolkadotSdk): require `Cargo.lock`
+/// - Full parachains (with package.json): also require `package-lock.json`
+/// - TypeScript/Node.js projects: require `package-lock.json`
+///
+/// # Example
+/// ```no_run
+/// use polkadot_cookbook_sdk::config::{validate_lock_files, ProjectType};
+/// use std::path::Path;
+///
+/// let project_path = Path::new("recipes/my-project");
+/// let project_type = ProjectType::PolkadotSdk;
+/// validate_lock_files(project_path, &project_type).expect("Lock files missing");
+/// ```
+pub fn validate_lock_files(
+    project_path: &Path,
+    project_type: &crate::config::ProjectType,
+) -> Result<()> {
+    use crate::config::ProjectType;
+
+    let mut missing_files = Vec::new();
+    let mut required_files = Vec::new();
+
+    match project_type {
+        ProjectType::PolkadotSdk => {
+            // Always require Cargo.lock for Rust projects
+            required_files.push("Cargo.lock");
+            if !project_path.join("Cargo.lock").exists() {
+                missing_files.push("Cargo.lock");
+            }
+
+            // Full parachains also have package.json and need package-lock.json
+            if project_path.join("package.json").exists() {
+                required_files.push("package-lock.json");
+                if !project_path.join("package-lock.json").exists() {
+                    missing_files.push("package-lock.json");
+                }
+            }
+        }
+        ProjectType::Solidity
+        | ProjectType::Transactions
+        | ProjectType::Xcm
+        | ProjectType::Networks => {
+            // TypeScript/Node.js projects require package-lock.json
+            required_files.push("package-lock.json");
+            if !project_path.join("package-lock.json").exists() {
+                missing_files.push("package-lock.json");
+            }
+        }
+    }
+
+    if !missing_files.is_empty() {
+        let mut error_msg = format!(
+            "Missing required lock files: {}\n\n",
+            missing_files.join(", ")
+        );
+
+        error_msg.push_str(
+            "Lock files ensure reproducible builds and are required for all submissions.\n\n",
+        );
+        error_msg.push_str("To generate missing lock files:\n");
+
+        if missing_files.contains(&"Cargo.lock") {
+            error_msg.push_str("  • Run: cargo build\n");
+        }
+        if missing_files.contains(&"package-lock.json") {
+            error_msg.push_str("  • Run: npm install\n");
+        }
+
+        error_msg.push_str("\nThen commit the lock files to your repository.");
+
+        return Err(CookbookError::ValidationError(error_msg));
     }
 
     Ok(())

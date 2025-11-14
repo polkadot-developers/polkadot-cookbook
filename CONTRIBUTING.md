@@ -87,6 +87,7 @@ dot submit my-project-name
 
 The CLI will:
 - Run tests to validate your code
+- Validate that required lock files are present (Cargo.lock and/or package-lock.json)
 - Commit changes
 - Push to your fork
 - Create a pull request
@@ -151,6 +152,7 @@ Use clear, descriptive titles:
 - Follow language conventions (run `cargo fmt`, `cargo clippy`)
 - Add clear comments for complex logic
 - Include error handling
+- **Commit lock files** (Cargo.lock and/or package-lock.json) to ensure reproducible builds
 
 ### Commit Messages
 

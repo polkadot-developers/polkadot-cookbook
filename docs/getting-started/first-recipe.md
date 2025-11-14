@@ -429,10 +429,12 @@ dot submit my-first-parachain
 
 ### What the Submit Command Does
 
-1. **Validates** recipe structure
-2. **Checks** git repository state
-3. **Pushes** to your fork (creates fork if needed)
-4. **Creates** pull request on GitHub
+1. **Runs tests** to validate your code
+2. **Validates** that required lock files are present (Cargo.lock and/or package-lock.json)
+3. **Validates** recipe structure
+4. **Checks** git repository state
+5. **Pushes** to your fork (creates fork if needed)
+6. **Creates** pull request on GitHub
 
 ### Pull Request Checklist
 
@@ -441,6 +443,7 @@ Your PR will be reviewed for:
 - ✅ Documentation clarity
 - ✅ Test coverage
 - ✅ Working examples
+- ✅ Lock files committed (Cargo.lock and/or package-lock.json)
 - ✅ Adherence to guidelines
 
 ---

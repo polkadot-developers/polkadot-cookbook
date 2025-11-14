@@ -9,8 +9,8 @@ pub mod validation;
 
 pub use project_types::{ProjectMetadata, ProjectPathway, ProjectType};
 pub use validation::{
-    is_valid_slug, slug_to_title, title_to_slug, validate_project_config, validate_slug,
-    validate_title,
+    is_valid_slug, slug_to_title, title_to_slug, validate_lock_files, validate_project_config,
+    validate_slug, validate_title,
 };
 
 /// Configuration for creating a new project

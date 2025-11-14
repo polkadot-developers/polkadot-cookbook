@@ -309,10 +309,12 @@ dot submit
 ```
 
 The CLI will:
-1. Validate recipe structure
-2. Push to your fork
-3. Create PR with template
-4. Apply appropriate labels
+1. Run tests to validate your code
+2. Validate that required lock files are present
+3. Validate recipe structure
+4. Push to your fork
+5. Create PR with template
+6. Apply appropriate labels
 
 **Option B: Using GitHub CLI**
 ```bash

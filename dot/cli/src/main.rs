@@ -961,6 +961,35 @@ async fn handle_cookbook_repo_submit(
             .bold()
     );
 
+    // Validate lock files are present
+    note(
+        "Lock File Check",
+        "Verifying required lock files are present",
+    )?;
+    let project_metadata =
+        match polkadot_cookbook_sdk::config::ProjectMetadata::from_project_directory(&project_path)
+            .await
+        {
+            Ok(metadata) => metadata,
+            Err(e) => {
+                outro_cancel(format!("Failed to detect project type: {e}"))?;
+                std::process::exit(1);
+            }
+        };
+
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_lock_files(
+        &project_path,
+        &project_metadata.project_type,
+    ) {
+        outro_cancel(format!("{e}"))?;
+        std::process::exit(1);
+    }
+
+    println!(
+        "{}\n",
+        "✅ All required lock files present".polkadot_pink().bold()
+    );
+
     // Get GitHub token
     let github_token = match get_github_token() {
         Ok(token) => token,
@@ -1240,6 +1269,35 @@ async fn handle_standalone_submit(
         "✅ Tests passed! Proceeding with submission..."
             .polkadot_pink()
             .bold()
+    );
+
+    // Validate lock files are present
+    note(
+        "Lock File Check",
+        "Verifying required lock files are present",
+    )?;
+    let project_metadata =
+        match polkadot_cookbook_sdk::config::ProjectMetadata::from_project_directory(&project_path)
+            .await
+        {
+            Ok(metadata) => metadata,
+            Err(e) => {
+                outro_cancel(format!("Failed to detect project type: {e}"))?;
+                std::process::exit(1);
+            }
+        };
+
+    if let Err(e) = polkadot_cookbook_sdk::config::validate_lock_files(
+        &project_path,
+        &project_metadata.project_type,
+    ) {
+        outro_cancel(format!("{e}"))?;
+        std::process::exit(1);
+    }
+
+    println!(
+        "{}\n",
+        "✅ All required lock files present".polkadot_pink().bold()
     );
 
     // Get GitHub token
