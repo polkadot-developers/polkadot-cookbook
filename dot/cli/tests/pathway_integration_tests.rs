@@ -13,12 +13,12 @@
 //! - TypeScript/Node version compatibility (for TS-based recipes)
 //!
 //! Generated example recipes:
-//! - recipes/pallets/parachain-example/        (Full parachain with PAPI tests and XCM)
-//! - recipes/pallets/pallet-example/           (Pallet-only mode, no runtime)
-//! - recipes/contracts/contracts-example/      (Solidity contracts)
-//! - recipes/transactions/transactions-example/ (Basic PAPI interactions)
-//! - recipes/xcm/xcm-example/                  (XCM with Chopsticks)
-//! - recipes/networks/infra-example/           (Zombienet/Chopsticks configs)
+//! - recipes/pallets/parachain-example/                  (Full parachain with PAPI tests and XCM)
+//! - recipes/pallets/pallet-example/                     (Pallet-only mode, no runtime)
+//! - recipes/contracts/contracts-example/                (Solidity contracts)
+//! - recipes/transactions/transaction-example/           (PAPI interactions)
+//! - recipes/xcm/cross-chain-transaction-example/        (XCM with Chopsticks)
+//! - recipes/networks/network-example/                   (Zombienet/Chopsticks configs)
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -552,23 +552,23 @@ fn test_contracts_example_end_to_end() {
     test_cmd.assert().success();
 }
 
-/// Test /// Test BasicInteraction pathway: Create project pathway: Create project and run tests
+/// Test Transactions pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
-fn test_basic_interaction_example_end_to_end() {
+fn test_transaction_example_end_to_end() {
     let repo_root = get_repo_root();
-    let project_name = "transactions-example";
+    let project_name = "transaction-example";
 
     // Clean up any existing example
     cleanup_project(project_name);
 
-    // Step 1: Create a BasicInteraction project
+    // Step 1: Create a Transaction example project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
         .arg("create")
         .arg("--title")
-        .arg("Transactions Example")
+        .arg("Transaction Example")
         .arg("--pathway")
         .arg("transactions")
         .arg("--no-git")
@@ -607,23 +607,23 @@ fn test_basic_interaction_example_end_to_end() {
     test_cmd.assert().success();
 }
 
-/// Test /// Test XCM pathway: Create project pathway: Create project and run tests
+/// Test XCM pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
-fn test_xcm_example_end_to_end() {
+fn test_cross_chain_transaction_example_end_to_end() {
     let repo_root = get_repo_root();
-    let project_name = "xcm-example";
+    let project_name = "cross-chain-transaction-example";
 
     // Clean up any existing example
     cleanup_project(project_name);
 
-    // Step 1: Create an XCM project
+    // Step 1: Create a Cross-Chain Transaction example project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
         .arg("create")
         .arg("--title")
-        .arg("XCM Example")
+        .arg("Cross-Chain Transaction Example")
         .arg("--pathway")
         .arg("xcm")
         .arg("--no-git")
@@ -659,23 +659,23 @@ fn test_xcm_example_end_to_end() {
     test_cmd.assert().success();
 }
 
-/// Test /// Test Polkadot Infrastructure pathway: Create project pathway: Create project and run tests
+/// Test Networks pathway: Create project and run tests
 #[test]
 #[ignore] // Run with: cargo test --test pathway_integration_tests -- --ignored
-fn test_infra_example_end_to_end() {
+fn test_network_example_end_to_end() {
     let repo_root = get_repo_root();
-    let project_name = "infra-example";
+    let project_name = "network-example";
 
     // Clean up any existing example
     cleanup_project(project_name);
 
-    // Step 1: Create a Polkadot Infrastructure project
+    // Step 1: Create a Network example project
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
         .current_dir(&repo_root)
         .arg("create")
         .arg("--title")
-        .arg("Infra Example")
+        .arg("Network Example")
         .arg("--pathway")
         .arg("networks")
         .arg("--no-git")
@@ -728,11 +728,15 @@ fn test_all_examples_create_only() {
         ("pallets", "Pallets Example Smoke", "pallets-example-smoke"),
         (
             "transactions",
-            "Transactions Example Smoke",
-            "transactions-example-smoke",
+            "Transaction Example Smoke",
+            "transaction-example-smoke",
         ),
-        ("xcm", "XCM Example Smoke", "xcm-example-smoke"),
-        ("networks", "Infra Example Smoke", "infra-example-smoke"),
+        (
+            "xcm",
+            "Cross-Chain Transaction Example Smoke",
+            "cross-chain-transaction-example-smoke",
+        ),
+        ("networks", "Network Example Smoke", "network-example-smoke"),
     ];
 
     for (pathway, title, expected_slug) in pathways {
