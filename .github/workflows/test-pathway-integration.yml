@@ -160,30 +160,30 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Upload transactions-example artifact
+      - name: Upload transaction-example artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: transactions-example
-          path: recipes/transactions/transactions-example/
+          name: transaction-example
+          path: recipes/transactions/transaction-example/
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Upload xcm-example artifact
+      - name: Upload cross-chain-transaction-example artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xcm-example
-          path: recipes/xcm/xcm-example/
+          name: cross-chain-transaction-example
+          path: recipes/xcm/cross-chain-transaction-example/
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Upload infra-example artifact
+      - name: Upload network-example artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: infra-example
-          path: recipes/networks/infra-example/
+          name: network-example
+          path: recipes/networks/network-example/
           if-no-files-found: warn
           retention-days: 7
 
