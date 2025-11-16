@@ -17,7 +17,7 @@
 //! - recipes/pallets/pallet-example/                     (Pallet-only mode, no runtime)
 //! - recipes/contracts/contracts-example/                (Solidity contracts)
 //! - recipes/transactions/transaction-example/           (PAPI interactions)
-//! - recipes/xcm/cross-chain-transaction-example/        (XCM with Chopsticks)
+//! - recipes/cross-chain-transactions/cross-chain-transaction-example/ (XCM with Chopsticks)
 //! - recipes/networks/network-example/                   (Zombienet/Chopsticks configs)
 
 use assert_cmd::Command;
@@ -631,7 +631,10 @@ fn test_cross_chain_transaction_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root.join("recipes").join("xcm").join(project_name);
+    let project_path = repo_root
+        .join("recipes")
+        .join("cross-chain-transactions")
+        .join(project_name);
     assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
         project_path.join("README.md").exists(),

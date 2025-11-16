@@ -588,7 +588,7 @@ Congratulations! You've created your first project. Here's what to explore next:
 - **[parachain-example](../../recipes/parachain-example/)** - Full parachain with XCM
 - **[contracts-example](../../recipes/contracts-example/)** - Solidity contracts
 - **[transaction-example](../../recipes/transaction-example/)** - PAPI interactions
-- **[cross-chain-transaction-example](../../recipes/xcm/cross-chain-transaction-example/)** - Cross-chain messaging
+- **[cross-chain-transaction-example](../../recipes/cross-chain-transactions/cross-chain-transaction-example/)** - Cross-chain messaging
 
 ### Contribute More
 

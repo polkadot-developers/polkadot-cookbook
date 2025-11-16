@@ -174,7 +174,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cross-chain-transaction-example
-          path: recipes/xcm/cross-chain-transaction-example/
+          path: recipes/cross-chain-transactions/cross-chain-transaction-example/
           if-no-files-found: warn
           retention-days: 7
 
