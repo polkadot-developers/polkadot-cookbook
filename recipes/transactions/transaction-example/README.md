@@ -39,7 +39,7 @@ By completing this tutorial, you will understand:
 Install all dependencies:
 
 ```bash
-cd recipes/basic-interaction-example
+cd recipes/transaction-example
 npm install
 ```
 

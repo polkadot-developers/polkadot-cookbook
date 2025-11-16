@@ -1,5 +1,5 @@
 {
-  "name": "basic-interaction-example",
+  "name": "transaction-example",
   "version": "1.0.0",
   "description": "Replace with a short description.",
   "type": "module",
@@ -19,6 +19,7 @@
   "author": "",
   "license": "MIT OR Apache-2.0",
   "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-labs/hdkd": "^0.0.10",
     "@polkadot-labs/hdkd-helpers": "^0.0.10",
     "@polkadot/api": "^16.5.2",
