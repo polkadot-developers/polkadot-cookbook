@@ -66,7 +66,7 @@ Cross-chain asset transfers and messaging between parachains.
 
 | Recipe | Description |
 |----------|-------------|
-| [**cross-chain-transaction-example**](recipes/xcm/cross-chain-transaction-example) | Template for XCM messaging with Chopsticks local testing |
+| [**cross-chain-transaction-example**](recipes/cross-chain-transactions/cross-chain-transaction-example) | Template for XCM messaging with Chopsticks local testing |
 
 ### <img src=".github/media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Networks
 
@@ -122,7 +122,7 @@ npm test             # Run tests
 
 **XCM (TypeScript)**
 ```bash
-cd polkadot-cookbook/recipes/xcm/cross-chain-transaction-example
+cd polkadot-cookbook/recipes/cross-chain-transactions/cross-chain-transaction-example
 npm install           # Install dependencies
 npm test             # Run tests with Chopsticks
 ```
