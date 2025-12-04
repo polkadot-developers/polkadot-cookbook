@@ -22,7 +22,7 @@ pub struct ProjectConfig {
     /// Human-readable project title
     pub title: String,
 
-    /// Destination directory (usually "recipes/")
+    /// Destination directory (defaults to current directory)
     pub destination: PathBuf,
 
     /// Whether to initialize git repository
@@ -127,17 +127,9 @@ impl ProjectConfig {
 
     /// Get the full project path
     ///
-    /// If a pathway is set, the path will be: destination/recipes/{pathway}/{slug}
-    /// Otherwise, it will be: destination/{slug}
+    /// Path will be: destination/{slug}
     pub fn project_path(&self) -> PathBuf {
-        if let Some(pathway) = &self.pathway {
-            self.destination
-                .join("recipes")
-                .join(pathway.to_folder_name())
-                .join(&self.slug)
-        } else {
-            self.destination.join(&self.slug)
-        }
+        self.destination.join(&self.slug)
     }
 }
 

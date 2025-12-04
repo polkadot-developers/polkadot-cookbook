@@ -113,9 +113,17 @@ enum Commands {
     },
     /// Run project tests
     Test {
-        /// Project slug (defaults to current directory)
-        #[arg(value_name = "SLUG")]
-        slug: Option<String>,
+        /// Project path (defaults to current directory)
+        #[arg(value_name = "PATH")]
+        path: Option<String>,
+
+        /// Run only Rust tests (cargo test)
+        #[arg(long)]
+        rust: bool,
+
+        /// Run only TypeScript tests (npm test)
+        #[arg(long)]
+        ts: bool,
     },
     /// Submit a project as a pull request to polkadot-cookbook
     Submit {
@@ -138,11 +146,9 @@ async fn main() -> Result<()> {
     // Force colored output
     colored::control::set_override(true);
 
-    // Initialize tracing
+    // Initialize tracing (default to warn to keep CLI output clean)
     tracing_subscriber::fmt()
-        .with_env_filter(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "polkadot_cookbook_sdk=info".to_string()),
-        )
+        .with_env_filter(std::env::var("RUST_LOG").unwrap_or_else(|_| "warn".to_string()))
         .init();
 
     let cli = Cli::parse();
@@ -199,8 +205,8 @@ async fn main() -> Result<()> {
             )
             .await?;
         }
-        Commands::Test { slug } => {
-            handle_project_test(slug).await?;
+        Commands::Test { path, rust, ts } => {
+            handle_project_test(path, rust, ts).await?;
         }
         Commands::Submit { slug, title, body } => {
             handle_project_submit(slug, title, body).await?;
@@ -307,13 +313,11 @@ async fn handle_create(
     // Check dependencies for the selected pathway
     check_dependencies_interactive(&pathway)?;
 
-    // Step 2: Ask for title (now that user knows the pathway)
-    let title_question = "What is your project title?".polkadot_pink().to_string();
-    let hint_text = "(e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')"
-        .dimmed()
-        .to_string();
-    let title: String = input(format!("{title_question} {hint_text}"))
-        .placeholder("My Project")
+    // Step 2: Ask for project name (now that user knows the pathway)
+    let name_question = "What is your project name?".polkadot_pink().to_string();
+    let hint_text = "(e.g., 'my-parachain')".dimmed().to_string();
+    let title: String = input(format!("{name_question} {hint_text}"))
+        .placeholder("my-project")
         .validate(|input: &String| {
             if input.trim().is_empty() {
                 Err("Title cannot be empty")
@@ -328,19 +332,6 @@ async fn handle_create(
     // Auto-generate slug from title
     let title = title.trim().to_string();
     let slug = polkadot_cookbook_sdk::config::title_to_slug(&title);
-
-    // Step 3: Prompt for description
-    let description_question = "Description".polkadot_pink().to_string();
-    let description: String = input(&description_question)
-        .placeholder("Learn how to build a custom NFT pallet with minting, transfers, and storage")
-        .default_input("")
-        .interact()?;
-
-    let description = if description.trim().is_empty() {
-        "Replace with a short description.".to_string()
-    } else {
-        description.trim().to_string()
-    };
 
     // Git initialization is default (unless --no-git flag is used)
     let init_git = !no_git;
@@ -377,33 +368,41 @@ async fn handle_create(
                      ├── README.md                        Project documentation and guide\n\
                      ├── Cargo.toml                       Rust workspace configuration\n\
                      ├── rust-toolchain.toml              Specifies Rust version for consistency\n\
+                     ├── LICENSE                          Project license (MIT/Apache-2.0)\n\
+                     ├── Dockerfile                       Container image definition\n\
+                     │\n\
                      ├── package.json                     Node.js dependencies for PAPI tests\n\
                      ├── tsconfig.json                    TypeScript compiler configuration\n\
                      ├── vitest.config.ts                 Test framework configuration\n\
-                     ├── chopsticks.yml                   Chopsticks config for local testing with Paseo\n\
-                     ├── LICENSE                          Project license (MIT/Apache-2.0)\n\
-                     ├── Dockerfile                       Container image definition\n\
+                     │\n\
                      ├── runtime/                         Parachain runtime implementation\n\
                      │   ├── Cargo.toml                   Runtime dependencies and features\n\
                      │   ├── build.rs                     Build script for WASM compilation\n\
                      │   └── src/                         Runtime logic (pallets, configs)\n\
+                     │\n\
                      ├── node/                            Node binary implementation\n\
                      │   ├── Cargo.toml                   Node dependencies\n\
                      │   ├── build.rs                     Node build script\n\
                      │   └── src/                         CLI, RPC, and service logic\n\
+                     │\n\
                      ├── pallets/                         Custom pallets for your chain\n\
                      │   └── template/                    Example pallet template\n\
                      │       ├── Cargo.toml               Pallet dependencies\n\
                      │       └── src/                     Pallet logic, tests, benchmarks\n\
+                     │\n\
                      ├── scripts/                         Utility scripts for development\n\
                      │   ├── generate-spec.sh             Generate chain specification\n\
                      │   ├── setup-zombienet-binaries.sh  Download zombienet binaries\n\
                      │   └── start-dev-node.sh            Start local development node\n\
+                     │\n\
                      ├── tests/                           Integration tests using PAPI\n\
                      │   └── template-pallet.test.ts      Example pallet tests\n\
+                     │\n\
+                     ├── chopsticks.yml                   Chopsticks config for local testing\n\
                      ├── zombienet.toml                   Local network configuration\n\
                      ├── zombienet-omni-node.toml         Omni-node based network setup\n\
                      └── zombienet-xcm.toml               XCM testing network configuration\n\n\
+                     ─────────────────────────────────────────────────────────────────────────────\n\n\
                      Based on: polkadot-sdk-parachain-template\n\
                      Polkadot SDK: v2503.0.1\n\
                      Release: https://github.com/paritytech/polkadot-sdk/releases/tag/polkadot-v2503.0.1",
@@ -481,7 +480,8 @@ async fn handle_create(
              {:<16} {}\n\
              {:<16} {}\n\
              {:<16} {}\n\n\
-             Directory structure:\n\n{}",
+             ─────────────────────────────────────────────────────────────────────────────\n\n\
+             Directory structure:\n\n\n{}",
             "Title:".polkadot_pink(),
             title.polkadot_pink().bold(),
             "Slug:".polkadot_pink(),
@@ -523,7 +523,7 @@ async fn handle_create(
         .with_git_init(init_git)
         .with_skip_install(skip_install)
         .with_project_type(project_type)
-        .with_description(description)
+        .with_description("Replace with a short description.".to_string())
         .with_pathway(pathway);
 
     // Set parachain-specific flags
@@ -560,23 +560,64 @@ async fn handle_create(
                 "✅ Project created successfully!".polkadot_pink()
             ));
 
+            // Run tests to verify the setup works
+            let should_run_tests = if pallet_only {
+                println!(
+                    "\n{}",
+                    "Running cargo test to verify setup...".polkadot_pink()
+                );
+                true
+            } else if matches!(pathway, ProjectPathway::Pallets) {
+                // Skip tests for full parachain - requires lengthy compilation
+                false
+            } else {
+                println!(
+                    "\n{}",
+                    "Running npm test to verify setup...".polkadot_pink()
+                );
+                true
+            };
+
+            if should_run_tests {
+                let test_result = if pallet_only {
+                    std::process::Command::new("cargo")
+                        .arg("test")
+                        .current_dir(&project_info.project_path)
+                        .stdout(std::process::Stdio::inherit())
+                        .stderr(std::process::Stdio::inherit())
+                        .status()
+                } else {
+                    std::process::Command::new("npm")
+                        .arg("test")
+                        .current_dir(&project_info.project_path)
+                        .stdout(std::process::Stdio::inherit())
+                        .stderr(std::process::Stdio::inherit())
+                        .status()
+                };
+
+                match test_result {
+                    Ok(status) if status.success() => {
+                        println!("{}", "✅ Tests passed!".polkadot_pink());
+                    }
+                    Ok(_) => {
+                        println!("{}", "⚠️  Tests failed - check your setup".yellow());
+                    }
+                    Err(e) => {
+                        println!("{}", format!("⚠️  Could not run tests: {}", e).yellow());
+                    }
+                }
+            }
+
             let project_title = "📦 Project Created".polkadot_pink().to_string();
             note(
                 &project_title,
                 format!(
-                    "Slug:       {}\nTitle:      {}\nLocation:   {}\nGit Init:   {}",
-                    project_info.slug.polkadot_pink(),
-                    project_info.title.polkadot_pink(),
+                    "Location:   {}",
                     project_info
                         .project_path
                         .display()
                         .to_string()
                         .polkadot_pink(),
-                    if project_info.git_initialized {
-                        "Yes"
-                    } else {
-                        "No"
-                    }
                 ),
             )?;
 
@@ -609,30 +650,27 @@ async fn handle_create(
                 )
             } else if matches!(pathway, ProjectPathway::Pallets) {
                 format!(
-                    "{} Customize your pallet\n   {} {}\n\n\
-                     {} Configure runtime\n   {} {}\n\n\
-                     {} Write PAPI tests\n   {} {}\n\n\
-                     {} Build and test\n   {} {}\n   {} {}",
+                    "{} Build your parachain\n   {} {}\n\n\
+                     {} Start development node\n   {} {}\n\n\
+                     {} Run integration tests\n   {} {}",
                     "1.".polkadot_pink().bold(),
                     "→".dimmed(),
                     format!(
-                        "{}/pallets/template/src/lib.rs",
+                        "cd {} && cargo build --release",
                         project_info.project_path.display()
                     )
                     .polkadot_pink(),
                     "2.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/runtime/src/lib.rs", project_info.project_path.display())
-                        .polkadot_pink(),
+                    format!(
+                        "{}/scripts/start-dev-node.sh",
+                        project_info.project_path.display()
+                    )
+                    .polkadot_pink(),
                     "3.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/tests/", project_info.project_path.display()).polkadot_pink(),
-                    "4.".polkadot_pink().bold(),
-                    "→".dimmed(),
-                    format!("cd {} && cargo build", project_info.project_path.display())
-                        .polkadot_pink(),
-                    "→".dimmed(),
-                    "npm test".polkadot_pink()
+                    format!("cd {} && npm test", project_info.project_path.display())
+                        .polkadot_pink()
                 )
             } else {
                 // Default for other pathways
@@ -655,35 +693,7 @@ async fn handle_create(
 
             note(&steps_title, next_steps)?;
 
-            if project_info.git_initialized {
-                let git_title = "🔀 Ready to Submit?".polkadot_pink().to_string();
-                note(
-                    &git_title,
-                    format!(
-                        "{} Use the submit command to create a PR:\n   {}\n\n\
-                         {} Or manually:\n\
-                         {} {}\n\
-                         {} {}\n\
-                         {} {}",
-                        "1.".polkadot_pink().bold(),
-                        format!("./target/release/dot submit {}", project_info.slug)
-                            .polkadot_pink(),
-                        "2.".polkadot_pink().bold(),
-                        "   →".dimmed(),
-                        "git add -A".polkadot_pink(),
-                        "   →".dimmed(),
-                        format!("git commit -m \"feat(recipe): add {}\"", project_info.slug)
-                            .polkadot_pink(),
-                        "   →".dimmed(),
-                        "git push && gh pr create".polkadot_pink(),
-                    ),
-                )?;
-            }
-
-            let outro_msg = "🎉 All set! Happy coding! Check CONTRIBUTING.md for guidelines."
-                .polkadot_pink()
-                .to_string();
-            outro(&outro_msg)?;
+            outro("🎉 All set!".polkadot_pink().to_string())?;
         }
         Err(e) => {
             sp.stop(format!("❌ Failed to create project: {e}"));
@@ -815,29 +825,47 @@ async fn run_non_interactive(
 }
 
 /// Run tests for a project and return whether they passed
-async fn run_project_tests(project_path: &std::path::Path, show_notes: bool) -> Result<bool> {
-    // Auto-detect project type from files
-    let project_metadata =
-        match polkadot_cookbook_sdk::config::ProjectMetadata::from_project_directory(project_path)
-            .await
-        {
-            Ok(config) => config,
-            Err(e) => {
-                outro_cancel(format!("Failed to detect project type: {e}"))?;
-                std::process::exit(1);
-            }
-        };
+async fn run_project_tests(
+    project_path: &std::path::Path,
+    show_notes: bool,
+    rust_only: bool,
+    ts_only: bool,
+) -> Result<bool> {
+    let has_cargo = project_path.join("Cargo.toml").exists();
+    let has_package_json = project_path.join("package.json").exists();
 
-    let is_polkadot_sdk = matches!(
-        project_metadata.project_type,
-        polkadot_cookbook_sdk::config::ProjectType::PolkadotSdk
-    );
+    // Determine which tests to run
+    let run_rust = has_cargo && !ts_only;
+    let run_ts = has_package_json && !rust_only;
 
-    if is_polkadot_sdk {
-        if show_notes {
-            note("Project Type", "Polkadot SDK (Rust)")?;
-        }
+    if !run_rust && !run_ts {
+        eprintln!("No tests to run. Project has neither Cargo.toml nor package.json");
+        return Ok(false);
+    }
 
+    if show_notes {
+        let test_types: Vec<&str> = [
+            if run_rust {
+                Some("Rust (cargo test)")
+            } else {
+                None
+            },
+            if run_ts {
+                Some("TypeScript (npm test)")
+            } else {
+                None
+            },
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        note("Running Tests", test_types.join(" + "))?;
+    }
+
+    let mut all_passed = true;
+
+    // Run Rust tests
+    if run_rust {
         println!("\n{}\n", "Running cargo test...".polkadot_pink().bold());
 
         let status = std::process::Command::new("cargo")
@@ -845,20 +873,18 @@ async fn run_project_tests(project_path: &std::path::Path, show_notes: bool) -> 
             .current_dir(project_path)
             .status()?;
 
-        println!(); // Add spacing after test output
+        println!();
 
         if status.success() {
-            println!("{}", "✅ All tests passed!".polkadot_pink().bold());
-            Ok(true)
+            println!("{}", "✅ Rust tests passed!".polkadot_pink().bold());
         } else {
-            eprintln!("{}", "❌ Tests failed".red().bold());
-            Ok(false)
+            eprintln!("{}", "❌ Rust tests failed".red().bold());
+            all_passed = false;
         }
-    } else {
-        if show_notes {
-            note("Project Type", "TypeScript")?;
-        }
+    }
 
+    // Run TypeScript tests
+    if run_ts {
         println!("\n{}\n", "Running npm test...".polkadot_pink().bold());
 
         let status = std::process::Command::new("npm")
@@ -866,20 +892,21 @@ async fn run_project_tests(project_path: &std::path::Path, show_notes: bool) -> 
             .current_dir(project_path)
             .status()?;
 
-        println!(); // Add spacing after test output
+        println!();
 
         if status.success() {
-            println!("{}", "✅ All tests passed!".polkadot_pink().bold());
-            Ok(true)
+            println!("{}", "✅ TypeScript tests passed!".polkadot_pink().bold());
         } else {
-            eprintln!("{}", "❌ Tests failed".red().bold());
-            Ok(false)
+            eprintln!("{}", "❌ TypeScript tests failed".red().bold());
+            all_passed = false;
         }
     }
+
+    Ok(all_passed)
 }
 
-async fn handle_project_test(slug: Option<String>) -> Result<()> {
-    let project_path = get_project_path(slug)?;
+async fn handle_project_test(path: Option<String>, rust_only: bool, ts_only: bool) -> Result<()> {
+    let project_path = get_project_path(path)?;
 
     intro(format!(
         "🧪 Testing Project: {}",
@@ -891,7 +918,7 @@ async fn handle_project_test(slug: Option<String>) -> Result<()> {
             .polkadot_pink()
     ))?;
 
-    let tests_passed = run_project_tests(&project_path, true).await?;
+    let tests_passed = run_project_tests(&project_path, true, rust_only, ts_only).await?;
 
     if !tests_passed {
         outro_cancel("Tests failed")?;
@@ -944,7 +971,7 @@ async fn handle_cookbook_repo_submit(
         "Pre-submission Check",
         "Running tests to ensure project quality",
     )?;
-    let tests_passed = run_project_tests(&project_path, false).await?;
+    let tests_passed = run_project_tests(&project_path, false, false, false).await?;
 
     if !tests_passed {
         outro_cancel(
@@ -1254,7 +1281,7 @@ async fn handle_standalone_submit(
         "Pre-submission Check",
         "Running tests to ensure project quality",
     )?;
-    let tests_passed = run_project_tests(&project_path, false).await?;
+    let tests_passed = run_project_tests(&project_path, false, false, false).await?;
 
     if !tests_passed {
         outro_cancel(
@@ -1779,69 +1806,42 @@ fn check_dependencies_interactive(pathway: &ProjectPathway) -> Result<()> {
 }
 
 fn get_project_path(slug: Option<String>) -> Result<PathBuf> {
-    // Find repository root by looking for .git directory
-    let mut current = std::env::current_dir()?;
-    let mut repo_root = None;
+    if let Some(path_str) = slug {
+        // Path/slug provided - treat as relative or absolute path
+        let path = PathBuf::from(&path_str);
 
-    loop {
-        if current.join(".git").exists() {
-            repo_root = Some(current.clone());
-            break;
-        }
-        if let Some(parent) = current.parent() {
-            current = parent.to_path_buf();
-        } else {
-            break;
-        }
-    }
-
-    let repo_root = match repo_root {
-        Some(root) => root,
-        None => {
-            eprintln!("Not in a git repository");
-            std::process::exit(1);
-        }
-    };
-
-    if let Some(slug) = slug {
-        // Search for project in pathway subdirectories
-        let pathways = ["pallets", "contracts", "transactions", "xcm", "networks"];
-
-        for pathway in &pathways {
-            let path = repo_root.join("recipes").join(pathway).join(&slug);
-            if path.exists() {
-                return Ok(path);
-            }
+        // Check if it's a valid project directory
+        if path.exists() && is_project_directory(&path) {
+            return Ok(path.canonicalize().unwrap_or(path));
         }
 
-        // Also check legacy location (directly in recipes/)
-        let legacy_path = repo_root.join("recipes").join(&slug);
-        if legacy_path.exists() {
-            return Ok(legacy_path);
+        // Try as relative path from current directory
+        let current = std::env::current_dir()?;
+        let relative_path = current.join(&path_str);
+        if relative_path.exists() && is_project_directory(&relative_path) {
+            return Ok(relative_path.canonicalize().unwrap_or(relative_path));
         }
 
-        eprintln!("Project not found: {slug}");
-        eprintln!("Searched in pathway directories: {}", pathways.join(", "));
+        eprintln!("Project not found: {path_str}");
+        eprintln!("Make sure the path exists and contains a package.json or Cargo.toml");
         std::process::exit(1);
     } else {
-        // Try to infer from current directory
+        // No path provided - check if current directory is a project
         let current = std::env::current_dir()?;
 
-        // Check if we're in a pathway subdirectory (e.g., recipes/parachain/my-project)
-        if let Some(parent) = current.parent() {
-            if let Some(grandparent) = parent.parent() {
-                if grandparent.file_name() == Some(std::ffi::OsStr::new("recipes")) {
-                    return Ok(current);
-                }
-            }
-        }
-
-        // Check legacy location (directly in recipes/)
-        if current.parent().and_then(|p| p.file_name()) == Some(std::ffi::OsStr::new("recipes")) {
+        if is_project_directory(&current) {
             return Ok(current);
         }
 
-        eprintln!("Please provide a project slug or run from within a project directory");
+        eprintln!("Not in a project directory.");
+        eprintln!(
+            "Either run from within a project directory or specify the path: dot test <path>"
+        );
         std::process::exit(1);
     }
+}
+
+/// Check if a directory looks like a project (has package.json or Cargo.toml)
+fn is_project_directory(path: &std::path::Path) -> bool {
+    path.join("package.json").exists() || path.join("Cargo.toml").exists()
 }

@@ -117,13 +117,6 @@ pub fn get_pathway_dependencies(pathway: &ProjectPathway) -> Vec<Dependency> {
                 install_url: "https://nodejs.org/".to_string(),
                 install_instructions: "npx is installed with npm".to_string(),
             },
-            Dependency {
-                name: "Hardhat (optional)".to_string(),
-                command: "hardhat".to_string(),
-                min_version: None,
-                install_url: "https://hardhat.org/".to_string(),
-                install_instructions: "npm install -g hardhat (optional - can be installed per-project)".to_string(),
-            },
         ],
         ProjectPathway::Xcm | ProjectPathway::Transactions | ProjectPathway::Networks => vec![
             Dependency {
@@ -174,11 +167,10 @@ mod tests {
     #[test]
     fn test_contracts_dependencies() {
         let deps = get_pathway_dependencies(&ProjectPathway::Contracts);
-        assert_eq!(deps.len(), 4);
+        assert_eq!(deps.len(), 3);
         assert_eq!(deps[0].name, "Node.js");
         assert_eq!(deps[1].name, "npm");
         assert_eq!(deps[2].name, "npx");
-        assert_eq!(deps[3].name, "Hardhat (optional)");
     }
 
     #[test]

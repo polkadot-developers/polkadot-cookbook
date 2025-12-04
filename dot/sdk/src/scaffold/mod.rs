@@ -140,12 +140,12 @@ impl Scaffold {
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
                 debug!("Installing Solidity project dependencies");
-                // Show npm install output in real-time (like create-react-app)
+                // Suppress npm output to keep spinner clean
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
-                    .stdout(std::process::Stdio::inherit())
-                    .stderr(std::process::Stdio::inherit())
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
                     .status()
                     .await;
 
@@ -165,12 +165,12 @@ impl Scaffold {
             // Parachain projects: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
                 debug!("Installing Parachain project PAPI dependencies");
-                // Show npm install output in real-time (like create-react-app)
+                // Suppress npm output to keep spinner clean
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
-                    .stdout(std::process::Stdio::inherit())
-                    .stderr(std::process::Stdio::inherit())
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
                     .status()
                     .await;
 
@@ -614,6 +614,29 @@ impl Scaffold {
                     message: format!("Failed to write file: {e}"),
                     path: Some(path.to_path_buf()),
                 })?;
+
+            // Make shell scripts executable
+            if path.extension().is_some_and(|ext| ext == "sh") {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    let mut perms = std::fs::metadata(path)
+                        .map_err(|e| CookbookError::FileSystemError {
+                            message: format!("Failed to get file permissions: {e}"),
+                            path: Some(path.to_path_buf()),
+                        })?
+                        .permissions();
+                    perms.set_mode(0o755);
+                    std::fs::set_permissions(path, perms).map_err(|e| {
+                        CookbookError::FileSystemError {
+                            message: format!("Failed to set file permissions: {e}"),
+                            path: Some(path.to_path_buf()),
+                        }
+                    })?;
+                    debug!("Made executable: {}", path.display());
+                }
+            }
+
             debug!("Wrote file: {}", path.display());
             Ok(())
         }
