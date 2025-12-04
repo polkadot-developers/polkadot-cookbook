@@ -122,23 +122,15 @@ The node will:
 - Use Alice as the sudo account
 - Store chain data in a temporary directory
 
-### 3. Generate TypeScript Types
+### 3. Run Integration Tests
 
-In a new terminal, generate PAPI types from your running chain:
-
-```bash
-npm run generate:types
-```
-
-This creates TypeScript definitions from your runtime metadata, enabling fully-typed blockchain interactions.
-
-### 4. Run Integration Tests
-
-Execute the PAPI test suite:
+In a new terminal, execute the PAPI test suite:
 
 ```bash
 npm test
 ```
+
+**What happens:** The test command automatically generates TypeScript types from your running node before running tests. This ensures your tests always have the latest type definitions.
 
 Tests will connect to your local node and verify:
 - Node connectivity and chain info
