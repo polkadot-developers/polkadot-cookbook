@@ -167,7 +167,7 @@ async fn test_parachain_example_end_to_end() {
     cleanup_project(project_name);
 
     // Step 1: Create a Parachain project (default mode: full parachain + PAPI)
-    println!("📦 Step 1/5: Creating parachain project...");
+    println!("📦 Step 1/4: Creating parachain project...");
 
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
@@ -221,18 +221,18 @@ async fn test_parachain_example_end_to_end() {
     );
     assert!(
         project_path.join("zombienet.toml").exists()
-            || project_path.join("zombienet-omni-node.toml").exists(),
-        "zombienet config should exist"
+            && project_path.join("zombienet-omni-node.toml").exists(),
+        "zombienet configs should exist"
     );
 
-    // Verify XCM config IS present (always included for full parachain)
+    // Verify dev chain spec exists
     assert!(
-        project_path.join("zombienet-xcm.toml").exists(),
-        "zombienet-xcm.toml should always exist in full parachain mode"
+        project_path.join("dev_chain_spec.json").exists(),
+        "dev_chain_spec.json should exist"
     );
 
     // Step 2: Compile the runtime
-    println!("🔨 Step 2/5: Compiling runtime (this may take 10-15 minutes)...");
+    println!("🔨 Step 2/4: Compiling runtime (this may take 10-15 minutes)...");
     let build_result = timeout(
         Duration::from_secs(900), // 15 minute timeout
         TokioCommand::new("cargo")
@@ -272,46 +272,8 @@ async fn test_parachain_example_end_to_end() {
         wasm_path
     );
 
-    // Step 3: Generate chain specification
-    println!("📋 Step 3/5: Generating chain specification...");
-    let generate_spec_script = project_path.join("scripts").join("generate-spec.sh");
-    assert!(
-        generate_spec_script.exists(),
-        "generate-spec.sh should exist"
-    );
-
-    let spec_result = timeout(
-        Duration::from_secs(60),
-        TokioCommand::new("bash")
-            .arg(&generate_spec_script)
-            .current_dir(&project_path)
-            .output(),
-    )
-    .await;
-
-    match spec_result {
-        Ok(Ok(output)) => {
-            assert!(
-                output.status.success(),
-                "Chain spec generation failed:\n{}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            println!("✅ Chain specification generated");
-        }
-        Ok(Err(e)) => panic!("Failed to execute generate-spec.sh: {}", e),
-        Err(_) => panic!("Chain spec generation timed out"),
-    }
-
-    // Verify chain-spec.json was created
-    let chain_spec_path = project_path.join("chain-spec.json");
-    assert!(
-        chain_spec_path.exists(),
-        "chain-spec.json should exist at {:?}",
-        chain_spec_path
-    );
-
-    // Step 4: Start the development node
-    println!("🚀 Step 4/5: Starting development node...");
+    // Step 3: Start the development node
+    println!("🚀 Step 3/4: Starting development node...");
     let node = TestNode::start(&project_path)
         .await
         .expect("Failed to start test node");
@@ -321,8 +283,8 @@ async fn test_parachain_example_end_to_end() {
         .await
         .expect("Node failed to become ready");
 
-    // Step 5: Run PAPI integration tests
-    println!("🧪 Step 5/5: Running PAPI integration tests...");
+    // Step 4: Run PAPI integration tests
+    println!("🧪 Step 4/4: Running PAPI integration tests...");
 
     // First install npm dependencies (since we skipped it during creation)
     let npm_install = timeout(
