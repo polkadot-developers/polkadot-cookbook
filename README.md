@@ -202,7 +202,10 @@ curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbo
 # Create a new project (interactive mode)
 dot create
 
-# Test your project
+# Test your project (from within project directory)
+dot test
+
+# Or specify a path
 dot test my-pallet
 
 # Submit your project as a recipe to the cookbook

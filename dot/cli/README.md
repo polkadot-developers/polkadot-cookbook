@@ -83,10 +83,10 @@ dot create --title "My Recipe" --pathway runtime --difficulty beginner --non-int
 
 The structure varies by pathway:
 
-**Runtime:**
+**Parachain/Pallet:**
 ```
-recipes/my-recipe/
-├── README.md              # Recipe documentation
+my-project/
+├── README.md              # Project documentation
 ├── Cargo.toml             # Rust workspace
 ├── rust-toolchain.toml    # Rust version pinning
 └── pallets/               # FRAME pallets
@@ -98,10 +98,10 @@ recipes/my-recipe/
             └── tests.rs   # Unit tests
 ```
 
-**Contracts/Basic Interactions/XCM/Infrastructure:**
+**Contracts/Transactions/XCM/Networks:**
 ```
-recipes/my-recipe/
-├── README.md              # Recipe documentation
+my-project/
+├── README.md              # Project documentation
 ├── package.json           # npm dependencies
 ├── tsconfig.json          # TypeScript config
 ├── vitest.config.ts       # Test config (or hardhat.config.ts)
@@ -112,15 +112,15 @@ recipes/my-recipe/
 
 ## Common Workflows
 
-### Contributing a Recipe
+### Creating a Project
 
-**Runtime pathway (Rust):**
+**Parachain pathway (Rust):**
 ```bash
-# 1. Create recipe structure
-dot create --title "Custom Storage Pallet" --pathway runtime
+# 1. Create project structure
+dot create --title "Custom Storage Pallet" --pathway pallets
 
 # 2. Write content
-cd recipes/custom-storage-pallet
+cd custom-storage-pallet
 code README.md
 
 # 3. Implement pallet
@@ -135,13 +135,13 @@ git commit -m "feat(recipe): add custom storage pallet"
 git push origin recipe/custom-storage-pallet
 ```
 
-**TypeScript pathways (Contracts/Basic Interactions/XCM/Infrastructure):**
+**TypeScript pathways (Contracts/Transactions/XCM/Networks):**
 ```bash
-# 1. Create recipe structure
-dot create --title "Token Transfer" --pathway basic-interaction
+# 1. Create project structure
+dot create --title "Token Transfer" --pathway transactions
 
 # 2. Write content
-cd recipes/token-transfer
+cd token-transfer
 code README.md
 
 # 3. Implement code
@@ -152,11 +152,6 @@ code tests/transfer.test.ts
 
 # 5. Test locally
 npm test
-
-# 6. Commit and push
-git add -A
-git commit -m "feat(recipe): add token transfer example"
-git push origin recipe/token-transfer
 ```
 
 ## Troubleshooting
