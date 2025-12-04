@@ -298,17 +298,7 @@ This takes 10-15 minutes on first build. The runtime WASM will be at:
 target/release/wbuild/my-first-parachain-runtime/my_first_parachain_runtime.compact.compressed.wasm
 ```
 
-### 3. Generate Chain Specification
-
-Create a chain specification from your runtime:
-
-```bash
-npm run generate:spec
-```
-
-This creates `chain-spec.json` with your genesis state.
-
-### 4. Start Development Node
+### 3. Start Development Node
 
 Launch your parachain locally:
 
@@ -317,17 +307,19 @@ npm run start:node
 ```
 
 The node will:
-- Start in development mode
+- Start in development mode using `dev_chain_spec.json`
 - Expose RPC at `ws://localhost:9944`
 - Use Alice as the sudo account
 
-### 5. Run PAPI Integration Tests
+### 4. Run PAPI Integration Tests
 
 In a new terminal, run the test suite:
 
 ```bash
 npm test
 ```
+
+**What happens:** The test command automatically generates TypeScript types from your running node before running tests.
 
 **Expected output:**
 ```
@@ -363,11 +355,11 @@ cargo install polkadot-omni-node
 # Ensure node is running
 npm run start:node
 
-# In another terminal, regenerate types
-npm run generate:types
-
-# Run tests
+# In another terminal, run tests (types are auto-generated)
 npm test
+
+# If you need to manually regenerate types
+npm run generate:types
 ```
 
 ---
@@ -666,11 +658,11 @@ cargo build --release
 pkill -f polkadot-omni-node
 npm run start:node
 
-# Regenerate types
-npm run generate:types
-
-# Run tests
+# Run tests (types are auto-generated)
 npm test
+
+# If needed, manually regenerate types
+npm run generate:types
 ```
 
 ### GitHub Authentication Failed
