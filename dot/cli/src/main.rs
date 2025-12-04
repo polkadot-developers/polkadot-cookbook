@@ -650,7 +650,8 @@ async fn handle_create(
             } else if matches!(pathway, ProjectPathway::Pallets) {
                 format!(
                     "{} Build your parachain\n   {} {}\n\n\
-                     {} Start development node\n   {} {}\n\n\
+                     {} Start development node (in a new terminal)\n   {} {}\n\n\
+                     {} Generate TypeScript types (in another terminal)\n   {} {}\n\n\
                      {} Run integration tests\n   {} {}",
                     "1.".polkadot_pink().bold(),
                     "→".dimmed(),
@@ -667,6 +668,13 @@ async fn handle_create(
                     )
                     .polkadot_pink(),
                     "3.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    format!(
+                        "cd {} && npm run generate:types",
+                        project_info.project_path.display()
+                    )
+                    .polkadot_pink(),
+                    "4.".polkadot_pink().bold(),
                     "→".dimmed(),
                     format!("cd {} && npm test", project_info.project_path.display())
                         .polkadot_pink()
