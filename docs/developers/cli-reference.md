@@ -101,7 +101,9 @@ my-parachain/
 ├── runtime/               # Parachain runtime
 ├── tests/                 # PAPI integration tests
 ├── scripts/               # Node management scripts
-└── zombienet-xcm.toml     # Multi-parachain XCM testing
+├── dev_chain_spec.json    # Development chain specification
+├── zombienet.toml         # Parachain node network config
+└── zombienet-omni-node.toml  # Omni-node network config
 ```
 
 **Pallet-Only Project:**

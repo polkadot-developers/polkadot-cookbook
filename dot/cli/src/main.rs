@@ -391,7 +391,6 @@ async fn handle_create(
                      │       └── src/                     Pallet logic, tests, benchmarks\n\
                      │\n\
                      ├── scripts/                         Utility scripts for development\n\
-                     │   ├── generate-spec.sh             Generate chain specification\n\
                      │   ├── setup-zombienet-binaries.sh  Download zombienet binaries\n\
                      │   └── start-dev-node.sh            Start local development node\n\
                      │\n\
@@ -399,9 +398,9 @@ async fn handle_create(
                      │   └── template-pallet.test.ts      Example pallet tests\n\
                      │\n\
                      ├── chopsticks.yml                   Chopsticks config for local testing\n\
-                     ├── zombienet.toml                   Local network configuration\n\
-                     ├── zombienet-omni-node.toml         Omni-node based network setup\n\
-                     └── zombienet-xcm.toml               XCM testing network configuration\n\n\
+                     ├── dev_chain_spec.json              Development chain specification\n\
+                     ├── zombienet.toml                   Parachain node network config\n\
+                     └── zombienet-omni-node.toml         Omni-node network configuration\n\n\
                      ─────────────────────────────────────────────────────────────────────────────\n\n\
                      Based on: polkadot-sdk-parachain-template\n\
                      Polkadot SDK: v2503.0.1\n\
