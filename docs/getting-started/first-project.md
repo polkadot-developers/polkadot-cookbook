@@ -132,10 +132,11 @@ my-first-parachain/
 ├── tests/                 # PAPI integration tests
 │   └── template-pallet.test.ts
 ├── scripts/
-│   ├── generate-spec.sh   # Generate chain specification
-│   └── start-dev-node.sh  # Start development node
-├── zombienet.toml         # Single parachain config
-└── zombienet-xcm.toml     # Multi-parachain XCM testing
+│   ├── setup-zombienet-binaries.sh  # Setup zombienet binaries
+│   └── start-dev-node.sh            # Start development node
+├── dev_chain_spec.json    # Development chain specification
+├── zombienet.toml         # Parachain node network config
+└── zombienet-omni-node.toml  # Omni-node network config
 ```
 
 ### Key Files Explained
@@ -371,9 +372,9 @@ npm test
 
 ---
 
-## Step 5: Test Multi-Chain XCM (Optional)
+## Step 5: Test with Zombienet (Optional)
 
-Your project includes `zombienet-xcm.toml` for testing cross-chain messaging.
+Your project includes zombienet configurations for testing in a multi-node environment.
 
 ### Setup Binaries (One-time)
 
@@ -383,19 +384,25 @@ npm run setup:zombienet
 
 This installs:
 - `polkadot` (relay chain)
-- `polkadot-omni-node` (parachains)
+- `polkadot-omni-node` (parachain collator)
 
-### Launch Multi-Chain Network
+### Launch Network with Omni Node (Recommended)
 
 ```bash
-npm run zombienet:xcm
+npm run zombienet:omni
 ```
 
 This spawns:
 - 2 relay chain validators (Alice, Bob)
-- 2 parachains (IDs 1000 and 2000)
+- 1 parachain collator running your runtime with polkadot-omni-node
 
-Perfect for testing XCM patterns like asset transfers and remote execution.
+### Or Use Custom Parachain Node (Advanced)
+
+```bash
+npm run zombienet:node
+```
+
+This uses your custom-built parachain node binary instead of the omni node.
 
 ---
 
