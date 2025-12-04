@@ -10,7 +10,7 @@
     "setup:zombienet": "./scripts/setup-zombienet-binaries.sh",
     "zombienet:omni": "zombienet spawn zombienet-omni-node.toml",
     "zombienet:node": "zombienet spawn zombienet.toml",
-    "pretest": "papi",
+    "pretest": "./scripts/generate-types.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit"
