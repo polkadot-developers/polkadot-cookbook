@@ -140,12 +140,12 @@ impl Scaffold {
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
                 debug!("Installing Solidity project dependencies");
-                // Suppress npm output to keep spinner clean
+                // Show npm output so user can see installation progress
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
-                    .stdout(std::process::Stdio::null())
-                    .stderr(std::process::Stdio::null())
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
                     .status()
                     .await;
 
@@ -165,12 +165,12 @@ impl Scaffold {
             // Parachain projects: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
                 debug!("Installing Parachain project PAPI dependencies");
-                // Suppress npm output to keep spinner clean
+                // Show npm output so user can see installation progress
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
-                    .stdout(std::process::Stdio::null())
-                    .stderr(std::process::Stdio::null())
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
                     .status()
                     .await;
 
