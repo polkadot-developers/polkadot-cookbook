@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build:runtime": "cargo build --release",
-    "generate:types": "papi",
+    "generate:types": "./scripts/generate-types.sh",
     "start:node": "./scripts/start-dev-node.sh",
     "setup:zombienet": "./scripts/setup-zombienet-binaries.sh",
     "zombienet:omni": "zombienet spawn zombienet-omni-node.toml",
