@@ -528,24 +528,15 @@ async fn handle_create(
     // Set parachain-specific flags
     config.pallet_only = pallet_only;
 
-    // Create the project with spinner
+    // Create the project with progress indication
     let sp = spinner();
-    let spinner_msg = if skip_install {
-        "Creating project...".polkadot_pink().to_string()
-    } else {
-        "Creating project (this may take ~30 seconds for npm install)..."
-            .polkadot_pink()
-            .to_string()
-    };
-    sp.start(&spinner_msg);
+    sp.start("📁 Creating project...".polkadot_pink());
 
     let scaffold = Scaffold::new();
 
-    // Create progress callback to update spinner
+    // Create progress callback
     use polkadot_cookbook_sdk::scaffold::ProgressCallback;
     let progress_callback: ProgressCallback = Box::new(move |msg: &str| {
-        // Note: cliclack spinners don't support live message updates,
-        // but we use debug logging instead of info to keep output clean
         tracing::debug!("Progress: {}", msg);
     });
 
@@ -554,10 +545,7 @@ async fn handle_create(
         .await
     {
         Ok(project_info) => {
-            sp.stop(format!(
-                "{}",
-                "✅ Project created successfully!".polkadot_pink()
-            ));
+            sp.stop("✅ Project created successfully!".polkadot_pink());
 
             // Run tests to verify the setup works
             let should_run_tests = if pallet_only {
