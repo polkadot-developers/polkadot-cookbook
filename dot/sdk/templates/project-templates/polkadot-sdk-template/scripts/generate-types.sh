@@ -38,7 +38,7 @@ echo "📝 Generating TypeScript types..."
 # Check if descriptors directory exists - if not, do initial setup
 if [ ! -d ".papi/descriptors" ]; then
     echo "First time setup - fetching metadata..."
-    npx papi add dot ws://localhost:9944
+    npx papi add dot --wsUrl ws://localhost:9944
 else
     # Regenerate types from existing config
     papi
