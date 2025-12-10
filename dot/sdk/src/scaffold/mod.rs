@@ -456,8 +456,8 @@ impl Scaffold {
                 let file_path = file.path();
                 let file_name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
-                // Skip hidden files
-                if file_name.starts_with('.') {
+                // Skip hidden files except .gitignore
+                if file_name.starts_with('.') && file_name != ".gitignore" {
                     continue;
                 }
 
