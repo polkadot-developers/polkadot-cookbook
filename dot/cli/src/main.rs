@@ -661,19 +661,22 @@ async fn handle_create(
             } else {
                 // Default for other pathways
                 format!(
-                    "{} Add implementation\n   {} {}\n\n\
+                    "{} Change to project directory\n   {} {}\n\n\
+                     {} Add implementation\n   {} {}\n\n\
                      {} Write tests\n   {} {}\n\n\
                      {} Run tests\n   {} {}",
                     "1.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/src/", project_info.project_path.display()).polkadot_pink(),
+                    format!("cd {}", project_info.project_path.display()).polkadot_pink(),
                     "2.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("{}/tests/", project_info.project_path.display()).polkadot_pink(),
+                    "src/".polkadot_pink(),
                     "3.".polkadot_pink().bold(),
                     "→".dimmed(),
-                    format!("cd {} && npm test", project_info.project_path.display())
-                        .polkadot_pink()
+                    "tests/".polkadot_pink(),
+                    "4.".polkadot_pink().bold(),
+                    "→".dimmed(),
+                    "npm test".polkadot_pink()
                 )
             };
 
@@ -812,6 +815,64 @@ async fn run_non_interactive(
                     "No"
                 }
             );
+
+            // Print next steps
+            println!();
+            println!("{}", "📝 Next Steps:".polkadot_pink().bold());
+            if pallet_only {
+                println!(
+                    "  {} Change to project directory: {}",
+                    "1.".polkadot_pink(),
+                    format!("cd {}", project_info.project_path.display()).polkadot_pink()
+                );
+                println!(
+                    "  {} Add pallet implementation: {}",
+                    "2.".polkadot_pink(),
+                    "pallets/template/src/lib.rs".polkadot_pink()
+                );
+                println!(
+                    "  {} Run tests: {}",
+                    "3.".polkadot_pink(),
+                    "cargo test".polkadot_pink()
+                );
+            } else if matches!(project_type, ProjectType::PolkadotSdk) {
+                println!(
+                    "  {} Change to project directory: {}",
+                    "1.".polkadot_pink(),
+                    format!("cd {}", project_info.project_path.display()).polkadot_pink()
+                );
+                println!(
+                    "  {} Build and run your parachain: {}",
+                    "2.".polkadot_pink(),
+                    "cargo build --release".polkadot_pink()
+                );
+                println!(
+                    "  {} Run tests: {}",
+                    "3.".polkadot_pink(),
+                    "npm test".polkadot_pink()
+                );
+            } else {
+                println!(
+                    "  {} Change to project directory: {}",
+                    "1.".polkadot_pink(),
+                    format!("cd {}", project_info.project_path.display()).polkadot_pink()
+                );
+                println!(
+                    "  {} Add implementation: {}",
+                    "2.".polkadot_pink(),
+                    "src/".polkadot_pink()
+                );
+                println!(
+                    "  {} Write tests: {}",
+                    "3.".polkadot_pink(),
+                    "tests/".polkadot_pink()
+                );
+                println!(
+                    "  {} Run tests: {}",
+                    "4.".polkadot_pink(),
+                    "npm test".polkadot_pink()
+                );
+            }
         }
         Err(e) => {
             eprintln!("❌ Failed to create project: {e}");
