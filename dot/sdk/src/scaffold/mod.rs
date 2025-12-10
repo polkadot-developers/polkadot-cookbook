@@ -101,11 +101,17 @@ impl Scaffold {
         let project_path = config.project_path();
 
         // Create directory structure first
+        if let Some(cb) = progress {
+            cb("Creating project directory...");
+        }
         self.create_directories(&project_path, config.project_type)
             .await?;
 
         // Initialize git repository if requested
         let git_initialized = if config.git_init {
+            if let Some(cb) = progress {
+                cb("Initializing git repository...");
+            }
             match crate::git::GitOperations::init(&project_path).await {
                 Ok(()) => {
                     info!("Initialized git repository at: {}", project_path.display());
@@ -121,6 +127,9 @@ impl Scaffold {
         };
 
         // Generate and write template files
+        if let Some(cb) = progress {
+            cb("Copying template files...");
+        }
         self.create_files(&project_path, &config, &rust_version)
             .await?;
 
@@ -135,7 +144,9 @@ impl Scaffold {
         {
             // These templates have complete package.json with PAPI dependencies
             // Just run npm install to install dependencies and trigger postinstall (papi add)
-            debug!("Installing project dependencies");
+            if let Some(cb) = progress {
+                cb("Installing dependencies (this may take a moment)...");
+            }
             let install_result = tokio::process::Command::new("npm")
                 .arg("install")
                 .current_dir(&project_path)
@@ -157,14 +168,18 @@ impl Scaffold {
             }
         } else if !config.skip_install && matches!(config.project_type, ProjectType::Networks) {
             // Networks template uses the bootstrap for setting up test environment
+            if let Some(cb) = progress {
+                cb("Setting up test environment...");
+            }
             let bootstrap = Bootstrap::new(project_path.clone());
             bootstrap.setup(&config.slug, progress).await?;
         } else if matches!(config.project_type, ProjectType::Solidity) {
             // Solidity projects come with their own package.json and dependencies
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
-                debug!("Installing Solidity project dependencies");
-                // Show npm output so user can see installation progress
+                if let Some(cb) = progress {
+                    cb("Installing dependencies (this may take a moment)...");
+                }
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
@@ -188,8 +203,9 @@ impl Scaffold {
         } else if matches!(config.project_type, ProjectType::PolkadotSdk) {
             // Parachain projects: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
-                debug!("Installing Parachain project PAPI dependencies");
-                // Show npm output so user can see installation progress
+                if let Some(cb) = progress {
+                    cb("Installing dependencies (this may take a moment)...");
+                }
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)

@@ -529,23 +529,22 @@ async fn handle_create(
     config.pallet_only = pallet_only;
 
     // Create the project with progress indication
-    let sp = spinner();
-    sp.start("📁 Creating project...".polkadot_pink());
-
     let scaffold = Scaffold::new();
 
-    // Create progress callback
+    // Create progress callback that prints status updates
     use polkadot_cookbook_sdk::scaffold::ProgressCallback;
     let progress_callback: ProgressCallback = Box::new(move |msg: &str| {
-        tracing::debug!("Progress: {}", msg);
+        println!("{} {}", "→".polkadot_pink(), msg);
     });
+
+    println!("{}", "📁 Creating project...".polkadot_pink());
 
     match scaffold
         .create_project(config, Some(&progress_callback))
         .await
     {
         Ok(project_info) => {
-            sp.stop("✅ Project created successfully!".polkadot_pink());
+            println!("{}", "✅ Project created successfully!".polkadot_pink());
 
             // Run tests to verify the setup works
             let should_run_tests = if pallet_only {
@@ -683,7 +682,7 @@ async fn handle_create(
             outro("🎉 All set!".polkadot_pink().to_string())?;
         }
         Err(e) => {
-            sp.stop(format!("❌ Failed to create project: {e}"));
+            println!("{}", format!("❌ Failed to create project: {e}").red());
             outro_cancel(format!("Error: {e}"))?;
             std::process::exit(1);
         }
@@ -779,9 +778,19 @@ async fn run_non_interactive(
     // Set parachain-specific flags (non-interactive mode)
     config.pallet_only = pallet_only;
 
-    // Create the project
+    // Create the project with progress callback
     let scaffold = Scaffold::new();
-    match scaffold.create_project(config, None).await {
+
+    // Create progress callback that prints status updates
+    use polkadot_cookbook_sdk::scaffold::ProgressCallback;
+    let progress_callback: ProgressCallback = Box::new(move |msg: &str| {
+        println!("{} {}", "→".polkadot_pink(), msg);
+    });
+
+    match scaffold
+        .create_project(config, Some(&progress_callback))
+        .await
+    {
         Ok(project_info) => {
             println!(
                 "{}",
