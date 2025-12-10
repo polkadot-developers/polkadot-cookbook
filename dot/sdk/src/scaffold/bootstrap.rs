@@ -207,12 +207,12 @@ export default defineConfig({
     async fn run_command(&self, program: &str, args: &[&str]) -> Result<()> {
         debug!("Running command: {} {}", program, args.join(" "));
 
-        // Use inherit to show output in real-time (like create-react-app)
+        // Suppress output to keep spinner clean
         let status = Command::new(program)
             .args(args)
             .current_dir(&self.project_path)
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
             .status()
             .await
             .map_err(|e| CookbookError::CommandError {

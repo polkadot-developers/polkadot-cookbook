@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "build:runtime": "cargo build --release",
-    "generate:spec": "./scripts/generate-spec.sh",
-    "generate:types": "papi",
+    "generate:types": "./scripts/generate-types.sh",
     "start:node": "./scripts/start-dev-node.sh",
     "setup:zombienet": "./scripts/setup-zombienet-binaries.sh",
-    "zombienet:basic": "zombienet spawn zombienet-basic.toml",
-    "zombienet:xcm": "zombienet spawn zombienet-xcm.toml",
+    "zombienet:omni": "zombienet spawn zombienet-omni-node.toml",
+    "zombienet:node": "zombienet spawn zombienet.toml",
+    "pretest": "./scripts/generate-types.sh",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit"

@@ -101,11 +101,17 @@ impl Scaffold {
         let project_path = config.project_path();
 
         // Create directory structure first
+        if let Some(cb) = progress {
+            cb("Creating project directory...");
+        }
         self.create_directories(&project_path, config.project_type)
             .await?;
 
         // Initialize git repository if requested
         let git_initialized = if config.git_init {
+            if let Some(cb) = progress {
+                cb("Initializing git repository...");
+            }
             match crate::git::GitOperations::init(&project_path).await {
                 Ok(()) => {
                     info!("Initialized git repository at: {}", project_path.display());
@@ -121,26 +127,59 @@ impl Scaffold {
         };
 
         // Generate and write template files
+        if let Some(cb) = progress {
+            cb("Copying template files...");
+        }
         self.create_files(&project_path, &config, &rust_version)
             .await?;
 
         // Bootstrap test environment if not skipped
         // Note: Only TypeScript-based projects with vitest need bootstrap
-        // Solidity projects have their own package.json with hardhat
+        // Transactions, XCM, and Solidity projects have their own package.json with dependencies
         if !config.skip_install
             && matches!(
                 config.project_type,
-                ProjectType::Xcm | ProjectType::Transactions | ProjectType::Networks
+                ProjectType::Xcm | ProjectType::Transactions
             )
         {
+            // These templates have complete package.json with PAPI dependencies
+            // Just run npm install to install dependencies and trigger postinstall (papi add)
+            if let Some(cb) = progress {
+                cb("Installing dependencies (this may take a moment)...");
+            }
+            let install_result = tokio::process::Command::new("npm")
+                .arg("install")
+                .current_dir(&project_path)
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .status()
+                .await;
+
+            match install_result {
+                Ok(status) if status.success() => {
+                    debug!("Dependencies installed successfully");
+                }
+                Ok(status) => {
+                    warn!("npm install failed: {}", status);
+                }
+                Err(e) => {
+                    warn!("Failed to run npm install: {}", e);
+                }
+            }
+        } else if !config.skip_install && matches!(config.project_type, ProjectType::Networks) {
+            // Networks template uses the bootstrap for setting up test environment
+            if let Some(cb) = progress {
+                cb("Setting up test environment...");
+            }
             let bootstrap = Bootstrap::new(project_path.clone());
             bootstrap.setup(&config.slug, progress).await?;
         } else if matches!(config.project_type, ProjectType::Solidity) {
             // Solidity projects come with their own package.json and dependencies
             // Just run npm install to install hardhat and dependencies
             if !config.skip_install {
-                debug!("Installing Solidity project dependencies");
-                // Show npm install output in real-time (like create-react-app)
+                if let Some(cb) = progress {
+                    cb("Installing dependencies (this may take a moment)...");
+                }
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
@@ -164,8 +203,9 @@ impl Scaffold {
         } else if matches!(config.project_type, ProjectType::PolkadotSdk) {
             // Parachain projects: install PAPI dependencies unless pallet-only mode
             if !config.skip_install && !config.pallet_only {
-                debug!("Installing Parachain project PAPI dependencies");
-                // Show npm install output in real-time (like create-react-app)
+                if let Some(cb) = progress {
+                    cb("Installing dependencies (this may take a moment)...");
+                }
                 let install_result = tokio::process::Command::new("npm")
                     .arg("install")
                     .current_dir(&project_path)
@@ -432,8 +472,8 @@ impl Scaffold {
                 let file_path = file.path();
                 let file_name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
-                // Skip hidden files
-                if file_name.starts_with('.') {
+                // Skip hidden files except .gitignore
+                if file_name.starts_with('.') && file_name != ".gitignore" {
                     continue;
                 }
 
@@ -477,14 +517,9 @@ impl Scaffold {
                     continue;
                 }
 
-                // Skip XCM zombienet config and chopsticks config in pallet-only mode
+                // Skip chopsticks config in pallet-only mode
                 if config.pallet_only && matches!(config.project_type, ProjectType::PolkadotSdk) {
-                    let xcm_files = ["zombienet-xcm.toml", "zombienet-xcm.toml.template"];
                     let chopsticks_files = ["chopsticks.yml", "chopsticks.yml.template"];
-                    if xcm_files.contains(&file_name) {
-                        debug!("Skipping XCM zombienet config in pallet-only mode");
-                        continue;
-                    }
                     if chopsticks_files.contains(&file_name) {
                         debug!("Skipping chopsticks config in pallet-only mode");
                         continue;
@@ -614,6 +649,29 @@ impl Scaffold {
                     message: format!("Failed to write file: {e}"),
                     path: Some(path.to_path_buf()),
                 })?;
+
+            // Make shell scripts executable
+            if path.extension().is_some_and(|ext| ext == "sh") {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    let mut perms = std::fs::metadata(path)
+                        .map_err(|e| CookbookError::FileSystemError {
+                            message: format!("Failed to get file permissions: {e}"),
+                            path: Some(path.to_path_buf()),
+                        })?
+                        .permissions();
+                    perms.set_mode(0o755);
+                    std::fs::set_permissions(path, perms).map_err(|e| {
+                        CookbookError::FileSystemError {
+                            message: format!("Failed to set file permissions: {e}"),
+                            path: Some(path.to_path_buf()),
+                        }
+                    })?;
+                    debug!("Made executable: {}", path.display());
+                }
+            }
+
             debug!("Wrote file: {}", path.display());
             Ok(())
         }

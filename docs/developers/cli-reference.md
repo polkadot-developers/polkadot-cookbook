@@ -89,9 +89,9 @@ dot create \
 
 **What it Creates:**
 
-**Parachain Recipe:**
+**Parachain Project:**
 ```
-recipes/my-parachain/
+my-parachain/
 ├── README.md              # Tutorial documentation
 ├── Cargo.toml             # Workspace configuration
 ├── rust-toolchain.toml    # Rust version specification
@@ -101,12 +101,14 @@ recipes/my-parachain/
 ├── runtime/               # Parachain runtime
 ├── tests/                 # PAPI integration tests
 ├── scripts/               # Node management scripts
-└── zombienet-xcm.toml     # Multi-parachain XCM testing
+├── dev_chain_spec.json    # Development chain specification
+├── zombienet.toml         # Parachain node network config
+└── zombienet-omni-node.toml  # Omni-node network config
 ```
 
-**Pallet-Only Recipe:**
+**Pallet-Only Project:**
 ```
-recipes/my-pallet/
+my-pallet/
 ├── README.md              # Pallet documentation
 ├── Cargo.toml             # Minimal workspace
 ├── rust-toolchain.toml    # Rust version
@@ -114,9 +116,9 @@ recipes/my-pallet/
     └── template/          # Template pallet with mock runtime
 ```
 
-**Contracts Recipe:**
+**Contracts Project:**
 ```
-recipes/my-contract/
+my-contract/
 ├── README.md              # Contract documentation
 ├── package.json           # Hardhat dependencies
 ├── hardhat.config.ts      # Hardhat configuration
@@ -182,33 +184,46 @@ git config --global user.email "your.email@example.com"
 
 ### `test`
 
-Run tests for a recipe.
+Run tests for a project.
 
 **Usage:**
 ```bash
-dot test <SLUG>
+dot test [PATH] [OPTIONS]
 ```
 
 **Arguments:**
-- `SLUG` - Recipe slug to test
+- `PATH` - Project path to test (defaults to current directory)
+
+**Options:**
+- `--rust` - Run only Rust tests (cargo test)
+- `--ts` - Run only TypeScript tests (npm test)
 
 **What it Does:**
-1. Detects recipe type (Rust, TypeScript, etc.)
-2. Runs appropriate test command
-3. Reports results
+1. Detects project type from `Cargo.toml` and/or `package.json`
+2. By default, runs both test suites if project has both
+3. Reports results for each test suite
 
 **Examples:**
 ```bash
-# Test specific recipe
-dot test basic-pallet
+# Test current directory (runs both Rust and TS tests if applicable)
+dot test
 
-# Test current directory recipe
-dot test .
+# Test specific project path
+dot test my-parachain
+
+# Run only Rust tests
+dot test --rust
+
+# Run only TypeScript tests
+dot test --ts
+
+# Combine path and flags
+dot test my-parachain --rust
 ```
 
 **Exit Codes:**
-- `0` - Tests passed
-- `1` - Tests failed
+- `0` - All tests passed
+- `1` - One or more tests failed
 
 ---
 

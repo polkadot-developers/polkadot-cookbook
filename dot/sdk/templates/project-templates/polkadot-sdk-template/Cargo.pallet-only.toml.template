@@ -5,8 +5,8 @@ resolver = "2"
 [workspace.package]
 authors = ["{{title}} Contributors"]
 edition = "2021"
-homepage = "https://github.com/paritytech/polkadot-cookbook"
-repository = "https://github.com/paritytech/polkadot-cookbook"
+homepage = "https://github.com/polkadot-developers/polkadot-cookbook"
+repository = "https://github.com/polkadot-developers/polkadot-cookbook"
 license = "MIT-0"
 
 [workspace.dependencies]

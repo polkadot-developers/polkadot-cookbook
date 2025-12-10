@@ -59,42 +59,44 @@ dot create
 
 For this tutorial, select **Parachain (Polkadot SDK)**.
 
-**2. Enter Project Title**
+**2. Enter Project Name**
 ```
-? What is your project title? (e.g., 'Custom NFT Pallet', 'Cross-Chain Asset Transfer')
+? What is your project name? (e.g., 'my-parachain')
 ```
 
-Enter a clear, descriptive title. This will be used to generate the project slug (e.g., "My First Parachain" → `my-first-parachain`).
+Enter your project name. This will be used to generate the project directory (e.g., "my-first-parachain" → `./my-first-parachain/`).
 
 ### What Happens Next
 
 The CLI will:
 1. Check dependencies (Rust, Node.js, etc.)
-2. Create the project directory: `recipes/my-first-parachain/`
+2. Create the project directory: `./my-first-parachain/`
 3. Generate scaffolded files from the polkadot-sdk-parachain-template
 4. Install npm dependencies (for PAPI testing)
-5. Create a git branch
+5. Run tests to verify the setup
+6. Initialize a git repository
 
 **Output:**
 ```
-✨ Recipe created successfully!
+✅ Project created successfully!
+✅ Tests passed!
 
-📁 Location: recipes/my-first-parachain
-🌿 Branch: recipe/my-first-parachain
+📦 Project Created
+Location: ./my-first-parachain
 
-Next steps:
-1. Customize your pallet
-   → recipes/my-first-parachain/pallets/template/src/lib.rs
+📝 Next Steps
+1. Build your parachain
+   → cd ./my-first-parachain && cargo build --release
 
-2. Configure runtime
-   → recipes/my-first-parachain/runtime/src/lib.rs
+2. Start development node
+   → ./my-first-parachain/scripts/start-dev-node.sh
 
-3. Write PAPI tests
-   → recipes/my-first-parachain/tests/
+3. Run integration tests
+   → cd ./my-first-parachain && npm test
 
-4. Build and test
-   → cd recipes/my-first-parachain && cargo build
-   → npm test
+🎉 All set! To get started:
+
+   cd ./my-first-parachain
 ```
 
 ---
@@ -104,14 +106,14 @@ Next steps:
 Navigate to your new project directory:
 
 ```bash
-cd recipes/my-first-parachain
+cd my-first-parachain
 ```
 
 ### File Structure
 
-**Full Parachain Recipe:**
+**Full Parachain Project:**
 ```
-recipes/my-first-parachain/
+my-first-parachain/
 ├── README.md              # Tutorial documentation
 ├── Cargo.toml             # Workspace configuration
 ├── rust-toolchain.toml    # Rust version (e.g., 1.86)
@@ -130,10 +132,11 @@ recipes/my-first-parachain/
 ├── tests/                 # PAPI integration tests
 │   └── template-pallet.test.ts
 ├── scripts/
-│   ├── generate-spec.sh   # Generate chain specification
-│   └── start-dev-node.sh  # Start development node
-├── zombienet.toml         # Single parachain config
-└── zombienet-xcm.toml     # Multi-parachain XCM testing
+│   ├── setup-zombienet-binaries.sh  # Setup zombienet binaries
+│   └── start-dev-node.sh            # Start development node
+├── dev_chain_spec.json    # Development chain specification
+├── zombienet.toml         # Parachain node network config
+└── zombienet-omni-node.toml  # Omni-node network config
 ```
 
 ### Key Files Explained
@@ -295,17 +298,7 @@ This takes 10-15 minutes on first build. The runtime WASM will be at:
 target/release/wbuild/my-first-parachain-runtime/my_first_parachain_runtime.compact.compressed.wasm
 ```
 
-### 3. Generate Chain Specification
-
-Create a chain specification from your runtime:
-
-```bash
-npm run generate:spec
-```
-
-This creates `chain-spec.json` with your genesis state.
-
-### 4. Start Development Node
+### 3. Start Development Node
 
 Launch your parachain locally:
 
@@ -314,17 +307,19 @@ npm run start:node
 ```
 
 The node will:
-- Start in development mode
+- Start in development mode using `dev_chain_spec.json`
 - Expose RPC at `ws://localhost:9944`
 - Use Alice as the sudo account
 
-### 5. Run PAPI Integration Tests
+### 4. Run PAPI Integration Tests
 
 In a new terminal, run the test suite:
 
 ```bash
 npm test
 ```
+
+**What happens:** The test command automatically generates TypeScript types from your running node before running tests.
 
 **Expected output:**
 ```
@@ -360,18 +355,18 @@ cargo install polkadot-omni-node
 # Ensure node is running
 npm run start:node
 
-# In another terminal, regenerate types
-npm run generate:types
-
-# Run tests
+# In another terminal, run tests (types are auto-generated)
 npm test
+
+# If you need to manually regenerate types
+npm run generate:types
 ```
 
 ---
 
-## Step 5: Test Multi-Chain XCM (Optional)
+## Step 5: Test with Zombienet (Optional)
 
-Your project includes `zombienet-xcm.toml` for testing cross-chain messaging.
+Your project includes zombienet configurations for testing in a multi-node environment.
 
 ### Setup Binaries (One-time)
 
@@ -381,19 +376,25 @@ npm run setup:zombienet
 
 This installs:
 - `polkadot` (relay chain)
-- `polkadot-omni-node` (parachains)
+- `polkadot-omni-node` (parachain collator)
 
-### Launch Multi-Chain Network
+### Launch Network with Omni Node (Recommended)
 
 ```bash
-npm run zombienet:xcm
+npm run zombienet:omni
 ```
 
 This spawns:
 - 2 relay chain validators (Alice, Bob)
-- 2 parachains (IDs 1000 and 2000)
+- 1 parachain collator running your runtime with polkadot-omni-node
 
-Perfect for testing XCM patterns like asset transfers and remote execution.
+### Or Use Custom Parachain Node (Advanced)
+
+```bash
+npm run zombienet:node
+```
+
+This uses your custom-built parachain node binary instead of the omni node.
 
 ---
 
@@ -498,7 +499,7 @@ dot create
 
 **Generated structure:**
 ```
-recipes/my-first-contract/
+my-first-contract/
 ├── README.md
 ├── package.json
 ├── hardhat.config.ts
@@ -509,8 +510,7 @@ recipes/my-first-contract/
 
 **Quick start:**
 ```bash
-cd recipes/my-first-contract
-npm install
+cd my-first-contract
 npm run compile      # Compile contracts
 npm test            # Run tests
 ```
@@ -525,7 +525,7 @@ dot create
 
 **Generated structure:**
 ```
-recipes/query-chain-state/
+query-chain-state/
 ├── README.md
 ├── package.json
 ├── src/               # Implementation
@@ -534,8 +534,7 @@ recipes/query-chain-state/
 
 **Quick start:**
 ```bash
-cd recipes/query-chain-state
-npm install
+cd query-chain-state
 npm test
 ```
 
@@ -546,12 +545,12 @@ npm test
 For advanced users building just a pallet (no runtime):
 
 ```bash
-dot create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+dot create --title "My Pallet" --pathway pallets --pallet-only --non-interactive
 ```
 
 **Generated structure:**
 ```
-recipes/my-pallet/
+my-pallet/
 ├── README.md
 ├── Cargo.toml
 ├── rust-toolchain.toml
@@ -565,7 +564,7 @@ recipes/my-pallet/
 
 **Testing:**
 ```bash
-cd recipes/my-pallet
+cd my-pallet
 cargo test
 ```
 
@@ -659,11 +658,11 @@ cargo build --release
 pkill -f polkadot-omni-node
 npm run start:node
 
-# Regenerate types
-npm run generate:types
-
-# Run tests
+# Run tests (types are auto-generated)
 npm test
+
+# If needed, manually regenerate types
+npm run generate:types
 ```
 
 ### GitHub Authentication Failed

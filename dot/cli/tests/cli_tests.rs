@@ -3,67 +3,11 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
-use std::path::PathBuf;
 use tempfile::TempDir;
 
-/// Helper to set up a mock repository structure for testing
+/// Helper to set up a temp directory for testing
 fn setup_test_repo() -> TempDir {
-    let temp_dir = TempDir::new().unwrap();
-
-    // Create recipes directory
-    fs::create_dir_all(temp_dir.path().join("recipes")).unwrap();
-
-    // Create Cargo.toml workspace file
-    let cargo_content = r#"[workspace]
-members = ["dot/sdk", "dot/cli"]
-default-members = ["dot/cli"]
-resolver = "2"
-"#;
-    fs::write(temp_dir.path().join("Cargo.toml"), cargo_content).unwrap();
-
-    // Create rust-toolchain.toml
-    let toolchain_content = r#"[toolchain]
-channel = "1.91"
-components = ["rustfmt", "clippy"]
-profile = "minimal"
-"#;
-    fs::write(
-        temp_dir.path().join("rust-toolchain.toml"),
-        toolchain_content,
-    )
-    .unwrap();
-
-    // Copy templates directory from workspace root to temp directory
-    let workspace_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .to_path_buf();
-    let src_templates = workspace_root.join("templates");
-    let dst_templates = temp_dir.path().join("templates");
-
-    if src_templates.exists() {
-        copy_dir_recursively(&src_templates, &dst_templates).unwrap();
-    }
-
-    temp_dir
-}
-
-/// Helper function to copy directories recursively
-fn copy_dir_recursively(src: &PathBuf, dst: &PathBuf) -> std::io::Result<()> {
-    fs::create_dir_all(dst)?;
-    for entry in fs::read_dir(src)? {
-        let entry = entry?;
-        let ty = entry.file_type()?;
-        let src_path = entry.path();
-        let dst_path = dst.join(entry.file_name());
-
-        if ty.is_dir() {
-            copy_dir_recursively(&src_path, &dst_path)?;
-        } else {
-            fs::copy(&src_path, &dst_path)?;
-        }
-    }
-    Ok(())
+    TempDir::new().unwrap()
 }
 
 #[test]
@@ -104,10 +48,8 @@ fn test_create_project_non_interactive() {
 
     cmd.assert().success();
 
-    // Verify directory structure (projects organized by pathway)
-    let project_path = temp_dir
-        .path()
-        .join("recipes/pallets/custom-pallet-storage");
+    // Verify directory structure
+    let project_path = temp_dir.path().join("custom-pallet-storage");
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("pallets").exists());
@@ -128,7 +70,7 @@ fn test_create_project_with_create_subcommand() {
 
     cmd.assert().success();
 
-    let project_path = temp_dir.path().join("recipes/pallets/test-subcommand");
+    let project_path = temp_dir.path().join("test-subcommand");
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 }
@@ -185,7 +127,7 @@ fn test_project_config_content() {
     let readme_content = fs::read_to_string(
         temp_dir
             .path()
-            .join("recipes/pallets/advanced-pallet-configuration/README.md"),
+            .join("advanced-pallet-configuration/README.md"),
     )
     .unwrap();
 
@@ -211,7 +153,7 @@ fn test_test_file_generated() {
 
     // Polkadot SDK projects have Rust unit tests in the pallet code, not separate TypeScript tests
     // Just verify the project was created successfully
-    let project_path = temp_dir.path().join("recipes/pallets/test-e2e");
+    let project_path = temp_dir.path().join("test-e2e");
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
     assert!(project_path.join("Cargo.toml").exists());
@@ -235,7 +177,7 @@ fn test_gitignore_content() {
     // Polkadot SDK projects use Cargo which has its own .gitignore handling via Cargo.toml
     // Only TypeScript-based recipes (XCM, Solidity) have .gitignore files
     // Just verify the project was created successfully
-    let project_path = temp_dir.path().join("recipes/pallets/ignore-test");
+    let project_path = temp_dir.path().join("ignore-test");
     assert!(project_path.exists());
     assert!(project_path.join("README.md").exists());
 }
@@ -256,7 +198,7 @@ fn test_create_recipe_with_toolchain() {
     cmd.assert().success();
 
     // Verify the project was created successfully
-    let project_path = temp_dir.path().join("recipes/pallets/version-test");
+    let project_path = temp_dir.path().join("version-test");
     assert!(project_path.exists());
 
     // Verify rust-toolchain.toml was created for Polkadot SDK project
@@ -292,9 +234,9 @@ fn test_create_in_any_directory() {
 
     cmd.assert().success();
 
-    // Verify project was created in pathway structure
+    // Verify project was created directly in the directory
     assert!(temp_dir
         .path()
-        .join("recipes/pallets/testing-directory-validation")
+        .join("testing-directory-validation")
         .exists());
 }
