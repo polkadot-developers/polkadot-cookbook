@@ -126,13 +126,37 @@ impl Scaffold {
 
         // Bootstrap test environment if not skipped
         // Note: Only TypeScript-based projects with vitest need bootstrap
-        // Solidity projects have their own package.json with hardhat
+        // Transactions, XCM, and Solidity projects have their own package.json with dependencies
         if !config.skip_install
             && matches!(
                 config.project_type,
-                ProjectType::Xcm | ProjectType::Transactions | ProjectType::Networks
+                ProjectType::Xcm | ProjectType::Transactions
             )
         {
+            // These templates have complete package.json with PAPI dependencies
+            // Just run npm install to install dependencies and trigger postinstall (papi add)
+            debug!("Installing project dependencies");
+            let install_result = tokio::process::Command::new("npm")
+                .arg("install")
+                .current_dir(&project_path)
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .status()
+                .await;
+
+            match install_result {
+                Ok(status) if status.success() => {
+                    debug!("Dependencies installed successfully");
+                }
+                Ok(status) => {
+                    warn!("npm install failed: {}", status);
+                }
+                Err(e) => {
+                    warn!("Failed to run npm install: {}", e);
+                }
+            }
+        } else if !config.skip_install && matches!(config.project_type, ProjectType::Networks) {
+            // Networks template uses the bootstrap for setting up test environment
             let bootstrap = Bootstrap::new(project_path.clone());
             bootstrap.setup(&config.slug, progress).await?;
         } else if matches!(config.project_type, ProjectType::Solidity) {
