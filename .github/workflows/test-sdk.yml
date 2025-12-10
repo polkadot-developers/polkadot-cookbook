@@ -295,15 +295,15 @@ jobs:
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo build --package cli --locked --verbose
 
-      - name: Test CLI - Valid recipe creation
+      - name: Test CLI - Valid project creation
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: |
           cargo run --package cli --locked -- create --title "Testing CLI Validation" --skip-install --no-git --non-interactive
-          if [ ! -f "recipes/pallets/testing-cli-validation/README.md" ]; then
+          if [ ! -f "testing-cli-validation/README.md" ]; then
             echo "Error: Project was not created"
             exit 1
           fi
-          rm -rf recipes/pallets/testing-cli-validation
+          rm -rf testing-cli-validation
 
       - name: Test CLI - Missing required title
         if: needs.check-changes.outputs.sdk_changed == 'true'

@@ -74,8 +74,18 @@ Edit the generated files:
 ### 4. Test Your Project
 
 ```bash
-# Test your project
+# Test from within the project directory
+cd my-project-name
+dot test
+
+# Or specify the project path
 dot test my-project-name
+
+# Run only Rust tests
+dot test --rust
+
+# Run only TypeScript tests
+dot test --ts
 ```
 
 ### 5. Submit as a Recipe
@@ -130,7 +140,10 @@ dot contract        # Create a contract project
 dot parachain       # Create a parachain project
 
 # Testing and submission
-dot test            # Test a project
+dot test            # Test current directory project
+dot test <path>     # Test specific project
+dot test --rust     # Run only Rust tests
+dot test --ts       # Run only TypeScript tests
 dot submit          # Submit as pull request to cookbook
 ```
 

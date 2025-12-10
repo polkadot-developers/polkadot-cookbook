@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createChainClient, getBalance, getCurrentBlockNumber, getChainInfo } from '../src/chain-client.js';
+import { paseo_asset_hub } from '@polkadot-api/descriptors';
 
 /**
  * Basic Chain Interaction Tests using Polkadot API (PAPI)
@@ -18,7 +19,7 @@ describe('Basic Chain Interaction Tests with PAPI', () => {
 
   it.skipIf(SKIP_TESTS)('should connect to chain using PAPI', async () => {
     const client = await createChainClient(CHAIN_ENDPOINT);
-    const api = client.getTypedApi({} as any);
+    const api = client.getTypedApi(paseo_asset_hub);
 
     // Query chain information
     const chainInfo = await getChainInfo(api);
@@ -30,7 +31,7 @@ describe('Basic Chain Interaction Tests with PAPI', () => {
 
   it.skipIf(SKIP_TESTS)('should get current block number', async () => {
     const client = await createChainClient(CHAIN_ENDPOINT);
-    const api = client.getTypedApi({} as any);
+    const api = client.getTypedApi(paseo_asset_hub);
 
     const blockNumber = await getCurrentBlockNumber(api);
     expect(blockNumber).toBeGreaterThan(0);
@@ -41,7 +42,7 @@ describe('Basic Chain Interaction Tests with PAPI', () => {
 
   it.skipIf(SKIP_TESTS)('should get account balance', async () => {
     const client = await createChainClient(CHAIN_ENDPOINT);
-    const api = client.getTypedApi({} as any);
+    const api = client.getTypedApi(paseo_asset_hub);
 
     // Alice's account address (SS58 format - adjust for your chain)
     const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';

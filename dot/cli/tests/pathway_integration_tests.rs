@@ -1,7 +1,7 @@
 //! End-to-end integration tests for all project pathways
 //!
 //! These tests validate the complete user workflow by creating real example projects:
-//! 1. `dot create` - Create a project for each pathway in recipes/ directory
+//! 1. `dot create` - Create a project in the current directory
 //! 2. `dot test` - Run tests on the created project
 //! 3. Verify all tests pass
 //!
@@ -9,16 +9,16 @@
 //! - Templates generate valid, working code
 //! - Generated projects compile successfully
 //! - Generated tests pass
-//! - Rust version compatibility (for Rust-based recipes)
-//! - TypeScript/Node version compatibility (for TS-based recipes)
+//! - Rust version compatibility (for Rust-based projects)
+//! - TypeScript/Node version compatibility (for TS-based projects)
 //!
-//! Generated example recipes:
-//! - recipes/pallets/parachain-example/                  (Full parachain with PAPI tests and XCM)
-//! - recipes/pallets/pallet-example/                     (Pallet-only mode, no runtime)
-//! - recipes/contracts/contracts-example/                (Solidity contracts)
-//! - recipes/transactions/transaction-example/           (PAPI interactions)
-//! - recipes/cross-chain-transactions/cross-chain-transaction-example/ (XCM with Chopsticks)
-//! - recipes/networks/network-example/                   (Zombienet/Chopsticks configs)
+//! Generated example projects:
+//! - parachain-example/              (Full parachain with PAPI tests and XCM)
+//! - pallet-example/                 (Pallet-only mode, no runtime)
+//! - contracts-example/              (Solidity contracts)
+//! - transaction-example/            (PAPI interactions)
+//! - cross-chain-transaction-example/ (XCM with Chopsticks)
+//! - network-example/                (Zombienet/Chopsticks configs)
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -45,23 +45,11 @@ fn get_repo_root() -> PathBuf {
 fn cleanup_project(project_name: &str) {
     let repo_root = get_repo_root();
 
-    // Search in all pathway subdirectories
-    let pathways = ["contracts", "pallets", "transactions", "xcm", "networks"];
-
-    for pathway in &pathways {
-        let project_path = repo_root.join("recipes").join(pathway).join(project_name);
-        if project_path.exists() {
-            std::fs::remove_dir_all(&project_path)
-                .unwrap_or_else(|e| eprintln!("Warning: Failed to remove {}: {}", project_name, e));
-        }
-    }
-
-    // Also check legacy location (directly in recipes/)
-    let legacy_path = repo_root.join("recipes").join(project_name);
-    if legacy_path.exists() {
-        std::fs::remove_dir_all(&legacy_path).unwrap_or_else(|e| {
-            eprintln!("Warning: Failed to remove {} (legacy): {}", project_name, e)
-        });
+    // Projects are created directly in the current directory
+    let project_path = repo_root.join(project_name);
+    if project_path.exists() {
+        std::fs::remove_dir_all(&project_path)
+            .unwrap_or_else(|e| eprintln!("Warning: Failed to remove {}: {}", project_name, e));
     }
 }
 
@@ -179,9 +167,7 @@ async fn test_parachain_example_end_to_end() {
     cleanup_project(project_name);
 
     // Step 1: Create a Parachain project (default mode: full parachain + PAPI)
-    println!("📦 Step 1/5: Creating parachain project...");
-    let recipes_dir = repo_root.join("recipes");
-    std::fs::create_dir_all(&recipes_dir).unwrap();
+    println!("📦 Step 1/4: Creating parachain project...");
 
     let mut create_cmd = Command::cargo_bin("dot").unwrap();
     create_cmd
@@ -197,7 +183,7 @@ async fn test_parachain_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root.join("recipes").join("pallets").join(project_name);
+    let project_path = repo_root.join(project_name);
     assert!(project_path.exists(), "Recipe directory should exist");
     assert!(
         project_path.join("README.md").exists(),
@@ -235,18 +221,18 @@ async fn test_parachain_example_end_to_end() {
     );
     assert!(
         project_path.join("zombienet.toml").exists()
-            || project_path.join("zombienet-omni-node.toml").exists(),
-        "zombienet config should exist"
+            && project_path.join("zombienet-omni-node.toml").exists(),
+        "zombienet configs should exist"
     );
 
-    // Verify XCM config IS present (always included for full parachain)
+    // Verify dev chain spec exists
     assert!(
-        project_path.join("zombienet-xcm.toml").exists(),
-        "zombienet-xcm.toml should always exist in full parachain mode"
+        project_path.join("dev_chain_spec.json").exists(),
+        "dev_chain_spec.json should exist"
     );
 
     // Step 2: Compile the runtime
-    println!("🔨 Step 2/5: Compiling runtime (this may take 10-15 minutes)...");
+    println!("🔨 Step 2/4: Compiling runtime (this may take 10-15 minutes)...");
     let build_result = timeout(
         Duration::from_secs(900), // 15 minute timeout
         TokioCommand::new("cargo")
@@ -286,46 +272,8 @@ async fn test_parachain_example_end_to_end() {
         wasm_path
     );
 
-    // Step 3: Generate chain specification
-    println!("📋 Step 3/5: Generating chain specification...");
-    let generate_spec_script = project_path.join("scripts").join("generate-spec.sh");
-    assert!(
-        generate_spec_script.exists(),
-        "generate-spec.sh should exist"
-    );
-
-    let spec_result = timeout(
-        Duration::from_secs(60),
-        TokioCommand::new("bash")
-            .arg(&generate_spec_script)
-            .current_dir(&project_path)
-            .output(),
-    )
-    .await;
-
-    match spec_result {
-        Ok(Ok(output)) => {
-            assert!(
-                output.status.success(),
-                "Chain spec generation failed:\n{}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            println!("✅ Chain specification generated");
-        }
-        Ok(Err(e)) => panic!("Failed to execute generate-spec.sh: {}", e),
-        Err(_) => panic!("Chain spec generation timed out"),
-    }
-
-    // Verify chain-spec.json was created
-    let chain_spec_path = project_path.join("chain-spec.json");
-    assert!(
-        chain_spec_path.exists(),
-        "chain-spec.json should exist at {:?}",
-        chain_spec_path
-    );
-
-    // Step 4: Start the development node
-    println!("🚀 Step 4/5: Starting development node...");
+    // Step 3: Start the development node
+    println!("🚀 Step 3/4: Starting development node...");
     let node = TestNode::start(&project_path)
         .await
         .expect("Failed to start test node");
@@ -335,8 +283,8 @@ async fn test_parachain_example_end_to_end() {
         .await
         .expect("Node failed to become ready");
 
-    // Step 5: Run PAPI integration tests
-    println!("🧪 Step 5/5: Running PAPI integration tests...");
+    // Step 4: Run PAPI integration tests
+    println!("🧪 Step 4/4: Running PAPI integration tests...");
 
     // First install npm dependencies (since we skipped it during creation)
     let npm_install = timeout(
@@ -452,8 +400,8 @@ fn test_pallet_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root.join("recipes").join("pallets").join(project_name);
-    assert!(project_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join(project_name);
+    assert!(project_path.exists(), "Project directory should exist");
     assert!(
         project_path.join("Cargo.toml").exists(),
         "Cargo.toml should exist"
@@ -518,11 +466,8 @@ fn test_contracts_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root
-        .join("recipes")
-        .join("contracts")
-        .join(project_name);
-    assert!(project_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join(project_name);
+    assert!(project_path.exists(), "Project directory should exist");
     assert!(
         project_path.join("README.md").exists(),
         "README.md should exist"
@@ -576,11 +521,8 @@ fn test_transaction_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root
-        .join("recipes")
-        .join("transactions")
-        .join(project_name);
-    assert!(project_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join(project_name);
+    assert!(project_path.exists(), "Project directory should exist");
     assert!(
         project_path.join("README.md").exists(),
         "README.md should exist"
@@ -631,11 +573,8 @@ fn test_cross_chain_transaction_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root
-        .join("recipes")
-        .join("cross-chain-transactions")
-        .join(project_name);
-    assert!(project_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join(project_name);
+    assert!(project_path.exists(), "Project directory should exist");
     assert!(
         project_path.join("README.md").exists(),
         "README.md should exist"
@@ -686,11 +625,8 @@ fn test_network_example_end_to_end() {
 
     create_cmd.assert().success();
 
-    let project_path = repo_root
-        .join("recipes")
-        .join("networks")
-        .join(project_name);
-    assert!(project_path.exists(), "Recipe directory should exist");
+    let project_path = repo_root.join(project_name);
+    assert!(project_path.exists(), "Project directory should exist");
     assert!(
         project_path.join("README.md").exists(),
         "README.md should exist"
@@ -759,10 +695,10 @@ fn test_all_examples_create_only() {
 
         cmd.assert().success();
 
-        let project_path = repo_root.join("recipes").join(pathway).join(expected_slug);
+        let project_path = repo_root.join(expected_slug);
         assert!(
             project_path.exists(),
-            "Recipe directory for {} should exist",
+            "Project directory for {} should exist",
             pathway
         );
         assert!(

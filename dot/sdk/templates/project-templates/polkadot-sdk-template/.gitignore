@@ -1,1 +1,3 @@
 target/
+.papi/
+polkadot-api.json

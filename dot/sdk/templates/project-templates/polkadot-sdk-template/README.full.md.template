@@ -78,12 +78,12 @@ By completing this tutorial, you'll understand:
 ├── tests/
 │   └── template-pallet.test.ts  # PAPI integration tests
 ├── scripts/
-│   ├── generate-spec.sh   # Generate chain specification
-│   └── start-dev-node.sh  # Start local development node
+│   ├── start-dev-node.sh  # Start local development node
+│   └── setup-zombienet-binaries.sh  # Setup zombienet testing
 ├── package.json           # PAPI dependencies and scripts
-├── zombienet.toml         # Single parachain network config
-├── zombienet-omni-node.toml  # Omni-node configuration
-├── zombienet-xcm.toml     # Multi-parachain XCM testing
+├── dev_chain_spec.json    # Development chain specification
+├── zombienet.toml         # Parachain node network config
+├── zombienet-omni-node.toml  # Omni-node network configuration
 └── Cargo.toml             # Workspace configuration
 ```
 
@@ -105,21 +105,7 @@ target/release/wbuild/{{slug}}-runtime/{{slug}}_runtime.compact.compressed.wasm
 
 **Understanding WASM:** The runtime executes as WebAssembly on the parachain. This allows forkless upgrades - you can update the runtime without restarting the node.
 
-### 2. Generate Chain Specification
-
-Create a chain specification from your runtime:
-
-```bash
-npm run generate:spec
-```
-
-This generates `chain-spec.json` which defines your chain's genesis state, including:
-- Initial balances
-- Sudo key (Alice in dev mode)
-- Runtime WASM
-- Parachain ID
-
-### 3. Start the Development Node
+### 2. Start the Development Node
 
 Launch your parachain locally using polkadot-omni-node:
 
@@ -131,27 +117,20 @@ npm run start:node
 
 The node will:
 - Start in development mode (single node, instant finality)
+- Use the `dev_chain_spec.json` specification
 - Expose RPC at `ws://localhost:9944`
 - Use Alice as the sudo account
 - Store chain data in a temporary directory
 
-### 4. Generate TypeScript Types
+### 3. Run Integration Tests
 
-In a new terminal, generate PAPI types from your running chain:
-
-```bash
-npm run generate:types
-```
-
-This creates TypeScript definitions from your runtime metadata, enabling fully-typed blockchain interactions.
-
-### 5. Run Integration Tests
-
-Execute the PAPI test suite:
+In a new terminal, execute the PAPI test suite:
 
 ```bash
 npm test
 ```
+
+**What happens:** The test command automatically generates TypeScript types from your running node before running tests. This ensures your tests always have the latest type definitions.
 
 Tests will connect to your local node and verify:
 - Node connectivity and chain info
@@ -350,39 +329,35 @@ await tx.signAndSubmit(signer);
 
 For advanced scenarios like XCM, use Zombienet to spawn a multi-chain network.
 
-### Basic Network (Single Parachain)
+### Network Testing with Zombienet
 
-```bash
-zombienet spawn zombienet-omni-node.toml
-# or: zombienet spawn zombienet.toml
-```
+Zombienet allows you to test your parachain in a realistic multi-node environment.
 
-This spawns:
-- 2 relay chain validators (Alice, Bob)
-- 1 parachain collator running your runtime
-
-### Multi-Parachain Network (XCM Testing)
-
-For XCM development and cross-chain messaging:
+**Using Omni Node (Recommended for Quick Testing):**
 
 ```bash
 # One-time setup (installs required binaries)
 npm run setup:zombienet
 
-# Spawn the network
-npm run zombienet:xcm
+# Spawn network with omni node
+npm run zombienet:omni
 ```
 
-This spawns a **Paseo testnet** with:
+This spawns:
 - 2 relay chain validators (Alice, Bob)
-- 2 parachains for cross-chain messaging (IDs 1000 and 2000)
-- Both parachains running your runtime
+- 1 parachain collator running your runtime with `polkadot-omni-node`
 
-Perfect for testing:
-- Cross-chain asset transfers
-- Remote execution between parachains
-- XCM message patterns (teleport, reserve transfer, etc.)
-- Multi-hop routing
+**Using Custom Parachain Node (Advanced):**
+
+```bash
+# Build your custom node first
+cargo build --release -p {{slug}}-node
+
+# Spawn network with custom node
+npm run zombienet:node
+```
+
+This uses your custom-built parachain node binary instead of the omni node.
 
 **Setup Script Handles:**
 - Linux: Auto-downloads `polkadot` binary via zombienet
@@ -390,8 +365,9 @@ Perfect for testing:
 - Platform-specific guidance for manual steps
 
 **Binaries Required:**
-- `polkadot` - Relay chain (use with `--chain=paseo-local`)
-- `polkadot-omni-node` - Both parachains
+- `polkadot` - Relay chain (rococo-local)
+- `polkadot-omni-node` - For omni node testing
+- `{{slug}}-node` - (Optional) For custom node testing
 
 The setup script (`npm run setup:zombienet`) will guide you through the installation process for your platform.
 
