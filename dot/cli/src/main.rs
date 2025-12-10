@@ -1262,8 +1262,8 @@ async fn handle_cookbook_repo_submit(
         current_branch.polkadot_pink()
     ));
 
-    // Create the PR using GitHub API
-    sp.start("Creating pull request...");
+    // Create the PR using GitHub API (as draft)
+    sp.start("Creating draft pull request...");
 
     let octocrab = octocrab::Octocrab::builder()
         .personal_token(github_token)
@@ -1273,6 +1273,7 @@ async fn handle_cookbook_repo_submit(
         .pulls(&owner, &repo)
         .create(&default_title, &current_branch, "master")
         .body(&default_body)
+        .draft(true)
         .send()
         .await;
 
@@ -1295,13 +1296,20 @@ async fn handle_cookbook_repo_submit(
         .html_url
         .map(|u| u.to_string())
         .unwrap_or_else(|| format!("https://github.com/{}/{}/pull/{}", owner, repo, pr.number));
-    sp.stop("✅ Pull request created!");
+    sp.stop("✅ Draft pull request created!");
 
-    note("Success", format!("PR URL: {}", pr_url.polkadot_pink()))?;
+    note(
+        "Next Steps",
+        format!(
+            "1. Edit the PR description at:\n   {}\n\n\
+             2. When ready, mark the PR as \"Ready for review\"",
+            pr_url.polkadot_pink()
+        ),
+    )?;
 
     outro(format!(
-        "🎉 Recipe submitted successfully!\n\n\
-         Your recipe will be reviewed by maintainers.\n\
+        "🎉 Draft PR created!\n\n\
+         Please review and edit the PR description before marking it ready.\n\
          View your PR at: {}",
         pr_url.polkadot_pink()
     ))?;
@@ -1661,8 +1669,8 @@ async fn handle_standalone_submit(
 
     sp.stop(format!("✅ Pushed to {}/{}", fork_owner, branch_name));
 
-    // Step 5: Create PR to polkadot-developers/polkadot-cookbook
-    sp.start("Creating pull request...");
+    // Step 5: Create draft PR to polkadot-developers/polkadot-cookbook
+    sp.start("Creating draft pull request...");
 
     let pr_result = octocrab
         .pulls("polkadot-developers", "polkadot-cookbook")
@@ -1672,6 +1680,7 @@ async fn handle_standalone_submit(
             "master",
         )
         .body(&default_body)
+        .draft(true)
         .send()
         .await;
 
@@ -1696,13 +1705,20 @@ async fn handle_standalone_submit(
         )
     });
 
-    sp.stop("✅ Pull request created!");
+    sp.stop("✅ Draft pull request created!");
 
-    note("Success", format!("PR URL: {}", pr_url.polkadot_pink()))?;
+    note(
+        "Next Steps",
+        format!(
+            "1. Edit the PR description at:\n   {}\n\n\
+             2. When ready, mark the PR as \"Ready for review\"",
+            pr_url.polkadot_pink()
+        ),
+    )?;
 
     outro(format!(
-        "🎉 Recipe submitted successfully!\n\n\
-         Your recipe will be reviewed by maintainers.\n\
+        "🎉 Draft PR created!\n\n\
+         Please review and edit the PR description before marking it ready.\n\
          View your PR at: {}",
         pr_url.polkadot_pink()
     ))?;
