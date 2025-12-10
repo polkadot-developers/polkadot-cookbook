@@ -1724,13 +1724,10 @@ fn copy_dir_recursive<'a>(
             let file_type = entry.file_type().await?;
             let src_path = entry.path();
             let file_name = entry.file_name();
+            let file_name_str = file_name.to_str().unwrap_or("");
 
-            // Skip hidden files and .git directory
-            if file_name
-                .to_str()
-                .map(|s| s.starts_with('.'))
-                .unwrap_or(false)
-            {
+            // Skip hidden files, .git directory, and node_modules
+            if file_name_str.starts_with('.') || file_name_str == "node_modules" {
                 continue;
             }
 
@@ -1738,9 +1735,18 @@ fn copy_dir_recursive<'a>(
 
             if file_type.is_dir() {
                 copy_dir_recursive(&src_path, &dst_path).await?;
-            } else {
+            } else if file_type.is_file() {
                 tokio::fs::copy(&src_path, &dst_path).await?;
+            } else if file_type.is_symlink() {
+                // For symlinks, try to copy the target file if it's a regular file
+                if let Ok(metadata) = tokio::fs::metadata(&src_path).await {
+                    if metadata.is_file() {
+                        tokio::fs::copy(&src_path, &dst_path).await?;
+                    }
+                    // Skip symlinks to directories or other special files
+                }
             }
+            // Skip other special file types (sockets, devices, etc.)
         }
 
         Ok(())
