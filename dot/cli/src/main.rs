@@ -720,7 +720,9 @@ async fn run_non_interactive(
             "request-new" => {
                 eprintln!("🎯 Request a New Recipe Template\n");
                 eprintln!("We'd love to support your use case! Please create a GitHub issue:\n");
-                eprintln!("→ https://github.com/paritytech/polkadot-cookbook/issues/new\n");
+                eprintln!(
+                    "→ https://github.com/polkadot-developers/polkadot-cookbook/issues/new\n"
+                );
                 eprintln!("Include in your issue:");
                 eprintln!("• What kind of recipe you want to create");
                 eprintln!("• What technology/framework it involves");
@@ -1450,11 +1452,11 @@ async fn handle_standalone_submit(
         .personal_token(github_token.clone())
         .build()?;
 
-    // Step 1: Fork paritytech/polkadot-cookbook if not already forked
-    sp.start("Forking paritytech/polkadot-cookbook...");
+    // Step 1: Fork polkadot-developers/polkadot-cookbook if not already forked
+    sp.start("Forking polkadot-developers/polkadot-cookbook...");
 
     let fork_result = octocrab
-        .repos("paritytech", "polkadot-cookbook")
+        .repos("polkadot-developers", "polkadot-cookbook")
         .create_fork()
         .send()
         .await;
@@ -1598,11 +1600,11 @@ async fn handle_standalone_submit(
 
     sp.stop(format!("✅ Pushed to {}/{}", fork_owner, branch_name));
 
-    // Step 5: Create PR to paritytech/polkadot-cookbook
+    // Step 5: Create PR to polkadot-developers/polkadot-cookbook
     sp.start("Creating pull request...");
 
     let pr_result = octocrab
-        .pulls("paritytech", "polkadot-cookbook")
+        .pulls("polkadot-developers", "polkadot-cookbook")
         .create(
             &default_title,
             format!("{}:{}", fork_owner, branch_name),
@@ -1628,7 +1630,7 @@ async fn handle_standalone_submit(
 
     let pr_url = pr.html_url.map(|u| u.to_string()).unwrap_or_else(|| {
         format!(
-            "https://github.com/paritytech/polkadot-cookbook/pull/{}",
+            "https://github.com/polkadot-developers/polkadot-cookbook/pull/{}",
             pr.number
         )
     });
