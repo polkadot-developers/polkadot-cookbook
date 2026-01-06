@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Test workspace
+.test-workspace/
+
+# Build artifacts
+dist/
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
