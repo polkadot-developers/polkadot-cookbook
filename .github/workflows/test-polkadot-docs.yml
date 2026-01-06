@@ -21,8 +21,10 @@ jobs:
           cd polkadot-docs/${{ matrix.guide }}
           rustup show
 
-      - name: Add wasm target
-        run: rustup target add wasm32-unknown-unknown
+      - name: Add wasm target and rust-src
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
 
       - uses: actions/setup-node@v4
         with:
