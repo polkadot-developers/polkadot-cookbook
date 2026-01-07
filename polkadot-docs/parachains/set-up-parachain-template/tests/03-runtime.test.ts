@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, afterAll } from "vitest";
 import { execSync, spawn, ChildProcess } from "child_process";
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
 import { join } from "path";
@@ -12,20 +12,6 @@ const LOG_FILE = join(WORKSPACE_DIR, "node.log");
 let nodeProcess: ChildProcess | null = null;
 
 describe("Parachain Runtime", () => {
-  beforeAll(() => {
-    // Ensure build was completed
-    const wasmPath = join(
-      TEMPLATE_DIR,
-      "target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
-    );
-
-    if (!existsSync(wasmPath)) {
-      throw new Error(
-        "WASM runtime not found. Run build tests first."
-      );
-    }
-  });
-
   afterAll(async () => {
     // Cleanup: stop node if running
     await stopNode();
@@ -38,6 +24,15 @@ describe("Parachain Runtime", () => {
       TEMPLATE_DIR,
       "target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm"
     );
+
+    // Verify WASM exists before proceeding
+    if (!existsSync(wasmPath)) {
+      console.log(`Looking for WASM at: ${wasmPath}`);
+      console.log(`TEMPLATE_DIR exists: ${existsSync(TEMPLATE_DIR)}`);
+      console.log(`target/release exists: ${existsSync(join(TEMPLATE_DIR, "target/release"))}`);
+      throw new Error(`WASM runtime not found at ${wasmPath}. Build tests must run first.`);
+    }
+    console.log(`WASM found at: ${wasmPath}`);
 
     // Generate chain spec
     execSync(
