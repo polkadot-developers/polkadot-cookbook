@@ -21,10 +21,11 @@ export default defineConfig({
       },
     },
     // Ensure test files run in order: environment -> build -> runtime
+    // Using numeric prefixes to enforce alphabetical ordering
     include: [
-      "tests/environment.test.ts",
-      "tests/build.test.ts",
-      "tests/runtime.test.ts",
+      "tests/01-environment.test.ts",
+      "tests/02-build.test.ts",
+      "tests/03-runtime.test.ts",
     ],
   },
 });
