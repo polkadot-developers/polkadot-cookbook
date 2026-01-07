@@ -20,12 +20,7 @@ export default defineConfig({
         singleFork: true,
       },
     },
-    // Ensure test files run in order: environment -> build -> runtime
-    // Using numeric prefixes to enforce alphabetical ordering
-    include: [
-      "tests/01-environment.test.ts",
-      "tests/02-build.test.ts",
-      "tests/03-runtime.test.ts",
-    ],
+    // Single test file ensures sequential execution
+    include: ["tests/guide.test.ts"],
   },
 });
