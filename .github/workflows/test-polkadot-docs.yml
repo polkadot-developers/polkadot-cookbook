@@ -1,0 +1,76 @@
+name: Test Polkadot Docs
+
+on:
+  pull_request:
+    paths: ['polkadot-docs/**']
+
+jobs:
+  test-guides:
+    name: Test ${{ matrix.guide }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        guide: [parachains/set-up-parachain-template]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust from guide's rust-toolchain.toml
+        run: |
+          cd polkadot-docs/${{ matrix.guide }}
+          rustup show
+
+      - name: Add wasm target and rust-src
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Cargo bin
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-10.0.0-omni-node-0.5.0
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install required tools
+        run: |
+          if ! command -v chain-spec-builder &> /dev/null; then
+            cargo install staging-chain-spec-builder@10.0.0 --locked
+          fi
+          if ! command -v polkadot-omni-node &> /dev/null; then
+            cargo install polkadot-omni-node@0.5.0 --locked
+          fi
+
+      - name: Install dot CLI (latest release)
+        run: |
+          curl -fsSL https://github.com/polkadot-developers/polkadot-cookbook/releases/latest/download/dot-linux-x86_64 -o /usr/local/bin/dot || {
+            echo "Release binary not found, building from source..."
+            cargo install --path dot/cli
+          }
+          chmod +x /usr/local/bin/dot || true
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/${{ matrix.guide }}
+          npm ci
+
+      - name: Run guide tests
+        run: |
+          cd polkadot-docs/${{ matrix.guide }}
+          npm test
+        timeout-minutes: 60

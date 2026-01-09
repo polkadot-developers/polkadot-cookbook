@@ -1,0 +1,21 @@
+{
+  "name": "set-up-parachain-template",
+  "version": "1.0.0",
+  "description": "Verification tests for the Set Up Parachain Template guide",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:environment": "vitest run tests/environment.test.ts",
+    "test:build": "vitest run tests/build.test.ts",
+    "test:runtime": "vitest run tests/runtime.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "polkadot-api": "^1.8.0"
+  }
+}
