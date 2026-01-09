@@ -10,7 +10,8 @@ This repository serves as the **source of truth** that Polkadot documentation wo
 
 | Guide | Status | Source |
 |-------|--------|--------|
-| [Set Up Parachain Template](./parachains/set-up-parachain-template/) | ![status](https://img.shields.io/badge/status-in_progress-yellow) | [docs.polkadot.com](https://docs.polkadot.com/parachains/launch-a-parachain/set-up-the-parachain-template/) |
+| [Set Up Parachain Template](./parachains/set-up-parachain-template/) | [![status](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-docs-set-up-parachain-template.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-docs-set-up-parachain-template.yml) | [docs.polkadot.com](https://docs.polkadot.com/parachains/launch-a-parachain/set-up-the-parachain-template/) |
+| [Add Existing Pallets](./parachains/customize-runtime/add-existing-pallets/) | [![status](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-docs-add-existing-pallets.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-docs-add-existing-pallets.yml) | [docs.polkadot.com](https://docs.polkadot.com/parachains/customize-runtime/add-existing-pallets/) |
 
 ## How It Works
 
