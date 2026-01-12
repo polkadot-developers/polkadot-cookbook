@@ -1,0 +1,193 @@
+name: Test Polkadot Docs
+
+on:
+  push:
+    branches: [master]
+    paths: ['polkadot-docs/**']
+  pull_request:
+    paths: ['polkadot-docs/**']
+  workflow_dispatch:
+    inputs:
+      guide:
+        description: 'Guide to test (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - all
+          - set-up-parachain-template
+          - add-existing-pallets
+
+jobs:
+  set-up-parachain-template:
+    name: "set-up-parachain-template"
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.guide == 'all' || github.event.inputs.guide == 'set-up-parachain-template') ||
+      github.event_name != 'workflow_dispatch' && (
+        contains(github.event.head_commit.modified, 'polkadot-docs/parachains/set-up-parachain-template/') ||
+        contains(github.event.head_commit.added, 'polkadot-docs/parachains/set-up-parachain-template/') ||
+        github.event_name == 'pull_request'
+      )
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if guide changed
+        id: changes
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            guide:
+              - 'polkadot-docs/parachains/set-up-parachain-template/**'
+
+      - name: Skip if no changes
+        if: github.event_name == 'pull_request' && steps.changes.outputs.guide != 'true'
+        run: echo "No changes to this guide, skipping" && exit 0
+
+      - name: Setup Rust
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          cd polkadot-docs/parachains/set-up-parachain-template
+          rustup show
+
+      - name: Add wasm target and rust-src
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
+
+      - uses: actions/setup-node@v4
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        with:
+          node-version: '22'
+
+      - name: Cache Cargo registry
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Cargo bin
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-10.0.0-omni-node-0.5.0
+
+      - name: Install system dependencies
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install required tools
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          if ! command -v chain-spec-builder &> /dev/null; then
+            cargo install staging-chain-spec-builder@10.0.0 --locked
+          fi
+          if ! command -v polkadot-omni-node &> /dev/null; then
+            cargo install polkadot-omni-node@0.5.0 --locked
+          fi
+
+      - name: Install npm dependencies
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          cd polkadot-docs/parachains/set-up-parachain-template
+          npm ci
+
+      - name: Run tests
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          cd polkadot-docs/parachains/set-up-parachain-template
+          npm test
+        timeout-minutes: 60
+
+  add-existing-pallets:
+    name: "add-existing-pallets"
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.guide == 'all' || github.event.inputs.guide == 'add-existing-pallets') ||
+      github.event_name != 'workflow_dispatch' && (
+        contains(github.event.head_commit.modified, 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/') ||
+        contains(github.event.head_commit.added, 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/') ||
+        github.event_name == 'pull_request'
+      )
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if guide changed
+        id: changes
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            guide:
+              - 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/**'
+
+      - name: Skip if no changes
+        if: github.event_name == 'pull_request' && steps.changes.outputs.guide != 'true'
+        run: echo "No changes to this guide, skipping" && exit 0
+
+      - name: Setup Rust
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
+          rustup show
+
+      - name: Add wasm target and rust-src
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
+
+      - uses: actions/setup-node@v4
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        with:
+          node-version: '22'
+
+      - name: Cache Cargo registry
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Cargo bin
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-10.0.0-omni-node-0.5.0
+
+      - name: Install system dependencies
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install required tools
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          if ! command -v chain-spec-builder &> /dev/null; then
+            cargo install staging-chain-spec-builder@10.0.0 --locked
+          fi
+          if ! command -v polkadot-omni-node &> /dev/null; then
+            cargo install polkadot-omni-node@0.5.0 --locked
+          fi
+
+      - name: Install npm dependencies
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
+          npm ci
+
+      - name: Run tests
+        if: github.event_name != 'pull_request' || steps.changes.outputs.guide == 'true'
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
+          npm test
+        timeout-minutes: 60
