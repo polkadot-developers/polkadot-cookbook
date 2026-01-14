@@ -8,6 +8,7 @@ Released: 2026-01-14
 
 ### Changes
 
+- fix(ci): pin cross version to 0.2.4 for Rust 1.91 compatibility (#68) (f129f20)
 - docs: add status badges to individual recipe READMEs (#66) (f6459ca)
 - feat: add test for 'Add Existing Pallets' guide (#65) (c336179)
 
