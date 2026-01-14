@@ -74,7 +74,7 @@ jobs:
       - name: Install cross (for cross-compilation)
         if: matrix.cross
         run: |
-          cargo install cross --git https://github.com/cross-rs/cross --locked
+          cargo install cross@0.2.4 --locked
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
