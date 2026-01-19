@@ -1,0 +1,14 @@
+# Test workspace (cloned repos, build artifacts)
+.test-workspace/
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
