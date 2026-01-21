@@ -1,0 +1,67 @@
+name: Create a Custom Pallet
+
+on:
+  push:
+    branches: [master]
+    paths: ['polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet/**']
+  pull_request:
+    paths: ['polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet
+          rustup show
+
+      - name: Add wasm target and rust-src
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Cargo bin
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-10.0.0-omni-node-0.5.0
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Install required tools
+        run: |
+          if ! command -v chain-spec-builder &> /dev/null; then
+            cargo install staging-chain-spec-builder@10.0.0 --locked
+          fi
+          if ! command -v polkadot-omni-node &> /dev/null; then
+            cargo install polkadot-omni-node@0.5.0 --locked
+          fi
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet
+          npm test
+        timeout-minutes: 60
