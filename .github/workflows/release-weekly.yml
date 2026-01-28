@@ -355,7 +355,7 @@ jobs:
           # Create PR
           gh pr create \
             --title "Release $NEW_VERSION" \
-            --body "$(cat <<'PRBODY'
+            --body "$(cat <<PRBODY
           ## Weekly Recipe Release $NEW_VERSION
 
           This PR contains the release manifest and notes for version $NEW_VERSION.
@@ -374,7 +374,7 @@ jobs:
 
           ---
 
-          🤖 This PR was automatically created by the Weekly Recipe Release workflow.
+          This PR was automatically created by the Weekly Recipe Release workflow.
           PRBODY
           )" \
             --label "semantic:patch" \
