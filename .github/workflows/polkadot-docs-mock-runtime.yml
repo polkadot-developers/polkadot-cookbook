@@ -50,3 +50,14 @@ jobs:
           cd polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime
           npm test
         timeout-minutes: 45
+
+  notify-failure:
+    needs: test
+    if: failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'Mock Your Runtime'
+      guide_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime'
+    permissions:
+      issues: write
+      contents: read
