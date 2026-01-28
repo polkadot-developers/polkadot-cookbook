@@ -1,0 +1,14 @@
+{
+  "name": "mock-runtime",
+  "version": "1.0.0",
+  "description": "Test verification for the Mock Your Runtime guide",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  }
+}
