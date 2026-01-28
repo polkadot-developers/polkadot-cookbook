@@ -1,0 +1,5 @@
+# This rust-toolchain.toml is used to match the Polkadot SDK version
+# polkadot-sdk-parachain-template v0.0.4 uses polkadot-sdk 2503.0.1
+[toolchain]
+channel = "1.82"
+targets = ["wasm32-unknown-unknown"]
