@@ -65,3 +65,14 @@ jobs:
           cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
           npm test
         timeout-minutes: 60
+
+  notify-failure:
+    needs: test
+    if: failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'Add Existing Pallets'
+      guide_path: 'polkadot-docs/parachains/customize-runtime/add-existing-pallets'
+    permissions:
+      issues: write
+      contents: read
