@@ -230,7 +230,7 @@ const BENCHMARKING_RS = `#![cfg(feature = "runtime-benchmarks")]
 
 use super::*;
 use frame::deps::frame_benchmarking::v2::*;
-use frame::prelude::*;
+use frame::benchmarking::prelude::RawOrigin;
 
 #[benchmarks]
 mod benchmarks {
