@@ -137,11 +137,12 @@ describe("Install Polkadot SDK Guide", () => {
       // Use cargo metadata to verify the workspace is valid
       // This is much faster than cargo check/build
       const result = execSync(
-        "cargo metadata --format-version 1 --no-deps 2>&1 | head -1",
+        "cargo metadata --format-version 1 --no-deps 2>&1 | head -c 100",
         {
           cwd: SDK_DIR,
           encoding: "utf-8",
           timeout: 60000,
+          maxBuffer: 1024 * 1024 * 50, // 50MB buffer for large workspace
         }
       );
 
