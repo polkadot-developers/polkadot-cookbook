@@ -65,3 +65,14 @@ jobs:
           cd polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet
           npm test
         timeout-minutes: 60
+
+  notify-failure:
+    needs: test
+    if: failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'Create a Pallet'
+      guide_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet'
+    permissions:
+      issues: write
+      contents: read
