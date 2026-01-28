@@ -18,7 +18,7 @@ This project verifies the [Mock Your Runtime](https://docs.polkadot.com/parachai
 1. Prerequisites check (Rust, wasm target, git)
 2. Clone the parachain template repository (v0.0.4)
 3. Create a `pallet-custom` in the pallets directory (prerequisite from create-a-pallet guide)
-4. Write the pallet's `Cargo.toml` with FRAME and test dependencies
+4. Write the pallet's `Cargo.toml` with FRAME dependencies
 5. Write `src/lib.rs` with the `#[cfg(test)] mod mock;` declaration
 6. Create `src/mock.rs` with the mock runtime configuration:
    - `construct_runtime!` macro setup
@@ -56,7 +56,7 @@ Verifies all prerequisites are installed with correct versions.
 ### 2. Clone Template and Create Pallet (Prerequisite)
 - Clones `polkadot-sdk-parachain-template` (v0.0.4)
 - Creates `pallets/pallet-custom` directory
-- Writes pallet `Cargo.toml` with FRAME and test dependencies (sp-io, sp-runtime)
+- Writes pallet `Cargo.toml` with FRAME dependencies (sp-io and sp-runtime are accessed via `frame::deps`)
 - Adds pallet to workspace members and dependencies
 
 ### 3. Create Mock Runtime Module
@@ -86,8 +86,8 @@ cd polkadot-sdk-parachain-template
 # 2. Create the pallet directory (if following from create-a-pallet guide)
 mkdir -p pallets/pallet-custom/src
 
-# 3. Create pallets/pallet-custom/Cargo.toml with FRAME and test dependencies
-# (see guide for complete Cargo.toml - includes sp-io and sp-runtime in dev-dependencies)
+# 3. Create pallets/pallet-custom/Cargo.toml with FRAME dependencies
+# (sp-io and sp-runtime are accessed via frame::deps re-exports)
 
 # 4. Create pallets/pallet-custom/src/lib.rs with mock module declaration
 # Add: #[cfg(test)] mod mock;

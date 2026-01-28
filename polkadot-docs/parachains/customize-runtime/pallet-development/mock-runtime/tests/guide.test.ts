@@ -158,18 +158,12 @@ codec = { features = ["derive"], workspace = true }
 scale-info = { features = ["derive"], workspace = true }
 frame = { features = ["experimental", "runtime"], workspace = true }
 
-[dev-dependencies]
-sp-io = { workspace = true }
-sp-runtime = { workspace = true }
-
 [features]
 default = ["std"]
 std = [
     "codec/std",
     "scale-info/std",
     "frame/std",
-    "sp-io/std",
-    "sp-runtime/std",
 ]
 `;
 
@@ -320,28 +314,25 @@ describe("Mock Your Runtime Guide", () => {
       expect(existsSync(PALLET_DIR)).toBe(true);
     });
 
-    it("should write pallet Cargo.toml with test dependencies", () => {
+    it("should write pallet Cargo.toml", () => {
       const cargoPath = join(PALLET_DIR, "Cargo.toml");
 
-      // Check if already written with test deps
+      // Check if already written
       if (existsSync(cargoPath)) {
         const content = readFileSync(cargoPath, "utf-8");
-        if (content.includes('name = "pallet-custom"') && content.includes("[dev-dependencies]")) {
-          console.log("pallet-custom/Cargo.toml already configured with test dependencies");
+        if (content.includes('name = "pallet-custom"')) {
+          console.log("pallet-custom/Cargo.toml already configured");
           return;
         }
       }
 
       writeFileSync(cargoPath, PALLET_CARGO_TOML);
-      console.log("Written pallet-custom/Cargo.toml with test dependencies");
+      console.log("Written pallet-custom/Cargo.toml");
 
       // Verify
       const content = readFileSync(cargoPath, "utf-8");
       expect(content).toContain('name = "pallet-custom"');
       expect(content).toContain("frame");
-      expect(content).toContain("[dev-dependencies]");
-      expect(content).toContain("sp-io");
-      expect(content).toContain("sp-runtime");
     });
 
     it("should add pallet-custom to workspace members", () => {
