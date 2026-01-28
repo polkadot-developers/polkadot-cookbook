@@ -42,3 +42,14 @@ jobs:
           cd polkadot-docs/parachains/install-polkadot-sdk
           npm test
         timeout-minutes: 15
+
+  notify-failure:
+    needs: test
+    if: failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'Install Polkadot SDK'
+      guide_path: 'polkadot-docs/parachains/install-polkadot-sdk'
+    permissions:
+      issues: write
+      contents: read

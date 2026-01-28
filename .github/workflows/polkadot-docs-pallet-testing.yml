@@ -50,3 +50,14 @@ jobs:
           cd polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing
           npm test
         timeout-minutes: 45
+
+  notify-failure:
+    needs: test
+    if: failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'Unit Test Pallets'
+      guide_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing'
+    permissions:
+      issues: write
+      contents: read
