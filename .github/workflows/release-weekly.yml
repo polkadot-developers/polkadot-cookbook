@@ -331,6 +331,18 @@ jobs:
           **Status:** Alpha (v0.x.x)
           EOF
 
+      - name: Update workspace version
+        env:
+          NEW_VERSION: ${{ needs.check-changes.outputs.new_version }}
+        run: |
+          # Remove 'v' prefix for Cargo.toml (e.g., v0.11.0 -> 0.11.0)
+          CARGO_VERSION=${NEW_VERSION#v}
+
+          # Update workspace version in root Cargo.toml
+          sed -i "s/^version = \".*\"/version = \"$CARGO_VERSION\"/" Cargo.toml
+
+          echo "Updated Cargo.toml workspace version to $CARGO_VERSION"
+
       - name: Create release branch and PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -345,8 +357,8 @@ jobs:
           BRANCH_NAME="release/$NEW_VERSION"
           git checkout -b $BRANCH_NAME
 
-          # Commit release files
-          git add .github/releases/$NEW_VERSION/
+          # Commit release files and updated Cargo.toml
+          git add .github/releases/$NEW_VERSION/ Cargo.toml
           git commit -m "chore(release): add manifest and notes for $NEW_VERSION"
 
           # Push branch
