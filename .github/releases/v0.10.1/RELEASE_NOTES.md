@@ -9,6 +9,7 @@ Released: 2026-02-04
 ### Changes
 
 - Fix CLI version and automate version bumping (#83) (65a7cc2)
+- Sync Cargo.lock with version bump (#85) (f3fe8c4)
 
 
 ## Compatibility
