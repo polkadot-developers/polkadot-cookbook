@@ -2,7 +2,7 @@ name: Scheduled Polkadot Docs Tests
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Daily at 00:00 UTC
+    - cron: '0 15 * * 0'  # Weekly on Sunday at 15:00 UTC (10:00 PM Bangkok)
   workflow_dispatch:
 
 jobs:
