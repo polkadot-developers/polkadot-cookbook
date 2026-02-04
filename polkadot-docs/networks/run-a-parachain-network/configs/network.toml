@@ -1,0 +1,22 @@
+[settings]
+timeout = 1000
+provider = "native"
+
+[relaychain]
+chain = "rococo-local"
+default_command = "./bin/polkadot"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+
+[[parachains]]
+id = 1000
+
+[[parachains.collators]]
+name = "collator01"
+command = "./polkadot-runtime-templates/generic-template/target/release/parachain-template-node"
