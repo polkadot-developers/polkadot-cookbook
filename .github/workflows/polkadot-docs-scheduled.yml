@@ -1,0 +1,25 @@
+name: Scheduled Polkadot Docs Tests
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  trigger-all:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger all polkadot-docs workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for workflow in .github/workflows/polkadot-docs-*.yml; do
+            name=$(basename "$workflow")
+            # Skip this scheduled workflow itself
+            if [ "$name" != "polkadot-docs-scheduled.yml" ]; then
+              echo "Triggering $name..."
+              gh workflow run "$name" || echo "Failed to trigger $name"
+            fi
+          done
