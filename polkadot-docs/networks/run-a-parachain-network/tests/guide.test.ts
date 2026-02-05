@@ -7,7 +7,7 @@ const PROJECT_DIR = process.cwd();
 const TEMPLATE_DIR = join(PROJECT_DIR, "polkadot-runtime-templates", "generic-template");
 const BIN_DIR = join(PROJECT_DIR, "bin");
 const POLKADOT_BINARY = join(BIN_DIR, "polkadot");
-const PARACHAIN_BINARY = join(TEMPLATE_DIR, "target/release/parachain-template-node");
+const PARACHAIN_BINARY = join(TEMPLATE_DIR, "target/release/generic-template-node");
 const PID_FILE = join(PROJECT_DIR, "zombienet.pid");
 
 // Relay chain RPC port (alice)
@@ -228,29 +228,39 @@ describe("Run a Parachain Network Guide", () => {
     it("should verify relay chain is producing blocks", async () => {
       console.log("Verifying relay chain block production...");
 
-      // Wait for a few blocks to be produced
-      await new Promise((resolve) => setTimeout(resolve, 12000));
+      // Wait for blocks to be produced (relay chain needs time to start producing)
+      // Retry a few times with increasing delays
+      let blockNumber = 0;
+      const maxAttempts = 5;
 
-      const response = await fetch(`http://127.0.0.1:${RELAY_RPC_PORT}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "chain_getHeader",
-          params: [],
-          id: 1,
-        }),
-      });
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 12000));
 
-      const result = await response.json();
-      expect(result.result).toBeDefined();
-      expect(result.result.number).toBeDefined();
+        const response = await fetch(`http://127.0.0.1:${RELAY_RPC_PORT}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "chain_getHeader",
+            params: [],
+            id: 1,
+          }),
+        });
 
-      const blockNumber = parseInt(result.result.number, 16);
-      console.log(`Relay chain block number: ${blockNumber}`);
+        const result = await response.json();
+        expect(result.result).toBeDefined();
+        expect(result.result.number).toBeDefined();
+
+        blockNumber = parseInt(result.result.number, 16);
+        console.log(`Relay chain block number (attempt ${attempt}): ${blockNumber}`);
+
+        if (blockNumber > 0) {
+          break;
+        }
+      }
 
       expect(blockNumber).toBeGreaterThan(0);
-    }, 60000);
+    }, 90000);
 
     it("should verify parachain is producing blocks", async () => {
       console.log("Verifying parachain block production...");
