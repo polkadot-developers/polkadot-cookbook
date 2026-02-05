@@ -1,4 +1,13 @@
+---
+title: "Run a Parachain Network"
+description: "Verify the Run a Parachain Network guide from docs.polkadot.com"
+source_url: "https://docs.polkadot.com/parachains/testing/run-a-parachain-network/"
+last_tested: "2026-02-05"
+---
+
 # Run a Parachain Network
+
+[![Run a Parachain Network](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-run-a-parachain-network.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-run-a-parachain-network.yml)
 
 This folder contains verification tests for the [Run a Parachain Network](https://docs.polkadot.com/parachains/testing/run-a-parachain-network/) guide from docs.polkadot.com.
 
