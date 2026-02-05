@@ -4,12 +4,16 @@ import { existsSync, mkdirSync, writeFileSync, unlinkSync, readFileSync } from "
 import { join } from "path";
 
 const PROJECT_DIR = process.cwd();
-const TEMPLATE_REPO = "https://github.com/OpenZeppelin/polkadot-runtime-templates";
-const TEMPLATE_VERSION = "v4.0.0";
-const TEMPLATE_DIR = join(PROJECT_DIR, "polkadot-runtime-templates", "generic-template");
+const TEMPLATE_REPO = "https://github.com/paritytech/polkadot-sdk-parachain-template";
+const TEMPLATE_VERSION = "v0.0.4";
+const TEMPLATE_DIR = join(PROJECT_DIR, "polkadot-sdk-parachain-template");
 const BIN_DIR = join(PROJECT_DIR, "bin");
+const POLKADOT_VERSION = "polkadot-stable2503-3";
+const POLKADOT_RELEASE_URL = `https://github.com/paritytech/polkadot-sdk/releases/download/${POLKADOT_VERSION}`;
 const POLKADOT_BINARY = join(BIN_DIR, "polkadot");
-const PARACHAIN_BINARY = join(TEMPLATE_DIR, "target/release/generic-template-node");
+const POLKADOT_PREPARE_WORKER = join(BIN_DIR, "polkadot-prepare-worker");
+const POLKADOT_EXECUTE_WORKER = join(BIN_DIR, "polkadot-execute-worker");
+const PARACHAIN_BINARY = join(TEMPLATE_DIR, "target/release/parachain-template-node");
 const PID_FILE = join(PROJECT_DIR, "zombienet.pid");
 
 // Relay chain RPC port (alice)
@@ -63,14 +67,14 @@ describe("Run a Parachain Network Guide", () => {
 
   // ==================== CLONE AND BUILD ====================
   describe("2. Clone and Build Parachain Template", () => {
-    it("should clone OpenZeppelin polkadot-runtime-templates", () => {
-      const repoDir = join(PROJECT_DIR, "polkadot-runtime-templates");
+    it("should clone polkadot-sdk-parachain-template", () => {
+      const repoDir = join(PROJECT_DIR, "polkadot-sdk-parachain-template");
 
       if (existsSync(repoDir)) {
         console.log(`Repository already cloned, checking out ${TEMPLATE_VERSION}...`);
         execSync(`git fetch --tags && git checkout ${TEMPLATE_VERSION}`, { cwd: repoDir, encoding: "utf-8" });
       } else {
-        console.log(`Cloning OpenZeppelin polkadot-runtime-templates ${TEMPLATE_VERSION}...`);
+        console.log(`Cloning polkadot-sdk-parachain-template ${TEMPLATE_VERSION}...`);
         execSync(
           `git clone --branch ${TEMPLATE_VERSION} ${TEMPLATE_REPO}`,
           { cwd: PROJECT_DIR, encoding: "utf-8", stdio: "inherit" }
@@ -84,7 +88,7 @@ describe("Run a Parachain Network Guide", () => {
     it("should build the custom parachain binary", () => {
       console.log("Building parachain template (this may take 15-30 minutes)...");
 
-      execSync("cargo build --release", {
+      execSync("cargo build --release -p parachain-template-node", {
         cwd: TEMPLATE_DIR,
         encoding: "utf-8",
         stdio: "inherit",
@@ -98,36 +102,76 @@ describe("Run a Parachain Network Guide", () => {
 
   // ==================== DOWNLOAD RELAY CHAIN ====================
   describe("3. Download Relay Chain Binary", () => {
-    it("should download polkadot binary via zombienet setup", () => {
+    it("should download polkadot binaries", () => {
       // Create bin directory
       if (!existsSync(BIN_DIR)) {
         mkdirSync(BIN_DIR, { recursive: true });
       }
 
-      if (existsSync(POLKADOT_BINARY)) {
-        console.log("Polkadot binary already exists");
-        const version = execSync(`${POLKADOT_BINARY} --version 2>&1`, {
-          encoding: "utf-8",
-        });
-        console.log(`Polkadot: ${version.trim()}`);
-        return;
+      if (existsSync(POLKADOT_BINARY) && existsSync(POLKADOT_PREPARE_WORKER) && existsSync(POLKADOT_EXECUTE_WORKER)) {
+        console.log("Polkadot binaries already exist");
+        try {
+          const version = execSync(`${POLKADOT_BINARY} --version 2>&1`, {
+            encoding: "utf-8",
+          });
+          console.log(`Polkadot: ${version.trim()}`);
+          return;
+        } catch {
+          console.log("Existing binaries are not executable on this platform, re-downloading...");
+        }
       }
 
-      console.log("Downloading Polkadot binary via zombienet setup...");
+      const platform = process.platform;
+      const arch = process.arch;
 
-      // Use zombienet setup to download the binary
-      // The -y flag auto-confirms prompts
-      execSync("zombienet setup polkadot -y", {
-        cwd: BIN_DIR,
-        encoding: "utf-8",
-        stdio: "inherit",
-        timeout: 300000, // 5 minutes
-      });
+      // GitHub releases only provide Linux binaries
+      // For non-Linux platforms, use zombienet setup which downloads the correct binary
+      if (platform !== "linux") {
+        console.log(`Platform ${platform}/${arch} detected. Using zombienet setup for polkadot binaries...`);
+
+        // zombienet setup downloads binaries to current directory
+        execSync(`zombienet setup polkadot -y`, {
+          cwd: BIN_DIR,
+          encoding: "utf-8",
+          stdio: "inherit",
+          timeout: 300000,
+        });
+
+        // zombienet setup may put binaries in different locations, find them
+        const possiblePaths = [
+          join(BIN_DIR, "polkadot"),
+          join(BIN_DIR, "polkadot-prepare-worker"),
+          join(BIN_DIR, "polkadot-execute-worker"),
+        ];
+
+        // If zombienet setup didn't create the expected files, check if they're in a version subdirectory
+        if (!existsSync(POLKADOT_BINARY)) {
+          // Try to find and move the binaries
+          try {
+            const files = execSync(`ls -la ${BIN_DIR}`, { encoding: "utf-8" });
+            console.log(`Contents of bin directory after zombienet setup:\n${files}`);
+          } catch {
+            // Ignore errors
+          }
+        }
+      } else {
+        console.log(`Downloading Polkadot ${POLKADOT_VERSION} binaries for Linux...`);
+
+        // Download all required binaries
+        const binaries = ["polkadot", "polkadot-prepare-worker", "polkadot-execute-worker"];
+        for (const binary of binaries) {
+          console.log(`Downloading ${binary}...`);
+          execSync(
+            `curl -L -o ${binary} ${POLKADOT_RELEASE_URL}/${binary}`,
+            { cwd: BIN_DIR, encoding: "utf-8", stdio: "inherit", timeout: 300000 }
+          );
+          execSync(`chmod +x ${binary}`, { cwd: BIN_DIR });
+        }
+      }
 
       expect(existsSync(POLKADOT_BINARY)).toBe(true);
-
-      // Make binary executable
-      execSync(`chmod +x ${POLKADOT_BINARY}`);
+      expect(existsSync(POLKADOT_PREPARE_WORKER)).toBe(true);
+      expect(existsSync(POLKADOT_EXECUTE_WORKER)).toBe(true);
 
       const version = execSync(`${POLKADOT_BINARY} --version 2>&1`, {
         encoding: "utf-8",

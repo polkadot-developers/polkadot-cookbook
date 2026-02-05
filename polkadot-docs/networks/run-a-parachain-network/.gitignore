@@ -2,7 +2,7 @@
 node_modules/
 
 # Test workspace
-polkadot-runtime-templates/
+polkadot-sdk-parachain-template/
 bin/
 
 # Build artifacts
