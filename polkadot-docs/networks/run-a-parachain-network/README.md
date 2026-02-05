@@ -5,7 +5,7 @@ This folder contains verification tests for the [Run a Parachain Network](https:
 ## What This Test Verifies
 
 1. **Prerequisites**: Rust, cargo, and Zombienet are available
-2. **Clone Repository**: OpenZeppelin's polkadot-runtime-templates is cloned
+2. **Clone Repository**: Parity's polkadot-sdk-parachain-template is cloned
 3. **Build Parachain Binary**: `cargo build --release` succeeds
 4. **Download Relay Chain**: Polkadot binary is downloaded via `zombienet setup`
 5. **Spawn Network**: Zombienet spawns a network with relay chain and parachain
@@ -45,4 +45,4 @@ The test uses `configs/network.toml` which defines:
 
 - Guide: [docs.polkadot.com/parachains/testing/run-a-parachain-network](https://docs.polkadot.com/parachains/testing/run-a-parachain-network/)
 - Zombienet: [github.com/paritytech/zombienet](https://github.com/paritytech/zombienet)
-- OpenZeppelin Templates: [github.com/OpenZeppelin/polkadot-runtime-templates](https://github.com/OpenZeppelin/polkadot-runtime-templates)
+- Parachain Template: [github.com/paritytech/polkadot-sdk-parachain-template](https://github.com/paritytech/polkadot-sdk-parachain-template)
