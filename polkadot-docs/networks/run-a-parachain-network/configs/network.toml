@@ -1,0 +1,25 @@
+[settings]
+timeout = 1000
+provider = "native"
+
+[relaychain]
+chain = "rococo-local"
+default_command = "./bin/polkadot"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+rpc_port = 9944
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+rpc_port = 9945
+
+[[parachains]]
+id = 1000
+
+[[parachains.collators]]
+name = "collator01"
+command = "./polkadot-sdk-parachain-template/target/release/parachain-template-node"
+rpc_port = 9988
