@@ -4,6 +4,8 @@ import { existsSync, mkdirSync, writeFileSync, unlinkSync, readFileSync } from "
 import { join } from "path";
 
 const PROJECT_DIR = process.cwd();
+const TEMPLATE_REPO = "https://github.com/OpenZeppelin/polkadot-runtime-templates";
+const TEMPLATE_VERSION = "v4.0.0";
 const TEMPLATE_DIR = join(PROJECT_DIR, "polkadot-runtime-templates", "generic-template");
 const BIN_DIR = join(PROJECT_DIR, "bin");
 const POLKADOT_BINARY = join(BIN_DIR, "polkadot");
@@ -65,12 +67,12 @@ describe("Run a Parachain Network Guide", () => {
       const repoDir = join(PROJECT_DIR, "polkadot-runtime-templates");
 
       if (existsSync(repoDir)) {
-        console.log("Repository already cloned, pulling latest...");
-        execSync("git pull", { cwd: repoDir, encoding: "utf-8" });
+        console.log(`Repository already cloned, checking out ${TEMPLATE_VERSION}...`);
+        execSync(`git fetch --tags && git checkout ${TEMPLATE_VERSION}`, { cwd: repoDir, encoding: "utf-8" });
       } else {
-        console.log("Cloning OpenZeppelin polkadot-runtime-templates...");
+        console.log(`Cloning OpenZeppelin polkadot-runtime-templates ${TEMPLATE_VERSION}...`);
         execSync(
-          "git clone https://github.com/OpenZeppelin/polkadot-runtime-templates",
+          `git clone --branch ${TEMPLATE_VERSION} ${TEMPLATE_REPO}`,
           { cwd: PROJECT_DIR, encoding: "utf-8", stdio: "inherit" }
         );
       }
