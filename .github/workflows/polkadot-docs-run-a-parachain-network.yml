@@ -1,0 +1,81 @@
+name: Run a Parachain Network
+
+on:
+  push:
+    branches: [master]
+    paths: ['polkadot-docs/networks/run-a-parachain-network/**']
+  pull_request:
+    paths: ['polkadot-docs/networks/run-a-parachain-network/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        run: |
+          cd polkadot-docs/networks/run-a-parachain-network
+          rustup show
+
+      - name: Add wasm target and rust-src
+        run: |
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler clang make
+
+      - name: Install Zombienet
+        run: |
+          ZOMBIENET_VERSION="v1.3.138"
+          curl -L -o zombienet https://github.com/paritytech/zombienet/releases/download/${ZOMBIENET_VERSION}/zombienet-linux-x64
+          chmod +x zombienet
+          sudo mv zombienet /usr/local/bin/
+          zombienet version
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: polkadot-docs/networks/run-a-parachain-network/polkadot-runtime-templates/generic-template/target
+          key: ${{ runner.os }}-cargo-build-parachain-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-parachain-
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/networks/run-a-parachain-network
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/networks/run-a-parachain-network
+          npm test
+        timeout-minutes: 60
+
+  notify-failure:
+    needs: test
+    if: failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'Run a Parachain Network'
+      guide_path: 'polkadot-docs/networks/run-a-parachain-network'
+    permissions:
+      issues: write
+      contents: read
