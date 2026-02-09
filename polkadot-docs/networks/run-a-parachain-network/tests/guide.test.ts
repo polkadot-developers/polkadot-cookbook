@@ -86,18 +86,18 @@ describe("Run a Parachain Network Guide", () => {
     }, 120000);
 
     it("should build the custom parachain binary", () => {
-      console.log("Building parachain template (this may take 15-30 minutes)...");
+      console.log("Building parachain template (this may take 30-45 minutes on CI)...");
 
       execSync("cargo build --release -p parachain-template-node", {
         cwd: TEMPLATE_DIR,
         encoding: "utf-8",
         stdio: "inherit",
-        timeout: 1800000, // 30 minutes
+        timeout: 2700000, // 45 minutes
       });
 
       expect(existsSync(PARACHAIN_BINARY)).toBe(true);
       console.log("Parachain binary built successfully");
-    }, 1800000);
+    }, 2700000);
   });
 
   // ==================== DOWNLOAD RELAY CHAIN ====================
