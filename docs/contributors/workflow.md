@@ -4,12 +4,14 @@ Step-by-step guide to contributing recipes to the Polkadot Cookbook.
 
 ## Overview
 
+Recipes live in external GitHub repositories. The cookbook contains **test harnesses** that clone, build, and verify each recipe. Contributing a recipe means adding a test harness that points to your external repo.
+
 The contribution workflow follows these steps:
 
 1. **Setup** - Fork, clone, and configure your environment
-2. **Create** - Generate a new project or modify existing content
-3. **Develop** - Write content, code, and tests
-4. **Test** - Run tests locally
+2. **Create** - Add a test harness directory for your recipe
+3. **Develop** - Build your recipe in your own external repository
+4. **Test** - Run the test harness locally
 5. **Commit** - Use conventional commit messages
 6. **Submit** - Push and create a pull request
 7. **Review** - Respond to feedback
@@ -76,41 +78,91 @@ git config --list
 
 ---
 
-## Step 2: Create a Project
+## Step 2: Create a Test Harness
 
-### Using the CLI (Recommended)
+Each recipe in the cookbook is a test harness that clones and verifies an external repository. To add a new recipe, create a test harness directory.
 
-The CLI automatically creates a new branch for your project:
-
-```bash
-# Interactive mode
-dot create
-
-# The CLI will:
-# 1. Create recipes/your-project/
-# 2. Generate scaffolded files
-# 3. Initialize git repository
-# 4. Install dependencies
-```
-
-### Manual Branch Creation
-
-If you're modifying existing content instead of creating a new project:
+### Create a Branch
 
 ```bash
 # Update master first
 git checkout master
 git pull upstream master
 
-# Create feature branch
-git checkout -b feat/improve-documentation
+# Create a branch for your recipe
+git checkout -b recipe/my-recipe-name
+```
 
-# Or bug fix branch
-git checkout -b fix/correct-example-code
+### Set Up the Test Harness Directory
+
+Create the standard test harness structure under `recipes/{pathway}/{your-recipe}/`. Use an existing recipe as a template — for example, copy from [`recipes/contracts/contracts-example/`](../../recipes/contracts/contracts-example/):
+
+```
+recipes/{pathway}/{your-recipe}/
+├── package.json           # vitest + @types/node + typescript
+├── package-lock.json      # Locked dependencies (run npm install to generate)
+├── vitest.config.ts       # Vitest config
+├── tsconfig.json          # TypeScript config
+├── .gitignore             # Ignore cloned repo dir, node_modules
+├── README.md              # Description + link to external repo
+└── tests/
+    └── recipe.test.ts     # Clone → install → build → test
+```
+
+### What Goes in `tests/recipe.test.ts`
+
+The test file clones your external repo at a pinned version, installs dependencies, builds, and runs tests:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { execSync } from "child_process";
+import { existsSync } from "fs";
+import { join } from "path";
+
+const PROJECT_DIR = process.cwd();
+const REPO_URL = "https://github.com/YOUR_USERNAME/recipe-your-recipe";
+const REPO_VERSION = "v1.0.0";
+const REPO_DIR = join(PROJECT_DIR, "recipe-your-recipe");
+
+describe("Your Recipe", () => {
+  it("should clone the repository", () => {
+    if (!existsSync(REPO_DIR)) {
+      execSync(`git clone --branch ${REPO_VERSION} ${REPO_URL}`, {
+        cwd: PROJECT_DIR, encoding: "utf-8", stdio: "inherit",
+      });
+    }
+    expect(existsSync(REPO_DIR)).toBe(true);
+  }, 120000);
+
+  it("should install dependencies", () => {
+    execSync("npm ci", { cwd: REPO_DIR, stdio: "inherit" });
+    expect(existsSync(join(REPO_DIR, "node_modules"))).toBe(true);
+  }, 120000);
+
+  it("should build", () => {
+    execSync("npm run build", { cwd: REPO_DIR, stdio: "inherit" });
+  }, 120000);
+
+  it("should pass tests", () => {
+    execSync("npm test", { cwd: REPO_DIR, stdio: "inherit" });
+  }, 120000);
+});
+```
+
+### README.md Frontmatter
+
+Include metadata at the top of your test harness README:
+
+```markdown
+---
+title: "Your Recipe Title"
+description: "Brief description of what the recipe does"
+source_repo: "https://github.com/YOUR_USERNAME/recipe-your-recipe"
+---
 ```
 
 **Branch naming conventions:**
-- `recipe/<slug>` - New recipes (auto-created by CLI)
+- `recipe/<slug>` - New recipes
 - `feat/<description>` - New features or enhancements
 - `fix/<description>` - Bug fixes
 - `docs/<description>` - Documentation improvements
@@ -118,97 +170,57 @@ git checkout -b fix/correct-example-code
 
 ---
 
-## Step 3: Develop Your Project
+## Step 3: Develop Your Recipe
 
-### Project Structure
+### Recipe Code Lives in Your Own Repository
 
-Your project directory should contain:
+The actual recipe code (source, tests, dependencies) lives in your own external GitHub repository — not inside the cookbook. You can use `dot create` to scaffold a project locally:
 
-```
-recipes/your-recipe/
-├── README.md              # Main content (required)
-├── recipe.config.yml      # Metadata (required)
-├── src/                   # Source code
-├── tests/                 # Tests
-└── ...                    # Type-specific files
+```bash
+dot create
 ```
 
-See [Recipe Guidelines](recipe-guidelines.md) for detailed structure requirements.
+Develop and test your project in this standalone directory. When it's ready, push it to your own GitHub repository and tag a release:
 
-### Writing Guidelines
-
-**README.md should include:**
-- Clear title and description
-- Prerequisites
-- Learning objectives
-- Step-by-step instructions
-- Code examples with explanations
-- Expected output
-- Troubleshooting section
-
-**See:** [Recipe Development Guide](recipe-development.md) for best practices.
-
-### Version Management
-
-If your recipe needs different dependency versions:
-
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.6.0"
+```bash
+git tag v1.0.0
+git push --tags
 ```
 
-Only include versions that differ from global defaults.
+### What You Contribute to the Cookbook
+
+Your cookbook contribution is the **test harness** — a lightweight directory under `recipes/` that verifies your external repo works correctly. The test harness does not contain recipe source code; it only clones, builds, and tests your external repository.
+
+See [Recipe Guidelines](recipe-guidelines.md) for quality standards.
 
 
 ---
 
-## Step 4: Test Your Project
+## Step 4: Test Your Test Harness
 
-### Run Tests Locally
+### Run the Test Harness Locally
 
-**TypeScript projects:**
+From the cookbook repository root:
+
 ```bash
-cd recipes/your-project
+cd recipes/{pathway}/{your-recipe}
+npm ci
 npm test
 ```
 
-**Rust projects:**
-```bash
-cd recipes/your-project
-cargo test
-cargo clippy --all-targets --all-features
-cargo fmt --check
-```
+This will:
+1. Clone your external repository at the pinned version tag
+2. Install the recipe's dependencies
+3. Build the project
+4. Run the recipe's test suite
 
-**XCM projects:**
-```bash
-cd recipes/your-project
-npm test  # Includes Chopsticks setup
-```
+### Verify Everything Passes
 
-### Validate Project Structure
-
-```bash
-# From repository root
-```
-
-**This checks:**
-- Configuration file validity
-- Required files present
-- Version keys recognized
-- YAML syntax correctness
-
-### Manual Testing
-
-Before submitting, manually test all examples:
-
-1. **Copy code examples** from README
-2. **Run them** in a test environment
-3. **Verify output** matches documentation
-4. **Test error cases** and troubleshooting steps
-
-**Critical:** All code examples must work exactly as documented.
+Before submitting, ensure:
+- The test harness clones and builds successfully
+- All tests in the external repo pass
+- The `README.md` links to the correct source repository
+- The version tag in `recipe.test.ts` matches an existing tag in your external repo
 
 ---
 
@@ -221,8 +233,7 @@ Before submitting, manually test all examples:
 git status
 
 # Add specific files
-git add recipes/your-recipe/README.md
-git add recipes/your-recipe/recipe.config.yml
+git add recipes/{pathway}/your-recipe/
 
 # Or add all changes
 git add .
@@ -580,20 +591,20 @@ git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
 cd polkadot-cookbook
 git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
 
-# Create project
+# Scaffold a new project (in your own repo)
 dot create
 
-# Test
-npm test                 # TypeScript
-cargo test              # Rust
+# Test your test harness
+cd recipes/{pathway}/{your-recipe}
+npm ci && npm test
 
 # Commit
 git add .
-git commit -m "feat(recipe): description"
+git commit -m "feat(recipe): add my-recipe test harness"
 
 # Submit
 git push -u origin branch-name
-gh pr create --title "feat(recipe): description" --body "Description"
+gh pr create --title "feat(recipe): add my-recipe" --body "Description"
 
 # Update fork
 git checkout master
@@ -634,10 +645,10 @@ If you need help from maintainers:
 
 The contribution workflow:
 
-1. Fork and clone repository
-2. Create project with CLI or manual branch
-3. Develop content following guidelines
-4. Test thoroughly (automated and manual)
+1. Fork and clone the cookbook repository
+2. Develop your recipe in your own external repository
+3. Add a test harness under `recipes/{pathway}/{your-recipe}/`
+4. Test the harness locally (`npm ci && npm test`)
 5. Commit with conventional format
 6. Push and create a pull request
 7. Respond to review feedback

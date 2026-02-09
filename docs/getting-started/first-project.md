@@ -393,9 +393,9 @@ This uses your custom-built parachain node binary instead of the omni node.
 
 ---
 
-## Step 6: Commit Your Changes
+## Step 6: Commit and Push to Your Repository
 
-Your project was created on a git branch. Commit your changes:
+The project created by `dot create` is a **standalone project** that lives in your own repository, not inside the cookbook.
 
 ```bash
 # Review changes
@@ -405,53 +405,37 @@ git status
 git add .
 
 # Commit with conventional commit format
-git commit -m "feat(recipe): add my first parachain tutorial"
-```
+git commit -m "feat: add my first parachain"
 
-**Important:** Use [conventional commit format](../contributors/commit-conventions.md):
-```
-feat(recipe): <description>
+# Push to your own repository
+git remote add origin https://github.com/YOUR_USERNAME/recipe-my-first-parachain.git
+git push -u origin main
+
+# Tag a release
+git tag v1.0.0
+git push --tags
 ```
 
 ---
 
-## Step 7: Respond to Review
+## Step 7: Contribute to the Cookbook
 
-If you contribute your project as a recipe (see [Contributing Guide](../../CONTRIBUTING.md)), maintainers will review your PR.
+To share your recipe with the community, add a **test harness** to the cookbook that verifies your external repository. See the [Contributing Guide](../../CONTRIBUTING.md) for the full workflow:
 
-Maintainers will review your PR and may request changes:
+1. Fork the cookbook repository
+2. Add a test harness under `recipes/{pathway}/{your-recipe}/`
+3. Test locally: `cd recipes/{pathway}/{your-recipe} && npm ci && npm test`
+4. Open a pull request
 
-### Making Changes
+Maintainers will review your PR. When they request changes:
 
 ```bash
-# Make requested changes
-vim README.md
-
-# Commit changes
+# Make requested changes to the test harness
+# Commit and push
 git add .
-git commit -m "docs(recipe): clarify installation steps"
-
-# Push to update PR
+git commit -m "fix(recipe): update version tag"
 git push
 ```
-
-The PR will automatically update with your changes.
-
-### Common Review Feedback
-
-**"Add more explanation"**
-- Expand on complex concepts
-- Add intermediate steps
-- Include troubleshooting
-
-**"Tests are failing"**
-- Run tests locally: `npm test`
-- Fix failing tests
-- Commit and push fixes
-
-**"Fix formatting"**
-- Run `cargo fmt` (Rust)
-- Check markdown formatting
 
 ---
 
@@ -552,9 +536,9 @@ Congratulations! You've created your first project. Here's what to explore next:
 
 ### Explore Examples
 
-- **[parachain-example](../../recipes/parachain-example/)** - Full parachain with XCM
-- **[contracts-example](../../recipes/contracts-example/)** - Solidity contracts
-- **[transaction-example](../../recipes/transaction-example/)** - PAPI interactions
+- **[parachain-example](../../recipes/parachains/parachain-example/)** - Full parachain with PAPI integration
+- **[contracts-example](../../recipes/contracts/contracts-example/)** - Solidity contracts
+- **[transaction-example](../../recipes/transactions/transaction-example/)** - PAPI interactions
 - **[cross-chain-transaction-example](../../recipes/cross-chain-transactions/cross-chain-transaction-example/)** - Cross-chain messaging
 
 ### Contribute More

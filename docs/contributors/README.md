@@ -26,10 +26,10 @@ If you're new to contributing, follow this path:
 1. **Install the CLI** - See [Getting Started](../getting-started/installation.md)
 2. **Read the Workflow** - Understand the [contribution workflow](workflow.md)
 3. **Check Guidelines** - Review [recipe guidelines](recipe-guidelines.md)
-4. **Create a Project** - Use `dot create`
-5. **Follow Standards** - Use [conventional commits](commit-conventions.md)
-6. **Test Thoroughly** - Follow [testing guide](testing-recipes.md)
-7. **Create a PR** - Follow the [workflow guide](workflow.md)
+4. **Develop Your Recipe** - Build your project in your own repository (use `dot create` to scaffold)
+5. **Add a Test Harness** - Add a test harness to `recipes/` in the cookbook
+6. **Follow Standards** - Use [conventional commits](commit-conventions.md)
+7. **Open a PR** - Follow the [workflow guide](workflow.md)
 
 ## Recipe Types
 
