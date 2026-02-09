@@ -1,0 +1,50 @@
+name: Parachain Example Recipe
+
+on:
+  push:
+    branches: [master]
+    paths: ['recipes/parachains/parachain-example/**']
+  pull_request:
+    paths: ['recipes/parachains/parachain-example/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rust-src
+          target: wasm32-unknown-unknown
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler clang make
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-registry-parachain-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-parachain-
+
+      - name: Install test dependencies
+        run: |
+          cd recipes/parachains/parachain-example
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd recipes/parachains/parachain-example
+          npm test
+        timeout-minutes: 60

@@ -88,21 +88,12 @@ dot test --rust
 dot test --ts
 ```
 
-### 5. Submit as a Recipe
+### 5. Submit a Pull Request
 
-```bash
-# Submit as a pull request to the cookbook
-dot submit my-project-name
-```
+Recipes are maintained in their own external repositories. To contribute a recipe to the cookbook, submit a pull request linking your external repo:
 
-The CLI will:
-- Run tests to validate your code
-- Validate that required lock files are present (Cargo.lock and/or package-lock.json)
-- Commit changes
-- Push to your fork
-- Create a pull request
-
-Done! 🎉
+1. Push your project to its own GitHub repository
+2. Open a pull request on the [polkadot-cookbook](https://github.com/polkadot-developers/polkadot-cookbook) to add your recipe
 
 <hr />
 
@@ -139,12 +130,11 @@ dot create --title "My Project" --pathway pallets --non-interactive
 dot contract        # Create a contract project
 dot parachain       # Create a parachain project
 
-# Testing and submission
+# Testing
 dot test            # Test current directory project
 dot test <path>     # Test specific project
 dot test --rust     # Run only Rust tests
 dot test --ts       # Run only TypeScript tests
-dot submit          # Submit as pull request to cookbook
 ```
 
 <hr />

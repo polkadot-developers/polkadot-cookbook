@@ -135,53 +135,6 @@ Note: Structure varies by project pathway. See pathway-specific READMEs for deta
 
 ---
 
-### `submit`
-
-Submit recipe as a pull request (requires GitHub CLI).
-
-**Usage:**
-```bash
-dot submit
-```
-
-**Prerequisites:**
-- GitHub CLI (`gh`) installed and authenticated
-- Git configured with user.name and user.email
-- Recipe exists in `recipes/` directory
-- Changes committed to git
-
-**What it Does:**
-1. Validates recipe structure
-2. Checks git repository state
-3. Pushes to your fork (or creates one)
-4. Creates pull request on GitHub
-
-**Interactive Flow:**
-1. Prompts for recipe slug (if not in recipe directory)
-2. Validates recipe exists
-3. Checks for uncommitted changes
-4. Pushes to remote
-5. Creates PR with template
-
-**Exit Codes:**
-- `0` - Success (PR created)
-- `1` - Error (validation failed, git error, GitHub error)
-
-**Troubleshooting:**
-```bash
-# Ensure gh CLI is authenticated
-gh auth status
-
-# Login if needed
-gh auth login
-
-# Configure git if needed
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
-```
-
----
-
 ### `test`
 
 Run tests for a project.
@@ -233,7 +186,6 @@ The CLI respects these environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `GITHUB_TOKEN` | GitHub authentication token | From `gh auth token` |
 | `RUST_LOG` | Logging level (error, warn, info, debug, trace) | error |
 | `NO_COLOR` | Disable colored output | false |
 
@@ -242,11 +194,6 @@ The CLI respects these environment variables:
 ```bash
 # Enable debug logging
 RUST_LOG=debug dot create
-
-# Use specific GitHub token
-GITHUB_TOKEN=ghp_xxx dot submit
-
-# Disable colors
 ```
 
 ---
@@ -295,24 +242,6 @@ cargo install --path ./cli
 # Make executable
 chmod +x target/release/dot
 ```
-
-### GitHub Authentication Failed
-
-**Symptom:** `dot submit` fails with auth error
-
-**Solution:**
-```bash
-# Check auth status
-gh auth status
-
-# Login
-gh auth login
-
-# Verify token
-gh auth token
-```
-
----
 
 ## Related Documentation
 

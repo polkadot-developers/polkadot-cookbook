@@ -29,7 +29,7 @@ If you're new to contributing, follow this path:
 4. **Create a Project** - Use `dot create`
 5. **Follow Standards** - Use [conventional commits](commit-conventions.md)
 6. **Test Thoroughly** - Follow [testing guide](testing-recipes.md)
-7. **Submit PR** - Follow the [workflow guide](workflow.md)
+7. **Create a PR** - Follow the [workflow guide](workflow.md)
 
 ## Recipe Types
 

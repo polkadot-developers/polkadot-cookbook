@@ -1,6 +1,6 @@
 # Your First Project
 
-A step-by-step tutorial for creating your first Polkadot project and submitting it as a recipe to the cookbook.
+A step-by-step tutorial for creating your first Polkadot project.
 
 ## What You'll Learn
 
@@ -8,7 +8,6 @@ By the end of this tutorial, you'll know how to:
 - Create a new project using the CLI
 - Understand the generated file structure
 - Run and test your project
-- Submit your project as a recipe to the cookbook
 
 ## Prerequisites
 
@@ -16,8 +15,7 @@ Before starting, ensure you have:
 
 1. **CLI Installed** - See [Installation Guide](installation.md)
 2. **Git Configured** - Name and email set
-3. **GitHub CLI** - For submitting your project: `gh auth login`
-4. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
+3. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
 
 **Verify your setup:**
 ```bash
@@ -27,9 +25,6 @@ dot --version
 # Check git configuration
 git config user.name
 git config user.email
-
-# Check GitHub CLI
-gh auth status
 ```
 
 ---
@@ -420,36 +415,9 @@ feat(recipe): <description>
 
 ---
 
-## Step 7: Submit Your Project
+## Step 7: Respond to Review
 
-Once your project is complete and tested, submit it for review:
-
-```bash
-dot submit my-first-parachain
-```
-
-### What the Submit Command Does
-
-1. **Runs tests** to validate your code
-2. **Validates** that required lock files are present (Cargo.lock and/or package-lock.json)
-3. **Validates** recipe structure
-4. **Checks** git repository state
-5. **Pushes** to your fork (creates fork if needed)
-6. **Creates** pull request on GitHub
-
-### Pull Request Checklist
-
-Your PR will be reviewed for:
-- ✅ Code quality and correctness
-- ✅ Documentation clarity
-- ✅ Test coverage
-- ✅ Working examples
-- ✅ Lock files committed (Cargo.lock and/or package-lock.json)
-- ✅ Adherence to guidelines
-
----
-
-## Step 8: Respond to Review
+If you contribute your project as a recipe (see [Contributing Guide](../../CONTRIBUTING.md)), maintainers will review your PR.
 
 Maintainers will review your PR and may request changes:
 
@@ -665,32 +633,15 @@ npm test
 npm run generate:types
 ```
 
-### GitHub Authentication Failed
-
-**Symptom:** `dot submit` fails with auth error
-
-**Solution:**
-```bash
-# Check authentication
-gh auth status
-
-# Login if needed
-gh auth login
-
-# Verify token
-gh auth token
-```
-
 ---
 
 ## Summary
 
 You've learned how to:
-- ✅ Create a project with `dot create`
-- ✅ Understand the generated file structure
-- ✅ Build and test a parachain
-- ✅ Run PAPI integration tests
-- ✅ Submit a pull request
+- Create a project with `dot create`
+- Understand the generated file structure
+- Build and test a parachain
+- Run PAPI integration tests
 
 **Ready for more?** Check out the [Recipe Development Guide](../contributors/recipe-development.md) for best practices and advanced techniques.
 

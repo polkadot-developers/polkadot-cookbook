@@ -1,0 +1,31 @@
+name: XCM Example Recipe
+
+on:
+  push:
+    branches: [master]
+    paths: ['recipes/cross-chain-transactions/cross-chain-transaction-example/**']
+  pull_request:
+    paths: ['recipes/cross-chain-transactions/cross-chain-transaction-example/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install test dependencies
+        run: |
+          cd recipes/cross-chain-transactions/cross-chain-transaction-example
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd recipes/cross-chain-transactions/cross-chain-transaction-example
+          npm test
+        timeout-minutes: 15

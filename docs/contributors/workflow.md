@@ -11,7 +11,7 @@ The contribution workflow follows these steps:
 3. **Develop** - Write content, code, and tests
 4. **Test** - Run tests locally
 5. **Commit** - Use conventional commit messages
-6. **Submit** - Create a pull request
+6. **Submit** - Push and create a pull request
 7. **Review** - Respond to feedback
 8. **Merge** - Maintainers merge your contribution
 
@@ -290,7 +290,7 @@ git commit --amend
 
 ---
 
-## Step 6: Submit Your Project as a Recipe
+## Step 6: Submit Your Pull Request
 
 ### Push to Your Fork
 
@@ -301,28 +301,15 @@ git push -u origin your-branch-name
 
 ### Create Pull Request
 
-**Option A: Using the CLI (Recommended)**
-```bash
-dot submit
-```
-
-The CLI will:
-1. Run tests to validate your code
-2. Validate that required lock files are present
-3. Validate project structure
-4. Push to your fork
-5. Create PR with template
-6. Apply appropriate labels
-
-**Option B: Using GitHub CLI**
+**Option A: Using GitHub CLI**
 ```bash
 gh pr create --title "feat(recipe): add your project" --body "Description of your project"
 ```
 
-**Option C: Using GitHub Web UI**
+**Option B: Using GitHub Web UI**
 1. Visit your fork on GitHub
 2. Click **Pull Request**
-3. Select base: `master` ← compare: `your-branch-name`
+3. Select base: `master` <- compare: `your-branch-name`
 4. Fill in PR template
 5. Click **Create Pull Request**
 
@@ -606,7 +593,7 @@ git commit -m "feat(recipe): description"
 
 # Submit
 git push -u origin branch-name
-dot submit
+gh pr create --title "feat(recipe): description" --body "Description"
 
 # Update fork
 git checkout master
@@ -647,14 +634,14 @@ If you need help from maintainers:
 
 The contribution workflow:
 
-1. ✅ Fork and clone repository
-2. ✅ Create project with CLI or manual branch
-3. ✅ Develop content following guidelines
-4. ✅ Test thoroughly (automated and manual)
-5. ✅ Commit with conventional format
-6. ✅ Submit pull request
-7. ✅ Respond to review feedback
-8. ✅ Keep fork updated after merge
+1. Fork and clone repository
+2. Create project with CLI or manual branch
+3. Develop content following guidelines
+4. Test thoroughly (automated and manual)
+5. Commit with conventional format
+6. Push and create a pull request
+7. Respond to review feedback
+8. Keep fork updated after merge
 
 **Happy contributing!**
 

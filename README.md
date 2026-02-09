@@ -207,9 +207,6 @@ dot test
 
 # Or specify a path
 dot test my-pallet
-
-# Submit your project as a recipe to the cookbook
-dot submit my-pallet
 ```
 
 The CLI supports five project pathways:
