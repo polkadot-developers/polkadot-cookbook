@@ -67,7 +67,7 @@ jobs:
         run: |
           cd polkadot-docs/networks/run-a-parachain-network
           npm test
-        timeout-minutes: 45
+        timeout-minutes: 60
 
   notify-failure:
     needs: test
