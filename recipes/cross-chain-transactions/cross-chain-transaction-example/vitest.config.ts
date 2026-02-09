@@ -7,7 +7,7 @@ export default defineConfig({
       shuffle: false,
     },
     testTimeout: 300000, // 5 minutes
-    hookTimeout: 120000, // 2 minutes for Chopsticks startup
+    hookTimeout: 300000, // 5 minutes for Chopsticks startup
     reporters: ["verbose"],
     pool: "forks",
     poolOptions: {

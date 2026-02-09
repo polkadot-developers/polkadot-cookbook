@@ -5,7 +5,7 @@ import { join } from "path";
 
 const PROJECT_DIR = process.cwd();
 const REPO_URL = "https://github.com/brunopgalvao/recipe-xcm-example";
-const REPO_VERSION = "v1.0.0";
+const REPO_VERSION = "v1.1.0";
 const REPO_DIR = join(PROJECT_DIR, "recipe-xcm-example");
 
 let chopsticksProcess: ChildProcess | null = null;
@@ -72,45 +72,49 @@ describe("Cross-Chain Transaction Example Recipe", () => {
     it("should start Chopsticks for local multi-chain testing", async () => {
       console.log("Starting Chopsticks...");
 
-      chopsticksProcess = spawn("npx", ["@acala-network/chopsticks", "xcm", "--config=chopsticks.yml"], {
+      chopsticksProcess = spawn("npm", ["run", "chopsticks"], {
         cwd: REPO_DIR,
         stdio: ["ignore", "pipe", "pipe"],
         detached: true,
       });
 
-      // Wait for Chopsticks to be ready
-      const maxWaitTime = 120000; // 2 minutes
-      const startTime = Date.now();
-      let ready = false;
+      // Wait for Chopsticks to be ready (both relay chain and parachain)
+      const maxWaitTime = 300000; // 5 minutes
+      let rpcCount = 0;
+      const requiredRpcCount = 2; // relay chain + parachain
 
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
-          if (!ready) reject(new Error("Chopsticks failed to start within 2 minutes"));
+          reject(new Error(`Chopsticks failed to start within 5 minutes (${rpcCount}/${requiredRpcCount} chains ready)`));
         }, maxWaitTime);
+
+        const checkOutput = (output: string) => {
+          const matches = output.match(/RPC listening/g);
+          if (matches) {
+            rpcCount += matches.length;
+            if (rpcCount >= requiredRpcCount) {
+              clearTimeout(timeout);
+              console.log("Chopsticks is ready (both chains up)!");
+              resolve();
+            }
+          }
+        };
 
         chopsticksProcess!.stdout?.on("data", (data) => {
           const output = data.toString();
-          if (output.includes("RPC listening")) {
-            ready = true;
-            clearTimeout(timeout);
-            console.log("Chopsticks is ready!");
-            resolve();
-          }
+          console.log(`[chopsticks:stdout] ${output.trim()}`);
+          checkOutput(output);
         });
 
         chopsticksProcess!.stderr?.on("data", (data) => {
           const output = data.toString();
-          if (output.includes("RPC listening")) {
-            ready = true;
-            clearTimeout(timeout);
-            console.log("Chopsticks is ready!");
-            resolve();
-          }
+          console.log(`[chopsticks:stderr] ${output.trim()}`);
+          checkOutput(output);
         });
       });
 
-      expect(ready).toBe(true);
-    }, 180000);
+      expect(rpcCount).toBeGreaterThanOrEqual(requiredRpcCount);
+    }, 360000);
   });
 
   // ==================== TEST ====================
