@@ -1,7 +1,7 @@
 {
-  "name": "transaction-example-test",
+  "name": "pallet-example-test",
   "version": "1.0.0",
-  "description": "Verification tests for the transaction-example recipe",
+  "description": "Verification tests for the pallet-example recipe",
   "type": "module",
   "scripts": {
     "test": "vitest run"

@@ -7,7 +7,7 @@ export default defineConfig({
       shuffle: false,
     },
     testTimeout: 2700000, // 45 minutes for Rust builds
-    hookTimeout: 300000, // 5 minutes for hooks
+    hookTimeout: 60000,
     reporters: ["verbose"],
     pool: "forks",
     poolOptions: {

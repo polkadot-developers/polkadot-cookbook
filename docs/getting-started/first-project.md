@@ -1,6 +1,6 @@
 # Your First Project
 
-A step-by-step tutorial for creating your first Polkadot project and submitting it as a recipe to the cookbook.
+A step-by-step tutorial for creating your first Polkadot project.
 
 ## What You'll Learn
 
@@ -8,7 +8,6 @@ By the end of this tutorial, you'll know how to:
 - Create a new project using the CLI
 - Understand the generated file structure
 - Run and test your project
-- Submit your project as a recipe to the cookbook
 
 ## Prerequisites
 
@@ -16,8 +15,7 @@ Before starting, ensure you have:
 
 1. **CLI Installed** - See [Installation Guide](installation.md)
 2. **Git Configured** - Name and email set
-3. **GitHub CLI** - For submitting your project: `gh auth login`
-4. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
+3. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
 
 **Verify your setup:**
 ```bash
@@ -27,9 +25,6 @@ dot --version
 # Check git configuration
 git config user.name
 git config user.email
-
-# Check GitHub CLI
-gh auth status
 ```
 
 ---
@@ -398,9 +393,9 @@ This uses your custom-built parachain node binary instead of the omni node.
 
 ---
 
-## Step 6: Commit Your Changes
+## Step 6: Commit and Push to Your Repository
 
-Your project was created on a git branch. Commit your changes:
+The project created by `dot create` is a **standalone project** that lives in your own repository, not inside the cookbook.
 
 ```bash
 # Review changes
@@ -410,80 +405,37 @@ git status
 git add .
 
 # Commit with conventional commit format
-git commit -m "feat(recipe): add my first parachain tutorial"
-```
+git commit -m "feat: add my first parachain"
 
-**Important:** Use [conventional commit format](../contributors/commit-conventions.md):
-```
-feat(recipe): <description>
+# Push to your own repository
+git remote add origin https://github.com/YOUR_USERNAME/recipe-my-first-parachain.git
+git push -u origin main
+
+# Tag a release
+git tag v1.0.0
+git push --tags
 ```
 
 ---
 
-## Step 7: Submit Your Project
+## Step 7: Contribute to the Cookbook
 
-Once your project is complete and tested, submit it for review:
+To share your recipe with the community, add a **test harness** to the cookbook that verifies your external repository. See the [Contributing Guide](../../CONTRIBUTING.md) for the full workflow:
 
-```bash
-dot submit my-first-parachain
-```
+1. Fork the cookbook repository
+2. Add a test harness under `recipes/{pathway}/{your-recipe}/`
+3. Test locally: `cd recipes/{pathway}/{your-recipe} && npm ci && npm test`
+4. Open a pull request
 
-### What the Submit Command Does
-
-1. **Runs tests** to validate your code
-2. **Validates** that required lock files are present (Cargo.lock and/or package-lock.json)
-3. **Validates** recipe structure
-4. **Checks** git repository state
-5. **Pushes** to your fork (creates fork if needed)
-6. **Creates** pull request on GitHub
-
-### Pull Request Checklist
-
-Your PR will be reviewed for:
-- ✅ Code quality and correctness
-- ✅ Documentation clarity
-- ✅ Test coverage
-- ✅ Working examples
-- ✅ Lock files committed (Cargo.lock and/or package-lock.json)
-- ✅ Adherence to guidelines
-
----
-
-## Step 8: Respond to Review
-
-Maintainers will review your PR and may request changes:
-
-### Making Changes
+Maintainers will review your PR. When they request changes:
 
 ```bash
-# Make requested changes
-vim README.md
-
-# Commit changes
+# Make requested changes to the test harness
+# Commit and push
 git add .
-git commit -m "docs(recipe): clarify installation steps"
-
-# Push to update PR
+git commit -m "fix(recipe): update version tag"
 git push
 ```
-
-The PR will automatically update with your changes.
-
-### Common Review Feedback
-
-**"Add more explanation"**
-- Expand on complex concepts
-- Add intermediate steps
-- Include troubleshooting
-
-**"Tests are failing"**
-- Run tests locally: `npm test`
-- Fix failing tests
-- Commit and push fixes
-
-**"Fix formatting"**
-- Run `cargo fmt` (Rust)
-- Check markdown formatting
 
 ---
 
@@ -584,9 +536,9 @@ Congratulations! You've created your first project. Here's what to explore next:
 
 ### Explore Examples
 
-- **[parachain-example](../../recipes/parachain-example/)** - Full parachain with XCM
-- **[contracts-example](../../recipes/contracts-example/)** - Solidity contracts
-- **[transaction-example](../../recipes/transaction-example/)** - PAPI interactions
+- **[parachain-example](../../recipes/parachains/parachain-example/)** - Full parachain with PAPI integration
+- **[contracts-example](../../recipes/contracts/contracts-example/)** - Solidity contracts
+- **[transaction-example](../../recipes/transactions/transaction-example/)** - PAPI interactions
 - **[cross-chain-transaction-example](../../recipes/cross-chain-transactions/cross-chain-transaction-example/)** - Cross-chain messaging
 
 ### Contribute More
@@ -665,32 +617,15 @@ npm test
 npm run generate:types
 ```
 
-### GitHub Authentication Failed
-
-**Symptom:** `dot submit` fails with auth error
-
-**Solution:**
-```bash
-# Check authentication
-gh auth status
-
-# Login if needed
-gh auth login
-
-# Verify token
-gh auth token
-```
-
 ---
 
 ## Summary
 
 You've learned how to:
-- ✅ Create a project with `dot create`
-- ✅ Understand the generated file structure
-- ✅ Build and test a parachain
-- ✅ Run PAPI integration tests
-- ✅ Submit a pull request
+- Create a project with `dot create`
+- Understand the generated file structure
+- Build and test a parachain
+- Run PAPI integration tests
 
 **Ready for more?** Check out the [Recipe Development Guide](../contributors/recipe-development.md) for best practices and advanced techniques.
 

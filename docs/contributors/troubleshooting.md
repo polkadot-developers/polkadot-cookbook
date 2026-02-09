@@ -100,33 +100,6 @@ sudo dnf install git
 
 ---
 
-### GitHub CLI Authentication Fails
-
-**Symptom:**
-```bash
-$ dot submit
-Error: GitHub CLI not authenticated
-```
-
-**Solution:**
-```bash
-# Check auth status
-gh auth status
-
-# Login
-gh auth login
-
-# Follow prompts:
-# 1. Select: GitHub.com
-# 2. Select: HTTPS
-# 3. Authenticate via web browser
-
-# Verify
-gh auth status
-```
-
----
-
 ## Project Creation
 
 ### Project Create Fails with "Directory Already Exists"
@@ -662,31 +635,6 @@ git push --force-with-lease
 ```
 
 ---
-
-### PR Creation Fails
-
-**Symptom:**
-```bash
-$ dot submit
-Error: Failed to create pull request
-```
-
-**Solutions:**
-
-```bash
-# Check gh auth
-gh auth status
-
-# Check git status
-git status  # Ensure changes are committed
-
-# Check remote
-git remote -v  # Ensure fork exists
-
-# Manual PR creation
-git push -u origin recipe/my-recipe
-gh pr create --title "feat(recipe): my project" --body "Description"
-```
 
 ---
 
