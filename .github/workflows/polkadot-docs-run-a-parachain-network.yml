@@ -34,7 +34,7 @@ jobs:
 
       - name: Install Zombienet
         run: |
-          ZOMBIENET_VERSION="v1.3.117"
+          ZOMBIENET_VERSION="v1.3.138"
           curl -L -o zombienet https://github.com/paritytech/zombienet/releases/download/${ZOMBIENET_VERSION}/zombienet-linux-x64
           chmod +x zombienet
           sudo mv zombienet /usr/local/bin/
