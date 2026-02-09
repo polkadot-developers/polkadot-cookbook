@@ -57,7 +57,7 @@ describe("Pallet Example Recipe", () => {
   describe("3. Run Tests", () => {
     it("should pass all cargo tests", () => {
       console.log("Running cargo tests (this may take several minutes on first build)...");
-      execSync("cargo test --all-features --locked", {
+      execSync("cargo test --all-features", {
         cwd: REPO_DIR,
         encoding: "utf-8",
         stdio: "inherit",
