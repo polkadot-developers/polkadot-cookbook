@@ -50,10 +50,8 @@ The `dot` CLI provides commands for creating and managing recipes:
 # Create a new project
 dot create --title "My Project"
 
-# View versions
-
-# Submit recipe for review
-dot submit
+# Test your project
+dot test
 ```
 
 [→ Complete CLI Reference](cli-reference.md)

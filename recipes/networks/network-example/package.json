@@ -1,33 +1,14 @@
 {
-  "name": "network-example",
+  "name": "network-example-test",
   "version": "1.0.0",
-  "description": "Replace with a short description.",
+  "description": "Verification tests for the network-example recipe",
   "type": "module",
   "scripts": {
-    "zombienet": "zombienet spawn configs/network.toml",
-    "chopsticks": "chopsticks xcm --config=configs/chopsticks.yml",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run"
   },
-  "keywords": [
-    "polkadot",
-    "zombienet",
-    "chopsticks",
-    "testing",
-    "blockchain"
-  ],
-  "author": "",
-  "license": "MIT OR Apache-2.0",
   "devDependencies": {
-    "@acala-network/chopsticks": "^1.2.3",
-    "@acala-network/chopsticks-testing": "^1.2.3",
-    "@types/node": "^20.19.25",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
-    "vitest": "^1.6.1"
-  },
-  "dependencies": {
-    "@polkadot/api": "^16.5.2",
-    "ws": "^8.18.3"
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
   }
 }
