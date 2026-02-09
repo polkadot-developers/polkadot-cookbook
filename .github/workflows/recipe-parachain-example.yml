@@ -38,6 +38,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-parachain-
 
+      - name: Cache polkadot-omni-node binary
+        uses: actions/cache@v4
+        id: cache-omni-node
+        with:
+          path: ~/.cargo/bin/polkadot-omni-node
+          key: ${{ runner.os }}-polkadot-omni-node-v1
+
+      - name: Install polkadot-omni-node
+        if: steps.cache-omni-node.outputs.cache-hit != 'true'
+        run: cargo install polkadot-omni-node
+
       - name: Install test dependencies
         run: |
           cd recipes/parachains/parachain-example
