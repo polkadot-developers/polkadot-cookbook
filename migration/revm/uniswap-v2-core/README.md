@@ -12,22 +12,12 @@ This project tests Uniswap V2 Core smart contracts on Polkadot's REVM (Ethereum-
 
 ## Prerequisites
 
-- Node.js 18+
-
-## Setup
-
-```bash
-# Clone the Uniswap V2 repository
-npm run clone
-
-# Or manually
-./scripts/clone.sh
-```
+- Node.js 22+
 
 ## Running Tests
 
 ```bash
-# Run tests on REVM local network
+npm ci
 npm test
 ```
 
