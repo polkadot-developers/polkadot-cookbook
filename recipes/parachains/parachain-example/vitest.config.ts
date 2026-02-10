@@ -1,10 +1,20 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    globals: true,
-    environment: 'node',
-    testTimeout: 60000,
-    hookTimeout: 60000,
+    fileParallelism: false,
+    sequence: {
+      shuffle: false,
+    },
+    testTimeout: 2700000, // 45 minutes for Rust builds
+    hookTimeout: 300000, // 5 minutes for hooks
+    reporters: ["verbose"],
+    pool: "forks",
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
+    include: ["tests/recipe.test.ts"],
   },
 });

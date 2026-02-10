@@ -66,7 +66,6 @@ A thin CLI wrapper around the core library that provides a command-line interfac
 
 - `create` - Create a new project with interactive prompts
 - `test` - Test a project
-- `submit` - Submit project as a recipe to the cookbook
 
 ### Features
 

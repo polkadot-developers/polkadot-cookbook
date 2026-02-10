@@ -22,7 +22,13 @@ Thank you for your interest in contributing! The easiest way to contribute a rec
 
 ### 1. Install the CLI
 
-**Download pre-built binary:**
+**macOS / Linux:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash
+```
+
+**Or download pre-built binaries:**
 
 ```bash
 # Linux (x86_64)
@@ -34,75 +40,59 @@ curl -L https://github.com/polkadot-developers/polkadot-cookbook/releases/latest
 sudo mv dot /usr/local/bin/
 ```
 
-**Or build from source:**
+### 2. Create and Develop Your Recipe
+
+Use `dot create` to scaffold a standalone project for local development:
 
 ```bash
-git clone https://github.com/polkadot-developers/polkadot-cookbook.git
-cd polkadot-cookbook
-cargo build --release --bin dot
-# Use ./target/release/dot
-```
-
-### 2. Create a Project
-
-```bash
-# Interactive mode (recommended)
 dot create
-
-# Or specify a pathway directly
-dot create --pathway pallets --title "My Custom Pallet"
 ```
 
-The CLI will guide you through:
-- **Pathway** - Pallets, Contracts, Transactions, XCM, or Networks
-- **Title** - Clear, descriptive name (e.g., "NFT Pallet with Minting")
-- **Description** - Brief 1-2 sentence summary
+Develop and test your recipe in this project. The code lives in **your own repository**, not inside the cookbook.
 
-The CLI automatically:
-- Creates the project structure
-- Sets up testing infrastructure
-- Installs dependencies
-- Creates a git branch
+### 3. Push to Your Own Repository
 
-### 3. Write Your Code
-
-Edit the generated files:
-- `README.md` - Your recipe content (the CLI provides a template)
-- `src/` or `pallets/` - Your implementation
-- `tests/` - Test your code
-
-### 4. Test Your Project
+Push your project to your own GitHub repository and tag a release:
 
 ```bash
-# Test from within the project directory
-cd my-project-name
-dot test
-
-# Or specify the project path
-dot test my-project-name
-
-# Run only Rust tests
-dot test --rust
-
-# Run only TypeScript tests
-dot test --ts
+cd my-recipe
+git remote add origin https://github.com/YOUR_USERNAME/recipe-my-recipe.git
+git push -u origin main
+git tag v1.0.0
+git push --tags
 ```
 
-### 5. Submit as a Recipe
+### 4. Add a Test Harness to the Cookbook
+
+Fork the cookbook and create a test harness directory under `recipes/{pathway}/{your-recipe}/`:
+
+```
+recipes/{pathway}/{your-recipe}/
+├── package.json           # vitest + @types/node + typescript
+├── package-lock.json      # Locked dependencies
+├── vitest.config.ts       # Vitest config
+├── tsconfig.json          # TypeScript config
+├── .gitignore             # Ignore cloned repo dir, node_modules
+├── README.md              # Description + link to external repo
+└── tests/
+    └── recipe.test.ts     # Clone → install → build → test
+```
+
+Use an existing recipe as a template (e.g., [`recipes/contracts/contracts-example/`](recipes/contracts/contracts-example/)).
+
+### 5. Test Locally
 
 ```bash
-# Submit as a pull request to the cookbook
-dot submit my-project-name
+cd recipes/{pathway}/{your-recipe}
+npm ci
+npm test
 ```
 
-The CLI will:
-- Run tests to validate your code
-- Validate that required lock files are present (Cargo.lock and/or package-lock.json)
-- Commit changes
-- Push to your fork
-- Create a pull request
+This will clone your external repo, install its dependencies, build, and run its tests.
 
-Done! 🎉
+### 6. Open a Pull Request
+
+Push your fork and open a PR against the cookbook repository.
 
 <hr />
 
@@ -139,13 +129,14 @@ dot create --title "My Project" --pathway pallets --non-interactive
 dot contract        # Create a contract project
 dot parachain       # Create a parachain project
 
-# Testing and submission
+# Testing
 dot test            # Test current directory project
 dot test <path>     # Test specific project
 dot test --rust     # Run only Rust tests
 dot test --ts       # Run only TypeScript tests
-dot submit          # Submit as pull request to cookbook
 ```
+
+> **Note:** `dot create` scaffolds a standalone project for local development. The resulting project lives in your own repository, not inside the cookbook.
 
 <hr />
 
@@ -166,6 +157,8 @@ Use clear, descriptive titles:
 - Add clear comments for complex logic
 - Include error handling
 - **Commit lock files** (Cargo.lock and/or package-lock.json) to ensure reproducible builds
+- **Pin a version tag** in the test harness (e.g., `v1.0.0`) so builds are reproducible
+- **Include `package-lock.json`** in the test harness directory
 
 ### Commit Messages
 

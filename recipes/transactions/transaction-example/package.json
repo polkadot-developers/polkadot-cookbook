@@ -1,39 +1,14 @@
 {
-  "name": "transaction-example",
+  "name": "transaction-example-test",
   "version": "1.0.0",
-  "description": "Replace with a short description.",
+  "description": "Verification tests for the transaction-example recipe",
   "type": "module",
   "scripts": {
-    "generate": "papi add -n paseo_asset_hub ahp",
-    "postinstall": "npm run generate",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "tsc --noEmit && eslint . --ext .ts"
-  },
-  "keywords": [
-    "polkadot",
-    "papi",
-    "blockchain",
-    "transactions"
-  ],
-  "author": "",
-  "license": "MIT OR Apache-2.0",
-  "dependencies": {
-    "@polkadot-api/descriptors": "file:.papi/descriptors",
-    "@polkadot-labs/hdkd": "^0.0.10",
-    "@polkadot-labs/hdkd-helpers": "^0.0.10",
-    "@polkadot/api": "^16.5.2",
-    "polkadot-api": "^1.20.0",
-    "ws": "^8.18.3"
+    "test": "vitest run"
   },
   "devDependencies": {
-    "@polkadot-api/cli": "^0.15.3",
-    "@types/node": "^20.19.25",
-    "@typescript-eslint/eslint-plugin": "^7.13.0",
-    "@typescript-eslint/parser": "^7.13.0",
-    "eslint": "^8.57.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
-    "vitest": "^1.6.1"
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
   }
 }

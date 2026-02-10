@@ -1,0 +1,14 @@
+{
+  "name": "pallet-example-test",
+  "version": "1.0.0",
+  "description": "Verification tests for the pallet-example recipe",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  }
+}

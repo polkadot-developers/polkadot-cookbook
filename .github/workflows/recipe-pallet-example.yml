@@ -1,0 +1,44 @@
+name: Pallet Example Recipe
+
+on:
+  push:
+    branches: [master]
+    paths: ['recipes/pallets/pallet-example/**']
+  pull_request:
+    paths: ['recipes/pallets/pallet-example/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-registry-pallet-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-pallet-
+
+      - name: Install test dependencies
+        run: |
+          cd recipes/pallets/pallet-example
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd recipes/pallets/pallet-example
+          npm test
+        timeout-minutes: 60

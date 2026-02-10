@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Cloned recipe repo
+recipe-parachain-example/
+
+# Build artifacts
+dist/
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/

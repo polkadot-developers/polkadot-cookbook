@@ -1,0 +1,5 @@
+endpoint:
+  - wss://rpc.ibp.network/polkadot
+  - wss://polkadot-rpc.dwellir.com
+mock-signature-host: true
+port: 8000
