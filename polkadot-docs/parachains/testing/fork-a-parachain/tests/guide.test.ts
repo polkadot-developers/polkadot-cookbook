@@ -45,10 +45,9 @@ function rpcCall(
       }
     };
 
-    ws.onerror = (event) => {
+    ws.onerror = () => {
       clearTimeout(timer);
-      ws.close();
-      reject(new Error(`WebSocket error: ${event}`));
+      reject(new Error(`WebSocket error connecting to ${CHOPSTICKS_WS}`));
     };
   });
 }
