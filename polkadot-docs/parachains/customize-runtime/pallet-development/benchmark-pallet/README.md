@@ -2,9 +2,10 @@
 title: "Benchmark Pallets"
 description: "Verify the benchmark pallets guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/pallet-development/benchmark-pallet/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/pallet-development/benchmark-pallet.md"
 last_tested: "2025-01-28"
-polkadot_sdk_version: "2503.0.1"
-parachain_template_version: "v0.0.4"
+polkadot_sdk_version: "2512.1.0"
+parachain_template_version: "v0.0.5"
 ---
 
 # Benchmark Pallets
@@ -16,7 +17,7 @@ This project verifies the [Benchmark Pallets](https://docs.polkadot.com/parachai
 ## What This Tests
 
 1. Prerequisites check (Rust, wasm target, git)
-2. Clone the parachain template repository (v0.0.4)
+2. Clone the parachain template repository (v0.0.5)
 3. Create a `pallet-custom` with benchmarking support:
    - `Cargo.toml` with `runtime-benchmarks` feature
    - `lib.rs` with `WeightInfo` trait and benchmarking module declaration
@@ -58,7 +59,7 @@ npm test
 Verifies all prerequisites are installed with correct versions.
 
 ### 2. Clone Template and Create Pallet
-- Clones `polkadot-sdk-parachain-template` (v0.0.4)
+- Clones `polkadot-sdk-parachain-template` (v0.0.5)
 - Creates `pallets/pallet-custom` directory
 - Writes pallet `Cargo.toml` with `runtime-benchmarks` feature
 - Adds pallet to workspace
@@ -127,8 +128,8 @@ pub fn increment(origin: OriginFor<T>, amount: u32) -> DispatchResult {
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | 2503.0.1 |
-| Parachain Template | v0.0.4 |
+| Polkadot SDK | 2512.1.0 |
+| Parachain Template | v0.0.5 |
 
 ## Source
 

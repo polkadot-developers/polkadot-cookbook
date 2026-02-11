@@ -2,9 +2,10 @@
 title: "Mock Your Runtime"
 description: "Verify the mock your runtime guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/pallet-development/mock-runtime/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/pallet-development/mock-runtime.md"
 last_tested: "2025-01-28"
-polkadot_sdk_version: "2503.0.1"
-parachain_template_version: "v0.0.4"
+polkadot_sdk_version: "2512.1.0"
+parachain_template_version: "v0.0.5"
 ---
 
 # Mock Your Runtime
@@ -16,7 +17,7 @@ This project verifies the [Mock Your Runtime](https://docs.polkadot.com/parachai
 ## What This Tests
 
 1. Prerequisites check (Rust, wasm target, git)
-2. Clone the parachain template repository (v0.0.4)
+2. Clone the parachain template repository (v0.0.5)
 3. Create a `pallet-custom` in the pallets directory (prerequisite from create-a-pallet guide)
 4. Write the pallet's `Cargo.toml` with FRAME dependencies
 5. Write `src/lib.rs` with the `#[cfg(test)] mod mock;` declaration
@@ -54,7 +55,7 @@ npm test
 Verifies all prerequisites are installed with correct versions.
 
 ### 2. Clone Template and Create Pallet (Prerequisite)
-- Clones `polkadot-sdk-parachain-template` (v0.0.4)
+- Clones `polkadot-sdk-parachain-template` (v0.0.5)
 - Creates `pallets/pallet-custom` directory
 - Writes pallet `Cargo.toml` with FRAME dependencies (sp-io and sp-runtime are accessed via `frame::deps`)
 - Adds pallet to workspace members and dependencies
@@ -79,8 +80,8 @@ Verifies all prerequisites are installed with correct versions.
 To manually replicate this guide:
 
 ```bash
-# 1. Clone the template (using v0.0.4 release)
-git clone --branch v0.0.4 https://github.com/paritytech/polkadot-sdk-parachain-template.git
+# 1. Clone the template (using v0.0.5 release)
+git clone --branch v0.0.5 https://github.com/paritytech/polkadot-sdk-parachain-template.git
 cd polkadot-sdk-parachain-template
 
 # 2. Create the pallet directory (if following from create-a-pallet guide)
@@ -124,8 +125,8 @@ Uses `#[derive_impl(frame_system::config_preludes::TestDefaultConfig)]` to inher
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | 2503.0.1 |
-| Parachain Template | v0.0.4 |
+| Polkadot SDK | 2512.1.0 |
+| Parachain Template | v0.0.5 |
 
 ## Source
 

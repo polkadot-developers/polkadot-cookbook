@@ -26,7 +26,7 @@ echo "wasm32-unknown-unknown target: installed"
 # Check chain-spec-builder
 if ! command -v chain-spec-builder &> /dev/null; then
     echo "Installing chain-spec-builder..."
-    cargo install staging-chain-spec-builder@10.0.0 --locked
+    cargo install staging-chain-spec-builder@16.0.0 --locked
 fi
 CHAIN_SPEC_VERSION=$(chain-spec-builder --version 2>&1 | head -1)
 echo "chain-spec-builder: $CHAIN_SPEC_VERSION"
@@ -34,7 +34,7 @@ echo "chain-spec-builder: $CHAIN_SPEC_VERSION"
 # Check polkadot-omni-node
 if ! command -v polkadot-omni-node &> /dev/null; then
     echo "Installing polkadot-omni-node..."
-    cargo install polkadot-omni-node@0.5.0 --locked
+    cargo install polkadot-omni-node@0.13.0 --locked
 fi
 OMNI_NODE_VERSION=$(polkadot-omni-node --version 2>&1 | head -1)
 echo "polkadot-omni-node: $OMNI_NODE_VERSION"

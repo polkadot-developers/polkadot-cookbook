@@ -2,8 +2,9 @@
 title: "Add Existing Pallets to Runtime"
 description: "Verify the add existing pallets guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/add-existing-pallets/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/add-existing-pallets.md"
 last_tested: "2025-01-09"
-polkadot_sdk_version: "polkadot-v2503.0.1"
+polkadot_sdk_version: "polkadot-stable2512-1"
 ---
 
 # Add Existing Pallets to Runtime
@@ -37,8 +38,8 @@ Before running tests, ensure you have:
 
 ```bash
 # Install the tools with pinned versions (see "Versions Tested" below)
-cargo install --locked staging-chain-spec-builder@10.0.0
-cargo install --locked polkadot-omni-node@0.5.0
+cargo install --locked staging-chain-spec-builder@16.0.0
+cargo install --locked polkadot-omni-node@0.13.0
 ```
 
 ## Running Tests
@@ -118,9 +119,9 @@ polkadot-omni-node --chain ./chain_spec.json --dev
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | polkadot-v2503.0.1 |
-| chain-spec-builder | 10.0.0 |
-| polkadot-omni-node | 0.5.0 |
+| Polkadot SDK | polkadot-stable2512-1 |
+| chain-spec-builder | 16.0.0 |
+| polkadot-omni-node | 0.13.0 |
 
 ## Source
 
