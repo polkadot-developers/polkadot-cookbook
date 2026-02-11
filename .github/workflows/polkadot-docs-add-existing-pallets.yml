@@ -19,9 +19,6 @@ jobs:
         run: |
           cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
           rustup show
-          rustup default 1.88
-          rustup target add wasm32-unknown-unknown
-          rustup component add rust-src
 
       - uses: actions/setup-node@v4
         with:
@@ -35,25 +32,19 @@ jobs:
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Cache Cargo bin
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-16.0.0-omni-node-0.13.0
-
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler libclang-dev
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
       - name: Install required tools
-        env:
-          RUSTUP_TOOLCHAIN: "1.88"
         run: |
-          if ! command -v chain-spec-builder &> /dev/null; then
-            cargo install staging-chain-spec-builder@16.0.0 --locked
-          fi
-          if ! command -v polkadot-omni-node &> /dev/null; then
-            cargo install polkadot-omni-node@0.13.0 --locked
-          fi
+          RELEASE_TAG="polkadot-stable2512-1"
+          BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/${RELEASE_TAG}"
+          curl -L -o chain-spec-builder "${BASE_URL}/chain-spec-builder"
+          curl -L -o polkadot-omni-node "${BASE_URL}/polkadot-omni-node"
+          chmod +x chain-spec-builder polkadot-omni-node
+          sudo mv chain-spec-builder polkadot-omni-node /usr/local/bin/
+          chain-spec-builder --version
+          polkadot-omni-node --version
 
       - name: Install npm dependencies
         run: |
