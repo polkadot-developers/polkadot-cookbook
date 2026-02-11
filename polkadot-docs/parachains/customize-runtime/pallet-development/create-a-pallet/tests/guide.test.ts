@@ -12,7 +12,7 @@ import { join } from "path";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const TEMPLATE_DIR = join(WORKSPACE_DIR, "parachain-template");
-const TEMPLATE_VERSION = "v0.0.4";
+const TEMPLATE_VERSION = "v0.0.5";
 const CHAIN_SPEC_PATH = join(WORKSPACE_DIR, "chain_spec.json");
 const PID_FILE = join(WORKSPACE_DIR, "node.pid");
 const WASM_PATH = join(
@@ -210,7 +210,7 @@ describe("Create a Custom Pallet Guide", () => {
         console.log(`chain-spec-builder: ${result.trim()}`);
       } catch (error) {
         console.log("Installing chain-spec-builder...");
-        execSync("cargo install staging-chain-spec-builder@10.0.0 --locked", {
+        execSync("cargo install staging-chain-spec-builder@16.0.0 --locked", {
           stdio: "inherit",
         });
       }
@@ -225,7 +225,7 @@ describe("Create a Custom Pallet Guide", () => {
         console.log(`polkadot-omni-node: ${result.trim()}`);
       } catch (error) {
         console.log("Installing polkadot-omni-node...");
-        execSync("cargo install polkadot-omni-node@0.5.0 --locked", {
+        execSync("cargo install polkadot-omni-node@0.13.0 --locked", {
           stdio: "inherit",
         });
       }
@@ -329,17 +329,13 @@ describe("Create a Custom Pallet Guide", () => {
         return;
       }
 
-      // Add to workspace members - look for the members array specifically
-      // The members array has entries like: "node", "pallets/template", "runtime"
-      // We need to add after "runtime" in the members array
-      const membersRegex = /(members\s*=\s*\[\s*\n\s*"node",\s*\n\s*"pallets\/template",\s*\n\s*"runtime",)/;
+      // Add to workspace members (match 'members' but not 'default-members')
+      const membersRegex = /^(members\s*=\s*\[([^\]]*)\])/m;
       const match = content.match(membersRegex);
 
       if (match) {
-        content = content.replace(
-          match[1],
-          `${match[1]}\n    "pallets/pallet-custom",`
-        );
+        const updatedMembers = match[1].replace(']', ', "pallets/pallet-custom"]');
+        content = content.replace(match[1], updatedMembers);
         writeFileSync(cargoPath, content);
         console.log("Added pallet-custom to workspace members");
       } else {

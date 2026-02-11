@@ -58,7 +58,7 @@ describe("Add Existing Pallets Guide", () => {
         console.log(`chain-spec-builder: ${result.trim()}`);
       } catch (error) {
         console.log("Installing chain-spec-builder...");
-        execSync("cargo install staging-chain-spec-builder@10.0.0 --locked", {
+        execSync("cargo install staging-chain-spec-builder@16.0.0 --locked", {
           stdio: "inherit",
         });
       }
@@ -73,7 +73,7 @@ describe("Add Existing Pallets Guide", () => {
         console.log(`polkadot-omni-node: ${result.trim()}`);
       } catch (error) {
         console.log("Installing polkadot-omni-node...");
-        execSync("cargo install polkadot-omni-node@0.5.0 --locked", {
+        execSync("cargo install polkadot-omni-node@0.13.0 --locked", {
           stdio: "inherit",
         });
       }
@@ -121,15 +121,14 @@ describe("Add Existing Pallets Guide", () => {
       }
 
       // Find the polkadot-sdk features array and add pallet-utility
-      // Look for the features array in the polkadot-sdk dependency
-      const featuresRegex = /(features\s*=\s*\[[\s\S]*?"pallet-transaction-payment-rpc-runtime-api")/;
+      const featuresRegex = /("pallet-transaction-payment-rpc-runtime-api")/;
       const match = content.match(featuresRegex);
 
       if (match) {
         // Add pallet-utility after pallet-transaction-payment-rpc-runtime-api
         content = content.replace(
           match[1],
-          `${match[1]},\n\t"pallet-utility"`
+          `${match[1]}, "pallet-utility"`
         );
         writeFileSync(cargoPath, content);
         console.log("Added pallet-utility to Cargo.toml features");

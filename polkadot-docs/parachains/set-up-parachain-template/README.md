@@ -2,8 +2,9 @@
 title: "Set Up the Parachain Template"
 description: "Verify the parachain template setup guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/launch-a-parachain/set-up-the-parachain-template/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/launch-a-parachain/set-up-the-parachain-template.md"
 last_tested: "2025-01-06"
-polkadot_sdk_version: "polkadot-v2503.0.1"
+polkadot_sdk_version: "polkadot-stable2512-1"
 ---
 
 # Set Up the Parachain Template
@@ -35,8 +36,8 @@ Before running tests, ensure you have:
 
 ```bash
 # Install the tools with pinned versions (see "Versions Tested" below)
-cargo install --locked staging-chain-spec-builder@10.0.0
-cargo install --locked polkadot-omni-node@0.5.0
+cargo install --locked staging-chain-spec-builder@16.0.0
+cargo install --locked polkadot-omni-node@0.13.0
 ```
 
 ## Running Tests
@@ -77,8 +78,8 @@ rustup show  # Will install version from rust-toolchain.toml
 rustup target add wasm32-unknown-unknown
 
 # 3. Install required tools (pinned versions)
-cargo install --locked staging-chain-spec-builder@10.0.0
-cargo install --locked polkadot-omni-node@0.5.0
+cargo install --locked staging-chain-spec-builder@16.0.0
+cargo install --locked polkadot-omni-node@0.13.0
 
 # 4. Clone the template
 git clone https://github.com/paritytech/polkadot-sdk-parachain-template.git
@@ -103,9 +104,9 @@ polkadot-omni-node --chain ./chain_spec.json --dev
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | polkadot-v2503.0.1 |
-| chain-spec-builder | 10.0.0 |
-| polkadot-omni-node | 0.5.0 |
+| Polkadot SDK | polkadot-stable2512-1 |
+| chain-spec-builder | 16.0.0 |
+| polkadot-omni-node | 0.13.0 |
 
 ## Source
 
