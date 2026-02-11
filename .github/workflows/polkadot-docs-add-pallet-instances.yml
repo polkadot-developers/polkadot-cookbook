@@ -20,6 +20,8 @@ jobs:
           cd polkadot-docs/parachains/customize-runtime/add-pallet-instances
           rustup show
           rustup default 1.88
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
 
       - uses: actions/setup-node@v4
         with:
