@@ -42,7 +42,7 @@ jobs:
           key: ${{ runner.os }}-cargo-bin-chain-spec-builder-16.0.0-omni-node-0.13.0
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler libclang-dev
 
       - name: Install required tools
         run: |
