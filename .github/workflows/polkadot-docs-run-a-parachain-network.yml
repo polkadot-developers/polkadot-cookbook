@@ -19,7 +19,7 @@ jobs:
         run: |
           cd polkadot-docs/networks/run-a-parachain-network
           rustup show
-          rustup default 1.91
+          rustup default 1.88
 
       - uses: actions/setup-node@v4
         with:
