@@ -20,10 +20,8 @@ jobs:
           cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
           rustup show
 
-      - name: Add wasm target and rust-src
-        run: |
-          rustup target add wasm32-unknown-unknown
-          rustup component add rust-src
+      - name: Add wasm target
+        run: rustup target add wasm32-unknown-unknown
 
       - uses: actions/setup-node@v4
         with:
@@ -41,7 +39,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-10.0.0-omni-node-0.5.0
+          key: ${{ runner.os }}-cargo-bin-chain-spec-builder-16.0.0-omni-node-0.13.0
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
@@ -49,10 +47,10 @@ jobs:
       - name: Install required tools
         run: |
           if ! command -v chain-spec-builder &> /dev/null; then
-            cargo install staging-chain-spec-builder@10.0.0 --locked
+            cargo install staging-chain-spec-builder@16.0.0 --locked
           fi
           if ! command -v polkadot-omni-node &> /dev/null; then
-            cargo install polkadot-omni-node@0.5.0 --locked
+            cargo install polkadot-omni-node@0.13.0 --locked
           fi
 
       - name: Install npm dependencies
