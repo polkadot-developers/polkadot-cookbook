@@ -19,7 +19,7 @@ jobs:
         run: |
           cd polkadot-docs/parachains/customize-runtime/add-existing-pallets
           rustup show
-          rustup default 1.91
+          rustup default 1.88
 
       - uses: actions/setup-node@v4
         with:
