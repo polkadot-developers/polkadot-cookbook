@@ -45,6 +45,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler libclang-dev
 
       - name: Install required tools
+        env:
+          RUSTUP_TOOLCHAIN: "1.88"
         run: |
           if ! command -v chain-spec-builder &> /dev/null; then
             cargo install staging-chain-spec-builder@16.0.0 --locked
