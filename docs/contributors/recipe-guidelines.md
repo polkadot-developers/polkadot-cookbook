@@ -2,6 +2,8 @@
 
 Standards and best practices for creating high-quality Polkadot Cookbook recipes.
 
+> **Important:** This guide covers quality standards for two things: **(1)** your **external recipe repository** and **(2)** the **test harness** you add to the cookbook. The cookbook itself only contains test harnesses -- recipe source code lives in your own GitHub repository.
+
 ## Table of Contents
 
 - [Recipe Structure](#recipe-structure)
@@ -16,39 +18,35 @@ Standards and best practices for creating high-quality Polkadot Cookbook recipes
 
 ## Recipe Structure
 
-### Required Files
+### What Goes in the Cookbook (Test Harness)
 
-Every recipe must include:
-
-```
-recipes/your-recipe/
-├── README.md              # Main content with frontmatter metadata (REQUIRED)
-├── src/                   # Source code (REQUIRED for code recipes)
-└── tests/                 # Tests (REQUIRED)
-```
-
-**Note:** Recipe metadata (title, description) is read from README.md frontmatter. The `recipe.config.yml` file is deprecated.
-
-### Optional Files
-
-Include when appropriate:
+Your cookbook contribution is a **test harness** -- a lightweight directory under `recipes/{pathway}/{your-recipe}/` that clones, builds, and verifies your external repo. It does **not** contain recipe source code.
 
 ```
-recipes/your-recipe/
-├── package.json           # npm dependencies (TypeScript)
+recipes/{pathway}/{your-recipe}/
+├── package.json           # vitest + @types/node + typescript
+├── package-lock.json      # Locked dependencies
+├── vitest.config.ts       # Vitest config
 ├── tsconfig.json          # TypeScript config
-├── vitest.config.ts       # Test config
-├── Cargo.toml             # Rust dependencies
-├── hardhat.config.ts      # Hardhat config (Solidity)
-├── scripts/               # Helper scripts
-└── assets/                # Images, diagrams
+├── .gitignore             # Ignore cloned repo dir, node_modules
+├── README.md              # Description + link to external repo (with frontmatter)
+└── tests/
+    └── recipe.test.ts     # Clone → install → build → test
 ```
+
+Use an existing test harness as a template (e.g., [`recipes/contracts/contracts-example/`](../../recipes/contracts/contracts-example/)).
+
+### What Goes in Your External Repository
+
+Your recipe's source code, dependencies, and tests live in **your own GitHub repository**. The structure depends on the recipe type (see [Type-Specific Structure](#type-specific-structure) below).
 
 ### Type-Specific Structure
 
+The structures below describe **your external repository** -- the recipe project you host on your own GitHub. This code does **not** go into the cookbook (the cookbook only gets a test harness).
+
 **Polkadot SDK (Rust):**
 ```
-recipes/your-recipe/
+your-external-repo/
 ├── README.md
 ├── Cargo.toml
 ├── src/
@@ -59,7 +57,7 @@ recipes/your-recipe/
 
 **Solidity Contracts:**
 ```
-recipes/your-recipe/
+your-external-repo/
 ├── README.md
 ├── package.json
 ├── hardhat.config.ts
@@ -73,7 +71,7 @@ recipes/your-recipe/
 
 **XCM Recipes:**
 ```
-recipes/your-recipe/
+your-external-repo/
 ├── README.md
 ├── package.json
 ├── chopsticks.yml         # Chopsticks config
@@ -85,7 +83,7 @@ recipes/your-recipe/
 
 **TypeScript Interaction:**
 ```
-recipes/your-recipe/
+your-external-repo/
 ├── README.md
 ├── package.json
 ├── tsconfig.json
@@ -100,6 +98,8 @@ recipes/your-recipe/
 ## Content Guidelines
 
 ### README.md Structure
+
+> **Note:** This section describes the README for **your external recipe repository**, not the short README in the cookbook test harness.
 
 Every recipe README must follow this structure:
 
@@ -694,14 +694,12 @@ Use consistent terminology:
 
 ## Checklist
 
-Before submitting your recipe, verify:
+Before submitting, verify both your external repository and your cookbook test harness:
 
-### Structure
+### Your External Repository
 - [ ] README.md exists with frontmatter (title, description)
 - [ ] src/ directory with implementation
 - [ ] tests/ directory with comprehensive tests
-
-### Content
 - [ ] Clear title and description
 - [ ] Prerequisites listed
 - [ ] Learning objectives defined
@@ -709,28 +707,29 @@ Before submitting your recipe, verify:
 - [ ] Complete code examples
 - [ ] Expected output shown
 - [ ] Troubleshooting section
-
-### Code Quality
 - [ ] Follows language style guide
 - [ ] Formatted (cargo fmt / prettier)
 - [ ] Linted (clippy / eslint)
 - [ ] Meaningful variable names
 - [ ] Proper error handling
 - [ ] Comments for complex logic
-
-### Testing
 - [ ] All code examples tested manually
 - [ ] Automated tests pass
 - [ ] Edge cases covered
 - [ ] Error cases tested
+- [ ] A version tag exists (e.g., `v1.0.0`)
 
-### Documentation
-- [ ] Code comments where needed
-- [ ] README is clear and complete
-- [ ] Links to external resources
-- [ ] No broken links
-
-### Validation
+### Your Cookbook Test Harness
+- [ ] Test harness directory created under `recipes/{pathway}/{your-recipe}/`
+- [ ] `package.json` with vitest, @types/node, typescript
+- [ ] `package-lock.json` committed
+- [ ] `vitest.config.ts` configured
+- [ ] `tsconfig.json` configured
+- [ ] `.gitignore` ignores cloned repo dir and node_modules
+- [ ] `README.md` links to external repo
+- [ ] `tests/recipe.test.ts` clones, installs, builds, and tests external repo
+- [ ] Version tag in test is pinned to an existing tag in external repo
+- [ ] `npm ci && npm test` passes locally
 - [ ] Pre-commit hooks pass
 - [ ] CI tests pass
 
@@ -738,15 +737,11 @@ Before submitting your recipe, verify:
 
 ## Examples
 
-Study these well-structured recipes:
+Study these existing test harnesses to see how they clone and verify external repos:
 
-- **Basic Pallet** - `recipes/basic-pallet/` - Simple, clear structure
-- **Storage Operations** - `recipes/storage-operations/` - Good code examples
-- **Events and Errors** - `recipes/events-and-errors/` - Comprehensive error handling
-
-Browse all recipes:
-```bash
-```
+- **Contracts** - [`recipes/contracts/contracts-example/`](../../recipes/contracts/contracts-example/) - Solidity contract test harness
+- **Parachain** - [`recipes/parachains/parachain-example/`](../../recipes/parachains/parachain-example/) - Full parachain test harness
+- **Transaction** - [`recipes/transactions/transaction-example/`](../../recipes/transactions/transaction-example/) - TypeScript interaction test harness
 
 ---
 

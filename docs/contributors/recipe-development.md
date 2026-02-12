@@ -2,6 +2,8 @@
 
 Best practices and advanced techniques for developing high-quality recipes.
 
+> **Scope:** This guide covers developing your recipe's source code in **your own repository**. For adding the test harness to the cookbook, see the [Workflow Guide](workflow.md).
+
 ## Table of Contents
 
 - [Development Environment](#development-environment)
@@ -57,17 +59,24 @@ npm install -g typescript vitest
 
 ### Workspace Setup
 
+**Your recipe project** (in your own repo, outside the cookbook):
+
 ```bash
-# Clone and setup
+# Scaffold a new project
+dot create
+
+# Develop and test locally
+cd my-recipe
+npm install  # or cargo build
+npm test
+```
+
+**Cookbook fork** (for adding your test harness later):
+
+```bash
 git clone https://github.com/YOUR_USERNAME/polkadot-cookbook.git
 cd polkadot-cookbook
-
-# Add upstream
 git remote add upstream https://github.com/polkadot-developers/polkadot-cookbook.git
-
-# Install dependencies
-cd recipes/your-recipe
-npm install  # or cargo build
 ```
 
 ---

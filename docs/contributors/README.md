@@ -2,6 +2,8 @@
 
 This section contains everything you need to know about contributing recipes to the Polkadot Cookbook.
 
+> **How recipes work:** Recipe source code lives in **your own GitHub repository**. The cookbook's `recipes/` directory contains only **test harnesses** that clone, build, and verify each external recipe repo. Contributing a recipe means adding a test harness that points to your repo.
+
 ## Documentation
 
 ### Essential Guides

@@ -16,6 +16,8 @@ Thank you for your interest in contributing! The easiest way to contribute a rec
 
 </div>
 
+> **Key concept:** Recipe source code lives in **your own GitHub repository**, not in this cookbook. The cookbook's `recipes/` directory contains only **test harnesses** that clone, build, and verify your external repo. A cookbook contribution = adding a test harness that points to your repo.
+
 <hr />
 
 ## Quick Start
@@ -193,7 +195,7 @@ test(my-recipe): add integration tests
 ## Getting Help
 
 - **Questions**: [Open an issue](https://github.com/polkadot-developers/polkadot-cookbook/issues)
-- **Example Projects**: See `recipes/` directory for reference implementations
+- **Example Test Harnesses**: See `recipes/` directory for test harness examples (each one clones and verifies an external recipe repo)
 
 <hr />
 
