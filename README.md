@@ -43,8 +43,8 @@ Build custom parachains with FRAME pallets, runtime logic, and PAPI integration 
 
 | Recipe | Description |
 |----------|-------------|
-| [**parachain-example**](recipes/parachains/parachain-example) | Verifies [recipe-parachain-example](https://github.com/brunopgalvao/recipe-parachain-example) -- full parachain with 12+ pallets, custom logic, and TypeScript tests |
-| [**pallet-example**](recipes/pallets/pallet-example) | Verifies [recipe-pallet-example](https://github.com/brunopgalvao/recipe-pallet-example) -- pallet-only development (no runtime) for advanced users |
+| [**parachain-example**](recipes/parachains/parachain-example) | Full parachain with 12+ pallets, custom logic, and TypeScript tests |
+| [**pallet-example**](recipes/pallets/pallet-example) | Pallet-only development (no runtime) for advanced users |
 
 ### <img src=".github/media/icons/contracts-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/contracts-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Contracts
 
@@ -52,7 +52,7 @@ Deploy and interact with Solidity smart contracts on Polkadot parachains.
 
 | Recipe | Description |
 |----------|-------------|
-| [**contracts-example**](recipes/contracts/contracts-example) | Verifies [recipe-contracts-example](https://github.com/brunopgalvao/recipe-contracts-example) -- Solidity contracts with Hardhat and deployment scripts |
+| [**contracts-example**](recipes/contracts/contracts-example) | Solidity contracts with Hardhat and deployment scripts |
 
 ### <img src=".github/media/icons/interactions-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/interactions-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Transactions
 
@@ -60,7 +60,7 @@ Single-chain transaction submission and state queries using the Polkadot API.
 
 | Recipe | Description |
 |----------|-------------|
-| [**transaction-example**](recipes/transactions/transaction-example) | Verifies [recipe-transaction-example](https://github.com/brunopgalvao/recipe-transaction-example) -- chain interactions with Polkadot API (TypeScript) |
+| [**transaction-example**](recipes/transactions/transaction-example) | Chain interactions with Polkadot API (TypeScript) |
 
 ### <img src=".github/media/icons/xcm-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/xcm-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> XCM
 
@@ -68,7 +68,7 @@ Cross-chain asset transfers and messaging between parachains.
 
 | Recipe | Description |
 |----------|-------------|
-| [**cross-chain-transaction-example**](recipes/cross-chain-transactions/cross-chain-transaction-example) | Verifies [recipe-xcm-example](https://github.com/brunopgalvao/recipe-xcm-example) -- XCM messaging with Chopsticks local testing |
+| [**cross-chain-transaction-example**](recipes/cross-chain-transactions/cross-chain-transaction-example) | XCM messaging with Chopsticks local testing |
 
 ### <img src=".github/media/icons/testing-dark.svg#gh-dark-mode-only" width="20" height="20" alt="" /> <img src=".github/media/icons/testing-light.svg#gh-light-mode-only" width="20" height="20" alt="" /> Networks
 
@@ -76,7 +76,7 @@ Testing infrastructure with Zombienet and Chopsticks for local network developme
 
 | Recipe | Description |
 |----------|-------------|
-| [**network-example**](recipes/networks/network-example) | Verifies [recipe-network-example](https://github.com/brunopgalvao/recipe-network-example) -- Zombienet and Chopsticks network configurations |
+| [**network-example**](recipes/networks/network-example) | Zombienet and Chopsticks network configurations |
 
 > <img src=".github/media/icons/idea-dark.svg#gh-dark-mode-only" width="18" height="18" alt="" /> <img src=".github/media/icons/idea-light.svg#gh-light-mode-only" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
 
