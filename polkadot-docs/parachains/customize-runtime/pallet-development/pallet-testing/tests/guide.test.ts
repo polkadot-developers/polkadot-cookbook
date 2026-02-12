@@ -10,7 +10,7 @@ import { join } from "path";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const TEMPLATE_DIR = join(WORKSPACE_DIR, "parachain-template");
-const TEMPLATE_VERSION = "v0.0.4";
+const TEMPLATE_VERSION = "v0.0.5";
 const PALLET_DIR = join(TEMPLATE_DIR, "pallets/pallet-custom");
 
 // Complete pallet implementation from the create-a-pallet guide
@@ -515,15 +515,13 @@ describe("Unit Test Pallets Guide", () => {
         return;
       }
 
-      // Add to workspace members
-      const membersRegex = /(members\s*=\s*\[\s*\n\s*"node",\s*\n\s*"pallets\/template",\s*\n\s*"runtime",)/;
+      // Add to workspace members (match 'members' but not 'default-members')
+      const membersRegex = /^(members\s*=\s*\[([^\]]*)\])/m;
       const match = content.match(membersRegex);
 
       if (match) {
-        content = content.replace(
-          match[1],
-          `${match[1]}\n    "pallets/pallet-custom",`
-        );
+        const updatedMembers = match[1].replace(']', ', "pallets/pallet-custom"]');
+        content = content.replace(match[1], updatedMembers);
         writeFileSync(cargoPath, content);
         console.log("Added pallet-custom to workspace members");
       } else {

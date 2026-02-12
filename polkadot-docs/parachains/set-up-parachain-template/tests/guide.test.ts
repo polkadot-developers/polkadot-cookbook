@@ -51,7 +51,7 @@ describe("Parachain Template Guide", () => {
         console.log(`chain-spec-builder: ${result.trim()}`);
       } catch (error) {
         console.log("Installing chain-spec-builder...");
-        execSync("cargo install staging-chain-spec-builder@10.0.0 --locked", {
+        execSync("cargo install staging-chain-spec-builder@16.0.0 --locked", {
           stdio: "inherit",
         });
       }
@@ -66,7 +66,7 @@ describe("Parachain Template Guide", () => {
         console.log(`polkadot-omni-node: ${result.trim()}`);
       } catch (error) {
         console.log("Installing polkadot-omni-node...");
-        execSync("cargo install polkadot-omni-node@0.5.0 --locked", {
+        execSync("cargo install polkadot-omni-node@0.13.0 --locked", {
           stdio: "inherit",
         });
       }

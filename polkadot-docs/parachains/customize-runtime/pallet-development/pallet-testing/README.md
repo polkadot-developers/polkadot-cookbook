@@ -2,9 +2,10 @@
 title: "Unit Test Pallets"
 description: "Verify the unit test pallets guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/pallet-development/pallet-testing/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/pallet-development/pallet-testing.md"
 last_tested: "2025-01-28"
-polkadot_sdk_version: "2503.0.1"
-parachain_template_version: "v0.0.4"
+polkadot_sdk_version: "2512.1.0"
+parachain_template_version: "v0.0.5"
 ---
 
 # Unit Test Pallets
@@ -16,7 +17,7 @@ This project verifies the [Unit Test Pallets](https://docs.polkadot.com/parachai
 ## What This Tests
 
 1. Prerequisites check (Rust, wasm target, git)
-2. Clone the parachain template repository (v0.0.4)
+2. Clone the parachain template repository (v0.0.5)
 3. Create a `pallet-custom` with mock and tests modules
 4. Write `src/lib.rs` with `#[cfg(test)] mod mock;` and `#[cfg(test)] mod tests;`
 5. Create `src/mock.rs` with mock runtime (from mock-runtime guide)
@@ -53,7 +54,7 @@ npm test
 Verifies all prerequisites are installed with correct versions.
 
 ### 2. Clone Template and Create Pallet (Prerequisite)
-- Clones `polkadot-sdk-parachain-template` (v0.0.4)
+- Clones `polkadot-sdk-parachain-template` (v0.0.5)
 - Creates `pallets/pallet-custom` directory
 - Writes pallet `Cargo.toml` with FRAME dependencies
 - Adds pallet to workspace members and dependencies
@@ -125,8 +126,8 @@ The mock provides three genesis helper functions:
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | 2503.0.1 |
-| Parachain Template | v0.0.4 |
+| Polkadot SDK | 2512.1.0 |
+| Parachain Template | v0.0.5 |
 
 ## Source
 
