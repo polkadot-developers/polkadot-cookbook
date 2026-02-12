@@ -2,6 +2,8 @@
 
 Comprehensive guide to testing Polkadot Cookbook recipes across all types.
 
+> **Scope:** This guide covers testing your recipe's source code in **your external repository**. For running the cookbook's test harnesses (which clone and verify external repos), see the [Workflow Guide](workflow.md#step-4-test-your-test-harness).
+
 ## Table of Contents
 
 - [Testing Philosophy](#testing-philosophy)

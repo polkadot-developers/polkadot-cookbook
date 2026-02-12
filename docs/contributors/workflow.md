@@ -78,7 +78,7 @@ git config --list
 
 ---
 
-## Step 2: Create a Test Harness
+## Step 2: Create a Test Harness (Your Cookbook Contribution)
 
 Each recipe in the cookbook is a test harness that clones and verifies an external repository. To add a new recipe, create a test harness directory.
 
@@ -170,7 +170,7 @@ source_repo: "https://github.com/YOUR_USERNAME/recipe-your-recipe"
 
 ---
 
-## Step 3: Develop Your Recipe
+## Step 3: Develop Your Recipe (In Your Own Repository)
 
 ### Recipe Code Lives in Your Own Repository
 
