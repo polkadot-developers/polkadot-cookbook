@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Get last release
         id: last_release
@@ -52,25 +53,21 @@ jobs:
           LAST_TAG: ${{ steps.last_release.outputs.last_tag }}
           FORCE_BUMP: ${{ github.event.inputs.version_bump }}
         run: |
-          # Get all merged PRs since last release
-          if [ "$LAST_TAG" = "v0.0.0" ]; then
-            echo "No previous release, this will be initial release"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "version_bump=minor" >> $GITHUB_OUTPUT
-            echo "new_version=v0.1.0" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+          echo "has_changes=true" >> $GITHUB_OUTPUT
 
           # Get all commits since last tag (including squash-merged PRs)
-          ALL_COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s %b" || echo "")
+          if [ "$LAST_TAG" = "v0.0.0" ]; then
+            echo "No previous release tag found"
+            ALL_COMMITS=$(git log --pretty=format:"%s %b" || echo "")
+          else
+            ALL_COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s %b" || echo "")
+          fi
 
           if [ -z "$ALL_COMMITS" ]; then
             echo "No changes since last release"
             echo "has_changes=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-
-          echo "has_changes=true" >> $GITHUB_OUTPUT
 
           # Check for manual version bump override
           if [ "$FORCE_BUMP" != "auto" ] && [ -n "$FORCE_BUMP" ]; then
