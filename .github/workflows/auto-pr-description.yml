@@ -49,7 +49,7 @@ jobs:
 
             // Build the comment
             const commentBody = [
-              'This PR was opened without a description. Please update your PR with a thorough description of the changes and their motivation.',
+              'Update your PR with a well-documented description.',
               '',
               '**Commits:**',
               '',
