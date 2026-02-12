@@ -67,21 +67,21 @@ dot create --title "My Project" --non-interactive [OPTIONS]
 dot create
 
 # Non-interactive parachain project
-dot create --title "My Parachain" --pathway parachain --non-interactive
+dot create --title "My Parachain" --pathway pallets --non-interactive
 
 # Pallet-only mode (advanced, no runtime)
-dot create --title "My Pallet" --pathway parachain --pallet-only --non-interactive
+dot create --title "My Pallet" --pathway pallets --pallet-only --non-interactive
 
 # Smart contracts recipe
 dot create --title "My Contract" --pathway contracts --non-interactive
 
 # Skip npm install for faster creation
-dot create --title "Quick Test" --pathway basic-interaction --skip-install --non-interactive
+dot create --title "Quick Test" --pathway transactions --skip-install --non-interactive
 
 # CI/CD mode (skip git branch creation)
 dot create \
   --title "My Project" \
-  --pathway parachain \
+  --pathway pallets \
   --skip-install \
   --no-git \
   --non-interactive

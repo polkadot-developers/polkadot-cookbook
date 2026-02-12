@@ -14,8 +14,10 @@ By the end of this tutorial, you'll know how to:
 Before starting, ensure you have:
 
 1. **CLI Installed** - See [Installation Guide](installation.md)
-2. **Git Configured** - Name and email set
-3. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
+2. **Git Installed** - Required for cloning upstream templates during project creation
+3. **Git Configured** - Name and email set
+4. **Network Access** - Required on first run to clone the upstream template (cached for subsequent runs)
+5. **Development Tools** - Rust (for parachain projects) or Node.js (for other projects)
 
 **Verify your setup:**
 ```bash
@@ -66,7 +68,7 @@ Enter your project name. This will be used to generate the project directory (e.
 The CLI will:
 1. Check dependencies (Rust, Node.js, etc.)
 2. Create the project directory: `./my-first-parachain/`
-3. Generate scaffolded files from the polkadot-sdk-parachain-template
+3. Clone the upstream `polkadot-sdk-parachain-template` (cached after first run)
 4. Install npm dependencies (for PAPI testing)
 5. Run tests to verify the setup
 6. Initialize a git repository
@@ -111,7 +113,7 @@ cd my-first-parachain
 my-first-parachain/
 ├── README.md              # Tutorial documentation
 ├── Cargo.toml             # Workspace configuration
-├── rust-toolchain.toml    # Rust version (e.g., 1.86)
+├── rust-toolchain.toml    # Rust version (e.g., 1.88)
 ├── package.json           # PAPI dependencies
 ├── pallets/               # Custom FRAME pallets
 │   └── template/
@@ -467,11 +469,11 @@ npm run compile      # Compile contracts
 npm test            # Run tests
 ```
 
-### Basic Interaction (PAPI)
+### Chain Transactions (PAPI)
 
 ```bash
 dot create
-# Select: Basic Interaction
+# Select: Chain Transactions
 # Title: Query Chain State
 ```
 
@@ -480,6 +482,8 @@ dot create
 query-chain-state/
 ├── README.md
 ├── package.json
+├── tsconfig.json
+├── vitest.config.ts
 ├── src/               # Implementation
 └── tests/             # Tests
 ```
@@ -558,6 +562,7 @@ Congratulations! You've created your first project. Here's what to explore next:
 **Common causes:**
 - Git not configured
 - Missing dependencies (Rust, Node.js)
+- No network access (required on first run to clone upstream template)
 - Insufficient disk space
 
 **Solution:**
@@ -565,6 +570,9 @@ Congratulations! You've created your first project. Here's what to explore next:
 # Check git configuration
 git config user.name
 git config user.email
+
+# Ensure git is installed
+git --version
 
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh

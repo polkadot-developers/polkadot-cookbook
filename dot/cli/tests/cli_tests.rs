@@ -211,8 +211,8 @@ fn test_create_recipe_with_toolchain() {
     // Verify content matches expected format
     let content = fs::read_to_string(&toolchain_path).unwrap();
     assert!(
-        content.contains("channel = \"1.91\""),
-        "rust-toolchain.toml should specify Rust 1.91 for Polkadot SDK"
+        content.contains("channel = \"1.88\""),
+        "rust-toolchain.toml should specify Rust 1.88 for Polkadot SDK"
     );
     assert!(content.contains("components = [\"rustfmt\", \"clippy\"]"));
     assert!(content.contains("profile = \"minimal\""));

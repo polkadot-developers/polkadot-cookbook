@@ -23,7 +23,8 @@ The SDK library provides the business logic for project creation and management.
 - `templates` - Template generation for scaffolding
 - `scaffold` - Project creation and directory structure
 - `bootstrap` - Test environment setup (npm, dependencies, config files)
-- `version` - Version management for recipe dependencies (see [Release Process - Dependency Version Management](RELEASE_PROCESS.md#dependency-version-management))
+- `metadata` - Metadata extraction and project type detection
+- `dependencies` - Dependency checking for project pathways
 
 ### Features
 

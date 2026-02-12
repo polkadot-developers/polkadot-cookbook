@@ -59,7 +59,7 @@ Tests recipes that use the Polkadot SDK (Rust-based).
    - Push to master: All recipes
    - Manual: Specified recipe
 2. **test-polkadot-sdk** - Tests each recipe (matrix)
-   - Checks recipe type from `recipe.config.yml`
+   - Auto-detects recipe type from project structure
    - Skips non-Polkadot SDK recipes
    - Formatting check
    - Clippy lints
@@ -102,7 +102,7 @@ Tests XCM recipes using Chopsticks for blockchain simulation.
 **Jobs:**
 1. **find-changed-recipes** - Detects which recipes changed
 2. **test-xcm** - Tests each XCM recipe (matrix)
-   - Checks recipe type from `recipe.config.yml`
+   - Auto-detects recipe type from project structure
    - Skips non-XCM recipes
    - Install dependencies
    - Run linting
@@ -354,18 +354,6 @@ This PR will trigger a MINOR version bump when merged.
       ├─ Tests SDK library (coverage threshold: 80%)
       └─ Tests CLI tool
 ```
-
-## Version Management Integration
-
-
-```yaml
-- name: Resolve versions
-  run: |
-    echo "Using Rust $RUST"
-```
-
-This ensures each recipe is tested with its specified versions (global defaults + recipe overrides).
-
 
 ## Manual Workflow Triggers
 

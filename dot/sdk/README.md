@@ -45,42 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let project_info = scaffold.create_project(config).await?;
 
     println!("Created: {}", project_info.project_path.display());
-    println!("Branch: {}", project_info.git_branch.unwrap());
-
-    Ok(())
-}
-```
-
-### Manage Versions
-
-```rust
-use polkadot_cookbook_sdk::version::{
-    load_global_versions,
-    resolve_recipe_versions,
-    VersionSource,
-};
-use std::path::Path;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let repo_root = Path::new(".");
-
-    // Load global versions
-    let global = load_global_versions(repo_root).await?;
-    for (name, version) in &global.versions {
-        println!("{}: {}", name, version);
-    }
-
-    // Resolve recipe-specific versions
-    let resolved = resolve_recipe_versions(repo_root, "zero-to-hero").await?;
-    for (name, version) in &resolved.versions {
-        let source = match resolved.get_source(name) {
-            Some(VersionSource::Global) => "global",
-            Some(VersionSource::Recipe) => "recipe",
-            None => "unknown",
-        };
-        println!("{}: {} ({})", name, version, source);
-    }
+    println!("Git initialized: {}", project_info.git_initialized);
 
     Ok(())
 }
@@ -96,7 +61,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 - **`templates`** - Template generation for scaffolding
 - **`scaffold`** - Project creation and directory structure
 - **`bootstrap`** - Test environment setup (npm, dependencies, config files)
-- **`version`** - Version management for recipe dependencies
+- **`metadata`** - Metadata extraction and project type detection
+- **`dependencies`** - Dependency checking for project pathways
 
 ### Key Types
 
@@ -135,47 +101,14 @@ impl ProjectConfig {
 
 #### `ProjectInfo`
 
-Information about the created recipe.
+Information about the created project.
 
 ```rust
 pub struct ProjectInfo {
     pub slug: String,
     pub title: String,
     pub project_path: PathBuf,
-    pub git_branch: Option<String>,
-}
-```
-
-### Version Management
-
-#### Types
-
-```rust
-pub struct ResolvedVersions {
-    pub versions: HashMap<String, String>,
-    sources: HashMap<String, VersionSource>,
-}
-
-pub enum VersionSource {
-}
-```
-
-#### Functions
-
-```rust
-// Load global versions
-pub async fn load_global_versions(repo_root: &Path) -> Result<ResolvedVersions>;
-
-// Resolve versions for a specific recipe
-pub async fn resolve_recipe_versions(
-    repo_root: &Path,
-    recipe_slug: &str
-) -> Result<ResolvedVersions>;
-
-// Get version source
-impl ResolvedVersions {
-    pub fn get(&self, name: &str) -> Option<&String>;
-    pub fn get_source(&self, name: &str) -> Option<&VersionSource>;
+    pub git_initialized: bool,
 }
 ```
 
@@ -188,50 +121,21 @@ Run examples to see the SDK in action:
 cargo run --package sdk --example create_recipe
 ```
 
-## Version Management
+## Template Architecture
 
-The SDK provides a powerful version management system that allows recipes to specify dependency versions while inheriting defaults from a global configuration.
+The SDK uses a **clone + overlay** approach for the Polkadot SDK template:
 
-### Global Versions
+1. **Clone** the upstream `polkadot-sdk-parachain-template` at a pinned git tag
+2. **Replace** upstream names with the user's project slug
+3. **Overlay** SDK-specific files (tests, scripts, READMEs, etc.)
 
+The upstream template is cached at `~/.dot/templates/` after the first clone.
 
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.5.0"
-  chain_spec_builder: "10.0.0"
-  frame_omni_bencher: "0.13.0"
+Key constants:
+- `UPSTREAM_TEMPLATE_TAG` - Pinned upstream version (e.g., `v0.0.5`)
+- `RUST_VERSION` - Rust toolchain version for generated projects (e.g., `1.88`)
 
-metadata:
-  schema_version: "1.0"
-```
-
-### Recipe Overrides
-
-
-```yaml
-versions:
-  polkadot_omni_node: "0.6.0"  # Override global version
-
-metadata:
-  schema_version: "1.0"
-```
-
-### Resolution
-
-The SDK merges global and recipe versions, with recipe versions taking precedence:
-
-```rust
-let resolved = resolve_recipe_versions(repo_root, "my-recipe").await?;
-
-// Result:
-// - rust: "1.86" (from global)
-// - polkadot_omni_node: "0.6.0" (from recipe)
-// - chain_spec_builder: "10.0.0" (from global)
-// - frame_omni_bencher: "0.13.0" (from global)
-```
-
-For complete version management documentation, see [Release Process - Dependency Version Management](../docs/RELEASE_PROCESS.md#dependency-version-management).
+Updating to a new upstream template version requires changing these two constants.
 
 ## Architecture
 
@@ -249,19 +153,17 @@ For complete version management documentation, see [Release Process - Dependency
 sdk/
 ├── src/
 │   ├── lib.rs              # Public API
+│   ├── constants.rs        # Library constants
 │   ├── config/             # Configuration types
-│   ├── error/              # Error types
+│   ├── error.rs            # Error types
 │   ├── git/                # Git operations
 │   ├── templates/          # File templates
 │   ├── scaffold/           # Scaffolding logic
-│   │   ├── mod.rs         # Main scaffold
+│   │   ├── mod.rs         # Main scaffold (clone + overlay)
 │   │   └── bootstrap.rs   # npm/test setup
-│   └── version/            # Version management
-│       ├── mod.rs         # Public API
-│       ├── types.rs       # Data structures
-│       ├── loader.rs      # YAML loading
-│       └── resolver.rs    # Version merging
-├── examples/               # Usage examples
+│   ├── metadata/           # Project type detection
+│   └── dependencies/       # Dependency checking
+├── templates/              # Embedded template overlays
 └── tests/                  # Integration tests
 ```
 

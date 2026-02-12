@@ -4,22 +4,24 @@ Guide to using the Polkadot Cookbook SDK programmatically.
 
 ## Overview
 
-The Polkadot Cookbook SDK (`polkadot-cookbook-sdk`) is a Rust library that provides:
+The Polkadot Cookbook SDK (`sdk`) is a Rust library that provides:
 
-- **Project Configuration** - Configure and validate project settings
-- **Version Management** - Resolve dependency versions
-- **Project Scaffolding** - Generate new projects programmatically
-- **Validation** - Validate project structure and content
+- **Project Configuration** - Type-safe project settings with builder pattern
+- **Project Scaffolding** - Generate new projects from templates
+- **Template Management** - Clone + overlay approach for upstream templates
+- **Metadata Extraction** - Auto-detect project types from file structure
+- **Error Handling** - Comprehensive, serializable error types
 
 ## Installation
 
-### As a Dependency
+### As a Workspace Dependency
 
 Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-polkadot-cookbook-sdk = "0.3"
+sdk = { path = "../sdk" }
+tokio = { version = "1", features = ["full"] }
 ```
 
 ### From Source
@@ -27,726 +29,291 @@ polkadot-cookbook-sdk = "0.3"
 ```bash
 git clone https://github.com/polkadot-developers/polkadot-cookbook.git
 cd polkadot-cookbook
-cargo build --release -p polkadot-cookbook-sdk
+cargo build --release -p sdk
 ```
 
 ---
 
 ## Quick Start
 
-### Create Project Configuration
+### Create a Project
 
 ```rust
-use polkadot_cookbook_sdk::config::ProjectConfig;
+use polkadot_cookbook_sdk::{Scaffold, ProjectConfig, ProjectType};
+use std::path::PathBuf;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create project config
-    let config = ProjectConfig::new("my-project")
-        .with_title("My Custom Project")
-        .with_description("A Polkadot project");
-
-    println!("Project: {}", config.title);
-    println!("Slug: {}", config.slug);
-
-    Ok(())
-}
-```
-
-### Resolve Versions
-
-```rust
-use polkadot_cookbook_sdk::VersionManager;
-use std::path::Path;
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let recipe_path = Path::new("recipes/my-recipe");
-
-    // Load and resolve versions
-    let manager = VersionManager::new()?;
-    let versions = manager.resolve_for_recipe(recipe_path)?;
-
-    // Access specific versions
-    if let Some(rust_version) = versions.get("rust") {
-        println!("Rust version: {}", rust_version);
-    }
-
-    Ok(())
-}
-```
-
-### Create Project
-
-```rust
-use polkadot_cookbook_sdk::scaffold::Scaffold;
-use polkadot_cookbook_sdk::config::{ProjectConfig, ProjectType};
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = ProjectConfig::new("my-custom-project")
-        .with_title("My Custom Project")
-        .with_project_type(ProjectType::PolkadotSdk);
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = ProjectConfig::new("my-parachain")
+        .with_title("My Parachain")
+        .with_description("A custom parachain project")
+        .with_project_type(ProjectType::PolkadotSdk)
+        .with_destination(PathBuf::from("."))
+        .with_skip_install(true)
+        .with_git_init(false);
 
     let scaffold = Scaffold::new();
+    let project_info = scaffold.create_project(config).await?;
 
-    // Generate project files
-    scaffold.create_project(config, None).await?;
-
-    println!("Project created successfully!");
-
+    println!("Created: {}", project_info.project_path.display());
     Ok(())
 }
 ```
 
 ---
 
-## Core Modules
+## Core Types
 
-### Project Configuration
+### ProjectConfig
 
-#### ProjectConfig
-
-Represents a project's configuration settings.
-
-```rust
-use polkadot_cookbook_sdk::ProjectConfig;
-use std::path::Path;
-
-// Load from file
-let config = ProjectConfig::load("recipes/my-recipe/recipe.config.yml")?;
-
-// Access fields
-println!("Title: {}", config.title);
-println!("Slug: {}", config.slug);
-println!("Pathway: {}", config.pathway);
-println!("Difficulty: {}", config.difficulty);
-println!("Type: {}", config.recipe_type);
-println!("Description: {}", config.description);
-
-// Validate
-config.validate()?;
-```
-
-**Fields:**
+Configuration for creating a new project. Uses a builder pattern.
 
 ```rust
 pub struct ProjectConfig {
-    pub title: String,
     pub slug: String,
-    pub pathway: String,
-    pub difficulty: String,
-    pub content_type: String,
+    pub title: String,
+    pub destination: PathBuf,
+    pub git_init: bool,
+    pub skip_install: bool,
+    pub project_type: ProjectType,
+    pub category: String,
     pub description: String,
-    pub repository: String,
-    pub recipe_type: String,
+    pub pathway: Option<ProjectPathway>,
+    pub pallet_only: bool,
 }
 ```
 
-**Methods:**
+**Builder methods:**
 
 ```rust
-impl ProjectConfig {
-    /// Load config from file
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Error>;
+let config = ProjectConfig::new("my-project")    // slug, auto-generates title
+    .with_title("My Project")                     // override title
+    .with_destination(PathBuf::from("./output"))  // output directory
+    .with_project_type(ProjectType::PolkadotSdk)  // project type
+    .with_pathway(ProjectPathway::Pallets)         // pathway classification
+    .with_description("A short description")      // project description
+    .with_category("polkadot-sdk-cookbook")        // category
+    .with_git_init(true)                          // initialize git repo
+    .with_skip_install(false);                    // run npm install
 
-    /// Validate config fields
-    pub fn validate(&self) -> Result<(), Error>;
+// Get full project path
+let path = config.project_path(); // destination/{slug}
+```
 
-    /// Save config to file
-    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), Error>;
+### ProjectType
 
-    /// Generate slug from title
-    pub fn generate_slug(title: &str) -> String;
+Classification of project implementation type:
+
+```rust
+pub enum ProjectType {
+    PolkadotSdk,   // Rust parachain/pallet (Polkadot SDK)
+    Solidity,      // Solidity smart contracts (Hardhat)
+    Xcm,           // Cross-chain messaging (Chopsticks)
+    Transactions,  // Chain transactions (PAPI)
+    Networks,      // Network infrastructure (Zombienet/Chopsticks)
 }
 ```
 
-**Example: Create and save config**
+### ProjectPathway
+
+High-level pathway classification:
 
 ```rust
-use polkadot_cookbook_sdk::ProjectConfig;
-
-let config = ProjectConfig {
-    title: "My Project".to_string(),
-    slug: "my-recipe".to_string(),
-    pathway: "runtime".to_string(),
-    difficulty: "beginner".to_string(),
-    content_type: "tutorial".to_string(),
-    description: "A simple recipe".to_string(),
-    repository: "https://github.com/polkadot-developers/polkadot-cookbook".to_string(),
-    recipe_type: "polkadot-sdk".to_string(),
-};
-
-// Validate before saving
-config.validate()?;
-
-// Save to file
-config.save("recipes/my-recipe/recipe.config.yml")?;
-```
-
----
-
-### Version Management
-
-#### VersionManager
-
-Manages global and recipe-specific version resolution.
-
-```rust
-use polkadot_cookbook_sdk::VersionManager;
-use std::collections::HashMap;
-use std::path::Path;
-
-// Create version manager
-let manager = VersionManager::new()?;
-
-// Get global versions
-let global_versions = manager.global_versions();
-println!("Global Rust version: {}", global_versions.get("rust").unwrap());
-
-// Resolve versions for specific recipe
-let recipe_path = Path::new("recipes/my-recipe");
-let resolved = manager.resolve_for_recipe(recipe_path)?;
-
-// Check if version is overridden
-if let Some(source) = manager.version_source("polkadot_omni_node", recipe_path)? {
-    match source {
-        VersionSource::Global => println!("Using global version"),
-        VersionSource::Recipe => println!("Using recipe override"),
-    }
+pub enum ProjectPathway {
+    Pallets,       // Pallet development
+    Contracts,     // Smart contracts
+    Transactions,  // Chain transactions
+    Xcm,           // Cross-chain messaging
+    Networks,      // Network infrastructure
 }
 ```
 
-**Methods:**
+### ProjectInfo
+
+Information returned after project creation:
 
 ```rust
-impl VersionManager {
-    /// Create new version manager (loads global versions)
-    pub fn new() -> Result<Self, Error>;
-
-    /// Get global versions
-    pub fn global_versions(&self) -> &HashMap<String, String>;
-
-    /// Resolve versions for a recipe (merges global + recipe-specific)
-    pub fn resolve_for_recipe<P: AsRef<Path>>(&self, recipe_path: P) -> Result<HashMap<String, String>, Error>;
-
-    /// Get source of a version (global or recipe-specific)
-    pub fn version_source<P: AsRef<Path>>(&self, key: &str, recipe_path: P) -> Result<VersionSource, Error>;
-
-    /// Validate version keys
-    pub fn validate_keys(&self, versions: &HashMap<String, String>) -> Result<(), Error>;
+pub struct ProjectInfo {
+    pub slug: String,
+    pub title: String,
+    pub project_path: PathBuf,
+    pub git_initialized: bool,
 }
 ```
 
-**VersionSource enum:**
+### ProjectMetadata
+
+Metadata loaded from an existing project directory:
 
 ```rust
-pub enum VersionSource {
+pub struct ProjectMetadata {
+    pub name: String,
+    pub slug: String,
+    pub category: Option<String>,
+    pub pathway: Option<ProjectPathway>,
+    pub description: String,
+    pub project_type: ProjectType,
 }
 ```
 
-**Example: Compare versions**
+**Loading from a project directory:**
 
 ```rust
-use polkadot_cookbook_sdk::VersionManager;
-use std::path::Path;
+use polkadot_cookbook_sdk::ProjectMetadata;
 
-let manager = VersionManager::new()?;
+// Auto-detects project type from file structure
+// Reads title/description from README.md frontmatter
+let metadata = ProjectMetadata::from_project_directory("./my-project").await?;
 
-let recipe1 = Path::new("recipes/recipe-one");
-let recipe2 = Path::new("recipes/recipe-two");
-
-let versions1 = manager.resolve_for_recipe(recipe1)?;
-let versions2 = manager.resolve_for_recipe(recipe2)?;
-
-// Compare Rust versions
-if versions1.get("rust") != versions2.get("rust") {
-    println!("Recipes use different Rust versions!");
-}
-```
-
-**Example: Format for CI**
-
-```rust
-use polkadot_cookbook_sdk::VersionManager;
-
-let manager = VersionManager::new()?;
-let versions = manager.resolve_for_recipe("recipes/my-recipe")?;
-
-// Output in CI format (KEY=VALUE)
-for (key, value) in versions {
-    let env_var = key.to_uppercase();
-    println!("{}={}", env_var, value);
-}
-
-// Output:
-// RUST=1.86
-// POLKADOT_OMNI_NODE=0.5.0
-// ...
+println!("Name: {}", metadata.name);
+println!("Type: {:?}", metadata.project_type);
+println!("Pathway: {:?}", metadata.pathway);
 ```
 
 ---
 
-### Recipe Scaffolding
+## Scaffold
 
-#### Scaffold
-
-Generate new recipe structures programmatically.
+The `Scaffold` struct is the main entry point for creating projects.
 
 ```rust
-use polkadot_cookbook_sdk::Scaffold;
+use polkadot_cookbook_sdk::{Scaffold, ProjectConfig, ProjectType};
 
-// Build scaffold configuration
-let scaffold = Scaffold::builder()
-    .title("Advanced Pallet Development")
-    .pathway("runtime")
-    .difficulty("advanced")
-    .content_type("tutorial")
-    .description("Learn advanced pallet development techniques")
-    .recipe_type("polkadot-sdk")
-    .build()?;
+let config = ProjectConfig::new("my-parachain")
+    .with_project_type(ProjectType::PolkadotSdk)
+    .with_skip_install(true)
+    .with_git_init(false);
 
-// Generate recipe files
-let recipe_path = "recipes/advanced-pallet";
-scaffold.generate(recipe_path)?;
-
-println!("Created recipe at: {}", recipe_path);
+let scaffold = Scaffold::new();
+let info = scaffold.create_project(config).await?;
 ```
 
-**Builder pattern:**
+### How Scaffolding Works
+
+The scaffold process varies by project type:
+
+**PolkadotSdk (clone + overlay):**
+1. Clone upstream `polkadot-sdk-parachain-template` at a pinned git tag (cached at `~/.dot/templates/`)
+2. Copy the cached clone to the destination directory
+3. String-replace upstream names with the user's project slug
+4. If pallet-only mode: remove node/, runtime/, and non-pallet files
+5. Overlay SDK-specific files (tests, scripts, READMEs, package.json)
+6. Process template placeholders in overlay files
+
+**Other types (Solidity, XCM, Transactions, Networks):**
+1. Copy embedded template files from the SDK
+2. Process template placeholders (`{{slug}}`, `{{title}}`, `{{description}}`, etc.)
+
+### Pallet-Only Mode
+
+For PolkadotSdk projects, pallet-only mode creates a minimal pallet workspace without runtime or node:
 
 ```rust
-pub struct ScaffoldBuilder {
-    // Builder fields
-}
+let mut config = ProjectConfig::new("my-pallet")
+    .with_project_type(ProjectType::PolkadotSdk);
+config.pallet_only = true;
 
-impl ScaffoldBuilder {
-    pub fn title(mut self, title: impl Into<String>) -> Self;
-    pub fn pathway(mut self, pathway: impl Into<String>) -> Self;
-    pub fn difficulty(mut self, difficulty: impl Into<String>) -> Self;
-    pub fn content_type(mut self, content_type: impl Into<String>) -> Self;
-    pub fn description(mut self, description: impl Into<String>) -> Self;
-    pub fn recipe_type(mut self, recipe_type: impl Into<String>) -> Self;
-    pub fn build(self) -> Result<Scaffold, Error>;
-}
-```
-
-**Generated files:**
-
-```rust
-impl Scaffold {
-    /// Generate all recipe files
-    pub fn generate<P: AsRef<Path>>(&self, output_path: P) -> Result<(), Error>;
-
-    /// Generate only specific files
-    pub fn generate_readme<P: AsRef<Path>>(&self, output_path: P) -> Result<(), Error>;
-    pub fn generate_config<P: AsRef<Path>>(&self, output_path: P) -> Result<(), Error>;
-    pub fn generate_package_json<P: AsRef<Path>>(&self, output_path: P) -> Result<(), Error>;
-}
-```
-
-**Example: Custom template**
-
-```rust
-use polkadot_cookbook_sdk::Scaffold;
-
-let scaffold = Scaffold::builder()
-    .title("Custom Project")
-    .pathway("runtime")
-    .difficulty("beginner")
-    .content_type("guide")
-    .build()?;
-
-// Generate with custom template
-let template = include_str!("../templates/custom-readme.md");
-scaffold.generate_with_template("recipes/custom-recipe", template)?;
-```
-
----
-
-### Validation
-
-#### RecipeValidator
-
-Validate recipe structure and content.
-
-```rust
-use polkadot_cookbook_sdk::RecipeValidator;
-use std::path::Path;
-
-let recipe_path = Path::new("recipes/my-recipe");
-let validator = RecipeValidator::new(recipe_path);
-
-// Run all validations
-match validator.validate() {
-    Ok(_) => println!("✅ Recipe validation passed!"),
-    Err(errors) => {
-        println!("❌ Validation failed:");
-        for error in errors {
-            println!("  - {}", error);
-        }
-    }
-}
-```
-
-**Validation checks:**
-
-```rust
-impl RecipeValidator {
-    /// Validate all aspects of recipe
-    pub fn validate(&self) -> Result<(), Vec<ValidationError>>;
-
-    /// Check individual aspects
-    pub fn validate_config(&self) -> Result<(), ValidationError>;
-    pub fn validate_readme(&self) -> Result<(), ValidationError>;
-    pub fn validate_structure(&self) -> Result<(), ValidationError>;
-    pub fn validate_versions(&self) -> Result<(), ValidationError>;
-}
-```
-
-**ValidationError:**
-
-```rust
-pub enum ValidationError {
-    MissingFile(String),
-    InvalidYaml(String),
-    InvalidField { field: String, reason: String },
-    UnknownVersionKey(String),
-}
-```
-
-**Example: Selective validation**
-
-```rust
-use polkadot_cookbook_sdk::RecipeValidator;
-
-let validator = RecipeValidator::new("recipes/my-recipe");
-
-// Validate only config
-if let Err(e) = validator.validate_config() {
-    eprintln!("Config error: {}", e);
-}
-
-// Validate only versions
-if let Err(e) = validator.validate_versions() {
-    eprintln!("Version error: {}", e);
-}
+let scaffold = Scaffold::new();
+let info = scaffold.create_project(config).await?;
+// Creates: Cargo.toml, pallets/template/, rust-toolchain.toml, README.md
+// Excludes: node/, runtime/, package.json, tests/, scripts/
 ```
 
 ---
 
 ## Error Handling
 
-The SDK uses a custom `Error` type:
+The SDK uses `CookbookError` with structured, serializable variants:
 
 ```rust
-use polkadot_cookbook_sdk::Error;
+use polkadot_cookbook_sdk::error::CookbookError;
 
-pub enum Error {
-    Io(std::io::Error),
-    Yaml(serde_yaml::Error),
-    Validation(String),
-    NotFound(String),
+pub enum CookbookError {
+    GitError(String),
+    ConfigError(String),
+    ScaffoldError(String),
+    TestError(String),
+    FileSystemError { message: String, path: Option<PathBuf> },
+    ValidationError(String),
+    WorkingDirectoryError(String),
+    ProjectExistsError(String),
+    TemplateNotFoundError(String),
+    BootstrapError(String),
+    IoError(String),
+    CommandError { command: String, message: String },
 }
 ```
 
 **Usage:**
 
 ```rust
-use polkadot_cookbook_sdk::{ProjectConfig, Error};
+use polkadot_cookbook_sdk::{Scaffold, ProjectConfig};
+use polkadot_cookbook_sdk::error::CookbookError;
 
-fn load_recipe(path: &str) -> Result<ProjectConfig, Error> {
-    ProjectConfig::load(path)
-}
-
-fn main() {
-    match load_recipe("recipes/my-recipe/recipe.config.yml") {
-        Ok(config) => println!("Loaded: {}", config.title),
-        Err(Error::NotFound(msg)) => eprintln!("Not found: {}", msg),
-        Err(Error::Validation(msg)) => eprintln!("Invalid: {}", msg),
-        Err(e) => eprintln!("Error: {}", e),
+let scaffold = Scaffold::new();
+match scaffold.create_project(config).await {
+    Ok(info) => println!("Created: {}", info.project_path.display()),
+    Err(CookbookError::ProjectExistsError(path)) => {
+        eprintln!("Project already exists at: {}", path);
     }
+    Err(CookbookError::FileSystemError { message, path }) => {
+        eprintln!("File error: {} ({:?})", message, path);
+    }
+    Err(CookbookError::CommandError { command, message }) => {
+        eprintln!("Command '{}' failed: {}", command, message);
+    }
+    Err(e) => eprintln!("Error: {}", e),
 }
+```
+
+Errors are serializable with `serde` for tool integration:
+
+```rust
+let error = CookbookError::ValidationError("invalid slug".to_string());
+let json = serde_json::to_string(&error)?;
+// {"type":"ValidationError","details":"invalid slug"}
 ```
 
 ---
 
-## Advanced Usage
+## Validation Utilities
 
-### Batch Processing
-
-Process multiple recipes:
+The SDK provides validation functions for project configuration:
 
 ```rust
-use polkadot_cookbook_sdk::{ProjectConfig, VersionManager};
-use std::fs;
-use std::path::Path;
+use polkadot_cookbook_sdk::config::{validate_slug, validate_title, title_to_slug, slug_to_title};
 
-fn process_all_recipes() -> Result<(), Box<dyn std::error::Error>> {
-    let recipes_dir = Path::new("recipes");
-    let version_manager = VersionManager::new()?;
+// Validate a slug
+validate_slug("my-project")?;   // Ok
+validate_slug("My Project")?;   // Err - must be lowercase
 
-    for entry in fs::read_dir(recipes_dir)? {
-        let entry = entry?;
-        let path = entry.path();
+// Convert between title and slug
+let slug = title_to_slug("My Custom Project");  // "my-custom-project"
+let title = slug_to_title("my-custom-project"); // "My Custom Project"
 
-        if path.is_dir() {
-            // Load config
-            let config_path = path.join("recipe.config.yml");
-            if let Ok(config) = ProjectConfig::load(&config_path) {
-                println!("Processing: {}", config.title);
-
-                // Get versions
-                let versions = version_manager.resolve_for_recipe(&path)?;
-                println!("  Rust version: {}", versions.get("rust").unwrap());
-
-                // Validate
-                if let Err(e) = config.validate() {
-                    eprintln!("  ⚠ Validation error: {}", e);
-                }
-            }
-        }
-    }
-
-    Ok(())
-}
-```
-
-### Custom Recipe Templates
-
-Create recipes with custom templates:
-
-```rust
-use polkadot_cookbook_sdk::Scaffold;
-use std::fs;
-
-fn create_custom_recipe() -> Result<(), Box<dyn std::error::Error>> {
-    let scaffold = Scaffold::builder()
-        .title("My Custom Project")
-        .pathway("runtime")
-        .difficulty("beginner")
-        .content_type("tutorial")
-        .build()?;
-
-    // Generate base structure
-    scaffold.generate("recipes/custom-recipe")?;
-
-    // Add custom files
-    let custom_content = "# Custom content here";
-    fs::write("recipes/custom-recipe/CUSTOM.md", custom_content)?;
-
-    Ok(())
-}
-```
-
-### Version Comparison
-
-Compare versions across recipes:
-
-```rust
-use polkadot_cookbook_sdk::VersionManager;
-use std::collections::HashMap;
-use std::fs;
-
-fn compare_versions() -> Result<(), Box<dyn std::error::Error>> {
-    let manager = VersionManager::new()?;
-    let mut recipes_versions: HashMap<String, HashMap<String, String>> = HashMap::new();
-
-    // Collect versions from all recipes
-    for entry in fs::read_dir("recipes")? {
-        let path = entry?.path();
-        if path.is_dir() {
-            let recipe_name = path.file_name().unwrap().to_string_lossy().to_string();
-            let versions = manager.resolve_for_recipe(&path)?;
-            recipes_versions.insert(recipe_name, versions);
-        }
-    }
-
-    // Find inconsistencies
-    let mut rust_versions: HashMap<String, Vec<String>> = HashMap::new();
-    for (recipe, versions) in recipes_versions {
-        if let Some(rust_ver) = versions.get("rust") {
-            rust_versions.entry(rust_ver.clone())
-                .or_insert_with(Vec::new)
-                .push(recipe);
-        }
-    }
-
-    // Report
-    println!("Rust version usage:");
-    for (version, recipes) in rust_versions {
-        println!("  {} used by: {:?}", version, recipes);
-    }
-
-    Ok(())
-}
-```
-
----
-
-## API Reference
-
-### Complete Type Definitions
-
-```rust
-// Recipe Configuration
-pub struct ProjectConfig {
-    pub title: String,
-    pub slug: String,
-    pub pathway: String,
-    pub difficulty: String,
-    pub content_type: String,
-    pub description: String,
-    pub repository: String,
-    pub recipe_type: String,
-}
-
-// Version Management
-pub struct VersionManager {
-    global_versions: HashMap<String, String>,
-    known_keys: Vec<String>,
-}
-
-pub enum VersionSource {
-    Global,
-    Recipe,
-}
-
-// Recipe Scaffolding
-pub struct Scaffold {
-    config: ProjectConfig,
-}
-
-pub struct ScaffoldBuilder { /* ... */ }
-
-// Validation
-pub struct RecipeValidator {
-    recipe_path: PathBuf,
-}
-
-pub enum ValidationError {
-    MissingFile(String),
-    InvalidYaml(String),
-    InvalidField { field: String, reason: String },
-    UnknownVersionKey(String),
-}
-
-// Error Handling
-pub enum Error {
-    Io(std::io::Error),
-    Yaml(serde_yaml::Error),
-    Validation(String),
-    NotFound(String),
-}
+// Validate a title
+validate_title("My Project")?;  // Ok
 ```
 
 ---
 
 ## Testing
 
-### Unit Tests
+```bash
+# Run all SDK tests
+cargo test --package sdk
 
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
+# Run with logging
+RUST_LOG=debug cargo test --package sdk
 
-    #[test]
-    fn test_recipe_config_load() {
-        let config = ProjectConfig::load("tests/fixtures/recipe.config.yml").unwrap();
-        assert_eq!(config.title, "Test Project");
-        assert_eq!(config.pathway, "runtime");
-    }
+# Run unit tests only
+cargo test --package sdk --lib
 
-    #[test]
-    fn test_version_resolution() {
-        let manager = VersionManager::new().unwrap();
-        let versions = manager.resolve_for_recipe("tests/fixtures/recipe").unwrap();
-        assert!(versions.contains_key("rust"));
-    }
+# Run integration tests only
+cargo test --package sdk --test integration_test
 
-    #[test]
-    fn test_scaffold_generation() {
-        let scaffold = Scaffold::builder()
-            .title("Test")
-            .pathway("runtime")
-            .difficulty("beginner")
-            .content_type("tutorial")
-            .build()
-            .unwrap();
-
-        let temp_dir = tempfile::tempdir().unwrap();
-        scaffold.generate(temp_dir.path()).unwrap();
-
-        assert!(temp_dir.path().join("README.md").exists());
-        assert!(temp_dir.path().join("recipe.config.yml").exists());
-    }
-}
-```
-
----
-
-## Examples
-
-### CLI Tool Integration
-
-How the CLI uses the SDK:
-
-```rust
-use polkadot_cookbook_sdk::{Scaffold, VersionManager};
-use clap::Parser;
-
-#[derive(Parser)]
-struct Cli {
-    #[command(subcommand)]
-    command: Command,
-}
-
-#[derive(Parser)]
-enum Command {
-    Create {
-        #[arg(long)]
-        title: String,
-        #[arg(long)]
-        pathway: String,
-    },
-    Versions {
-        slug: Option<String>,
-    },
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cli = Cli::parse();
-
-    match cli.command {
-        Command::Create { title, pathway } => {
-            let scaffold = Scaffold::builder()
-                .title(&title)
-                .pathway(&pathway)
-                .difficulty("beginner")
-                .content_type("tutorial")
-                .build()?;
-
-            let slug = ProjectConfig::generate_slug(&title);
-            scaffold.generate(format!("recipes/{}", slug))?;
-
-            println!("✨ Recipe created: {}", slug);
-        }
-
-        Command::Versions { slug } => {
-            let manager = VersionManager::new()?;
-
-            let versions = if let Some(slug) = slug {
-                manager.resolve_for_recipe(format!("recipes/{}", slug))?
-            } else {
-                manager.global_versions().clone()
-            };
-
-            for (key, value) in versions {
-                println!("{}: {}", key, value);
-            }
-        }
-    }
-
-    Ok(())
-}
+# Run doc tests
+cargo test --package sdk --doc
 ```
 
 ---
@@ -755,7 +322,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 - **[CLI Reference](cli-reference.md)** - Command-line interface
 - **[Architecture](architecture.md)** - System design
-- **[API Reference](api-reference.md)** - Complete API documentation
 
 ---
 

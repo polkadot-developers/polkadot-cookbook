@@ -654,7 +654,7 @@ runs-on: ubuntu-latest  # Different from your macOS
 # Match versions
 - uses: actions-rs/toolchain@v1
   with:
-    toolchain: 1.86  # Ensure same as local
+    toolchain: 1.88  # Ensure same as local
 ```
 
 **Missing dependencies:**
@@ -730,7 +730,7 @@ git push --force-with-lease
 
 **Symptom:**
 ```
-error: package `polkadot-sdk v1.15.0` cannot be built because it requires rustc 1.86 or newer
+error: package `polkadot-sdk v1.15.0` cannot be built because it requires rustc 1.88 or newer
 ```
 
 **Solution:**
@@ -743,8 +743,8 @@ rustc --version
 rustup update stable
 
 # Or install specific version
-rustup install 1.86
-rustup default 1.86
+rustup install 1.88
+rustup default 1.88
 
 # Verify
 rustc --version
@@ -851,7 +851,7 @@ What actually happens...
 
 ## Environment
 - OS: macOS 13.0
-- Rust: 1.86.0
+- Rust: 1.88.0
 - Node: 20.10.0
 - CLI: 0.2.0
 
