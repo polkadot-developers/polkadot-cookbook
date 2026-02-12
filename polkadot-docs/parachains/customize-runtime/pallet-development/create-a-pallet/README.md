@@ -2,9 +2,10 @@
 title: "Create a Custom Pallet"
 description: "Verify the create a custom pallet guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/pallet-development/create-a-pallet/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/pallet-development/create-a-pallet.md"
 last_tested: "2025-01-21"
-polkadot_sdk_version: "2503.0.1"
-parachain_template_version: "v0.0.4"
+polkadot_sdk_version: "2512.1.0"
+parachain_template_version: "v0.0.5"
 ---
 
 # Create a Custom Pallet
@@ -16,7 +17,7 @@ This project verifies the [Create a Custom Pallet](https://docs.polkadot.com/par
 ## What This Tests
 
 1. Prerequisites check (Rust, wasm target, required tools)
-2. Clone the parachain template repository (v0.0.4)
+2. Clone the parachain template repository (v0.0.5)
 3. Create a new `pallet-custom` in the pallets directory
 4. Write the pallet's `Cargo.toml` with FRAME dependencies
 5. Write the complete pallet implementation in `src/lib.rs`
@@ -42,8 +43,8 @@ Before running tests, ensure you have:
 
 ```bash
 # Install the tools with pinned versions (see "Versions Tested" below)
-cargo install --locked staging-chain-spec-builder@10.0.0
-cargo install --locked polkadot-omni-node@0.5.0
+cargo install --locked staging-chain-spec-builder@16.0.0
+cargo install --locked polkadot-omni-node@0.13.0
 ```
 
 ## Running Tests
@@ -62,7 +63,7 @@ npm test
 Verifies all prerequisites are installed with correct versions.
 
 ### 2. Clone Template and Create Pallet
-- Clones `polkadot-sdk-parachain-template` (v0.0.4)
+- Clones `polkadot-sdk-parachain-template` (v0.0.5)
 - Creates `pallets/pallet-custom` directory
 - Writes pallet `Cargo.toml` with FRAME dependencies
 - Writes complete pallet implementation with:
@@ -95,8 +96,8 @@ Verifies all prerequisites are installed with correct versions.
 To manually replicate this guide:
 
 ```bash
-# 1. Clone the template (using v0.0.4 release)
-git clone --branch v0.0.4 https://github.com/paritytech/polkadot-sdk-parachain-template.git
+# 1. Clone the template (using v0.0.5 release)
+git clone --branch v0.0.5 https://github.com/paritytech/polkadot-sdk-parachain-template.git
 cd polkadot-sdk-parachain-template
 
 # 2. Create the pallet directory
@@ -146,10 +147,10 @@ polkadot-omni-node --chain ./chain_spec.json --dev
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | 2503.0.1 |
-| Parachain Template | v0.0.4 |
-| chain-spec-builder | 10.0.0 |
-| polkadot-omni-node | 0.5.0 |
+| Polkadot SDK | 2512.1.0 |
+| Parachain Template | v0.0.5 |
+| chain-spec-builder | 16.0.0 |
+| polkadot-omni-node | 0.13.0 |
 
 ## Source
 

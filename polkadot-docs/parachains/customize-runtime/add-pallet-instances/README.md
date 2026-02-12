@@ -2,9 +2,10 @@
 title: "Add Pallet Instances to Runtime"
 description: "Verify the add pallet instances guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/add-pallet-instances/"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/add-pallet-instances.md"
 last_tested: "2025-01-18"
-polkadot_sdk_version: "2503.0.1"
-parachain_template_version: "v0.0.4"
+polkadot_sdk_version: "2512.1.0"
+parachain_template_version: "v0.0.5"
 ---
 
 # Add Pallet Instances to Runtime
@@ -40,8 +41,8 @@ Before running tests, ensure you have:
 
 ```bash
 # Install the tools with pinned versions (see "Versions Tested" below)
-cargo install --locked staging-chain-spec-builder@10.0.0
-cargo install --locked polkadot-omni-node@0.5.0
+cargo install --locked staging-chain-spec-builder@16.0.0
+cargo install --locked polkadot-omni-node@0.13.0
 ```
 
 ## Running Tests
@@ -60,7 +61,7 @@ npm test
 Verifies all prerequisites are installed with correct versions.
 
 ### 2. Clone and Modify Template
-- Clones `polkadot-sdk-parachain-template` (v0.0.4)
+- Clones `polkadot-sdk-parachain-template` (v0.0.5)
 - Adds `pallet-collective` dependency to Cargo.toml
 - Adds parameter_types for collective pallets:
   - `MotionDuration`: 24 hours
@@ -88,8 +89,8 @@ Verifies all prerequisites are installed with correct versions.
 To manually replicate this guide:
 
 ```bash
-# 1. Clone the template (using v0.0.4 release)
-git clone --branch v0.0.4 https://github.com/paritytech/polkadot-sdk-parachain-template.git
+# 1. Clone the template (using v0.0.5 release)
+git clone --branch v0.0.5 https://github.com/paritytech/polkadot-sdk-parachain-template.git
 cd polkadot-sdk-parachain-template
 
 # 2. Add pallet-collective to runtime/Cargo.toml features
@@ -145,10 +146,10 @@ polkadot-omni-node --chain ./chain_spec.json --dev
 | Component | Version |
 |-----------|---------|
 | Rust | See `rust-toolchain.toml` |
-| Polkadot SDK | 2503.0.1 |
-| Parachain Template | v0.0.4 |
-| chain-spec-builder | 10.0.0 |
-| polkadot-omni-node | 0.5.0 |
+| Polkadot SDK | 2512.1.0 |
+| Parachain Template | v0.0.5 |
+| chain-spec-builder | 16.0.0 |
+| polkadot-omni-node | 0.13.0 |
 
 ## Source
 
