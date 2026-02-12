@@ -27,13 +27,24 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler clang libclang-dev make
 
+      - name: Cache Zombienet
+        uses: actions/cache@v4
+        id: cache-zombienet
+        with:
+          path: ~/.local/bin/zombienet
+          key: ${{ runner.os }}-zombienet-v1.3.138
+
       - name: Install Zombienet
         run: |
-          ZOMBIENET_VERSION="v1.3.138"
-          curl -L -o zombienet https://github.com/paritytech/zombienet/releases/download/${ZOMBIENET_VERSION}/zombienet-linux-x64
-          chmod +x zombienet
-          sudo mv zombienet /usr/local/bin/
-          zombienet version
+          mkdir -p ~/.local/bin
+          if [ "${{ steps.cache-zombienet.outputs.cache-hit }}" != "true" ]; then
+            curl -L -o ~/.local/bin/zombienet https://github.com/paritytech/zombienet/releases/download/v1.3.138/zombienet-linux-x64
+            chmod +x ~/.local/bin/zombienet
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Zombienet
+        run: zombienet version
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -45,13 +56,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
 
-      - name: Cache cargo build
+      - name: Cache parachain template build
         uses: actions/cache@v4
+        id: cache-parachain-template
         with:
-          path: polkadot-docs/networks/run-a-parachain-network/polkadot-runtime-templates/generic-template/target
-          key: ${{ runner.os }}-cargo-build-parachain-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-parachain-
+          path: polkadot-docs/networks/run-a-parachain-network/polkadot-sdk-parachain-template
+          key: ${{ runner.os }}-parachain-template-v0.0.5-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
+
+      - name: Clean cached template for fresh test
+        if: steps.cache-parachain-template.outputs.cache-hit == 'true'
+        run: |
+          cd polkadot-docs/networks/run-a-parachain-network/polkadot-sdk-parachain-template
+          git checkout -- .
+          git clean -fd -e target/
 
       - name: Install npm dependencies
         run: |

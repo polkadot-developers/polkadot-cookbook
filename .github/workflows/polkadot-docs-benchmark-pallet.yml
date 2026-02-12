@@ -36,9 +36,25 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Cache parachain template build
+        uses: actions/cache@v4
+        id: cache-parachain-template
+        with:
+          path: polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/.test-workspace/parachain-template
+          key: ${{ runner.os }}-parachain-template-v0.0.5-${{ hashFiles('polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/rust-toolchain.toml') }}
+
+      - name: Clean cached template for fresh test
+        if: steps.cache-parachain-template.outputs.cache-hit == 'true'
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/.test-workspace/parachain-template
+          git checkout -- .
+          git clean -fd -e target/
 
       - name: Install npm dependencies
         run: |
