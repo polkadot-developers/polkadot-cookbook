@@ -78,7 +78,7 @@ Build the latest version from the repository.
 
 ### Prerequisites
 
-- **Rust** - Version 1.86 or later
+- **Rust** - Latest stable version
 - **Git** - Any recent version
 
 ### Install Rust

@@ -91,6 +91,15 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
+      - name: Cache upstream template clone
+        if: needs.check-changes.outputs.sdk_changed == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.dot/templates
+          key: ${{ runner.os }}-upstream-template-${{ hashFiles('dot/sdk/templates/project-templates/.official-template-version') }}
+          restore-keys: |
+            ${{ runner.os }}-upstream-template-
+
       - name: Check formatting
         if: needs.check-changes.outputs.sdk_changed == 'true'
         run: cargo fmt --check --package sdk
@@ -290,6 +299,15 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache upstream template clone
+        if: needs.check-changes.outputs.sdk_changed == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.dot/templates
+          key: ${{ runner.os }}-upstream-template-${{ hashFiles('dot/sdk/templates/project-templates/.official-template-version') }}
+          restore-keys: |
+            ${{ runner.os }}-upstream-template-
 
       - name: Build CLI
         if: needs.check-changes.outputs.sdk_changed == 'true'

@@ -81,6 +81,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      # Cache the upstream template clone to avoid re-cloning on every run
+      # The SDK clones the upstream parachain template at runtime via git
+      - name: Cache upstream template clone
+        uses: actions/cache@v4
+        with:
+          path: ~/.dot/templates
+          key: ${{ runner.os }}-upstream-template-${{ hashFiles('dot/sdk/templates/project-templates/.official-template-version') }}
+          restore-keys: |
+            ${{ runner.os }}-upstream-template-
+
       # Cache compiled runtime WASM to avoid 15+ minute rebuilds
       # This is the biggest time saver for parachain tests
       - name: Cache compiled runtime artifacts
@@ -89,7 +99,7 @@ jobs:
           path: |
             recipes/*/*/target/release/wbuild
             recipes/*/*/target/release/*.wasm
-          key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/project-templates/polkadot-sdk-template/runtime/**/*.rs', 'dot/sdk/templates/project-templates/polkadot-sdk-template/pallets/**/*.rs', 'dot/sdk/templates/project-templates/polkadot-sdk-template/**/Cargo.toml') }}
+          key: ${{ runner.os }}-runtime-wasm-${{ hashFiles('dot/sdk/templates/project-templates/.official-template-version') }}
           restore-keys: |
             ${{ runner.os }}-runtime-wasm-
 

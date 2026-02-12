@@ -22,11 +22,12 @@ Every recipe must include:
 
 ```
 recipes/your-recipe/
-├── README.md              # Main content (REQUIRED)
-├── recipe.config.yml      # Metadata (REQUIRED)
+├── README.md              # Main content with frontmatter metadata (REQUIRED)
 ├── src/                   # Source code (REQUIRED for code recipes)
 └── tests/                 # Tests (REQUIRED)
 ```
+
+**Note:** Recipe metadata (title, description) is read from README.md frontmatter. The `recipe.config.yml` file is deprecated.
 
 ### Optional Files
 
@@ -49,7 +50,6 @@ recipes/your-recipe/
 ```
 recipes/your-recipe/
 ├── README.md
-├── recipe.config.yml
 ├── Cargo.toml
 ├── src/
 │   └── lib.rs             # Pallet implementation
@@ -61,7 +61,6 @@ recipes/your-recipe/
 ```
 recipes/your-recipe/
 ├── README.md
-├── recipe.config.yml
 ├── package.json
 ├── hardhat.config.ts
 ├── contracts/
@@ -76,7 +75,6 @@ recipes/your-recipe/
 ```
 recipes/your-recipe/
 ├── README.md
-├── recipe.config.yml
 ├── package.json
 ├── chopsticks.yml         # Chopsticks config
 ├── src/
@@ -89,7 +87,6 @@ recipes/your-recipe/
 ```
 recipes/your-recipe/
 ├── README.md
-├── recipe.config.yml
 ├── package.json
 ├── tsconfig.json
 ├── src/
@@ -564,19 +561,18 @@ describe('Complete Transfer Workflow', () => {
 
 ## Metadata Requirements
 
-### recipe.config.yml
+### README.md Frontmatter
 
-All fields are required:
+Recipe metadata is provided via YAML frontmatter in `README.md`:
 
-```yaml
-title: "Your Recipe Title"
-slug: "your-recipe-slug"
-pathway: "runtime"  # runtime, contracts, basic-interaction, xcm, testing
-difficulty: "beginner"  # beginner, intermediate, advanced
-content_type: "tutorial"  # tutorial, guide
-description: "One-sentence description of the recipe"
-repository: "https://github.com/polkadot-developers/polkadot-cookbook"
-type: "polkadot-sdk"  # polkadot-sdk, xcm, solidity, typescript
+```markdown
+---
+title: Your Recipe Title
+description: One-sentence description of the recipe
+---
+
+# Your Recipe Title
+...
 ```
 
 **Field guidelines:**
@@ -587,48 +583,27 @@ type: "polkadot-sdk"  # polkadot-sdk, xcm, solidity, typescript
 - Title case
 - Example: "Build a Custom Pallet with Events"
 
-**slug:**
-- Lowercase
-- Hyphen-separated
-- Match directory name
-- Example: `build-custom-pallet-events`
-
-**pathway:**
-- `runtime` - Polkadot SDK runtime development
-- `contracts` - Smart contract development
-- `basic-interaction` - Basic blockchain interactions
-- `xcm` - Cross-chain messaging
-- `testing` - Testing strategies
-
-**difficulty:**
-- `beginner` - New to ecosystem
-- `intermediate` - Some experience
-- `advanced` - Production-ready complexity
-
-**content_type:**
-- `tutorial` - Step-by-step learning
-- `guide` - Reference/how-to
-
 **description:**
 - One sentence
 - Under 120 characters
 - Explains what you'll learn
 - Example: "Learn to build a custom pallet with events and error handling"
 
-**type:**
-- `polkadot-sdk` - Rust/Substrate
+### Project Type Detection
+
+The SDK auto-detects project type from the file structure:
+- `Cargo.toml` + `pallets/` directory → `polkadot-sdk`
+- `package.json` with `hardhat` dependency → `solidity`
+- `chopsticks.yml` present → `xcm`
+- `package.json` only → `transactions` or `networks`
+
+### Pathway Classification
+
+- `pallets` - Polkadot SDK pallet development
+- `contracts` - Smart contract development
+- `transactions` - Chain transactions and state queries
 - `xcm` - Cross-chain messaging
-- `solidity` - Solidity contracts
-- `typescript` - TypeScript interactions
-
-
-Only include if you need different versions than global defaults:
-
-```yaml
-versions:
-  rust: "1.86"
-  polkadot_omni_node: "0.6.0"
-```
+- `networks` - Network infrastructure (Zombienet/Chopsticks)
 
 
 ---
@@ -722,8 +697,7 @@ Use consistent terminology:
 Before submitting your recipe, verify:
 
 ### Structure
-- [ ] README.md exists and follows template
-- [ ] recipe.config.yml with all required fields
+- [ ] README.md exists with frontmatter (title, description)
 - [ ] src/ directory with implementation
 - [ ] tests/ directory with comprehensive tests
 

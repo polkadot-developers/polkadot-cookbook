@@ -52,14 +52,12 @@ dot create [OPTIONS]
 
 **Options:**
 - `--title <TITLE>` - Recipe title (required in non-interactive mode)
-- `--pathway <PATHWAY>` - Recipe pathway:
-  - `runtime` - Polkadot SDK/FRAME pallet development
-  - `contracts` - Solidity smart contracts
-  - `basic-interaction` - Polkadot API interactions
-  - `xcm` - Cross-chain messaging
-  - `testing` - Network infrastructure (Zombienet/Chopsticks)
-- `--difficulty <DIFFICULTY>` - Difficulty level: beginner, intermediate, advanced
-- `--content-type <TYPE>` - Content type: tutorial, guide
+- `--pathway <PATHWAY>` - Project pathway:
+  - `pallets` - Polkadot SDK pallet development (parachain with custom pallets)
+  - `contracts` - Solidity smart contracts (Hardhat)
+  - `transactions` - Chain transactions and state queries (PAPI)
+  - `xcm` - Cross-chain messaging (Chopsticks)
+  - `networks` - Network infrastructure (Zombienet/Chopsticks)
 - `--skip-install` - Skip npm dependency installation
 - `--no-git` - Skip git branch creation
 - `--non-interactive` - Non-interactive mode (requires --title)
@@ -76,7 +74,7 @@ dot create --title "Custom Pallet Recipe"
 dot create --title "My Recipe" --skip-install --non-interactive
 
 # CI/CD mode with full options
-dot create --title "My Recipe" --pathway runtime --difficulty beginner --non-interactive --skip-install
+dot create --title "My Recipe" --pathway pallets --non-interactive --skip-install
 ```
 
 **What it creates:**

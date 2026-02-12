@@ -39,7 +39,7 @@ repository: "https://github.com/polkadot-developers/polkadot-cookbook"
 recipes:
   - slug: "recipe-slug"
     title: "Recipe Title"
-    pathway: "runtime"
+    pathway: "pallets"
     difficulty: "beginner"
     content_type: "tutorial"
     description: "Recipe description"
@@ -57,7 +57,7 @@ repository: "https://github.com/polkadot-developers/polkadot-cookbook"
 recipes:
   - slug: "basic-pallet"
     title: "Build a Basic Pallet"
-    pathway: "runtime"
+    pathway: "pallets"
     difficulty: "beginner"
     content_type: "tutorial"
     description: "Learn to build your first Substrate pallet with storage and dispatchables"
@@ -161,7 +161,7 @@ Each recipe object contains:
 slug: "basic-pallet"
 ```
 
-Matches recipe directory name and `recipe.config.yml` slug field.
+Matches recipe directory name.
 
 ---
 
@@ -175,7 +175,7 @@ Matches recipe directory name and `recipe.config.yml` slug field.
 title: "Build a Basic Pallet"
 ```
 
-Copied from `recipe.config.yml`.
+Extracted from README.md frontmatter.
 
 ---
 
@@ -184,14 +184,14 @@ Copied from `recipe.config.yml`.
 **Type:** String (enum)
 **Description:** Recipe category
 **Allowed values:**
-- `runtime` - Polkadot SDK runtime development
+- `pallets` - Polkadot SDK pallet development
 - `contracts` - Smart contract development
-- `basic-interaction` - Basic blockchain interactions
+- `transactions` - Chain transactions and state queries
 - `xcm` - Cross-chain messaging
-- `testing` - Testing strategies
+- `networks` - Network infrastructure (Zombienet/Chopsticks)
 
 ```yaml
-pathway: "runtime"
+pathway: "pallets"
 ```
 
 ---
@@ -273,7 +273,7 @@ path: "recipes/basic-pallet"
 1. **Triggered by:** Weekly release workflow or breaking change release
 2. **Process:**
    - Scans `recipes/` directory
-   - Reads each `recipe.config.yml`
+   - Reads each recipe's README.md frontmatter and detects project type
    - Validates recipe structure
    - Compiles into manifest
    - Saves to `.github/releases/v<version>/manifest.yml`
@@ -383,8 +383,8 @@ manifest.recipes.forEach(recipe => {
 **Filter by pathway:**
 
 ```typescript
-const runtimeRecipes = manifest.recipes.filter(r => r.pathway === 'runtime');
-console.log(`Runtime recipes: ${runtimeRecipes.length}`);
+const palletRecipes = manifest.recipes.filter(r => r.pathway === 'pallets');
+console.log(`Pallet recipes: ${palletRecipes.length}`);
 ```
 
 **Filter by difficulty:**
@@ -458,7 +458,7 @@ Object.entries(byType).forEach(([type, recipes]) => {
           },
           "pathway": {
             "type": "string",
-            "enum": ["runtime", "contracts", "basic-interaction", "xcm", "testing"]
+            "enum": ["pallets", "contracts", "transactions", "xcm", "networks"]
           },
           "difficulty": {
             "type": "string",
@@ -534,7 +534,7 @@ repository: "https://github.com/polkadot-developers/polkadot-cookbook"
 recipes:
   - slug: "basic-pallet"
     title: "Build a Basic Pallet"
-    pathway: "runtime"
+    pathway: "pallets"
     difficulty: "beginner"
     content_type: "tutorial"
     description: "Learn to build your first Substrate pallet"
@@ -552,7 +552,7 @@ repository: "https://github.com/polkadot-developers/polkadot-cookbook"
 recipes:
   - slug: "basic-pallet"
     title: "Build a Basic Pallet"
-    pathway: "runtime"
+    pathway: "pallets"
     difficulty: "beginner"
     content_type: "tutorial"
     description: "Learn to build your first Substrate pallet"
@@ -561,7 +561,7 @@ recipes:
 
   - slug: "storage-operations"
     title: "Pallet Storage Operations"
-    pathway: "runtime"
+    pathway: "pallets"
     difficulty: "intermediate"
     content_type: "guide"
     description: "Master storage operations in Substrate pallets"

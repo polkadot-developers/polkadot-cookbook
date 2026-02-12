@@ -223,7 +223,7 @@ status: alpha
 tooling:
   cli_version: cli-v0.2.0
   sdk_version: sdk-v0.1.0
-  rust: "1.86"
+  rust: "1.88"
   polkadot_sdk: "1.15.0"
 
 recipes:
@@ -232,7 +232,7 @@ recipes:
     path: "recipes/basic-pallet"
     tested: true          # Passed CI tests
     commit: "abc123def"   # Immutable reference
-    pathway: "runtime"
+    pathway: "pallets"
     difficulty: "beginner"
     description: "Create a custom FRAME pallet"
 ```
@@ -256,7 +256,7 @@ Released: 2025-11-06
 - Update documentation (#125)
 
 ## Compatibility
-- Rust: 1.86
+- Rust: 1.88
 - Polkadot SDK: 1.15.0
 
 ## Testing
@@ -299,16 +299,16 @@ docs.polkadot.com can:
 
 ## Recipe Configuration
 
-Each recipe must include `version` in `recipe.config.yml`:
+Recipe metadata is provided via README.md frontmatter:
 
-```yaml
-name: Basic Pallet
-slug: basic-pallet
-version: 0.1.0        # Recipe semantic version
-type: polkadot-sdk
-difficulty: beginner
-# ... other fields
+```markdown
+---
+title: Basic Pallet
+description: Create a custom FRAME pallet
+---
 ```
+
+Project type is auto-detected from file structure (e.g., `Cargo.toml` + `pallets/` directory = `polkadot-sdk`).
 
 ### Version Management
 
@@ -342,7 +342,7 @@ Recipes manage dependencies using standard tooling files:
 **Example `rust-toolchain.toml`:**
 ```toml
 [toolchain]
-channel = "1.86"
+channel = "1.88"
 components = ["rustfmt", "clippy"]
 profile = "minimal"
 ```

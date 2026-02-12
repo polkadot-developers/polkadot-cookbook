@@ -26,7 +26,7 @@ Describe the goal, prerequisites, and step-by-step instructions for this project
 
 ## Prerequisites
 
-- Rust `1.86+` (check with `rustc --version`)
+- Rust `1.88+` (check with `rustc --version`)
 - Node.js `20+` (check with `node --version`)
 - Basic knowledge of Polkadot SDK
 

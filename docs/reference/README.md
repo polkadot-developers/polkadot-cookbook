@@ -25,7 +25,7 @@ status: alpha
 
 tooling:
   cli_version: cli-v0.2.0
-  rust: "1.86"
+  rust: "1.88"
 
 recipes:
   basic-pallet:
