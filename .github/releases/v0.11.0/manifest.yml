@@ -1,0 +1,27 @@
+release: v0.11.0
+release_date: 2026-02-12T12:00:00Z
+status: alpha
+
+tooling:
+  rust: "1.91.0"
+  node: "v24.7.0"
+
+recipes:
+  contracts-example:
+    path: "recipes/contracts/contracts-example"
+    tested: true
+  cross-chain-transaction-example:
+    path: "recipes/cross-chain-transactions/cross-chain-transaction-example"
+    tested: true
+  network-example:
+    path: "recipes/networks/network-example"
+    tested: true
+  pallet-example:
+    path: "recipes/pallets/pallet-example"
+    tested: true
+  parachain-example:
+    path: "recipes/parachains/parachain-example"
+    tested: true
+  transaction-example:
+    path: "recipes/transactions/transaction-example"
+    tested: true
