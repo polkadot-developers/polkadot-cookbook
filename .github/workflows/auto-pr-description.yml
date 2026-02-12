@@ -1,0 +1,143 @@
+name: Auto PR Description
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  generate-description:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate PR description comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Check if PR already has a meaningful description
+            const body = (pr.body || '').trim();
+            if (body.length >= 10) {
+              console.log(`PR already has a description (${body.length} chars), skipping.`);
+              return;
+            }
+
+            console.log(`PR body is empty or minimal (${body.length} chars), generating description...`);
+
+            // Fetch commits in this PR
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+
+            // Fetch changed files in this PR
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+
+            // Infer PR type from conventional commit prefixes
+            const typeCounts = {};
+            for (const commit of commits.data) {
+              const firstLine = commit.commit.message.split('\n')[0];
+              const match = firstLine.match(/^(feat|fix|chore|docs|refactor|test|perf|style|ci|build)(\(.+\))?(!)?:/);
+              if (match) {
+                const type = match[1];
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+              }
+            }
+
+            // Determine the dominant type
+            let inferredType = 'changes';
+            if (Object.keys(typeCounts).length > 0) {
+              const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+              const typeLabels = {
+                feat: 'Feature',
+                fix: 'Bug Fix',
+                chore: 'Chore',
+                docs: 'Documentation',
+                refactor: 'Refactor',
+                test: 'Test',
+                perf: 'Performance',
+                style: 'Style',
+                ci: 'CI',
+                build: 'Build',
+              };
+              inferredType = typeLabels[sorted[0][0]] || sorted[0][0];
+            }
+
+            // Build commits list
+            let commitsList = '';
+            for (const commit of commits.data) {
+              const sha = commit.sha.substring(0, 7);
+              const firstLine = commit.commit.message.split('\n')[0];
+              commitsList += `- \`${sha}\` ${firstLine}\n`;
+            }
+
+            // Group files by directory
+            const filesByDir = {};
+            for (const file of files.data) {
+              const parts = file.filename.split('/');
+              const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.';
+              if (!filesByDir[dir]) {
+                filesByDir[dir] = [];
+              }
+              filesByDir[dir].push(file);
+            }
+
+            // Build file changes section with collapsible groups
+            let fileChanges = '';
+            const sortedDirs = Object.keys(filesByDir).sort();
+            for (const dir of sortedDirs) {
+              const dirFiles = filesByDir[dir];
+              const totalAdded = dirFiles.reduce((sum, f) => sum + f.additions, 0);
+              const totalRemoved = dirFiles.reduce((sum, f) => sum + f.deletions, 0);
+
+              fileChanges += `<details>\n`;
+              fileChanges += `<summary><code>${dir}/</code> (${dirFiles.length} file${dirFiles.length !== 1 ? 's' : ''}, +${totalAdded} -${totalRemoved})</summary>\n\n`;
+
+              for (const file of dirFiles) {
+                const basename = file.filename.split('/').pop();
+                fileChanges += `- \`${basename}\` (+${file.additions} -${file.deletions}) ${file.status}\n`;
+              }
+
+              fileChanges += `\n</details>\n\n`;
+            }
+
+            // Build the comment
+            const commentBody = [
+              '> **Note:** This PR was opened without a description. Please update your PR with a thorough description of the changes and their motivation.',
+              '',
+              '## Summary',
+              '',
+              `**Type:** ${inferredType}`,
+              '',
+              '### Commits',
+              '',
+              commitsList,
+              '### Changed Files',
+              '',
+              fileChanges,
+              '---',
+              '*Auto-generated summary based on commits and changed files. Please edit the PR description with additional context.*',
+            ].join('\n');
+
+            // Post comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: commentBody,
+            });
+
+            console.log('Posted PR description comment.');
