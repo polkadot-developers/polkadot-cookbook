@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -44,20 +45,27 @@ jobs:
             echo "Updated last_tested to $TODAY"
           fi
 
-      - name: Commit and push
+      - name: Create PR
         if: steps.update.outputs.already_current != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           NAME=$(echo "${{ inputs.readme_path }}" | sed 's|/README.md||' | sed 's|.*/||')
+          BRANCH="ci/update-last-tested-${NAME}"
+          git checkout -b "$BRANCH"
           git add "${{ inputs.readme_path }}"
-          git commit -m "ci: update last_tested for $NAME [skip ci]"
-          for i in 1 2 3; do
-            git push && break
-            echo "Push failed (attempt $i), rebasing and retrying..."
-            git pull --rebase
-            sleep 2
-          done
+          git commit -m "ci: update last_tested for $NAME"
+          git push -u origin "$BRANCH" --force
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create \
+              --title "ci: update last_tested for $NAME" \
+              --body "Auto-generated PR to update \`last_tested\` date in \`${{ inputs.readme_path }}\`." \
+              --label "automated"
+            gh pr merge "$BRANCH" --auto --squash
+          fi
 
   notify-failure:
     if: inputs.test_result == 'failure' && inputs.workflow_name != ''
