@@ -21,6 +21,9 @@ jobs:
   update-last-tested:
     if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'success'
     runs-on: ubuntu-latest
+    concurrency:
+      group: update-last-tested
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: write
@@ -29,6 +32,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: master
+          fetch-depth: 0
 
       - name: Update last_tested date
         id: update
@@ -52,18 +56,35 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           NAME=$(echo "${{ inputs.readme_path }}" | sed 's|/README.md||' | sed 's|.*/||')
-          BRANCH="ci/update-last-tested-${NAME}"
-          git checkout -b "$BRANCH"
+          BRANCH="ci/update-last-tested"
+
+          # Pick up existing branch or start fresh from master
+          if git fetch origin "$BRANCH" 2>/dev/null; then
+            git checkout "$BRANCH"
+            git rebase origin/master || { git rebase --abort; git reset --hard origin/master; }
+          else
+            git checkout -b "$BRANCH"
+          fi
+
           git add "${{ inputs.readme_path }}"
+
+          # Skip if nothing to commit (date already updated in a prior run on this branch)
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
           git commit -m "ci: update last_tested for $NAME"
-          git push -u origin "$BRANCH" --force
+          git push -u origin "$BRANCH" --force-with-lease --force-if-includes
+
+          # Create PR if one doesn't exist
           EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [ -z "$EXISTING_PR" ]; then
             gh pr create \
-              --title "ci: update last_tested for $NAME" \
-              --body "Auto-generated PR to update \`last_tested\` date in \`${{ inputs.readme_path }}\`."
-            gh pr merge "$BRANCH" --auto --squash
+              --title "ci: batch update last_tested dates" \
+              --body "Auto-generated PR to update \`last_tested\` dates. Updated automatically as tests pass on master."
           fi
 
   notify-failure:
