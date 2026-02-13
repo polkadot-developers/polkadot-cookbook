@@ -1,6 +1,7 @@
 ---
 layout: doc
 title: "Contributors Guide"
+permalink: /contributors/
 ---
 
 # Contributors Guide

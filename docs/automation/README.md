@@ -1,6 +1,7 @@
 ---
 layout: doc
 title: "Automation & CI/CD"
+permalink: /automation/
 ---
 
 # Automation & CI/CD
