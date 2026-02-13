@@ -1,0 +1,43 @@
+name: REVM Uniswap V2 Periphery
+
+on:
+  push:
+    branches: [master]
+    paths: ['migration/revm/uniswap-v2-periphery/**']
+  pull_request:
+    paths: ['migration/revm/uniswap-v2-periphery/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: |
+          cd migration/revm/uniswap-v2-periphery
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd migration/revm/uniswap-v2-periphery
+          npm test
+        timeout-minutes: 30
+
+  notify-failure:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'REVM Uniswap V2 Periphery'
+      guide_path: 'migration/revm/uniswap-v2-periphery'
+    permissions:
+      issues: write
+      contents: read
