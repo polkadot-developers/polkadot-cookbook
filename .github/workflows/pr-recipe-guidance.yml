@@ -1,0 +1,134 @@
+name: PR Recipe Guidance
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+    paths:
+      - "recipes/**"
+      - "polkadot-docs/**"
+
+jobs:
+  guidance-comment:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Detect changed paths
+        id: detect
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+
+            const dirs = new Set();
+            const harnessFiles = new Set([
+              'package.json', 'package-lock.json', 'vitest.config.ts',
+              'tsconfig.json', 'README.md', '.gitignore',
+            ]);
+
+            for (const file of files) {
+              const p = file.filename;
+
+              // recipes/{pathway}/{name}/... — always 3 segments deep
+              const recipeMatch = p.match(/^(recipes\/[^/]+\/[^/]+)\//);
+              if (recipeMatch) {
+                dirs.add(recipeMatch[1]);
+                continue;
+              }
+
+              // polkadot-docs harnesses live at variable depth.
+              // Detect the harness root: the directory containing a known
+              // harness file, or the parent of tests/recipe.test.ts.
+              if (p.startsWith('polkadot-docs/')) {
+                const parts = p.split('/');
+                const fileName = parts[parts.length - 1];
+                if (harnessFiles.has(fileName)) {
+                  dirs.add(parts.slice(0, -1).join('/'));
+                } else if (parts.includes('tests')) {
+                  const testsIdx = parts.indexOf('tests');
+                  dirs.add(parts.slice(0, testsIdx).join('/'));
+                } else {
+                  // Fallback: show top two segments under polkadot-docs/
+                  const docsMatch = p.match(/^(polkadot-docs\/[^/]+\/[^/]+)/);
+                  if (docsMatch) dirs.add(docsMatch[1]);
+                }
+              }
+            }
+
+            if (dirs.size === 0) {
+              core.setOutput('found', 'false');
+              return;
+            }
+
+            const pathsList = [...dirs].map(d => `- \`${d}\``).join('\n');
+
+            const body = [
+              '<!-- pr-recipe-guidance -->',
+              '## Recipe / Docs Test Harness — Contributor Guide',
+              '',
+              '**Detected paths in this PR:**',
+              pathsList,
+              '',
+              '### Architecture Reminder',
+              '',
+              'The cookbook holds **test harnesses only** — the actual source code for each recipe lives in its own external repository (e.g. `brunopgalvao/recipe-*`). A test harness clones that repo at a pinned version, installs, builds, and runs tests.',
+              '',
+              '### Expected Scaffolding',
+              '',
+              'Each test harness directory should contain:',
+              '',
+              '```',
+              'recipes/{pathway}/{recipe-name}/',
+              '├── package.json          # name, vitest dev-dep, "test": "vitest run"',
+              '├── package-lock.json     # committed lock file',
+              '├── vitest.config.ts      # vitest configuration',
+              '├── tsconfig.json         # TypeScript config',
+              '├── tests/',
+              '│   └── recipe.test.ts    # clone → install → build → test',
+              '└── README.md             # frontmatter: title, description, source_repo, last_tested',
+              '```',
+              '',
+              '### Checklist',
+              '',
+              '- [ ] Source code lives in your own `recipe-*` repo (not in this PR)',
+              '- [ ] Test harness clones a **pinned version tag** (not `main`/`master`)',
+              '- [ ] `package-lock.json` is committed',
+              '- [ ] `README.md` has YAML frontmatter (`title`, `description`, `source_repo`, `last_tested`)',
+              '- [ ] Tests pass locally: `npm ci && npm test`',
+              '- [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)',
+              '',
+              '### Useful Links',
+              '',
+              '- [CONTRIBUTING.md](../blob/master/CONTRIBUTING.md)',
+              '- [Example recipe (contracts-example)](../tree/master/recipes/contracts/contracts-example) — use as a template',
+              '',
+              '*This is an automated comment and will update when you push new commits.*',
+            ].join('\n');
+
+            core.setOutput('found', 'true');
+            core.setOutput('body', body);
+
+      - name: Find existing comment
+        if: steps.detect.outputs.found == 'true'
+        id: find-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- pr-recipe-guidance -->"
+
+      - name: Post or update comment
+        if: steps.detect.outputs.found == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.detect.outputs.body }}
+          edit-mode: replace
