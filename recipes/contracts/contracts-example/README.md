@@ -2,7 +2,7 @@
 title: "Contracts Example"
 description: "Verification tests for the contracts-example recipe"
 source_repo: "https://github.com/brunopgalvao/recipe-contracts-example"
-last_tested: "2026-02-13"
+last_tested: "2025-01-01"
 ---
 
 # Contracts Example
