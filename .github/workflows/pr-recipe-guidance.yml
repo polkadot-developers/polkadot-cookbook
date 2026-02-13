@@ -21,6 +21,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const author = context.payload.pull_request.user.login;
+            const { data } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged author:${author}`,
+              per_page: 1,
+            });
+            if (data.total_count > 0) {
+              core.info(`Skipping: ${author} has ${data.total_count} previously merged PR(s)`);
+              core.setOutput('found', 'false');
+              return;
+            }
+
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -68,6 +79,7 @@ jobs:
             }
 
             const pathsList = [...dirs].map(d => `- \`${d}\``).join('\n');
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
 
             const body = [
               '<!-- pr-recipe-guidance -->',
@@ -78,7 +90,7 @@ jobs:
               '',
               '### Architecture Reminder',
               '',
-              'The cookbook holds **test harnesses only** — the actual source code for each recipe lives in its own external repository (e.g. `brunopgalvao/recipe-*`). A test harness clones that repo at a pinned version, installs, builds, and runs tests.',
+              'The cookbook holds **test harnesses only** — the actual source code for each recipe lives in its own external repository (e.g. `brunopgalvao/my-awesome-recipe`). A test harness clones that repo at a pinned version, installs, builds, and runs tests.',
               '',
               '### Expected Scaffolding',
               '',
@@ -97,7 +109,7 @@ jobs:
               '',
               '### Checklist',
               '',
-              '- [ ] Source code lives in your own `recipe-*` repo (not in this PR)',
+              '- [ ] Source code lives in your own external repo (not in this PR)',
               '- [ ] Test harness clones a **pinned version tag** (not `main`/`master`)',
               '- [ ] `package-lock.json` is committed',
               '- [ ] `README.md` has YAML frontmatter (`title`, `description`, `source_repo`, `last_tested`)',
@@ -106,8 +118,15 @@ jobs:
               '',
               '### Useful Links',
               '',
-              '- [CONTRIBUTING.md](../blob/master/CONTRIBUTING.md)',
-              '- [Example recipe (contracts-example)](../tree/master/recipes/contracts/contracts-example) — use as a template',
+              `- [CONTRIBUTING.md](${repoUrl}/blob/master/CONTRIBUTING.md)`,
+              `- [Install the \`dot\` CLI](${repoUrl}/blob/master/CONTRIBUTING.md#1-install-the-cli)`,
+              '- Example recipes:',
+              `  - [contracts-example](${repoUrl}/tree/master/recipes/contracts/contracts-example)`,
+              `  - [cross-chain-transaction-example](${repoUrl}/tree/master/recipes/cross-chain-transactions/cross-chain-transaction-example)`,
+              `  - [network-example](${repoUrl}/tree/master/recipes/networks/network-example)`,
+              `  - [pallet-example](${repoUrl}/tree/master/recipes/pallets/pallet-example)`,
+              `  - [parachain-example](${repoUrl}/tree/master/recipes/parachains/parachain-example)`,
+              `  - [transaction-example](${repoUrl}/tree/master/recipes/transactions/transaction-example)`,
               '',
               '*This is an automated comment and will update when you push new commits.*',
             ].join('\n');
