@@ -19,7 +19,7 @@ on:
 
 jobs:
   update-last-tested:
-    if: inputs.test_result == 'success'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -67,7 +67,7 @@ jobs:
           fi
 
   notify-failure:
-    if: inputs.test_result == 'failure' && inputs.workflow_name != ''
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'failure' && inputs.workflow_name != ''
     runs-on: ubuntu-latest
     permissions:
       issues: write

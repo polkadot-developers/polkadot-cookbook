@@ -27,6 +27,7 @@ on:
 
 jobs:
   build-binaries:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     name: Build CLI Binary (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     permissions:
@@ -129,6 +130,7 @@ jobs:
           if-no-files-found: error
 
   create-release:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     name: Create GitHub Release
     needs: build-binaries
     runs-on: ubuntu-latest

@@ -9,6 +9,7 @@ on:
 
 jobs:
   detect-version:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -47,7 +48,7 @@ jobs:
 
   build-cli-binaries:
     needs: detect-version
-    if: needs.detect-version.outputs.skip == 'false' && needs.detect-version.outputs.version != ''
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.detect-version.outputs.skip == 'false' && needs.detect-version.outputs.version != ''
     name: Build CLI Binary (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
 
@@ -149,7 +150,7 @@ jobs:
 
   publish-release:
     needs: [detect-version, build-cli-binaries]
-    if: needs.detect-version.outputs.skip == 'false' && needs.detect-version.outputs.version != ''
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.detect-version.outputs.skip == 'false' && needs.detect-version.outputs.version != ''
     runs-on: ubuntu-latest
     permissions:
       contents: write
