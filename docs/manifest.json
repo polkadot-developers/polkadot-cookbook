@@ -1,0 +1,9 @@
+{
+  "name": "Polkadot Cookbook",
+  "short_name": "Cookbook",
+  "start_url": "/polkadot-cookbook/",
+  "display": "standalone",
+  "background_color": "#08080d",
+  "theme_color": "#E6007A",
+  "description": "Practical, tested recipes for building on Polkadot"
+}
