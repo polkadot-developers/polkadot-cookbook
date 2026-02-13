@@ -29,3 +29,13 @@ jobs:
           cd recipes/contracts/contracts-example
           npm test
         timeout-minutes: 15
+
+  post-test:
+    needs: test
+    if: success() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'recipes/contracts/contracts-example/README.md'
+    permissions:
+      contents: write

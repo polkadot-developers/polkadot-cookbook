@@ -29,3 +29,13 @@ jobs:
           cd recipes/networks/network-example
           npm test
         timeout-minutes: 15
+
+  post-test:
+    needs: test
+    if: success() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'recipes/networks/network-example/README.md'
+    permissions:
+      contents: write

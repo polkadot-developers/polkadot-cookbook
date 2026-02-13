@@ -95,13 +95,14 @@ jobs:
           npm test
         timeout-minutes: 60
 
-  notify-failure:
+  post-test:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/README.md'
       workflow_name: 'Add Existing Pallets'
-      guide_path: 'polkadot-docs/parachains/customize-runtime/add-existing-pallets'
     permissions:
+      contents: write
       issues: write
-      contents: read

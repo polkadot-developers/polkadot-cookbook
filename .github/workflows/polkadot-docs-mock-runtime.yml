@@ -76,13 +76,14 @@ jobs:
           npm test
         timeout-minutes: 45
 
-  notify-failure:
+  post-test:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/README.md'
       workflow_name: 'Mock Your Runtime'
-      guide_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime'
     permissions:
+      contents: write
       issues: write
-      contents: read
