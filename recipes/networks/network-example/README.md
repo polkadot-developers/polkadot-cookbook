@@ -2,7 +2,7 @@
 title: "Network Example"
 description: "Verification tests for the network-example recipe"
 source_repo: "https://github.com/brunopgalvao/recipe-network-example"
-last_tested: "2025-02-13"
+last_tested: "2026-02-13"
 ---
 
 # Network Example
