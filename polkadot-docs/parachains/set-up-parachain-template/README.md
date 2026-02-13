@@ -4,7 +4,7 @@ description: "Verify the parachain template setup guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/launch-a-parachain/set-up-the-parachain-template/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/launch-a-parachain/set-up-the-parachain-template.md"
 docs_commit: "d4b41f851b16ac909a7422726a4fd47fea239ba3"
-last_tested: "2025-01-06"
+last_tested: "2026-02-13"
 polkadot_sdk_version: "polkadot-stable2512-1"
 ---
 
