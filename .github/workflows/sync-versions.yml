@@ -1,0 +1,65 @@
+name: Sync Dependency Versions
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for existing sync PR
+        id: check-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OPEN_PRS=$(gh pr list --label sync-versions --state open --json number --jq 'length')
+          if [ "$OPEN_PRS" -gt 0 ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "An open sync-versions PR already exists, skipping."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync versions from upstream
+        if: steps.check-pr.outputs.exists == 'false'
+        id: sync
+        run: bash .github/scripts/sync-versions.sh
+
+      - name: Create PR for version updates
+        if: steps.check-pr.outputs.exists == 'false' && steps.sync.outputs.has_updates == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="chore/sync-versions-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git add versions.yml
+          git commit -m "chore: sync dependency versions from polkadot-docs"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "chore: sync dependency versions from polkadot-docs" \
+            --label "sync-versions" \
+            --body "$(cat <<'PREOF'
+          ## Dependency Version Sync
+
+          Automated sync from [polkadot-docs variables.yml](https://github.com/polkadot-developers/polkadot-docs/blob/master/variables.yml).
+
+          ### Changes
+
+          ${{ steps.sync.outputs.changelog }}
+
+          > Only versions where upstream is strictly newer are updated. Cookbook-ahead versions are left untouched.
+
+          ### Verification
+
+          All `polkadot-docs-*` workflows will run automatically via the `versions.yml` path trigger.
+          PREOF
+          )"

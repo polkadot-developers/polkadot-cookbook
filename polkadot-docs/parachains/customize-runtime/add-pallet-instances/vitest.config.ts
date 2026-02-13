@@ -1,7 +1,15 @@
 import { defineConfig } from "vitest/config";
+import { loadVariables } from "../../../shared/load-variables";
+
+const vars = loadVariables();
 
 export default defineConfig({
   test: {
+    env: {
+      TEMPLATE_VERSION: vars.TEMPLATE_VERSION,
+      POLKADOT_OMNI_NODE_VERSION: vars.POLKADOT_OMNI_NODE_VERSION,
+      CHAIN_SPEC_BUILDER_VERSION: vars.CHAIN_SPEC_BUILDER_VERSION,
+    },
     // Run tests sequentially
     fileParallelism: false,
     sequence: {

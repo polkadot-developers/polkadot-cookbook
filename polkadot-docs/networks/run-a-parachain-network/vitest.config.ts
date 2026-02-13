@@ -1,7 +1,14 @@
 import { defineConfig } from "vitest/config";
+import { loadVariables } from "../../shared/load-variables";
+
+const vars = loadVariables();
 
 export default defineConfig({
   test: {
+    env: {
+      TEMPLATE_VERSION: vars.TEMPLATE_VERSION,
+      POLKADOT_SDK_VERSION: vars.POLKADOT_SDK_VERSION,
+    },
     // Run test FILES sequentially (critical - build depends on clone, spawn depends on build)
     fileParallelism: false,
     // Run tests within files sequentially

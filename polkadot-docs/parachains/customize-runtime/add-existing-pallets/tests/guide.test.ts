@@ -58,7 +58,7 @@ describe("Add Existing Pallets Guide", () => {
         console.log(`chain-spec-builder: ${result.trim()}`);
       } catch (error) {
         console.log("Installing chain-spec-builder...");
-        execSync("cargo install staging-chain-spec-builder@16.0.0 --locked", {
+        execSync(`cargo install staging-chain-spec-builder@${process.env.CHAIN_SPEC_BUILDER_VERSION} --locked`, {
           stdio: "inherit",
         });
       }
@@ -73,7 +73,7 @@ describe("Add Existing Pallets Guide", () => {
         console.log(`polkadot-omni-node: ${result.trim()}`);
       } catch (error) {
         console.log("Installing polkadot-omni-node...");
-        execSync("cargo install polkadot-omni-node@0.13.0 --locked", {
+        execSync(`cargo install polkadot-omni-node@${process.env.POLKADOT_OMNI_NODE_VERSION} --locked`, {
           stdio: "inherit",
         });
       }

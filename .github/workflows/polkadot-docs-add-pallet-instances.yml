@@ -3,9 +3,13 @@ name: Add Pallet Instances
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/parachains/customize-runtime/add-pallet-instances/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/add-pallet-instances/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/parachains/customize-runtime/add-pallet-instances/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/add-pallet-instances/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
@@ -14,6 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+          echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -42,13 +52,13 @@ jobs:
         id: cache-polkadot-tools
         with:
           path: ~/.local/bin
-          key: ${{ runner.os }}-polkadot-tools-polkadot-stable2512-1
+          key: ${{ runner.os }}-polkadot-tools-${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
 
       - name: Install required tools
         run: |
           mkdir -p ~/.local/bin
           if [ "${{ steps.cache-polkadot-tools.outputs.cache-hit }}" != "true" ]; then
-            RELEASE_TAG="polkadot-stable2512-1"
+            RELEASE_TAG="${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}"
             BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/${RELEASE_TAG}"
             curl -L -o ~/.local/bin/chain-spec-builder "${BASE_URL}/chain-spec-builder"
             curl -L -o ~/.local/bin/polkadot-omni-node "${BASE_URL}/polkadot-omni-node"
@@ -66,7 +76,7 @@ jobs:
         id: cache-parachain-template
         with:
           path: polkadot-docs/parachains/customize-runtime/add-pallet-instances/.test-workspace/parachain-template
-          key: ${{ runner.os }}-parachain-template-v0.0.5-${{ hashFiles('polkadot-docs/parachains/customize-runtime/add-pallet-instances/rust-toolchain.toml') }}
+          key: ${{ runner.os }}-parachain-template-${{ steps.versions.outputs.TEMPLATE_VERSION }}-${{ hashFiles('polkadot-docs/parachains/customize-runtime/add-pallet-instances/rust-toolchain.toml') }}
 
       - name: Clean cached template for fresh test
         if: steps.cache-parachain-template.outputs.cache-hit == 'true'
