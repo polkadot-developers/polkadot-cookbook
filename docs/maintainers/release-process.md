@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Release Process"
+---
+
 
 # Release Process
 
@@ -458,6 +463,6 @@ Planned improvements to the release process:
 
 ## Questions?
 
-- See [.github/releases/README.md](../.github/releases/README.md) for manifest format details
-- See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution workflow
+- See [.github/releases/README.md](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/.github/releases/README.md) for manifest format details
+- See [CONTRIBUTING.md](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) for contribution workflow
 - Open an issue for release process questions

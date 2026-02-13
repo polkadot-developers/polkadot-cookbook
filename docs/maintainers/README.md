@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Maintainers Guide"
+---
+
 # Maintainers Guide
 
 This section contains documentation for repository maintainers managing releases, workflows, and repository operations.
@@ -71,4 +76,4 @@ As a maintainer, you're responsible for:
 
 ---
 
-[← Back to Documentation Hub](../README.md)
+[← Back to Documentation Hub](../)

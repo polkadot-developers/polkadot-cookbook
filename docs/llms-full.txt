@@ -1,0 +1,36 @@
+# Polkadot Cookbook — Full Documentation Index
+
+> Complete page listing for AI systems that want to index all documentation content.
+
+## Getting Started
+- [Getting Started Overview](https://polkadot-developers.github.io/polkadot-cookbook/getting-started/)
+- [Installation Guide](https://polkadot-developers.github.io/polkadot-cookbook/getting-started/installation)
+- [Your First Project](https://polkadot-developers.github.io/polkadot-cookbook/getting-started/first-project)
+
+## Contributors
+- [Contributors Guide](https://polkadot-developers.github.io/polkadot-cookbook/contributors/)
+- [Contributor Workflow](https://polkadot-developers.github.io/polkadot-cookbook/contributors/workflow)
+- [Commit Message Conventions](https://polkadot-developers.github.io/polkadot-cookbook/contributors/commit-conventions)
+- [Recipe Guidelines](https://polkadot-developers.github.io/polkadot-cookbook/contributors/recipe-guidelines)
+- [Recipe Development Guide](https://polkadot-developers.github.io/polkadot-cookbook/contributors/recipe-development)
+- [Testing Recipes Guide](https://polkadot-developers.github.io/polkadot-cookbook/contributors/testing-recipes)
+- [Troubleshooting FAQ](https://polkadot-developers.github.io/polkadot-cookbook/contributors/troubleshooting)
+
+## Developers
+- [Developers Guide](https://polkadot-developers.github.io/polkadot-cookbook/developers/)
+- [SDK Architecture](https://polkadot-developers.github.io/polkadot-cookbook/developers/architecture)
+- [CLI Reference](https://polkadot-developers.github.io/polkadot-cookbook/developers/cli-reference)
+- [SDK Guide](https://polkadot-developers.github.io/polkadot-cookbook/developers/sdk-guide)
+
+## Maintainers
+- [Maintainers Guide](https://polkadot-developers.github.io/polkadot-cookbook/maintainers/)
+- [Release Process](https://polkadot-developers.github.io/polkadot-cookbook/maintainers/release-process)
+- [GitHub Actions Workflows](https://polkadot-developers.github.io/polkadot-cookbook/maintainers/workflows)
+
+## Automation
+- [Automation & CI/CD](https://polkadot-developers.github.io/polkadot-cookbook/automation/)
+- [Pre-Commit Hooks](https://polkadot-developers.github.io/polkadot-cookbook/automation/pre-commit-hooks)
+
+## Reference
+- [Reference Documentation](https://polkadot-developers.github.io/polkadot-cookbook/reference/)
+- [Manifest Schema](https://polkadot-developers.github.io/polkadot-cookbook/reference/manifest-schema)

@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Reference Documentation"
+---
+
 # Reference Documentation
 
 This section contains reference material, schemas, and specifications.
@@ -49,4 +54,4 @@ Before contributing recipes, review:
 
 ---
 
-[← Back to Documentation Hub](../README.md)
+[← Back to Documentation Hub](../)

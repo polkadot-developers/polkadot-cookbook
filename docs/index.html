@@ -9,10 +9,24 @@
   <meta name="theme-color" content="#fafafc" media="(prefers-color-scheme: light)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Canonical -->
+  <link rel="canonical" href="https://polkadot-developers.github.io/polkadot-cookbook/">
+  <!-- Open Graph -->
   <meta property="og:title" content="Polkadot Cookbook">
-  <meta property="og:description" content="Practical, tested recipes for building on Polkadot">
+  <meta property="og:description" content="Practical, tested recipes for building on Polkadot. Runtime logic, smart contracts, dApps, and cross-chain applications.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://polkadot-developers.github.io/polkadot-cookbook/">
+  <meta property="og:image" content="https://polkadot-developers.github.io/polkadot-cookbook/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Polkadot Cookbook">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Polkadot Cookbook">
+  <meta name="twitter:description" content="Practical, tested recipes for building on Polkadot. Runtime logic, smart contracts, dApps, and cross-chain applications.">
+  <meta name="twitter:image" content="https://polkadot-developers.github.io/polkadot-cookbook/og-image.png">
+  <!-- Telegram -->
+  <meta name="telegram:channel" content="@polkadot">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23E6007A'/></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%2308080d'/><circle cx='90' cy='90' r='50' fill='%23E6007A'/></svg>">
   <link rel="manifest" href="manifest.json">
@@ -122,6 +136,8 @@
       color: var(--text-primary);
       text-decoration: none;
       min-height: 44px;
+      position: relative;
+      z-index: 99;
     }
 
     .nav-brand:hover { opacity: 1; }
@@ -204,6 +220,8 @@
       min-height: 44px;
       align-items: center;
       justify-content: center;
+      position: relative;
+      z-index: 99;
     }
 
     /* ── Mobile Nav Overlay ──────────────────────────────────── */
@@ -1040,6 +1058,30 @@
     @keyframes vt-fade-in { from { opacity: 0; } }
   </style>
 
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Polkadot Cookbook",
+    "description": "Practical, tested recipes for building on Polkadot. Runtime logic, smart contracts, dApps, and cross-chain applications.",
+    "url": "https://polkadot-developers.github.io/polkadot-cookbook/",
+    "image": "https://polkadot-developers.github.io/polkadot-cookbook/og-image.png",
+    "author": {
+      "@type": "Organization",
+      "name": "Polkadot Developers",
+      "url": "https://github.com/polkadot-developers"
+    },
+    "license": "https://opensource.org/licenses/MIT",
+    "inLanguage": "en",
+    "sourceOrganization": {
+      "@type": "Organization",
+      "name": "Polkadot Developers",
+      "url": "https://github.com/polkadot-developers"
+    }
+  }
+  </script>
+
   <!-- Speculation Rules: prefetch recipe links on hover -->
   <script type="speculationrules">
   {
@@ -1047,6 +1089,12 @@
       {
         "where": {
           "href_matches": "https://github.com/polkadot-developers/polkadot-cookbook/*"
+        },
+        "eagerness": "moderate"
+      },
+      {
+        "where": {
+          "href_matches": "/polkadot-cookbook/*"
         },
         "eagerness": "moderate"
       }
@@ -1118,7 +1166,6 @@
           </g>
         </svg>
       </div>
-      <h1 class="hero-title">Polkadot <span class="accent">Cookbook</span></h1>
       <p class="hero-tagline">Practical, tested recipes for building on Polkadot. Runtime logic, smart contracts, dApps, and cross-chain applications.</p>
       <div class="hero-actions">
         <a href="#recipes" class="btn btn-primary">Browse Recipes</a>
@@ -1263,32 +1310,32 @@
       <p class="section-desc">Guides organized by role, from first-time users to maintainers.</p>
     </div>
     <div class="docs-grid">
-      <a href="https://github.com/polkadot-developers/polkadot-cookbook/tree/master/docs/getting-started" class="doc-card reveal" target="_blank" rel="noopener">
+      <a href="getting-started/" class="doc-card reveal">
         <h3>Getting Started</h3>
         <p>Installation, first project tutorial, basic concepts and workflow.</p>
         <span class="doc-arrow">&rarr;</span>
       </a>
-      <a href="https://github.com/polkadot-developers/polkadot-cookbook/tree/master/docs/contributors" class="doc-card reveal" target="_blank" rel="noopener">
+      <a href="contributors/" class="doc-card reveal">
         <h3>Contributors</h3>
         <p>Recipe development patterns, testing standards, and commit conventions.</p>
         <span class="doc-arrow">&rarr;</span>
       </a>
-      <a href="https://github.com/polkadot-developers/polkadot-cookbook/tree/master/docs/developers" class="doc-card reveal" target="_blank" rel="noopener">
+      <a href="developers/" class="doc-card reveal">
         <h3>Developers</h3>
         <p>System architecture, SDK programmatic usage, and CLI reference.</p>
         <span class="doc-arrow">&rarr;</span>
       </a>
-      <a href="https://github.com/polkadot-developers/polkadot-cookbook/tree/master/docs/maintainers" class="doc-card reveal" target="_blank" rel="noopener">
+      <a href="maintainers/" class="doc-card reveal">
         <h3>Maintainers</h3>
         <p>Release process, GitHub Actions workflows, and version management.</p>
         <span class="doc-arrow">&rarr;</span>
       </a>
-      <a href="https://github.com/polkadot-developers/polkadot-cookbook/tree/master/docs/automation" class="doc-card reveal" target="_blank" rel="noopener">
+      <a href="automation/" class="doc-card reveal">
         <h3>Automation</h3>
         <p>Pre-commit hooks, CI/CD workflows, and testing configuration.</p>
         <span class="doc-arrow">&rarr;</span>
       </a>
-      <a href="https://github.com/polkadot-developers/polkadot-cookbook/tree/master/docs/reference" class="doc-card reveal" target="_blank" rel="noopener">
+      <a href="reference/" class="doc-card reveal">
         <h3>Reference</h3>
         <p>Manifest schema, recipe config spec, and security guidelines.</p>
         <span class="doc-arrow">&rarr;</span>

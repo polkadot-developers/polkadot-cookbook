@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Your First Project"
+---
+
 # Your First Project
 
 A step-by-step tutorial for creating your first Polkadot project.
@@ -422,7 +427,7 @@ git push --tags
 
 ## Step 7: Contribute to the Cookbook
 
-To share your recipe with the community, add a **test harness** to the cookbook that verifies your external repository. See the [Contributing Guide](../../CONTRIBUTING.md) for the full workflow:
+To share your recipe with the community, add a **test harness** to the cookbook that verifies your external repository. See the [Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) for the full workflow:
 
 1. Fork the cookbook repository
 2. Add a test harness under `recipes/{pathway}/{your-recipe}/`
@@ -535,15 +540,15 @@ Congratulations! You've created your first project. Here's what to explore next:
 ### Learn More
 
 - **[CLI Reference](../developers/cli-reference.md)** - All CLI commands
-- **[Contributing Guide](../../CONTRIBUTING.md)** - Contribution workflow
+- **[Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md)** - Contribution workflow
 - **[Architecture](../developers/architecture.md)** - How the cookbook works
 
 ### Explore Examples
 
-- **[parachain-example](../../recipes/parachains/parachain-example/)** - Full parachain with PAPI integration
-- **[contracts-example](../../recipes/contracts/contracts-example/)** - Solidity contracts
-- **[transaction-example](../../recipes/transactions/transaction-example/)** - PAPI interactions
-- **[cross-chain-transaction-example](../../recipes/cross-chain-transactions/cross-chain-transaction-example/)** - Cross-chain messaging
+- **[parachain-example](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/parachains/parachain-example/)** - Full parachain with PAPI integration
+- **[contracts-example](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/contracts/contracts-example/)** - Solidity contracts
+- **[transaction-example](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/transactions/transaction-example/)** - PAPI interactions
+- **[cross-chain-transaction-example](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/cross-chain-transactions/cross-chain-transaction-example/)** - Cross-chain messaging
 
 ### Contribute More
 

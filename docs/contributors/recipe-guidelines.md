@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Recipe Guidelines"
+---
+
 # Recipe Guidelines
 
 Standards and best practices for creating high-quality Polkadot Cookbook recipes.
@@ -34,7 +39,7 @@ recipes/{pathway}/{your-recipe}/
     └── recipe.test.ts     # Clone → install → build → test
 ```
 
-Use an existing test harness as a template (e.g., [`recipes/contracts/contracts-example/`](../../recipes/contracts/contracts-example/)).
+Use an existing test harness as a template (e.g., [`recipes/contracts/contracts-example/`](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/contracts/contracts-example/)).
 
 ### What Goes in Your External Repository
 
@@ -739,9 +744,9 @@ Before submitting, verify both your external repository and your cookbook test h
 
 Study these existing test harnesses to see how they clone and verify external repos:
 
-- **Contracts** - [`recipes/contracts/contracts-example/`](../../recipes/contracts/contracts-example/) - Solidity contract test harness
-- **Parachain** - [`recipes/parachains/parachain-example/`](../../recipes/parachains/parachain-example/) - Full parachain test harness
-- **Transaction** - [`recipes/transactions/transaction-example/`](../../recipes/transactions/transaction-example/) - TypeScript interaction test harness
+- **Contracts** - [`recipes/contracts/contracts-example/`](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/contracts/contracts-example/) - Solidity contract test harness
+- **Parachain** - [`recipes/parachains/parachain-example/`](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/parachains/parachain-example/) - Full parachain test harness
+- **Transaction** - [`recipes/transactions/transaction-example/`](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/transactions/transaction-example/) - TypeScript interaction test harness
 
 ---
 

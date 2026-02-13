@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Commit Message Conventions"
+---
+
 # Commit Message Conventions
 
 The Polkadot Cookbook uses [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages. This enables automated semantic versioning and changelog generation.

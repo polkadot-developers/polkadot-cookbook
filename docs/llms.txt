@@ -1,0 +1,65 @@
+# Polkadot Cookbook
+
+> Practical, tested recipes for building on Polkadot. Runtime logic, smart contracts, dApps, and cross-chain applications with working code examples.
+
+The Polkadot Cookbook is an open-source collection of tested recipes for building on the Polkadot network. It includes a CLI tool (`dot`), an SDK, and test harnesses that verify each recipe works end-to-end.
+
+## Documentation Sections
+
+- [Getting Started](https://polkadot-developers.github.io/polkadot-cookbook/getting-started/): Installation, first project tutorial, basic concepts
+- [Contributors Guide](https://polkadot-developers.github.io/polkadot-cookbook/contributors/): Recipe development, testing, commit conventions, workflow
+- [Developers Guide](https://polkadot-developers.github.io/polkadot-cookbook/developers/): Architecture, CLI reference, SDK guide
+- [Maintainers Guide](https://polkadot-developers.github.io/polkadot-cookbook/maintainers/): Release process, GitHub Actions workflows
+- [Automation](https://polkadot-developers.github.io/polkadot-cookbook/automation/): Pre-commit hooks, CI/CD configuration
+- [Reference](https://polkadot-developers.github.io/polkadot-cookbook/reference/): Manifest schema, recipe config spec
+
+## Recipe Pathways
+
+The cookbook organizes recipes into pathways:
+
+- **Pallets** — Build custom parachains with FRAME pallets and PAPI integration testing
+- **Contracts** — Deploy and interact with Solidity smart contracts using Hardhat
+- **Transactions** — Single-chain transaction submission and state queries via Polkadot API (PAPI)
+- **XCM (Cross-Chain Messaging)** — Cross-chain asset transfers between parachains with Chopsticks testing
+- **Networks** — Testing infrastructure with Zombienet and Chopsticks
+
+## CLI Tool
+
+The `dot` CLI scaffolds new Polkadot projects:
+
+```bash
+# Install
+curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash
+
+# Create a new project
+dot create --title "My Project"
+
+# Run tests
+dot test
+```
+
+## Architecture
+
+- `dot/cli/` — Rust CLI binary (interactive terminal, Git integration)
+- `dot/sdk/` — Rust core library (async-first, no terminal deps, 80%+ test coverage)
+- `dot/sdk/templates/` — Embedded templates used by `dot create`
+- `recipes/{pathway}/{recipe-name}/` — Test harnesses (clone external repos, verify they work)
+
+Each recipe test harness follows a standard structure:
+- `package.json` + `vitest.config.ts` + `tests/recipe.test.ts`
+- Tests clone an external repo at a pinned version, install dependencies, build, and run tests
+
+## Key Technologies
+
+- **Polkadot SDK** — Substrate-based blockchain framework
+- **PAPI (Polkadot API)** — TypeScript API for Polkadot interactions
+- **FRAME** — Framework for Runtime Aggregation of Modularized Entities (pallet system)
+- **Zombienet** — Polkadot network testing tool
+- **Chopsticks** — Local chain forking tool for testing
+- **Hardhat** — Ethereum/Solidity development environment (for EVM-compatible parachains)
+
+## Links
+
+- Source: https://github.com/polkadot-developers/polkadot-cookbook
+- License: MIT / Apache 2.0
+- Contributing: https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md

@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Manifest Schema"
+---
+
 # Manifest Schema
 
 Complete schema reference for release `manifest.yml` files.

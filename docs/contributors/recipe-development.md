@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Recipe Development Guide"
+---
+
 # Recipe Development Guide
 
 Best practices and advanced techniques for developing high-quality recipes.

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://polkadot-developers.github.io/polkadot-cookbook/sitemap.xml
+
+# AI/LLM Crawlers
+# See https://llmstxt.org for the llms.txt specification
+# llms.txt: https://polkadot-developers.github.io/polkadot-cookbook/llms.txt
+# llms-full.txt: https://polkadot-developers.github.io/polkadot-cookbook/llms-full.txt

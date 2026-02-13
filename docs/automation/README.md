@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Automation & CI/CD"
+---
+
 # Automation & CI/CD
 
 This section covers automation setup, pre-commit hooks, and continuous integration workflows.
@@ -63,4 +68,4 @@ For complete CI/CD documentation, see [Maintainers Guide](../maintainers/).
 
 ---
 
-[← Back to Documentation Hub](../README.md)
+[← Back to Documentation Hub](../)
