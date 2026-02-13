@@ -10,7 +10,7 @@ polkadot_sdk_version: "polkadot-stable2512-1"
 
 # Add Existing Pallets to Runtime
 
-[![Add Existing Pallets](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-existing-pallets.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-existing-pallets.yml)
+[![Add Existing Pallets](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-existing-pallets.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-existing-pallets.yml)
 
 This project verifies the [Add Existing Pallets](https://docs.polkadot.com/parachains/customize-runtime/add-existing-pallets/) guide from docs.polkadot.com.
 

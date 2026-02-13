@@ -11,7 +11,7 @@ parachain_template_version: "v0.0.5"
 
 # Mock Your Runtime
 
-[![Mock Your Runtime](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-mock-runtime.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-mock-runtime.yml)
+[![Mock Your Runtime](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-mock-runtime.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-mock-runtime.yml)
 
 This project verifies the [Mock Your Runtime](https://docs.polkadot.com/parachains/customize-runtime/pallet-development/mock-runtime/) guide from docs.polkadot.com.
 

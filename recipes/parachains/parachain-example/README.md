@@ -7,7 +7,7 @@ last_tested: "2026-02-13"
 
 # Parachain Example
 
-[![Parachain Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-parachain-example.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-parachain-example.yml)
+[![Parachain Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-parachain-example.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-parachain-example.yml)
 
 This folder contains verification tests for the [parachain-example](https://github.com/brunopgalvao/recipe-parachain-example) recipe.
 

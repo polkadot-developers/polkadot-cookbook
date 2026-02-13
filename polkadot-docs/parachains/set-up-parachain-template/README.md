@@ -10,7 +10,7 @@ polkadot_sdk_version: "polkadot-stable2512-1"
 
 # Set Up the Parachain Template
 
-[![Set Up Parachain Template](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-set-up-parachain-template.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-set-up-parachain-template.yml)
+[![Set Up Parachain Template](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-set-up-parachain-template.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-set-up-parachain-template.yml)
 
 This project verifies the [Set Up the Parachain Template](https://docs.polkadot.com/parachains/launch-a-parachain/set-up-the-parachain-template/) guide from docs.polkadot.com.
 

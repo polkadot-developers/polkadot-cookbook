@@ -1,6 +1,6 @@
 # Uniswap V2 Periphery - REVM Testing
 
-[![REVM Uniswap V2 Periphery](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml)
+[![REVM Uniswap V2 Periphery](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml)
 
 This project tests Uniswap V2 Periphery smart contracts on Polkadot's REVM (Ethereum-compatible EVM).
 

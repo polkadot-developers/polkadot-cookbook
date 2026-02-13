@@ -7,7 +7,7 @@ last_tested: "2026-02-13"
 
 # Contracts Example
 
-[![Contracts Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-contracts-example.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-contracts-example.yml)
+[![Contracts Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-contracts-example.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-contracts-example.yml)
 
 This folder contains verification tests for the [contracts-example](https://github.com/brunopgalvao/recipe-contracts-example) recipe.
 

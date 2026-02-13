@@ -7,7 +7,7 @@ last_tested: "2026-02-13"
 
 # Pallet Example
 
-[![Pallet Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-pallet-example.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-pallet-example.yml)
+[![Pallet Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-pallet-example.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-pallet-example.yml)
 
 This folder contains verification tests for the [pallet-example](https://github.com/brunopgalvao/recipe-pallet-example) recipe.
 
