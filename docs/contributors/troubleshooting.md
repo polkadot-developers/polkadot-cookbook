@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Troubleshooting FAQ"
+---
+
 # Troubleshooting FAQ
 
 Common issues and solutions when developing Polkadot Cookbook recipes.

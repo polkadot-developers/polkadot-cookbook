@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "SDK Architecture"
+---
+
 # SDK Architecture
 
 The Polkadot Cookbook uses a modular SDK architecture consisting of two main components.
@@ -55,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-For more information, see [`dot/sdk/README.md`](../../dot/sdk/README.md).
+For more information, see [`dot/sdk/README.md`](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/dot/sdk/README.md).
 
 ## Polkadot Cookbook CLI
 

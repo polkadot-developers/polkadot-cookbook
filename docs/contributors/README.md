@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Contributors Guide"
+---
+
 # Contributors Guide
 
 This section contains everything you need to know about contributing recipes to the Polkadot Cookbook.
@@ -51,4 +56,4 @@ Each type has specific development patterns - see [Recipe Development](recipe-de
 
 ---
 
-[← Back to Documentation Hub](../README.md)
+[← Back to Documentation Hub](../)

@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "SDK Guide"
+---
+
 # SDK Guide
 
 Guide to using the Polkadot Cookbook SDK programmatically.

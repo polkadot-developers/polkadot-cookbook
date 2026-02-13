@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "CLI Reference"
+---
+
 # CLI Reference
 
 Complete reference for the `dot` command-line tool.

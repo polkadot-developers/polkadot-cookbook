@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Testing Recipes Guide"
+---
+
 # Testing Recipes Guide
 
 Comprehensive guide to testing Polkadot Cookbook recipes across all types.

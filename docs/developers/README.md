@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Developers Guide"
+---
+
 # Developers Guide
 
 This section is for developers building tools or extensions using the Polkadot Cookbook SDK.
@@ -115,4 +120,4 @@ Or see [api-reference.md](api-reference.md) for curated examples.
 
 ---
 
-[← Back to Documentation Hub](../README.md)
+[← Back to Documentation Hub](../)

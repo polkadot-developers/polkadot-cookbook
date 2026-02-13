@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "GitHub Actions Workflows"
+---
+
 # GitHub Actions Workflows
 
 This document describes all GitHub Actions workflows in the Polkadot Cookbook repository.
@@ -444,4 +449,4 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 - [Release Process](RELEASE_PROCESS.md) - Semantic versioning and release automation
 - [Testing Guide](testing.md) - How to test workflows locally
 - [Pre-commit Hooks](pre-commit-hooks.md) - Local quality checks
-- [Contributing Guide](../CONTRIBUTING.md) - Development workflow
+- [Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) - Development workflow

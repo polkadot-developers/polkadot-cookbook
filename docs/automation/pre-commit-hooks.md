@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Pre-Commit Hooks"
+---
+
 # Pre-Commit Hooks
 
 Automated git hooks for code quality checks using `cargo-husky`.

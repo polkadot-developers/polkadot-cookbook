@@ -1,0 +1,148 @@
+---
+layout: null
+permalink: /404.html
+---
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Page Not Found &mdash; Polkadot Cookbook</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23E6007A'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #08080d;
+      --bg-card: #111119;
+      --border-subtle: rgba(230, 0, 122, 0.07);
+      --border-medium: rgba(230, 0, 122, 0.14);
+      --pink: #E6007A;
+      --pink-glow: rgba(230, 0, 122, 0.35);
+      --text-primary: #dfdfe8;
+      --text-secondary: #78788e;
+      --font-display: 'Plus Jakarta Sans', sans-serif;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #fafafc;
+      --bg-card: #ffffff;
+      --border-subtle: rgba(17, 17, 107, 0.07);
+      --border-medium: rgba(17, 17, 107, 0.12);
+      --text-primary: #18182a;
+      --text-secondary: #5a5a72;
+    }
+
+    body {
+      font-family: var(--font-display);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .error-dot {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--pink);
+      box-shadow: 0 0 40px var(--pink-glow);
+      margin-bottom: 2rem;
+      opacity: 0.6;
+    }
+
+    h1 {
+      font-weight: 800;
+      font-size: clamp(3rem, 10vw, 6rem);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--pink) 0%, #ff3d9a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h2 {
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 420px;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.25s var(--ease-out-expo);
+      min-height: 44px;
+    }
+
+    .btn-primary {
+      background: var(--pink);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(230, 0, 122, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(230, 0, 122, 0.35);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(230, 0, 122, 0.3);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="error-dot"></div>
+  <h1>404</h1>
+  <h2>Page not found</h2>
+  <p>The page you're looking for doesn't exist or has been moved. Check the URL or head back to the documentation hub.</p>
+  <div class="actions">
+    <a href="/polkadot-cookbook/" class="btn-primary">Documentation Hub</a>
+    <a href="https://github.com/polkadot-developers/polkadot-cookbook" class="btn-secondary">View on GitHub</a>
+  </div>
+  <script>
+    var stored = localStorage.getItem('theme');
+    if (stored) document.documentElement.setAttribute('data-theme', stored);
+  </script>
+</body>
+</html>

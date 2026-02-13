@@ -1,4 +1,4 @@
-var CACHE = 'cookbook-v1';
+var CACHE = 'cookbook-v2';
 var PRECACHE = [
   '/polkadot-cookbook/',
   '/polkadot-cookbook/manifest.json'

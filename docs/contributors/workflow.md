@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Contributor Workflow"
+---
+
 # Contributor Workflow
 
 Step-by-step guide to contributing recipes to the Polkadot Cookbook.
@@ -95,7 +100,7 @@ git checkout -b recipe/my-recipe-name
 
 ### Set Up the Test Harness Directory
 
-Create the standard test harness structure under `recipes/{pathway}/{your-recipe}/`. Use an existing recipe as a template — for example, copy from [`recipes/contracts/contracts-example/`](../../recipes/contracts/contracts-example/):
+Create the standard test harness structure under `recipes/{pathway}/{your-recipe}/`. Use an existing recipe as a template — for example, copy from [`recipes/contracts/contracts-example/`](https://github.com/polkadot-developers/polkadot-cookbook/tree/master/recipes/contracts/contracts-example/):
 
 ```
 recipes/{pathway}/{your-recipe}/
@@ -630,7 +635,7 @@ git push origin master
 - **[GitHub Discussions](https://github.com/polkadot-developers/polkadot-cookbook/discussions)** - Ask questions
 - **[Discord Community](https://substrate.io/ecosystem/connect/)** - Real-time chat
 - **[GitHub Issues](https://github.com/polkadot-developers/polkadot-cookbook/issues)** - Report bugs
-- **[Contributing Guide](../../CONTRIBUTING.md)** - General guidelines
+- **[Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md)** - General guidelines
 
 ### Maintainer Contact
 

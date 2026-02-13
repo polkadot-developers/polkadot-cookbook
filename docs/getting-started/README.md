@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Getting Started"
+---
+
 # Getting Started with Polkadot Cookbook
 
 Welcome! This section will help you get up and running with the Polkadot Cookbook.
@@ -10,7 +15,7 @@ The Polkadot Cookbook is a collection of tested, production-ready code examples 
 
 - **[Installation Guide](installation.md)** - Install the `dot` CLI tool
 - **[First Project Tutorial](first-project.md)** - Create your first project
-- **[Main README](../../README.md)** - Browse available recipes
+- **[Main README](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/README.md)** - Browse available recipes
 
 ## What You'll Learn
 
@@ -28,8 +33,8 @@ Follow a step-by-step tutorial to create, test, and submit your first project.
 Once you've created your first project, explore:
 
 - **[Contributors Guide](../contributors/)** - Deep dive into recipe development
-- **[Recipe Catalog](../../README.md#-recipes)** - Browse existing recipes for inspiration
-- **[SDK Documentation](../../dot/sdk/README.md)** - Learn about the SDK
+- **[Recipe Catalog](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/README.md#-recipes)** - Browse existing recipes for inspiration
+- **[SDK Documentation](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/dot/sdk/README.md)** - Learn about the SDK
 
 ## Need Help?
 
@@ -39,4 +44,4 @@ Once you've created your first project, explore:
 
 ---
 
-[← Back to Documentation Hub](../README.md)
+[← Back to Documentation Hub](../)

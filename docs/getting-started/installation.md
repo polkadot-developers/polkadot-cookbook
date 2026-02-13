@@ -1,3 +1,8 @@
+---
+layout: doc
+title: "Installation Guide"
+---
+
 # Installation Guide
 
 This guide will help you install the `dot` CLI tool for creating and managing Polkadot Cookbook recipes.
@@ -157,7 +162,7 @@ Now that you have the CLI installed:
 
 1. **[Create Your First Project](first-project.md)** - Follow the tutorial
 2. **[Read the CLI Reference](../developers/cli-reference.md)** - Learn all commands
-3. **[Join the Community](../../CONTRIBUTING.md)** - Start contributing
+3. **[Join the Community](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md)** - Start contributing
 
 ---
 
@@ -335,7 +340,7 @@ rm -rf ~/.config/polkadot-cookbook
 
 - [First Project Tutorial](first-project.md) - Create your first project
 - [CLI Reference](../developers/cli-reference.md) - Complete command reference
-- [Contributing Guide](../../CONTRIBUTING.md) - Start contributing
+- [Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) - Start contributing
 
 ---
 
