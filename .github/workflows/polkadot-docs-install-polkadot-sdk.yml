@@ -3,9 +3,13 @@ name: Install Polkadot SDK
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/parachains/install-polkadot-sdk/**']
+    paths:
+      - 'polkadot-docs/parachains/install-polkadot-sdk/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/parachains/install-polkadot-sdk/**']
+    paths:
+      - 'polkadot-docs/parachains/install-polkadot-sdk/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:

@@ -3,9 +3,13 @@ name: Run a Parachain Network
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/networks/run-a-parachain-network/**']
+    paths:
+      - 'polkadot-docs/networks/run-a-parachain-network/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/networks/run-a-parachain-network/**']
+    paths:
+      - 'polkadot-docs/networks/run-a-parachain-network/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
@@ -14,6 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "ZOMBIENET_VERSION=$(yq '.zombienet.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -32,13 +42,13 @@ jobs:
         id: cache-zombienet
         with:
           path: ~/.local/bin/zombienet
-          key: ${{ runner.os }}-zombienet-v1.3.138
+          key: ${{ runner.os }}-zombienet-${{ steps.versions.outputs.ZOMBIENET_VERSION }}
 
       - name: Install Zombienet
         run: |
           mkdir -p ~/.local/bin
           if [ "${{ steps.cache-zombienet.outputs.cache-hit }}" != "true" ]; then
-            curl -L -o ~/.local/bin/zombienet https://github.com/paritytech/zombienet/releases/download/v1.3.138/zombienet-linux-x64
+            curl -L -o ~/.local/bin/zombienet https://github.com/paritytech/zombienet/releases/download/${{ steps.versions.outputs.ZOMBIENET_VERSION }}/zombienet-linux-x64
             chmod +x ~/.local/bin/zombienet
           fi
           echo "$HOME/.local/bin" >> $GITHUB_PATH
@@ -61,7 +71,7 @@ jobs:
         id: cache-parachain-template
         with:
           path: polkadot-docs/networks/run-a-parachain-network/polkadot-sdk-parachain-template
-          key: ${{ runner.os }}-parachain-template-v0.0.5-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
+          key: ${{ runner.os }}-parachain-template-${{ steps.versions.outputs.TEMPLATE_VERSION }}-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
 
       - name: Clean cached template for fresh test
         if: steps.cache-parachain-template.outputs.cache-hit == 'true'

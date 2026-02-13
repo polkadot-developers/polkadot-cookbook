@@ -12,7 +12,7 @@ import { join } from "path";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const TEMPLATE_DIR = join(WORKSPACE_DIR, "parachain-template");
-const TEMPLATE_VERSION = "v0.0.5";
+const TEMPLATE_VERSION = process.env.TEMPLATE_VERSION!;
 const CHAIN_SPEC_PATH = join(WORKSPACE_DIR, "chain_spec.json");
 const PID_FILE = join(WORKSPACE_DIR, "node.pid");
 const WASM_PATH = join(
@@ -210,7 +210,7 @@ describe("Create a Custom Pallet Guide", () => {
         console.log(`chain-spec-builder: ${result.trim()}`);
       } catch (error) {
         console.log("Installing chain-spec-builder...");
-        execSync("cargo install staging-chain-spec-builder@16.0.0 --locked", {
+        execSync(`cargo install staging-chain-spec-builder@${process.env.CHAIN_SPEC_BUILDER_VERSION} --locked`, {
           stdio: "inherit",
         });
       }
@@ -225,7 +225,7 @@ describe("Create a Custom Pallet Guide", () => {
         console.log(`polkadot-omni-node: ${result.trim()}`);
       } catch (error) {
         console.log("Installing polkadot-omni-node...");
-        execSync("cargo install polkadot-omni-node@0.13.0 --locked", {
+        execSync(`cargo install polkadot-omni-node@${process.env.POLKADOT_OMNI_NODE_VERSION} --locked`, {
           stdio: "inherit",
         });
       }

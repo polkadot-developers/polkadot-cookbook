@@ -3,9 +3,13 @@ name: Unit Test Pallets
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
@@ -14,6 +18,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -47,7 +56,7 @@ jobs:
         id: cache-parachain-template
         with:
           path: polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/.test-workspace/parachain-template
-          key: ${{ runner.os }}-parachain-template-v0.0.5-${{ hashFiles('polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/rust-toolchain.toml') }}
+          key: ${{ runner.os }}-parachain-template-${{ steps.versions.outputs.TEMPLATE_VERSION }}-${{ hashFiles('polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/rust-toolchain.toml') }}
 
       - name: Clean cached template for fresh test
         if: steps.cache-parachain-template.outputs.cache-hit == 'true'

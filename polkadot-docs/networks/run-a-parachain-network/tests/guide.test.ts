@@ -5,10 +5,10 @@ import { join } from "path";
 
 const PROJECT_DIR = process.cwd();
 const TEMPLATE_REPO = "https://github.com/paritytech/polkadot-sdk-parachain-template";
-const TEMPLATE_VERSION = "v0.0.5";
+const TEMPLATE_VERSION = process.env.TEMPLATE_VERSION!;
 const TEMPLATE_DIR = join(PROJECT_DIR, "polkadot-sdk-parachain-template");
 const BIN_DIR = join(PROJECT_DIR, "bin");
-const POLKADOT_VERSION = "polkadot-stable2512-1";
+const POLKADOT_VERSION = process.env.POLKADOT_SDK_VERSION!;
 const POLKADOT_RELEASE_URL = `https://github.com/paritytech/polkadot-sdk/releases/download/${POLKADOT_VERSION}`;
 const POLKADOT_BINARY = join(BIN_DIR, "polkadot");
 const POLKADOT_PREPARE_WORKER = join(BIN_DIR, "polkadot-prepare-worker");
