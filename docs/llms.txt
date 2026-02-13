@@ -1,8 +1,8 @@
 # Polkadot Cookbook
 
-> Practical, tested recipes for building on Polkadot. Runtime logic, smart contracts, dApps, and cross-chain applications with working code examples.
+> Build Polkadot projects with the `dot` CLI. Explore community-contributed recipes verified by automated test harnesses across smart contracts, parachains, transactions, XCM, and networks.
 
-The Polkadot Cookbook is an open-source collection of tested recipes for building on the Polkadot network. It includes a CLI tool (`dot`), an SDK, and test harnesses that verify each recipe works end-to-end.
+The Polkadot Cookbook has two main components: (1) the `dot` CLI tool for scaffolding new Polkadot projects (smart contracts, parachains, and more across 5 pathways), and (2) a collection of community-contributed recipe test harnesses that automatically clone, build, and verify external code examples work end-to-end.
 
 ## Documentation Sections
 
@@ -17,11 +17,11 @@ The Polkadot Cookbook is an open-source collection of tested recipes for buildin
 
 The cookbook organizes recipes into pathways:
 
-- **Pallets** — Build custom parachains with FRAME pallets and PAPI integration testing
-- **Contracts** — Deploy and interact with Solidity smart contracts using Hardhat
-- **Transactions** — Single-chain transaction submission and state queries via Polkadot API (PAPI)
-- **XCM (Cross-Chain Messaging)** — Cross-chain asset transfers between parachains with Chopsticks testing
-- **Networks** — Testing infrastructure with Zombienet and Chopsticks
+- **Pallets** — Verified examples of custom parachains with FRAME pallets and PAPI integration
+- **Contracts** — Verified examples of Solidity smart contracts on Polkadot parachains using Hardhat
+- **Transactions** — Verified examples of single-chain transaction submission and state queries via Polkadot API (PAPI)
+- **XCM (Cross-Chain Messaging)** — Verified examples of cross-chain asset transfers between parachains
+- **Networks** — Verified examples of testing infrastructure with Zombienet and Chopsticks
 
 ## CLI Tool
 
@@ -43,9 +43,9 @@ dot test
 - `dot/cli/` — Rust CLI binary (interactive terminal, Git integration)
 - `dot/sdk/` — Rust core library (async-first, no terminal deps, 80%+ test coverage)
 - `dot/sdk/templates/` — Embedded templates used by `dot create`
-- `recipes/{pathway}/{recipe-name}/` — Test harnesses (clone external repos, verify they work)
+- `recipes/{pathway}/{recipe-name}/` — Test harnesses that clone, build, and verify community-contributed external repos
 
-Each recipe test harness follows a standard structure:
+Each recipe is an externally-owned project. The cookbook only contains test harnesses that verify these external repos. Each test harness follows a standard structure:
 - `package.json` + `vitest.config.ts` + `tests/recipe.test.ts`
 - Tests clone an external repo at a pinned version, install dependencies, build, and run tests
 

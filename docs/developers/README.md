@@ -1,6 +1,7 @@
 ---
 layout: doc
 title: "Developers Guide"
+permalink: /developers/
 ---
 
 # Developers Guide

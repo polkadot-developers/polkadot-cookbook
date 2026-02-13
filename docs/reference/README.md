@@ -1,6 +1,7 @@
 ---
 layout: doc
 title: "Reference Documentation"
+permalink: /reference/
 ---
 
 # Reference Documentation

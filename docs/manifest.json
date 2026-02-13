@@ -5,5 +5,5 @@
   "display": "standalone",
   "background_color": "#08080d",
   "theme_color": "#E6007A",
-  "description": "Practical, tested recipes for building on Polkadot"
+  "description": "Build Polkadot projects with the dot CLI. Explore community-contributed recipes verified by automated test harnesses."
 }

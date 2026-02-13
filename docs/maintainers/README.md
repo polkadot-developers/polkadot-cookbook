@@ -1,6 +1,7 @@
 ---
 layout: doc
 title: "Maintainers Guide"
+permalink: /maintainers/
 ---
 
 # Maintainers Guide
