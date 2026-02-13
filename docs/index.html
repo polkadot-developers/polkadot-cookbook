@@ -1026,7 +1026,33 @@
     @media (max-width: 639px) {
       .install-banner-text span { display: none; }
     }
+
+    /* ── View Transitions (theme toggle) ─────────────────────── */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.25s;
+    }
+
+    ::view-transition-old(root) { animation-name: vt-fade-out; }
+    ::view-transition-new(root) { animation-name: vt-fade-in; }
+
+    @keyframes vt-fade-out { to { opacity: 0; } }
+    @keyframes vt-fade-in { from { opacity: 0; } }
   </style>
+
+  <!-- Speculation Rules: prefetch recipe links on hover -->
+  <script type="speculationrules">
+  {
+    "prefetch": [
+      {
+        "where": {
+          "href_matches": "https://github.com/polkadot-developers/polkadot-cookbook/*"
+        },
+        "eagerness": "moderate"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -1479,7 +1505,7 @@
       link.addEventListener('click', closeNav);
     });
 
-    /* ── Theme Toggle ────────────────────────────────────── */
+    /* ── Theme Toggle (with View Transitions API) ─────────── */
     var html = document.documentElement;
     var themeIcon = document.getElementById('themeIcon');
     var stored = localStorage.getItem('theme');
@@ -1488,12 +1514,20 @@
       themeIcon.textContent = stored === 'light' ? '\u2600' : '\u263E';
     }
 
-    document.getElementById('themeToggle').addEventListener('click', function() {
+    function applyTheme() {
       var current = html.getAttribute('data-theme');
       var next = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
       themeIcon.textContent = next === 'light' ? '\u2600' : '\u263E';
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', function() {
+      if (document.startViewTransition) {
+        document.startViewTransition(applyTheme);
+      } else {
+        applyTheme();
+      }
     });
 
     /* ── Copy Code ───────────────────────────────────────── */
@@ -1580,6 +1614,11 @@
       /* Hide when app gets installed */
       window.addEventListener('appinstalled', hideBanner);
     })();
+
+    /* ── Service Worker Registration ─────────────────────── */
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function() {});
+    }
   </script>
 
 </body>
