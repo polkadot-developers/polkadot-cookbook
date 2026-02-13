@@ -2,6 +2,7 @@
 title: "Pallet Example"
 description: "Verification tests for the pallet-example recipe"
 source_repo: "https://github.com/brunopgalvao/recipe-pallet-example"
+last_tested: "2025-02-13"
 ---
 
 # Pallet Example

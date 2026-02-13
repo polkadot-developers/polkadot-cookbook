@@ -2,6 +2,7 @@
 title: "Cross-Chain Transaction Example"
 description: "Verification tests for the cross-chain-transaction-example recipe"
 source_repo: "https://github.com/brunopgalvao/recipe-xcm-example"
+last_tested: "2025-02-13"
 ---
 
 # Cross-Chain Transaction Example

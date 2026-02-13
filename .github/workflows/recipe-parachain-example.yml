@@ -59,3 +59,13 @@ jobs:
           cd recipes/parachains/parachain-example
           npm test
         timeout-minutes: 60
+
+  post-test:
+    needs: test
+    if: success() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'recipes/parachains/parachain-example/README.md'
+    permissions:
+      contents: write
