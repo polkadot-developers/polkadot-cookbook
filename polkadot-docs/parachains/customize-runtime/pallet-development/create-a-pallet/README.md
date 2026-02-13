@@ -3,7 +3,7 @@ title: "Create a Custom Pallet"
 description: "Verify the create a custom pallet guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/pallet-development/create-a-pallet/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/pallet-development/create-a-pallet.md"
-last_tested: "2025-01-21"
+last_tested: "2026-02-13"
 polkadot_sdk_version: "2512.1.0"
 parachain_template_version: "v0.0.5"
 ---
