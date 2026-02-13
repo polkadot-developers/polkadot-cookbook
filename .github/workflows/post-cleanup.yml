@@ -60,6 +60,9 @@ jobs:
           NAME=$(echo "${{ inputs.readme_path }}" | sed 's|/README.md||' | sed 's|.*/||')
           BRANCH="ci/update-last-tested"
 
+          # Stash the updated file so we can switch branches cleanly
+          git stash
+
           # Pick up existing branch or start fresh from master
           if git fetch origin "$BRANCH" 2>/dev/null; then
             git checkout "$BRANCH"
@@ -67,6 +70,9 @@ jobs:
           else
             git checkout -b "$BRANCH"
           fi
+
+          # Re-apply the date update on this branch
+          git stash pop
 
           git add "${{ inputs.readme_path }}"
 
