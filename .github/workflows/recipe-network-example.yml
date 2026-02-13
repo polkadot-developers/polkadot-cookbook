@@ -39,3 +39,4 @@ jobs:
       readme_path: 'recipes/networks/network-example/README.md'
     permissions:
       contents: write
+      issues: write

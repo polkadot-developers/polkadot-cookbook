@@ -69,3 +69,4 @@ jobs:
       readme_path: 'recipes/parachains/parachain-example/README.md'
     permissions:
       contents: write
+      issues: write

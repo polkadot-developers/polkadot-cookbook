@@ -39,3 +39,4 @@ jobs:
       readme_path: 'recipes/transactions/transaction-example/README.md'
     permissions:
       contents: write
+      issues: write
