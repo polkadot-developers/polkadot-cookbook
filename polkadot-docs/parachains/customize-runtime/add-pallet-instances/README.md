@@ -11,7 +11,7 @@ parachain_template_version: "v0.0.5"
 
 # Add Pallet Instances to Runtime
 
-[![Add Pallet Instances](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-pallet-instances.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-pallet-instances.yml)
+[![Add Pallet Instances](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-pallet-instances.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-add-pallet-instances.yml)
 
 This project verifies the [Add Pallet Instances](https://docs.polkadot.com/parachains/customize-runtime/add-pallet-instances/) guide from docs.polkadot.com.
 

@@ -11,7 +11,7 @@ parachain_template_version: "v0.0.5"
 
 # Create a Custom Pallet
 
-[![Create a Custom Pallet](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-create-a-pallet.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-create-a-pallet.yml)
+[![Create a Custom Pallet](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-create-a-pallet.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-create-a-pallet.yml)
 
 This project verifies the [Create a Custom Pallet](https://docs.polkadot.com/parachains/customize-runtime/pallet-development/create-a-pallet/) guide from docs.polkadot.com.
 

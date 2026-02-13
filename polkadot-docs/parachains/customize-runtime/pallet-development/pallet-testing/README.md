@@ -11,7 +11,7 @@ parachain_template_version: "v0.0.5"
 
 # Unit Test Pallets
 
-[![Unit Test Pallets](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-pallet-testing.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-pallet-testing.yml)
+[![Unit Test Pallets](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-pallet-testing.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-pallet-testing.yml)
 
 This project verifies the [Unit Test Pallets](https://docs.polkadot.com/parachains/customize-runtime/pallet-development/pallet-testing/) guide from docs.polkadot.com.
 

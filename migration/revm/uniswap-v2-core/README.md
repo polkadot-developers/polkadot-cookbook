@@ -1,6 +1,6 @@
 # Uniswap V2 Core - REVM Testing
 
-[![REVM Uniswap V2 Core](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml)
+[![REVM Uniswap V2 Core](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml)
 
 This project tests Uniswap V2 Core smart contracts on Polkadot's REVM (Ethereum-compatible EVM).
 

@@ -9,7 +9,7 @@ last_tested: "2026-02-13"
 
 # Fork a Parachain
 
-[![Fork a Parachain](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-fork-a-parachain.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-fork-a-parachain.yml)
+[![Fork a Parachain](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-fork-a-parachain.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-fork-a-parachain.yml)
 
 This project verifies the [Fork a Parachain](https://docs.polkadot.com/parachains/testing/fork-a-parachain/) guide from docs.polkadot.com.
 

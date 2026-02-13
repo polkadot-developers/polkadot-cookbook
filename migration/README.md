@@ -13,8 +13,8 @@ This folder contains resources for testing Polkadot REVM and PVM Solidity smart 
 
 | Test | Status | Description |
 |------|--------|-------------|
-| [Uniswap V2 Core](./revm/uniswap-v2-core/) | [![REVM Uniswap V2 Core](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml) | Uniswap V2 Core contracts on REVM |
-| [Uniswap V2 Periphery](./revm/uniswap-v2-periphery/) | [![REVM Uniswap V2 Periphery](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml) | Uniswap V2 Periphery contracts on REVM |
+| [Uniswap V2 Core](./revm/uniswap-v2-core/) | [![REVM Uniswap V2 Core](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-core.yml) | Uniswap V2 Core contracts on REVM |
+| [Uniswap V2 Periphery](./revm/uniswap-v2-periphery/) | [![REVM Uniswap V2 Periphery](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/migration-revm-uniswap-v2-periphery.yml) | Uniswap V2 Periphery contracts on REVM |
 
 ## Structure
 

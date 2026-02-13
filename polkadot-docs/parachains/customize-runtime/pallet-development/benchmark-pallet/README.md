@@ -11,7 +11,7 @@ parachain_template_version: "v0.0.5"
 
 # Benchmark Pallets
 
-[![Benchmark Pallets](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-benchmark-pallet.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-benchmark-pallet.yml)
+[![Benchmark Pallets](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-benchmark-pallet.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-benchmark-pallet.yml)
 
 This project verifies the [Benchmark Pallets](https://docs.polkadot.com/parachains/customize-runtime/pallet-development/benchmark-pallet/) guide from docs.polkadot.com.
 

@@ -7,7 +7,7 @@ last_tested: "2026-02-13"
 
 # Network Example
 
-[![Network Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-network-example.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-network-example.yml)
+[![Network Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-network-example.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-network-example.yml)
 
 This folder contains verification tests for the [network-example](https://github.com/brunopgalvao/recipe-network-example) recipe.
 

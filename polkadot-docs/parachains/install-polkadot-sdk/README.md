@@ -9,7 +9,7 @@ last_tested: "2026-02-13"
 
 # Install Polkadot SDK
 
-[![Install Polkadot SDK](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-install-polkadot-sdk.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-install-polkadot-sdk.yml)
+[![Install Polkadot SDK](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-install-polkadot-sdk.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-install-polkadot-sdk.yml)
 
 This project verifies the [Install Polkadot SDK](https://docs.polkadot.com/parachains/install-polkadot-sdk/) guide from docs.polkadot.com.
 

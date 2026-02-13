@@ -7,7 +7,7 @@ last_tested: "2026-02-13"
 
 # Cross-Chain Transaction Example
 
-[![Cross-Chain Transaction Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-xcm-example.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-xcm-example.yml)
+[![Cross-Chain Transaction Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-xcm-example.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-xcm-example.yml)
 
 This folder contains verification tests for the [recipe-xcm-example](https://github.com/brunopgalvao/recipe-xcm-example) recipe.
 

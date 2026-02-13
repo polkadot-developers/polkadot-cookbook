@@ -7,7 +7,7 @@ last_tested: "2026-02-13"
 
 # Transaction Example
 
-[![Transaction Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-transaction-example.yml/badge.svg)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-transaction-example.yml)
+[![Transaction Example](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-transaction-example.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/recipe-transaction-example.yml)
 
 This folder contains verification tests for the [transaction-example](https://github.com/brunopgalvao/recipe-transaction-example) recipe.
 
