@@ -1,0 +1,7 @@
+# Default owner for everything
+* @brunopgalvao
+
+# Smart contracts
+/recipes/contracts/ @nhussein11
+/migration/ @nhussein11
+/dot/sdk/templates/project-templates/solidity-template/ @nhussein11
