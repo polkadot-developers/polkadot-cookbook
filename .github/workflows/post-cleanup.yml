@@ -62,8 +62,7 @@ jobs:
           if [ -z "$EXISTING_PR" ]; then
             gh pr create \
               --title "ci: update last_tested for $NAME" \
-              --body "Auto-generated PR to update \`last_tested\` date in \`${{ inputs.readme_path }}\`." \
-              --label "automated"
+              --body "Auto-generated PR to update \`last_tested\` date in \`${{ inputs.readme_path }}\`."
             gh pr merge "$BRANCH" --auto --squash
           fi
 
