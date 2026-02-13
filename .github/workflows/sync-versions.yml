@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   sync:
@@ -64,3 +65,51 @@ jobs:
           All `polkadot-docs-*` workflows will run automatically via the `versions.yml` path trigger.
           PREOF
           )"
+
+  check-docs-drift:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for upstream tutorial changes
+        id: drift
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/check-docs-drift.sh
+
+      - name: Check for existing drift issue
+        if: steps.drift.outputs.has_drift == 'true'
+        id: check-issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(gh issue list --state open --label "docs-drift" --json number --jq '.[0].number // empty')
+          echo "existing_issue=$EXISTING" >> $GITHUB_OUTPUT
+
+      - name: Create or update drift issue
+        if: steps.drift.outputs.has_drift == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRIFT_COUNT: ${{ steps.drift.outputs.drift_count }}
+          DRIFT_DETAILS: ${{ steps.drift.outputs.drift_details }}
+          EXISTING_ISSUE: ${{ steps.check-issue.outputs.existing_issue }}
+        run: |
+          TITLE="[Docs Drift] $DRIFT_COUNT tutorial(s) updated upstream"
+          BODY="The following polkadot-docs tutorials have been updated upstream since we last tested them. Our tests may no longer match the current documentation.
+
+          $DRIFT_DETAILS
+
+          **Action required:** Review the upstream changes and update the corresponding test harnesses if needed. Once updated, set \`docs_commit\` in each README to the latest commit SHA."
+
+          if [ -n "$EXISTING_ISSUE" ]; then
+            gh issue comment "$EXISTING_ISSUE" --body "$BODY"
+            echo "Updated existing issue #$EXISTING_ISSUE"
+          else
+            gh issue create \
+              --title "$TITLE" \
+              --body "$BODY" \
+              --label "docs-drift"
+            echo "Created new drift issue"
+          fi
