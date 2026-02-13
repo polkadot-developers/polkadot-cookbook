@@ -9,6 +9,7 @@ on:
 
 jobs:
   detect-breaking-change:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
     outputs:
       has_breaking: ${{ steps.check.outputs.has_breaking }}
@@ -109,7 +110,7 @@ jobs:
 
   get-cli-version:
     needs: detect-breaking-change
-    if: needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'CLI'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'CLI'
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.version.outputs.new }}
@@ -133,7 +134,7 @@ jobs:
 
   release-cli:
     needs: [detect-breaking-change, get-cli-version]
-    if: needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'CLI'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'CLI'
     uses: ./.github/workflows/release-cli.yml
     permissions:
       contents: write
@@ -144,7 +145,7 @@ jobs:
 
   release-sdk:
     needs: detect-breaking-change
-    if: needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'SDK'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.detect-breaking-change.outputs.has_breaking == 'true' && needs.detect-breaking-change.outputs.component == 'SDK'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -242,6 +243,7 @@ jobs:
   test-and-release-recipes:
     needs: [detect-breaking-change, release-cli, release-sdk]
     if: |
+      github.repository == 'polkadot-developers/polkadot-cookbook' &&
       always() &&
       needs.detect-breaking-change.outputs.has_breaking == 'true' &&
       (needs.release-cli.result == 'success' || needs.release-sdk.result == 'success')

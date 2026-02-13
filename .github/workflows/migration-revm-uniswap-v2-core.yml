@@ -10,6 +10,7 @@ on:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +33,7 @@ jobs:
 
   notify-failure:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && failure() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/notify-docs-failure.yml
     with:
       workflow_name: 'REVM Uniswap V2 Core'

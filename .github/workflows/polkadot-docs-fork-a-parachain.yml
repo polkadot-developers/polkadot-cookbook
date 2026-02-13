@@ -10,6 +10,7 @@ on:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +33,7 @@ jobs:
 
   post-test:
     needs: test
-    if: always() && github.ref == 'refs/heads/master'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/post-cleanup.yml
     with:
       test_result: ${{ needs.test.result }}
