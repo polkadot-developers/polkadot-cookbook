@@ -2,7 +2,7 @@
 title: "Install Polkadot SDK"
 description: "Verify the Polkadot SDK installation guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/install-polkadot-sdk/"
-last_tested: "2026-01-28"
+last_tested: "2026-02-13"
 ---
 
 # Install Polkadot SDK
