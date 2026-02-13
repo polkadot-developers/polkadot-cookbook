@@ -3,17 +3,28 @@ name: Run a Parachain Network
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/networks/run-a-parachain-network/**']
+    paths:
+      - 'polkadot-docs/networks/run-a-parachain-network/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/networks/run-a-parachain-network/**']
+    paths:
+      - 'polkadot-docs/networks/run-a-parachain-network/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "ZOMBIENET_VERSION=$(yq '.zombienet.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -27,13 +38,24 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler clang libclang-dev make
 
+      - name: Cache Zombienet
+        uses: actions/cache@v4
+        id: cache-zombienet
+        with:
+          path: ~/.local/bin/zombienet
+          key: ${{ runner.os }}-zombienet-${{ steps.versions.outputs.ZOMBIENET_VERSION }}
+
       - name: Install Zombienet
         run: |
-          ZOMBIENET_VERSION="v1.3.138"
-          curl -L -o zombienet https://github.com/paritytech/zombienet/releases/download/${ZOMBIENET_VERSION}/zombienet-linux-x64
-          chmod +x zombienet
-          sudo mv zombienet /usr/local/bin/
-          zombienet version
+          mkdir -p ~/.local/bin
+          if [ "${{ steps.cache-zombienet.outputs.cache-hit }}" != "true" ]; then
+            curl -L -o ~/.local/bin/zombienet https://github.com/paritytech/zombienet/releases/download/${{ steps.versions.outputs.ZOMBIENET_VERSION }}/zombienet-linux-x64
+            chmod +x ~/.local/bin/zombienet
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Zombienet
+        run: zombienet version
 
       - name: Cache cargo registry
         uses: actions/cache@v4
@@ -45,13 +67,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
 
-      - name: Cache cargo build
+      - name: Cache parachain template build
         uses: actions/cache@v4
+        id: cache-parachain-template
         with:
-          path: polkadot-docs/networks/run-a-parachain-network/polkadot-runtime-templates/generic-template/target
-          key: ${{ runner.os }}-cargo-build-parachain-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-parachain-
+          path: polkadot-docs/networks/run-a-parachain-network/polkadot-sdk-parachain-template
+          key: ${{ runner.os }}-parachain-template-${{ steps.versions.outputs.TEMPLATE_VERSION }}-${{ hashFiles('polkadot-docs/networks/run-a-parachain-network/rust-toolchain.toml') }}
+
+      - name: Clean cached template for fresh test
+        if: steps.cache-parachain-template.outputs.cache-hit == 'true'
+        run: |
+          cd polkadot-docs/networks/run-a-parachain-network/polkadot-sdk-parachain-template
+          git checkout -- .
+          git clean -fd -e target/
 
       - name: Install npm dependencies
         run: |
@@ -64,13 +92,15 @@ jobs:
           npm test
         timeout-minutes: 60
 
-  notify-failure:
+  post-test:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/networks/run-a-parachain-network/README.md'
       workflow_name: 'Run a Parachain Network'
-      guide_path: 'polkadot-docs/networks/run-a-parachain-network'
     permissions:
+      contents: write
       issues: write
-      contents: read
+      pull-requests: write

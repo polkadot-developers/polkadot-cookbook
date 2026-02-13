@@ -10,6 +10,7 @@ on:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
@@ -29,3 +30,15 @@ jobs:
           cd recipes/cross-chain-transactions/cross-chain-transaction-example
           npm test
         timeout-minutes: 15
+
+  post-test:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && success() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'recipes/cross-chain-transactions/cross-chain-transaction-example/README.md'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write

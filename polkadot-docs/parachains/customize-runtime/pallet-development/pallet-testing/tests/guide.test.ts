@@ -10,7 +10,7 @@ import { join } from "path";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const TEMPLATE_DIR = join(WORKSPACE_DIR, "parachain-template");
-const TEMPLATE_VERSION = "v0.0.5";
+const TEMPLATE_VERSION = process.env.TEMPLATE_VERSION!;
 const PALLET_DIR = join(TEMPLATE_DIR, "pallets/pallet-custom");
 
 // Complete pallet implementation from the create-a-pallet guide

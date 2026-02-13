@@ -10,6 +10,7 @@ on:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
@@ -30,13 +31,15 @@ jobs:
           npm test
         timeout-minutes: 15
 
-  notify-failure:
+  post-test:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/parachains/testing/fork-a-parachain/README.md'
       workflow_name: 'Fork a Parachain'
-      guide_path: 'polkadot-docs/parachains/testing/fork-a-parachain'
     permissions:
+      contents: write
       issues: write
-      contents: read
+      pull-requests: write

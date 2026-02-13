@@ -14,7 +14,7 @@ let chopsticksProcess: ChildProcess | null = null;
 function rpcCall(
   method: string,
   params: unknown[] = [],
-  timeout = 30000
+  timeout = 60000
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(CHOPSTICKS_WS);
@@ -50,6 +50,34 @@ function rpcCall(
       reject(new Error(`WebSocket error connecting to ${CHOPSTICKS_WS}`));
     };
   });
+}
+
+/**
+ * Retry wrapper for rpcCall — retries up to `maxRetries` times with a delay between attempts.
+ * Useful for state-fetching calls that may be slow on first access.
+ */
+async function rpcCallWithRetry(
+  method: string,
+  params: unknown[] = [],
+  timeout = 60000,
+  maxRetries = 3,
+  retryDelayMs = 5000
+): Promise<unknown> {
+  let lastError: Error | undefined;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await rpcCall(method, params, timeout);
+    } catch (err) {
+      lastError = err as Error;
+      console.log(
+        `rpcCallWithRetry: ${method} attempt ${attempt}/${maxRetries} failed: ${lastError.message}`
+      );
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, retryDelayMs));
+      }
+    }
+  }
+  throw lastError;
 }
 
 /**
@@ -145,6 +173,11 @@ describe("Fork a Parachain Guide", () => {
       try {
         await waitForChopsticks();
         console.log("Chopsticks is ready!");
+
+        // Warm-up: prime Chopsticks' state cache with a state-fetching call
+        console.log("Warming up Chopsticks state cache...");
+        await rpcCallWithRetry("chain_getHeader", [], 120000, 3, 5000);
+        console.log("Warm-up complete");
       } catch {
         console.log("stdout:", stdout);
         console.log("stderr:", stderr);
@@ -171,7 +204,7 @@ describe("Fork a Parachain Guide", () => {
     });
 
     it("should have a valid block header", async () => {
-      const header = (await rpcCall("chain_getHeader")) as Record<
+      const header = (await rpcCallWithRetry("chain_getHeader")) as Record<
         string,
         unknown
       >;
@@ -180,14 +213,14 @@ describe("Fork a Parachain Guide", () => {
       const blockNumber = parseInt(header.number as string, 16);
       expect(blockNumber).toBeGreaterThan(0);
       console.log(`Current block number: ${blockNumber}`);
-    });
+    }, 120000);
   });
 
   // ==================== DEV RPC COMMANDS ====================
   describe("5. Dev RPC Commands", () => {
     it("should create a new block with dev_newBlock", async () => {
       // Get current block number
-      const headerBefore = (await rpcCall("chain_getHeader")) as Record<
+      const headerBefore = (await rpcCallWithRetry("chain_getHeader")) as Record<
         string,
         unknown
       >;
@@ -195,12 +228,12 @@ describe("Fork a Parachain Guide", () => {
       console.log(`Block before dev_newBlock: ${blockBefore}`);
 
       // Create a new block
-      const newBlock = await rpcCall("dev_newBlock", [{ count: 1 }]);
+      const newBlock = await rpcCallWithRetry("dev_newBlock", [{ count: 1 }]);
       expect(newBlock).toBeDefined();
       console.log("dev_newBlock result:", JSON.stringify(newBlock));
 
       // Verify block number incremented
-      const headerAfter = (await rpcCall("chain_getHeader")) as Record<
+      const headerAfter = (await rpcCallWithRetry("chain_getHeader")) as Record<
         string,
         unknown
       >;
@@ -208,7 +241,7 @@ describe("Fork a Parachain Guide", () => {
       console.log(`Block after dev_newBlock: ${blockAfter}`);
 
       expect(blockAfter).toBe(blockBefore + 1);
-    });
+    }, 120000);
 
     it("should modify storage with dev_setStorage", async () => {
       // Alice's account on Polkadot
@@ -217,7 +250,7 @@ describe("Fork a Parachain Guide", () => {
         "0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9de1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d";
 
       // Read current storage value
-      const storageBefore = (await rpcCall("state_getStorage", [
+      const storageBefore = (await rpcCallWithRetry("state_getStorage", [
         aliceStorageKey,
       ])) as string | null;
       console.log(
@@ -245,11 +278,11 @@ describe("Fork a Parachain Guide", () => {
         },
       ];
 
-      const setResult = await rpcCall("dev_setStorage", setStorageParams);
+      const setResult = await rpcCallWithRetry("dev_setStorage", setStorageParams);
       console.log("dev_setStorage result:", JSON.stringify(setResult));
 
       // Read storage after modification
-      const storageAfter = (await rpcCall("state_getStorage", [
+      const storageAfter = (await rpcCallWithRetry("state_getStorage", [
         aliceStorageKey,
       ])) as string | null;
       console.log(
@@ -258,36 +291,36 @@ describe("Fork a Parachain Guide", () => {
 
       // Verify storage was modified
       expect(storageAfter).not.toEqual(storageBefore);
-    });
+    }, 120000);
 
     it("should time travel with dev_timeTravel", async () => {
       // Get current timestamp by querying the Timestamp pallet
       const timestampStorageKey =
         "0xf0c365c3cf59d671eb72da0e7a4113c49f1f0515f462cdcf84e0f1d6045dfcbb";
-      const timestampBefore = (await rpcCall("state_getStorage", [
+      const timestampBefore = (await rpcCallWithRetry("state_getStorage", [
         timestampStorageKey,
       ])) as string | null;
       console.log(`Timestamp storage before: ${timestampBefore}`);
 
       // Time travel to a future date (2030-01-01T00:00:00Z = 1893456000000 ms)
       const futureTimestamp = "2030-01-01T00:00:00Z";
-      const timeTravelResult = await rpcCall("dev_timeTravel", [
+      const timeTravelResult = await rpcCallWithRetry("dev_timeTravel", [
         futureTimestamp,
       ]);
       console.log("dev_timeTravel result:", JSON.stringify(timeTravelResult));
 
       // Create a new block so the timestamp takes effect
-      await rpcCall("dev_newBlock", [{ count: 1 }]);
+      await rpcCallWithRetry("dev_newBlock", [{ count: 1 }]);
 
       // Read timestamp after time travel
-      const timestampAfter = (await rpcCall("state_getStorage", [
+      const timestampAfter = (await rpcCallWithRetry("state_getStorage", [
         timestampStorageKey,
       ])) as string | null;
       console.log(`Timestamp storage after: ${timestampAfter}`);
 
       // Verify timestamp changed
       expect(timestampAfter).not.toEqual(timestampBefore);
-    });
+    }, 120000);
   });
 });
 

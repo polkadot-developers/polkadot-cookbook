@@ -1,0 +1,135 @@
+name: Post-Test Cleanup
+
+on:
+  workflow_call:
+    inputs:
+      test_result:
+        required: true
+        type: string
+        description: 'Result of the test job (success/failure)'
+      readme_path:
+        required: true
+        type: string
+        description: 'Path to the README.md file to update'
+      workflow_name:
+        required: false
+        type: string
+        default: ''
+        description: 'Human-readable workflow name (for failure notification)'
+
+jobs:
+  update-last-tested:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Update last_tested date
+        id: update
+        run: |
+          TODAY=$(date -u +"%Y-%m-%d")
+          FILE="${{ inputs.readme_path }}"
+          CURRENT=$(sed -n 's/^last_tested: "\(.*\)"/\1/p' "$FILE")
+          if [ "$CURRENT" = "$TODAY" ]; then
+            echo "already_current=true" >> $GITHUB_OUTPUT
+            echo "Date already current ($TODAY), skipping commit"
+          else
+            sed -i "s/^last_tested: \".*\"/last_tested: \"$TODAY\"/" "$FILE"
+            echo "already_current=false" >> $GITHUB_OUTPUT
+            echo "Updated last_tested to $TODAY"
+          fi
+
+      - name: Create PR
+        if: steps.update.outputs.already_current != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          NAME=$(echo "${{ inputs.readme_path }}" | sed 's|/README.md||' | sed 's|.*/||')
+          BRANCH="ci/update-last-tested-${NAME}"
+          git checkout -b "$BRANCH"
+          git add "${{ inputs.readme_path }}"
+          git commit -m "ci: update last_tested for $NAME"
+          git push -u origin "$BRANCH" --force
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create \
+              --title "ci: update last_tested for $NAME" \
+              --body "Auto-generated PR to update \`last_tested\` date in \`${{ inputs.readme_path }}\`."
+            gh pr merge "$BRANCH" --auto --squash
+          fi
+
+  notify-failure:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'failure' && inputs.workflow_name != ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read maintainers
+        id: maintainers
+        run: |
+          MAINTAINERS=$(cat polkadot-docs/MAINTAINERS | tr '\n' ' ')
+          echo "list=$MAINTAINERS" >> $GITHUB_OUTPUT
+
+      - name: Derive guide path
+        id: guide
+        run: |
+          GUIDE_PATH=$(echo "${{ inputs.readme_path }}" | sed 's|/README.md||')
+          echo "path=$GUIDE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Check for existing issue
+        id: check_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_TITLE="[Test Failure] ${{ inputs.workflow_name }}"
+          EXISTING_ISSUE=$(gh issue list --state open --search "in:title \"$ISSUE_TITLE\"" --json number --jq '.[0].number // empty')
+          echo "existing_issue=$EXISTING_ISSUE" >> $GITHUB_OUTPUT
+          echo "title=$ISSUE_TITLE" >> $GITHUB_OUTPUT
+
+      - name: Create or update issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_TITLE="${{ steps.check_issue.outputs.title }}"
+          MAINTAINERS="${{ steps.maintainers.outputs.list }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          BODY="The **${{ inputs.workflow_name }}** guide test is failing on master.
+
+          **Details:**
+          - Guide: \`${{ steps.guide.outputs.path }}\`
+          - Commit: \`${{ github.sha }}\`
+          - Failed run: [View logs]($RUN_URL)
+
+          cc $MAINTAINERS"
+
+          if [ -n "${{ steps.check_issue.outputs.existing_issue }}" ]; then
+            # Add comment to existing issue
+            COMMENT="Test still failing.
+
+          **Details:**
+          - Commit: \`${{ github.sha }}\`
+          - Failed run: [View logs]($RUN_URL)"
+
+            gh issue comment ${{ steps.check_issue.outputs.existing_issue }} --body "$COMMENT"
+            echo "Added comment to issue #${{ steps.check_issue.outputs.existing_issue }}"
+          else
+            # Create new issue
+            gh issue create \
+              --title "$ISSUE_TITLE" \
+              --body "$BODY" \
+              --label "test-failure,polkadot-docs"
+            echo "Created new issue"
+          fi

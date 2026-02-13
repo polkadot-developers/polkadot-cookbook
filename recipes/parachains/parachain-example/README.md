@@ -2,6 +2,7 @@
 title: "Parachain Example"
 description: "Verification tests for the parachain-example recipe"
 source_repo: "https://github.com/brunopgalvao/recipe-parachain-example"
+last_tested: "2026-02-13"
 ---
 
 # Parachain Example

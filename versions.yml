@@ -1,0 +1,30 @@
+# Polkadot Cookbook - Dependency Versions
+#
+# Source of truth for all dependency versions used in CI workflows and test harnesses.
+# Upstream reference: https://github.com/polkadot-developers/polkadot-docs/blob/master/variables.yml
+#
+# To update: modify this file and open a PR — all affected workflows run automatically.
+# The sync-versions workflow checks upstream weekly and opens PRs for version bumps.
+
+# Root-level defaults — used unless overridden by a specific dependency below
+polkadot_sdk:
+  release_tag: polkadot-stable2512-1
+  repository: https://github.com/paritytech/polkadot-sdk
+
+parachain_template:
+  version: v0.0.5
+  repository: https://github.com/paritytech/polkadot-sdk-parachain-template
+  # Uncomment to override the root polkadot_sdk version for this template:
+  # polkadot_sdk:
+  #   release_tag: polkadot-stable2503-3
+  crates:
+    polkadot_omni_node:
+      name: polkadot-omni-node
+      version: "0.13.0"
+    chain_spec_builder:
+      name: staging-chain-spec-builder
+      version: "16.0.0"
+
+zombienet:
+  version: v1.3.138
+  repository: https://github.com/paritytech/zombienet

@@ -2,7 +2,9 @@
 title: "Fork a Parachain"
 description: "Verify the Fork a Parachain guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/testing/fork-a-parachain/"
-last_tested: "2026-02-10"
+source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/testing/fork-a-parachain.md"
+docs_commit: "d1a754e3af7f11ba5a160fdcd58287f8a7c40329"
+last_tested: "2026-02-13"
 ---
 
 # Fork a Parachain

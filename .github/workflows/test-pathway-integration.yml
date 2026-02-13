@@ -31,6 +31,7 @@ on:
 
 jobs:
   test-pathways:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     name: Test All Recipe Pathways
     runs-on: ubuntu-latest
     timeout-minutes: 90  # Integration tests can take a while with cold cache
@@ -203,8 +204,8 @@ jobs:
   test-summary:
     name: Integration Test Summary
     needs: test-pathways
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always()
     runs-on: ubuntu-latest
-    if: always()
 
     steps:
       - name: Check test results

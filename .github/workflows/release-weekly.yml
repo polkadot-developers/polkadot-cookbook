@@ -25,6 +25,7 @@ on:
 
 jobs:
   check-changes:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
     outputs:
       has_changes: ${{ steps.check.outputs.has_changes }}
@@ -132,7 +133,7 @@ jobs:
 
   test-recipes:
     needs: check-changes
-    if: needs.check-changes.outputs.has_changes == 'true'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.check-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -220,7 +221,7 @@ jobs:
 
   create-release:
     needs: [check-changes, test-recipes]
-    if: needs.check-changes.outputs.has_changes == 'true'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.check-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write

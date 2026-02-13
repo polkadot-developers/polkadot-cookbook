@@ -3,17 +3,27 @@ name: Add Existing Pallets
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/parachains/customize-runtime/add-existing-pallets/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/parachains/customize-runtime/add-existing-pallets/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -31,20 +41,49 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
+      - name: Cache polkadot tools
+        uses: actions/cache@v4
+        id: cache-polkadot-tools
+        with:
+          path: ~/.local/bin
+          key: ${{ runner.os }}-polkadot-tools-${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
+
       - name: Install required tools
         run: |
-          RELEASE_TAG="polkadot-stable2512-1"
-          BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/${RELEASE_TAG}"
-          curl -L -o chain-spec-builder "${BASE_URL}/chain-spec-builder"
-          curl -L -o polkadot-omni-node "${BASE_URL}/polkadot-omni-node"
-          chmod +x chain-spec-builder polkadot-omni-node
-          sudo mv chain-spec-builder polkadot-omni-node /usr/local/bin/
+          mkdir -p ~/.local/bin
+          if [ "${{ steps.cache-polkadot-tools.outputs.cache-hit }}" != "true" ]; then
+            RELEASE_TAG="${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}"
+            BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/${RELEASE_TAG}"
+            curl -L -o ~/.local/bin/chain-spec-builder "${BASE_URL}/chain-spec-builder"
+            curl -L -o ~/.local/bin/polkadot-omni-node "${BASE_URL}/polkadot-omni-node"
+            chmod +x ~/.local/bin/chain-spec-builder ~/.local/bin/polkadot-omni-node
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify polkadot tools
+        run: |
           chain-spec-builder --version
           polkadot-omni-node --version
+
+      - name: Cache parachain template build
+        uses: actions/cache@v4
+        id: cache-parachain-template
+        with:
+          path: polkadot-docs/parachains/customize-runtime/add-existing-pallets/.test-workspace/parachain-template
+          key: ${{ runner.os }}-parachain-template-latest-${{ hashFiles('polkadot-docs/parachains/customize-runtime/add-existing-pallets/rust-toolchain.toml') }}
+
+      - name: Clean cached template for fresh test
+        if: steps.cache-parachain-template.outputs.cache-hit == 'true'
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/add-existing-pallets/.test-workspace/parachain-template
+          git checkout -- .
+          git clean -fd -e target/
 
       - name: Install npm dependencies
         run: |
@@ -57,13 +96,15 @@ jobs:
           npm test
         timeout-minutes: 60
 
-  notify-failure:
+  post-test:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/README.md'
       workflow_name: 'Add Existing Pallets'
-      guide_path: 'polkadot-docs/parachains/customize-runtime/add-existing-pallets'
     permissions:
+      contents: write
       issues: write
-      contents: read
+      pull-requests: write

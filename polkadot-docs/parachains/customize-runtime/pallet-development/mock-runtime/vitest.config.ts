@@ -1,7 +1,13 @@
 import { defineConfig } from "vitest/config";
+import { loadVariables } from "../../../../shared/load-variables";
+
+const vars = loadVariables();
 
 export default defineConfig({
   test: {
+    env: {
+      TEMPLATE_VERSION: vars.TEMPLATE_VERSION,
+    },
     // Run tests sequentially
     fileParallelism: false,
     sequence: {

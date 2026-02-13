@@ -3,17 +3,27 @@ name: Mock Your Runtime
 on:
   push:
     branches: [master]
-    paths: ['polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/**']
+    paths:
+      - 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
   test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -36,9 +46,25 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+
+      - name: Cache parachain template build
+        uses: actions/cache@v4
+        id: cache-parachain-template
+        with:
+          path: polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/.test-workspace/parachain-template
+          key: ${{ runner.os }}-parachain-template-${{ steps.versions.outputs.TEMPLATE_VERSION }}-${{ hashFiles('polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/rust-toolchain.toml') }}
+
+      - name: Clean cached template for fresh test
+        if: steps.cache-parachain-template.outputs.cache-hit == 'true'
+        run: |
+          cd polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/.test-workspace/parachain-template
+          git checkout -- .
+          git clean -fd -e target/
 
       - name: Install npm dependencies
         run: |
@@ -51,13 +77,15 @@ jobs:
           npm test
         timeout-minutes: 45
 
-  notify-failure:
+  post-test:
     needs: test
-    if: failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/README.md'
       workflow_name: 'Mock Your Runtime'
-      guide_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime'
     permissions:
+      contents: write
       issues: write
-      contents: read
+      pull-requests: write
