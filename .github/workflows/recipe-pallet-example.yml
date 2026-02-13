@@ -52,3 +52,4 @@ jobs:
       readme_path: 'recipes/pallets/pallet-example/README.md'
     permissions:
       contents: write
+      issues: write
