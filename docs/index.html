@@ -251,7 +251,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: calc(80px + var(--safe-top)) 1.25rem 120px;
+      padding: calc(80px + var(--safe-top)) 1.25rem 160px;
       overflow: hidden;
     }
 
@@ -555,7 +555,6 @@
       display: grid;
       grid-template-columns: 1fr;
       gap: 1rem;
-      align-items: start;
     }
 
     .step {
@@ -1282,21 +1281,15 @@
         <p class="step-number">Step 01</p>
         <h3>Install the CLI</h3>
         <p>One command to install the <code style="font-family:var(--font-mono);font-size:.85em;color:var(--pink)">dot</code> CLI tool.</p>
-        <div class="code-block" id="installCode">
-          <button class="copy-btn" onclick="copyCode('installCmd')" title="Copy">&#x2398;</button>
-          <span id="installCmd"><span class="prompt">$</span> curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash</span>
-        </div>
+        <div class="code-block" id="installCode"><button class="copy-btn" onclick="copyCode('installCmd')" title="Copy">&#x2398;</button><span id="installCmd"><span class="prompt">$</span> curl -fsSL https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/master/install.sh | bash</span></div>
       </div>
       <div class="step reveal">
         <p class="step-number">Step 02</p>
         <h3>Run a recipe</h3>
         <p>Clone a recipe harness and run the tests to verify it works.</p>
-        <div class="code-block" id="recipeCode">
-          <button class="copy-btn" onclick="copyCode('recipeCmd')" title="Copy">&#x2398;</button>
-          <span id="recipeCmd"><span class="prompt">$</span> cd recipes/contracts/contracts-example
+        <div class="code-block" id="recipeCode"><button class="copy-btn" onclick="copyCode('recipeCmd')" title="Copy">&#x2398;</button><span id="recipeCmd"><span class="prompt">$</span> cd recipes/contracts/contracts-example
 <span class="prompt">$</span> npm ci <span class="comment"># Install harness deps</span>
-<span class="prompt">$</span> npm test <span class="comment"># Clone, build &amp; test</span></span>
-        </div>
+<span class="prompt">$</span> npm test <span class="comment"># Clone, build &amp; test</span></span></div>
       </div>
     </div>
   </section>
