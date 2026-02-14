@@ -1,0 +1,43 @@
+name: REVM OpenZeppelin Contracts
+
+on:
+  push:
+    branches: [master]
+    paths: ['migration/revm/openzeppelin-contracts/**']
+  pull_request:
+    paths: ['migration/revm/openzeppelin-contracts/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: |
+          cd migration/revm/openzeppelin-contracts
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd migration/revm/openzeppelin-contracts
+          npm test
+        timeout-minutes: 30
+
+  notify-failure:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && failure() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/notify-docs-failure.yml
+    with:
+      workflow_name: 'REVM OpenZeppelin Contracts'
+      guide_path: 'migration/revm/openzeppelin-contracts'
+    permissions:
+      issues: write
+      contents: read
