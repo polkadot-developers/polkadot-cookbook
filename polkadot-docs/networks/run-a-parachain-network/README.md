@@ -4,7 +4,7 @@ description: "Verify the Run a Parachain Network guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/testing/run-a-parachain-network/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/testing/run-a-parachain-network.md"
 docs_commit: "d1a754e3af7f11ba5a160fdcd58287f8a7c40329"
-last_tested: "2026-02-13"
+last_tested: "2026-02-15"
 ---
 
 # Run a Parachain Network
