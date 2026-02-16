@@ -1,0 +1,14 @@
+{
+  "name": "runtime-upgrades",
+  "version": "1.0.0",
+  "description": "Verification tests for the Runtime Upgrades tutorial",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
