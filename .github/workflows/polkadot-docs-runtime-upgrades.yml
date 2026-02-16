@@ -25,6 +25,7 @@ jobs:
         run: |
           echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
           echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "ZOMBIENET_VERSION=$(yq '.zombienet.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -46,7 +47,26 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler clang libclang-dev make
+
+      - name: Cache Zombienet
+        uses: actions/cache@v4
+        id: cache-zombienet
+        with:
+          path: ~/.local/bin/zombienet
+          key: ${{ runner.os }}-zombienet-${{ steps.versions.outputs.ZOMBIENET_VERSION }}
+
+      - name: Install Zombienet
+        run: |
+          mkdir -p ~/.local/bin
+          if [ "${{ steps.cache-zombienet.outputs.cache-hit }}" != "true" ]; then
+            curl -L -o ~/.local/bin/zombienet https://github.com/paritytech/zombienet/releases/download/${{ steps.versions.outputs.ZOMBIENET_VERSION }}/zombienet-linux-x64
+            chmod +x ~/.local/bin/zombienet
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Zombienet
+        run: zombienet version
 
       - name: Cache polkadot tools
         uses: actions/cache@v4
@@ -96,6 +116,13 @@ jobs:
           cd polkadot-docs/parachains/runtime-maintenance/runtime-upgrades
           npm test
         timeout-minutes: 60
+
+      - name: Cleanup processes
+        if: always()
+        run: |
+          pkill -f 'polkadot.*rococo-local' 2>/dev/null || true
+          pkill -f 'polkadot-omni-node' 2>/dev/null || true
+          pkill -f 'zombienet' 2>/dev/null || true
 
   post-test:
     needs: test

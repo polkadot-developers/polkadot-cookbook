@@ -10,5 +10,9 @@
     "@types/node": "^22.10.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@polkadot/api": "^16.5.4",
+    "@polkadot/keyring": "^14.0.1"
   }
 }
