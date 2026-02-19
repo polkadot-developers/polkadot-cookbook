@@ -1,0 +1,139 @@
+name: Channels with System Parachains
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/parachains/interoperability/channels-with-system-parachains/**'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/parachains/interoperability/channels-with-system-parachains/**'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+          echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "ZOMBIENET_VERSION=$(yq '.zombienet.version' versions.yml)" >> $GITHUB_OUTPUT
+
+      - name: Setup Rust
+        run: |
+          cd polkadot-docs/parachains/interoperability/channels-with-system-parachains
+          rustup show
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler clang libclang-dev make
+
+      - name: Cache Zombienet
+        uses: actions/cache@v4
+        id: cache-zombienet
+        with:
+          path: ~/.local/bin/zombienet
+          key: ${{ runner.os }}-zombienet-${{ steps.versions.outputs.ZOMBIENET_VERSION }}
+
+      - name: Install Zombienet
+        run: |
+          mkdir -p ~/.local/bin
+          if [ "${{ steps.cache-zombienet.outputs.cache-hit }}" != "true" ]; then
+            curl -L -o ~/.local/bin/zombienet https://github.com/paritytech/zombienet/releases/download/${{ steps.versions.outputs.ZOMBIENET_VERSION }}/zombienet-linux-x64
+            chmod +x ~/.local/bin/zombienet
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify Zombienet
+        run: zombienet version
+
+      - name: Cache polkadot tools
+        uses: actions/cache@v4
+        id: cache-polkadot-tools
+        with:
+          path: ~/.local/bin
+          key: ${{ runner.os }}-polkadot-tools-system-para-${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
+
+      - name: Install required tools
+        run: |
+          mkdir -p ~/.local/bin
+          if [ "${{ steps.cache-polkadot-tools.outputs.cache-hit }}" != "true" ]; then
+            RELEASE_TAG="${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}"
+            BASE_URL="https://github.com/paritytech/polkadot-sdk/releases/download/${RELEASE_TAG}"
+            curl -L -o ~/.local/bin/chain-spec-builder "${BASE_URL}/chain-spec-builder"
+            curl -L -o ~/.local/bin/polkadot-omni-node "${BASE_URL}/polkadot-omni-node"
+            chmod +x ~/.local/bin/chain-spec-builder ~/.local/bin/polkadot-omni-node
+          fi
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify polkadot tools
+        run: |
+          chain-spec-builder --version
+          polkadot-omni-node --version
+
+      - name: Cache parachain template build
+        uses: actions/cache@v4
+        id: cache-parachain-template
+        with:
+          path: polkadot-docs/parachains/interoperability/channels-with-system-parachains/.test-workspace/parachain-template
+          key: ${{ runner.os }}-parachain-template-system-channels-${{ steps.versions.outputs.TEMPLATE_VERSION }}-${{ hashFiles('polkadot-docs/parachains/interoperability/channels-with-system-parachains/rust-toolchain.toml') }}
+
+      - name: Clean cached template for fresh test
+        if: steps.cache-parachain-template.outputs.cache-hit == 'true'
+        run: |
+          cd polkadot-docs/parachains/interoperability/channels-with-system-parachains/.test-workspace/parachain-template
+          git checkout -- .
+          git clean -fd -e target/
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/parachains/interoperability/channels-with-system-parachains
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/parachains/interoperability/channels-with-system-parachains
+          npm test
+        timeout-minutes: 60
+
+      - name: Cleanup processes
+        if: always()
+        run: |
+          pkill -f 'polkadot.*rococo-local' 2>/dev/null || true
+          pkill -f 'polkadot-omni-node' 2>/dev/null || true
+          pkill -f 'polkadot-parachain' 2>/dev/null || true
+          pkill -f 'zombienet' 2>/dev/null || true
+
+  post-test:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/parachains/interoperability/channels-with-system-parachains/README.md'
+      workflow_name: 'Channels with System Parachains'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
