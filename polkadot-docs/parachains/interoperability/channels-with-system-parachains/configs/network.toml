@@ -1,0 +1,35 @@
+[settings]
+timeout = 1000
+provider = "native"
+
+[relaychain]
+chain = "rococo-local"
+default_command = "./bin/polkadot"
+
+[[relaychain.nodes]]
+name = "alice"
+validator = true
+rpc_port = 9944
+
+[[relaychain.nodes]]
+name = "bob"
+validator = true
+rpc_port = 9945
+
+[[parachains]]
+id = 1000
+chain = "asset-hub-rococo-local"
+
+[[parachains.collators]]
+name = "asset-hub-collator"
+command = "./bin/polkadot-parachain"
+rpc_port = 9988
+
+[[parachains]]
+id = 2000
+chain_spec_path = "./chain_spec.json"
+
+[[parachains.collators]]
+name = "custom-collator"
+command = "polkadot-omni-node"
+rpc_port = 9989
