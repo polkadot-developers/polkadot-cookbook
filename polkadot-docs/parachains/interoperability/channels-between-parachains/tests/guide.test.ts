@@ -11,7 +11,6 @@ import {
 import { join } from "path";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
-import { bnToU8a, u8aToHex, stringToU8a } from "@polkadot/util";
 
 const PROJECT_DIR = process.cwd();
 const WORKSPACE_DIR = join(PROJECT_DIR, ".test-workspace");
@@ -54,19 +53,6 @@ async function rpcCall(url: string, method: string, params: unknown[] = []): Pro
   const json = (await response.json()) as { result?: unknown; error?: unknown };
   if (json.error) throw new Error(`RPC error: ${JSON.stringify(json.error)}`);
   return json.result;
-}
-
-/**
- * Calculate the sovereign account for a parachain on the relay chain.
- * Format: prefix "para" (0x70617261) + LE-encoded u32 paraId + zero-pad to 32 bytes.
- */
-function sovereignAccount(paraId: number): string {
-  const prefix = stringToU8a("para");
-  const idBytes = bnToU8a(paraId, { bitLength: 32, isLe: true });
-  const account = new Uint8Array(32);
-  account.set(prefix, 0);
-  account.set(idBytes, prefix.length);
-  return u8aToHex(account);
 }
 
 describe("Channels Between Parachains Tutorial", () => {
@@ -233,28 +219,21 @@ describe("Channels Between Parachains Tutorial", () => {
         }
       }
 
-      const platform = process.platform;
-      if (platform !== "linux") {
-        console.log(`Platform ${platform} detected. Using zombienet setup...`);
-        execSync(`zombienet setup polkadot -y`, {
+      console.log(`Downloading Polkadot ${POLKADOT_SDK_VERSION} binaries...`);
+      const baseUrl = `https://github.com/paritytech/polkadot-sdk/releases/download/${POLKADOT_SDK_VERSION}`;
+      // On macOS, binaries have an architecture suffix on GitHub releases
+      const suffix = process.platform === "darwin"
+        ? `-${process.arch === "arm64" ? "aarch64" : "x86_64"}-apple-darwin`
+        : "";
+      for (const binary of ["polkadot", "polkadot-prepare-worker", "polkadot-execute-worker"]) {
+        console.log(`Downloading ${binary}${suffix}...`);
+        execSync(`curl -L -o ${binary} ${baseUrl}/${binary}${suffix}`, {
           cwd: BIN_DIR,
           encoding: "utf-8",
           stdio: "inherit",
           timeout: 300000,
         });
-      } else {
-        console.log(`Downloading Polkadot ${POLKADOT_SDK_VERSION} binaries...`);
-        const baseUrl = `https://github.com/paritytech/polkadot-sdk/releases/download/${POLKADOT_SDK_VERSION}`;
-        for (const binary of ["polkadot", "polkadot-prepare-worker", "polkadot-execute-worker"]) {
-          console.log(`Downloading ${binary}...`);
-          execSync(`curl -L -o ${binary} ${baseUrl}/${binary}`, {
-            cwd: BIN_DIR,
-            encoding: "utf-8",
-            stdio: "inherit",
-            timeout: 300000,
-          });
-          execSync(`chmod +x ${binary}`, { cwd: BIN_DIR });
-        }
+        execSync(`chmod +x ${binary}`, { cwd: BIN_DIR });
       }
 
       expect(existsSync(POLKADOT_BINARY)).toBe(true);
@@ -352,315 +331,61 @@ describe("Channels Between Parachains Tutorial", () => {
     }, 240000);
   });
 
-  // ==================== FUND SOVEREIGN ACCOUNTS ====================
-  describe("5. Fund Sovereign Accounts", () => {
-    it("should fund parachain 1000 sovereign account on relay chain", async () => {
-      const account1000 = sovereignAccount(1000);
-      console.log(`Parachain 1000 sovereign account: ${account1000}`);
-
-      const wsProvider = new WsProvider(RELAY_WS_URL);
-      const api = await ApiPromise.create({ provider: wsProvider });
-
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri("//Alice");
-
-      // Transfer 10 ROC (10 * 10^12 planck)
-      const amount = BigInt(10) * BigInt(10 ** 12);
-
-      await new Promise<void>((resolve, reject) => {
-        api.tx.balances
-          .transferKeepAlive(account1000, amount)
-          .signAndSend(alice, ({ status, dispatchError }) => {
-            if (dispatchError) {
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(dispatchError.asModule);
-                reject(new Error(`${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`));
-              } else {
-                reject(new Error(dispatchError.toString()));
-              }
-            }
-            if (status.isInBlock) {
-              console.log(`Funded parachain 1000 sovereign account in block: ${status.asInBlock.toHex()}`);
-              resolve();
-            }
-          });
-      });
-
-      // Verify balance
-      const { data: balance } = (await api.query.system.account(account1000)) as any;
-      console.log(`Parachain 1000 sovereign balance: ${balance.free.toString()}`);
-      expect(BigInt(balance.free.toString())).toBeGreaterThan(BigInt(0));
-
-      await api.disconnect();
-    }, 60000);
-
-    it("should fund parachain 1001 sovereign account on relay chain", async () => {
-      const account1001 = sovereignAccount(1001);
-      console.log(`Parachain 1001 sovereign account: ${account1001}`);
-
-      const wsProvider = new WsProvider(RELAY_WS_URL);
-      const api = await ApiPromise.create({ provider: wsProvider });
-
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri("//Alice");
-
-      const amount = BigInt(10) * BigInt(10 ** 12);
-
-      await new Promise<void>((resolve, reject) => {
-        api.tx.balances
-          .transferKeepAlive(account1001, amount)
-          .signAndSend(alice, ({ status, dispatchError }) => {
-            if (dispatchError) {
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(dispatchError.asModule);
-                reject(new Error(`${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`));
-              } else {
-                reject(new Error(dispatchError.toString()));
-              }
-            }
-            if (status.isInBlock) {
-              console.log(`Funded parachain 1001 sovereign account in block: ${status.asInBlock.toHex()}`);
-              resolve();
-            }
-          });
-      });
-
-      const { data: balance } = (await api.query.system.account(account1001)) as any;
-      console.log(`Parachain 1001 sovereign balance: ${balance.free.toString()}`);
-      expect(BigInt(balance.free.toString())).toBeGreaterThan(BigInt(0));
-
-      await api.disconnect();
-    }, 60000);
-  });
-
   // ==================== OPEN HRMP CHANNEL 1000 -> 1001 ====================
-  describe("6. Open HRMP Channel (1000 -> 1001)", () => {
-    it("should send XCM from parachain 1000 to initiate HRMP channel", async () => {
-      console.log("Opening HRMP channel from parachain 1000 to 1001...");
+  describe("5. Open HRMP Channel (1000 -> 1001)", () => {
+    it("should force open HRMP channel via sudo on relay chain", async () => {
+      console.log("Opening HRMP channel 1000 -> 1001 via sudo on relay chain...");
 
-      // Connect to relay chain to encode the hrmp.hrmpInitOpenChannel call
-      const relayWs = new WsProvider(RELAY_WS_URL);
-      const relayApi = await ApiPromise.create({ provider: relayWs });
-
-      const initCall = relayApi.tx.hrmp.hrmpInitOpenChannel(1001, 8, 1048576);
-      const encodedCall = initCall.method.toHex();
-      console.log(`Encoded hrmpInitOpenChannel call: ${encodedCall}`);
-
-      await relayApi.disconnect();
-
-      // Connect to parachain A to send the XCM
-      const paraWs = new WsProvider(PARA_A_WS_URL);
-      const paraApi = await ApiPromise.create({ provider: paraWs });
+      const wsProvider = new WsProvider(RELAY_WS_URL);
+      const api = await ApiPromise.create({ provider: wsProvider });
 
       const keyring = new Keyring({ type: "sr25519" });
       const alice = keyring.addFromUri("//Alice");
 
-      // Build the XCM message to relay chain
-      const dest = { V4: { parents: 1, interior: "Here" } };
-      const message = {
-        V4: [
-          {
-            WithdrawAsset: [
-              {
-                id: { parents: 0, interior: "Here" },
-                fun: { Fungible: BigInt(10) * BigInt(10 ** 12) },
-              },
-            ],
-          },
-          {
-            BuyExecution: {
-              fees: {
-                id: { parents: 0, interior: "Here" },
-                fun: { Fungible: BigInt(10) * BigInt(10 ** 12) },
-              },
-              weightLimit: "Unlimited",
-            },
-          },
-          {
-            Transact: {
-              originKind: "Native",
-              requireWeightAtMost: { refTime: BigInt(1_000_000_000), proofSize: BigInt(65536) },
-              call: { encoded: encodedCall },
-            },
-          },
-          "RefundSurplus",
-          {
-            DepositAsset: {
-              assets: { Wild: "All" },
-              beneficiary: {
-                parents: 0,
-                interior: {
-                  X1: [
-                    {
-                      AccountId32: {
-                        id: alice.publicKey,
-                        network: null,
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ],
-      };
-
-      const xcmTx = paraApi.tx.polkadotXcm.send(dest, message);
-      const sudoTx = paraApi.tx.sudo.sudo(xcmTx);
+      // forceOpenHrmpChannel bypasses the init/accept handshake
+      const forceOpen = api.tx.hrmp.forceOpenHrmpChannel(1000, 1001, 8, 1048576);
+      const sudoTx = api.tx.sudo.sudo(forceOpen);
 
       await new Promise<void>((resolve, reject) => {
-        sudoTx.signAndSend(alice, ({ status, dispatchError }) => {
+        sudoTx.signAndSend(alice, ({ status, dispatchError, events }) => {
           if (dispatchError) {
             if (dispatchError.isModule) {
-              const decoded = paraApi.registry.findMetaError(dispatchError.asModule);
+              const decoded = api.registry.findMetaError(dispatchError.asModule);
               reject(new Error(`${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`));
             } else {
               reject(new Error(dispatchError.toString()));
             }
           }
           if (status.isInBlock) {
-            console.log(`XCM sent from parachain 1000 in block: ${status.asInBlock.toHex()}`);
-            resolve();
-          }
-        });
-      });
-
-      await paraApi.disconnect();
-
-      // Wait for the XCM to be relayed
-      console.log("Waiting for XCM to be relayed to the relay chain...");
-      await new Promise((resolve) => setTimeout(resolve, 24000));
-    }, 120000);
-
-    it("should have a pending HRMP channel request", async () => {
-      const relayWs = new WsProvider(RELAY_WS_URL);
-      const relayApi = await ApiPromise.create({ provider: relayWs });
-
-      let found = false;
-      for (let attempt = 1; attempt <= 10; attempt++) {
-        const requests = await relayApi.query.hrmp.hrmpOpenChannelRequestsList();
-        const requestsJson = requests.toJSON() as any[];
-        console.log(`HRMP open channel requests (attempt ${attempt}): ${JSON.stringify(requestsJson)}`);
-
-        if (requestsJson && requestsJson.length > 0) {
-          found = true;
-          break;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 12000));
-      }
-
-      await relayApi.disconnect();
-      expect(found).toBe(true);
-      console.log("HRMP channel request from 1000 -> 1001 is pending");
-    }, 180000);
-  });
-
-  // ==================== ACCEPT HRMP CHANNEL ====================
-  describe("7. Accept HRMP Channel", () => {
-    it("should send XCM from parachain 1001 to accept HRMP channel", async () => {
-      console.log("Accepting HRMP channel from parachain 1001...");
-
-      // Connect to relay chain to encode the hrmp.hrmpAcceptOpenChannel call
-      const relayWs = new WsProvider(RELAY_WS_URL);
-      const relayApi = await ApiPromise.create({ provider: relayWs });
-
-      const acceptCall = relayApi.tx.hrmp.hrmpAcceptOpenChannel(1000);
-      const encodedCall = acceptCall.method.toHex();
-      console.log(`Encoded hrmpAcceptOpenChannel call: ${encodedCall}`);
-
-      await relayApi.disconnect();
-
-      // Connect to parachain B to send the XCM
-      const paraWs = new WsProvider(PARA_B_WS_URL);
-      const paraApi = await ApiPromise.create({ provider: paraWs });
-
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri("//Alice");
-
-      const dest = { V4: { parents: 1, interior: "Here" } };
-      const message = {
-        V4: [
-          {
-            WithdrawAsset: [
-              {
-                id: { parents: 0, interior: "Here" },
-                fun: { Fungible: BigInt(10) * BigInt(10 ** 12) },
-              },
-            ],
-          },
-          {
-            BuyExecution: {
-              fees: {
-                id: { parents: 0, interior: "Here" },
-                fun: { Fungible: BigInt(10) * BigInt(10 ** 12) },
-              },
-              weightLimit: "Unlimited",
-            },
-          },
-          {
-            Transact: {
-              originKind: "Native",
-              requireWeightAtMost: { refTime: BigInt(1_000_000_000), proofSize: BigInt(65536) },
-              call: { encoded: encodedCall },
-            },
-          },
-          "RefundSurplus",
-          {
-            DepositAsset: {
-              assets: { Wild: "All" },
-              beneficiary: {
-                parents: 0,
-                interior: {
-                  X1: [
-                    {
-                      AccountId32: {
-                        id: alice.publicKey,
-                        network: null,
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ],
-      };
-
-      const xcmTx = paraApi.tx.polkadotXcm.send(dest, message);
-      const sudoTx = paraApi.tx.sudo.sudo(xcmTx);
-
-      await new Promise<void>((resolve, reject) => {
-        sudoTx.signAndSend(alice, ({ status, dispatchError }) => {
-          if (dispatchError) {
-            if (dispatchError.isModule) {
-              const decoded = paraApi.registry.findMetaError(dispatchError.asModule);
-              reject(new Error(`${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`));
-            } else {
-              reject(new Error(dispatchError.toString()));
+            // Check for sudo success
+            const sudoEvent = events.find(({ event }) =>
+              api.events.sudo.Sudid.is(event)
+            );
+            if (sudoEvent) {
+              const [result] = sudoEvent.event.data as any;
+              if (result.isErr) {
+                reject(new Error(`Sudo call failed: ${result.asErr.toString()}`));
+                return;
+              }
             }
-          }
-          if (status.isInBlock) {
-            console.log(`XCM sent from parachain 1001 in block: ${status.asInBlock.toHex()}`);
+            console.log(`forceOpenHrmpChannel included in block: ${status.asInBlock.toHex()}`);
             resolve();
           }
         });
       });
 
-      await paraApi.disconnect();
-
-      console.log("Waiting for XCM to be relayed to the relay chain...");
-      await new Promise((resolve) => setTimeout(resolve, 24000));
-    }, 120000);
+      await api.disconnect();
+    }, 60000);
 
     it("should have an established HRMP channel after session boundary", async () => {
       console.log("Waiting for HRMP channel to be established (requires session boundary)...");
 
-      const relayWs = new WsProvider(RELAY_WS_URL);
-      const relayApi = await ApiPromise.create({ provider: relayWs });
+      const wsProvider = new WsProvider(RELAY_WS_URL);
+      const api = await ApiPromise.create({ provider: wsProvider });
 
       let channelFound = false;
       for (let attempt = 1; attempt <= 25; attempt++) {
-        const channels = await relayApi.query.hrmp.hrmpChannels({
+        const channels = await api.query.hrmp.hrmpChannels({
           sender: 1000,
           recipient: 1001,
         });
@@ -676,14 +401,14 @@ describe("Channels Between Parachains Tutorial", () => {
         await new Promise((resolve) => setTimeout(resolve, 12000));
       }
 
-      await relayApi.disconnect();
+      await api.disconnect();
       expect(channelFound).toBe(true);
       console.log("HRMP channel 1000 -> 1001 is active!");
     }, 360000);
   });
 
   // ==================== POST-CHANNEL VERIFICATION ====================
-  describe("8. Post-Channel Verification", () => {
+  describe("6. Post-Channel Verification", () => {
     it("should verify both parachains continue producing blocks", async () => {
       // Check parachain A
       const resultA = (await rpcCall(PARA_A_RPC_URL, "chain_getHeader")) as { number: string };

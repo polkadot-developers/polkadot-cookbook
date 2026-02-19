@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@polkadot/api": "^16.5.4",
-    "@polkadot/keyring": "^14.0.1",
-    "@polkadot/util": "^14.0.1"
+    "@polkadot/keyring": "^14.0.1"
   }
 }
