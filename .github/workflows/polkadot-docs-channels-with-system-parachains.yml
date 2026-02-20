@@ -5,10 +5,12 @@ on:
     branches: [master]
     paths:
       - 'polkadot-docs/parachains/interoperability/channels-with-system-parachains/**'
+      - '!polkadot-docs/parachains/interoperability/channels-with-system-parachains/README.md'
       - 'versions.yml'
   pull_request:
     paths:
       - 'polkadot-docs/parachains/interoperability/channels-with-system-parachains/**'
+      - '!polkadot-docs/parachains/interoperability/channels-with-system-parachains/README.md'
       - 'versions.yml'
   workflow_dispatch:
 

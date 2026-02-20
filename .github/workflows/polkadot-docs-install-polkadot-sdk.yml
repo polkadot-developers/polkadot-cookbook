@@ -5,10 +5,12 @@ on:
     branches: [master]
     paths:
       - 'polkadot-docs/parachains/install-polkadot-sdk/**'
+      - '!polkadot-docs/parachains/install-polkadot-sdk/README.md'
       - 'versions.yml'
   pull_request:
     paths:
       - 'polkadot-docs/parachains/install-polkadot-sdk/**'
+      - '!polkadot-docs/parachains/install-polkadot-sdk/README.md'
       - 'versions.yml'
   workflow_dispatch:
 

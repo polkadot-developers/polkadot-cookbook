@@ -5,10 +5,12 @@ on:
     branches: [master]
     paths:
       - 'polkadot-docs/networks/run-a-parachain-network/**'
+      - '!polkadot-docs/networks/run-a-parachain-network/README.md'
       - 'versions.yml'
   pull_request:
     paths:
       - 'polkadot-docs/networks/run-a-parachain-network/**'
+      - '!polkadot-docs/networks/run-a-parachain-network/README.md'
       - 'versions.yml'
   workflow_dispatch:
 
