@@ -6,7 +6,7 @@ on:
       test_result:
         required: true
         type: string
-        description: 'Result of the test job (success/failure)'
+        description: 'Result of the test job (success/failure/cancelled)'
       readme_path:
         required: true
         type: string
@@ -19,7 +19,7 @@ on:
 
 jobs:
   notify-failure:
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'failure' && inputs.workflow_name != ''
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && (inputs.test_result == 'failure' || inputs.test_result == 'cancelled') && inputs.workflow_name != ''
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -45,7 +45,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_TITLE="[Test Failure] ${{ inputs.workflow_name }}"
+          STATUS="${{ inputs.test_result }}"
+          if [ "$STATUS" = "cancelled" ]; then
+            ISSUE_TITLE="[Test Cancelled] ${{ inputs.workflow_name }}"
+          else
+            ISSUE_TITLE="[Test Failure] ${{ inputs.workflow_name }}"
+          fi
           EXISTING_ISSUE=$(gh issue list --state open --search "in:title \"$ISSUE_TITLE\"" --json number --jq '.[0].number // empty')
           echo "existing_issue=$EXISTING_ISSUE" >> $GITHUB_OUTPUT
           echo "title=$ISSUE_TITLE" >> $GITHUB_OUTPUT
@@ -58,7 +63,7 @@ jobs:
           MAINTAINERS="${{ steps.maintainers.outputs.list }}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          BODY="The **${{ inputs.workflow_name }}** guide test is failing on master.
+          BODY="The **${{ inputs.workflow_name }}** guide test is **${{ inputs.test_result }}** on master.
 
           **Details:**
           - Guide: \`${{ steps.guide.outputs.path }}\`
