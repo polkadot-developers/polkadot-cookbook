@@ -341,6 +341,9 @@ jobs:
           # Update workspace version in root Cargo.toml
           sed -i "s/^version = \".*\"/version = \"$CARGO_VERSION\"/" Cargo.toml
 
+          # Update Cargo.lock to reflect the new version
+          cargo update --workspace
+
           echo "Updated Cargo.toml workspace version to $CARGO_VERSION"
 
       - name: Create release branch and PR
@@ -358,7 +361,7 @@ jobs:
           git checkout -b $BRANCH_NAME
 
           # Commit release files and updated Cargo.toml
-          git add .github/releases/$NEW_VERSION/ Cargo.toml
+          git add .github/releases/$NEW_VERSION/ Cargo.toml Cargo.lock
           git commit -m "chore(release): add manifest and notes for $NEW_VERSION"
 
           # Push branch
