@@ -5,10 +5,12 @@ on:
     branches: [master]
     paths:
       - 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/**'
+      - '!polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/README.md'
       - 'versions.yml'
   pull_request:
     paths:
       - 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/**'
+      - '!polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/README.md'
       - 'versions.yml'
   workflow_dispatch:
 
@@ -86,6 +88,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/README.md'
       workflow_name: 'Mock Your Runtime'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

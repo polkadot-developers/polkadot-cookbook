@@ -5,10 +5,12 @@ on:
     branches: [master]
     paths:
       - 'polkadot-docs/parachains/customize-runtime/add-pallet-instances/**'
+      - '!polkadot-docs/parachains/customize-runtime/add-pallet-instances/README.md'
       - 'versions.yml'
   pull_request:
     paths:
       - 'polkadot-docs/parachains/customize-runtime/add-pallet-instances/**'
+      - '!polkadot-docs/parachains/customize-runtime/add-pallet-instances/README.md'
       - 'versions.yml'
   workflow_dispatch:
 
@@ -106,6 +108,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/add-pallet-instances/README.md'
       workflow_name: 'Add Pallet Instances'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

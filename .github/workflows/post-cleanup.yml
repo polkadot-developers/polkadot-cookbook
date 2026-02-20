@@ -10,7 +10,7 @@ on:
       readme_path:
         required: true
         type: string
-        description: 'Path to the README.md file to update'
+        description: 'Path to the README.md file (used to derive guide path for failure notifications)'
       workflow_name:
         required: false
         type: string
@@ -18,81 +18,6 @@ on:
         description: 'Human-readable workflow name (for failure notification)'
 
 jobs:
-  update-last-tested:
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'success'
-    runs-on: ubuntu-latest
-    concurrency:
-      group: update-last-tested
-      cancel-in-progress: false
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: master
-          fetch-depth: 0
-
-      - name: Update last_tested date
-        id: update
-        run: |
-          TODAY=$(date -u +"%Y-%m-%d")
-          FILE="${{ inputs.readme_path }}"
-          CURRENT=$(sed -n 's/^last_tested: "\(.*\)"/\1/p' "$FILE")
-          if [ "$CURRENT" = "$TODAY" ]; then
-            echo "already_current=true" >> $GITHUB_OUTPUT
-            echo "Date already current ($TODAY), skipping commit"
-          else
-            sed -i "s/^last_tested: \".*\"/last_tested: \"$TODAY\"/" "$FILE"
-            echo "already_current=false" >> $GITHUB_OUTPUT
-            echo "Updated last_tested to $TODAY"
-          fi
-
-      - name: Create PR
-        if: steps.update.outputs.already_current != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          NAME=$(echo "${{ inputs.readme_path }}" | sed 's|/README.md||' | sed 's|.*/||')
-          BRANCH="ci/update-last-tested"
-
-          # Stash the updated file so we can switch branches cleanly
-          git stash
-
-          # Pick up existing branch or start fresh from master
-          if git fetch origin "$BRANCH" 2>/dev/null; then
-            git checkout "$BRANCH"
-            git rebase origin/master || { git rebase --abort; git reset --hard origin/master; }
-          else
-            git checkout -b "$BRANCH"
-          fi
-
-          # Re-apply the date update on this branch
-          git stash pop
-
-          git add "${{ inputs.readme_path }}"
-
-          # Skip if nothing to commit (date already updated in a prior run on this branch)
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-
-          git commit -m "ci: update last_tested for $NAME"
-          git push -u origin "$BRANCH" --force-with-lease --force-if-includes
-
-          # Create PR if one doesn't exist
-          EXISTING_PR=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
-          if [ -z "$EXISTING_PR" ]; then
-            gh pr create \
-              --title "ci: batch update last_tested dates" \
-              --body "Auto-generated PR to update \`last_tested\` dates. Updated automatically as tests pass on master."
-          fi
-
   notify-failure:
     if: github.repository == 'polkadot-developers/polkadot-cookbook' && inputs.test_result == 'failure' && inputs.workflow_name != ''
     runs-on: ubuntu-latest

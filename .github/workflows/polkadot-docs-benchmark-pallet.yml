@@ -5,10 +5,12 @@ on:
     branches: [master]
     paths:
       - 'polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/**'
+      - '!polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/README.md'
       - 'versions.yml'
   pull_request:
     paths:
       - 'polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/**'
+      - '!polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/README.md'
       - 'versions.yml'
   workflow_dispatch:
 
@@ -86,6 +88,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/README.md'
       workflow_name: 'Benchmark Pallet'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
