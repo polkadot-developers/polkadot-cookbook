@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+
 import { loadVariables } from "../../shared/load-variables";
 
 const vars = loadVariables();
