@@ -3,7 +3,6 @@ title: "Channels with System Parachains"
 description: "Verify the channels with system parachains tutorial from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/interoperability/channels-with-system-parachains/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/interoperability/channels-with-system-parachains.md"
-last_tested: "2026-02-19"
 polkadot_sdk_version: "polkadot-stable2512-1"
 parachain_template_version: "v0.0.5"
 ---

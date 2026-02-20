@@ -2,7 +2,6 @@
 title: "Transaction Example"
 description: "Verification tests for the transaction-example recipe"
 source_repo: "https://github.com/brunopgalvao/recipe-transaction-example"
-last_tested: "2026-02-13"
 ---
 
 # Transaction Example

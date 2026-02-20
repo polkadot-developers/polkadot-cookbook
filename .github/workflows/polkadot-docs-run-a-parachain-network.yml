@@ -103,6 +103,5 @@ jobs:
       readme_path: 'polkadot-docs/networks/run-a-parachain-network/README.md'
       workflow_name: 'Run a Parachain Network'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

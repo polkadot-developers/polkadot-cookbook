@@ -108,6 +108,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/create-a-pallet/README.md'
       workflow_name: 'Create a Pallet'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

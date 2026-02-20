@@ -44,6 +44,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/testing/fork-a-parachain/README.md'
       workflow_name: 'Fork a Parachain'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

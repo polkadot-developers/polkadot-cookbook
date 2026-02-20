@@ -135,6 +135,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/runtime-maintenance/runtime-upgrades/README.md'
       workflow_name: 'Runtime Upgrades'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

@@ -4,7 +4,6 @@ description: "Verify the benchmark pallets guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/pallet-development/benchmark-pallet/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/pallet-development/benchmark-pallet.md"
 docs_commit: "d4b41f851b16ac909a7422726a4fd47fea239ba3"
-last_tested: "2026-02-16"
 polkadot_sdk_version: "2512.1.0"
 parachain_template_version: "v0.0.5"
 ---

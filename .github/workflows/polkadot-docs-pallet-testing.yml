@@ -88,6 +88,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/pallet-testing/README.md'
       workflow_name: 'Unit Test Pallets'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

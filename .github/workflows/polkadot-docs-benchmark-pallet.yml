@@ -88,6 +88,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/benchmark-pallet/README.md'
       workflow_name: 'Benchmark Pallet'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

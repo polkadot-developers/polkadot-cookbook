@@ -107,6 +107,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/add-existing-pallets/README.md'
       workflow_name: 'Add Existing Pallets'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

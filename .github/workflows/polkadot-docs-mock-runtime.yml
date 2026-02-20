@@ -88,6 +88,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/customize-runtime/pallet-development/mock-runtime/README.md'
       workflow_name: 'Mock Your Runtime'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

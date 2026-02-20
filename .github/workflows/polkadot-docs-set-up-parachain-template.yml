@@ -108,6 +108,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/set-up-parachain-template/README.md'
       workflow_name: 'Set Up Parachain Template'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write

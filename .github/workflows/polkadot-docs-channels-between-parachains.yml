@@ -135,6 +135,5 @@ jobs:
       readme_path: 'polkadot-docs/parachains/interoperability/channels-between-parachains/README.md'
       workflow_name: 'Channels Between Parachains'
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
