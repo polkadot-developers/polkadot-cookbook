@@ -609,6 +609,8 @@ npm test -- --reporter=verbose
 
 ### Hardhat Test Setup
 
+Tests run against the pallet-revive dev node via the ETH-RPC adapter at `http://127.0.0.1:8545`. Start the dev node and ETH-RPC adapter before running tests.
+
 **hardhat.config.ts:**
 
 ```typescript
@@ -616,10 +618,10 @@ import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.19',
+  solidity: '0.8.24',
   networks: {
-    hardhat: {
-      chainId: 1337,
+    localhost: {
+      url: 'http://127.0.0.1:8545',
     },
   },
 };
@@ -743,18 +745,27 @@ describe('SimpleToken', () => {
 
 ### Running Solidity Tests
 
+Start the pallet-revive dev node and ETH-RPC adapter before running tests:
+
+```bash
+# Terminal 1: Start the dev node
+revive-dev-node --dev
+
+# Terminal 2: Start the ETH-RPC adapter
+eth-rpc --dev
+```
+
+Then run tests against the running node:
+
 ```bash
 # Run all tests
-npx hardhat test
+npx hardhat test --network localhost
 
 # Run specific test
-npx hardhat test test/SimpleToken.test.ts
+npx hardhat test --network localhost test/SimpleToken.test.ts
 
 # With gas reporting
-REPORT_GAS=true npx hardhat test
-
-# With coverage
-npx hardhat coverage
+REPORT_GAS=true npx hardhat test --network localhost
 ```
 
 ---

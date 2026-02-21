@@ -77,8 +77,8 @@ describe("Contracts Example Recipe", () => {
   // ==================== TEST ====================
   describe("5. Run Tests", () => {
     it("should pass all Hardhat tests", () => {
-      console.log("Running Hardhat tests...");
-      const result = execSync("npx hardhat test", {
+      console.log("Running Hardhat tests on pallet-revive dev node...");
+      const result = execSync("npx hardhat test --network localhost", {
         cwd: REPO_DIR,
         encoding: "utf-8",
         stdio: "inherit",
