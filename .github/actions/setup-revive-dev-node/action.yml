@@ -1,0 +1,82 @@
+name: 'Setup Revive Dev Node'
+description: 'Install and start pallet-revive dev node with ETH-RPC adapter'
+
+inputs:
+  polkadot-sdk-version:
+    description: 'Polkadot SDK release tag (e.g. polkadot-stable2512-1)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache revive-dev-node binary
+      id: cache-revive-dev-node
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/bin/revive-dev-node
+        key: revive-dev-node-${{ inputs.polkadot-sdk-version }}-${{ runner.os }}
+
+    - name: Install build dependencies
+      if: steps.cache-revive-dev-node.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        rustup target add wasm32-unknown-unknown
+        rustup component add rust-src
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends libclang-dev protobuf-compiler
+
+    - name: Build revive-dev-node from source
+      if: steps.cache-revive-dev-node.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cargo install --git https://github.com/paritytech/polkadot-sdk --tag ${{ inputs.polkadot-sdk-version }} revive-dev-node --root ~/.local
+
+    - name: Cache eth-rpc binary
+      id: cache-eth-rpc
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/bin/eth-rpc
+        key: eth-rpc-${{ inputs.polkadot-sdk-version }}-${{ runner.os }}
+
+    - name: Download eth-rpc binary
+      if: steps.cache-eth-rpc.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/.local/bin
+        curl -L -o ~/.local/bin/eth-rpc \
+          "https://github.com/paritytech/polkadot-sdk/releases/download/${{ inputs.polkadot-sdk-version }}/eth-rpc"
+        chmod +x ~/.local/bin/eth-rpc
+
+    - name: Add binaries to PATH
+      shell: bash
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Start revive-dev-node
+      shell: bash
+      run: |
+        revive-dev-node --dev &
+        echo "revive-dev-node started in background"
+
+    - name: Start eth-rpc
+      shell: bash
+      run: |
+        eth-rpc --dev &
+        echo "eth-rpc started in background"
+
+    - name: Wait for ETH-RPC endpoint
+      shell: bash
+      run: |
+        echo "Waiting for ETH-RPC endpoint at http://localhost:8545..."
+        for i in $(seq 1 30); do
+          if curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+            http://localhost:8545 | grep -q "200"; then
+            echo "ETH-RPC endpoint is ready"
+            exit 0
+          fi
+          echo "Attempt $i/30 - waiting 2s..."
+          sleep 2
+        done
+        echo "ETH-RPC endpoint failed to start within 60 seconds"
+        exit 1

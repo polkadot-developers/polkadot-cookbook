@@ -99,14 +99,14 @@ describe("Uniswap V2 Periphery REVM Migration", () => {
     it("should run tests on hardhat network", () => {
       console.log("Running tests on hardhat network...");
 
-      execSync("npm test", {
+      execSync("npx hardhat test", {
         cwd: WORKSPACE_DIR,
         encoding: "utf-8",
         stdio: "inherit",
         timeout: 600000,
       });
 
-      console.log("Hardhat tests completed successfully");
+      console.log("Tests completed successfully on hardhat network");
     }, 900000);
   });
 });

@@ -17,6 +17,7 @@ This tutorial teaches you Solidity smart contract development. You'll learn to w
 Before starting, ensure you have:
 
 - Node.js 20+ installed
+- [pallet-revive dev node](https://docs.polkadot.com/smart-contracts/dev-environments/local-dev-node/) (`revive-dev-node`) and `eth-rpc` binaries installed
 - Basic understanding of Solidity programming
 - Familiarity with Ethereum development concepts
 - Understanding of smart contract security principles
@@ -145,7 +146,19 @@ npm test
 
 ### Step 7: Deploying Contracts
 
-Deploy to a local development node:
+Start the pallet-revive dev node (in a separate terminal):
+
+```bash
+npm run node:substrate
+```
+
+Start the ETH-RPC adapter (in another terminal):
+
+```bash
+npm run node:eth-rpc
+```
+
+Deploy to the local dev node:
 
 ```bash
 npm run deploy:local

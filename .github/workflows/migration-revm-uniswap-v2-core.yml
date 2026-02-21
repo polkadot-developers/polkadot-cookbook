@@ -3,9 +3,13 @@ name: REVM Uniswap V2 Core
 on:
   push:
     branches: [master]
-    paths: ['migration/revm/uniswap-v2-core/**']
+    paths:
+      - 'migration/revm/uniswap-v2-core/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['migration/revm/uniswap-v2-core/**']
+    paths:
+      - 'migration/revm/uniswap-v2-core/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
@@ -16,9 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Setup pallet-revive dev node
+        uses: ./.github/actions/setup-revive-dev-node
+        with:
+          polkadot-sdk-version: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
 
       - name: Install npm dependencies
         run: |
@@ -30,14 +44,3 @@ jobs:
           cd migration/revm/uniswap-v2-core
           npm test
         timeout-minutes: 30
-
-  notify-failure:
-    needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
-    with:
-      workflow_name: 'REVM Uniswap V2 Core'
-      guide_path: 'migration/revm/uniswap-v2-core'
-    permissions:
-      issues: write
-      contents: read
