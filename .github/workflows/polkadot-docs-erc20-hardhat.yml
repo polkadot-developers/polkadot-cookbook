@@ -1,0 +1,58 @@
+name: ERC-20 with Hardhat
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/smart-contracts/erc20-hardhat/**'
+      - '!polkadot-docs/smart-contracts/erc20-hardhat/README.md'
+  pull_request:
+    paths:
+      - 'polkadot-docs/smart-contracts/erc20-hardhat/**'
+      - '!polkadot-docs/smart-contracts/erc20-hardhat/README.md'
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache npm dependencies (upstream erc20-hardhat)
+        uses: actions/cache@v4
+        with:
+          path: |
+            polkadot-docs/smart-contracts/erc20-hardhat/.test-workspace/revm-hardhat-examples/erc20-hardhat/node_modules
+          key: ${{ runner.os }}-erc20-hardhat-npm-c546235fde75b10313798f025dab759c00df7720
+
+      - name: Install wrapper dependencies
+        run: |
+          cd polkadot-docs/smart-contracts/erc20-hardhat
+          npm install
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/smart-contracts/erc20-hardhat
+          npm test
+        env:
+          TESTNET_URL: ${{ secrets.TESTNET_URL }}
+          TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
+        timeout-minutes: 25
+
+  post-test:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/smart-contracts/erc20-hardhat/README.md'
+      workflow_name: 'ERC-20 with Hardhat'
+    permissions:
+      contents: read
+      issues: write
