@@ -18,6 +18,7 @@ const ARTIFACT_PATH = join(
   "MyToken.json"
 );
 
+// Environment variables for testnet credentials
 const TESTNET_URL = process.env.TESTNET_URL;
 const TESTNET_PRIVATE_KEY = process.env.TESTNET_PRIVATE_KEY;
 
