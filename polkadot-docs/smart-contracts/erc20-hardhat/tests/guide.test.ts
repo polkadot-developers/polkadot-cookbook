@@ -58,13 +58,33 @@ describe("ERC-20 with Hardhat Guide", () => {
         mkdirSync(WORKSPACE_DIR, { recursive: true });
       }
 
+      const ensurePinnedCommit = () => {
+        try {
+          execSync(`git fetch origin ${PINNED_COMMIT}`, {
+            cwd: REPO_DIR,
+            stdio: "pipe",
+          });
+          execSync(`git checkout ${PINNED_COMMIT}`, {
+            cwd: REPO_DIR,
+            stdio: "inherit",
+          });
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
       if (existsSync(REPO_DIR)) {
-        console.log("Repository already present — checking out pinned commit...");
-        execSync(`git checkout ${PINNED_COMMIT}`, {
-          cwd: REPO_DIR,
-          stdio: "inherit",
-        });
-      } else {
+        const isGitRepo = existsSync(join(REPO_DIR, ".git"));
+        if (isGitRepo && ensurePinnedCommit()) {
+          console.log("Repository already present — checked out pinned commit.");
+        } else {
+          console.log("Removing existing directory (not a repo or missing commit) and cloning fresh...");
+          rmSync(REPO_DIR, { recursive: true, force: true });
+        }
+      }
+
+      if (!existsSync(REPO_DIR)) {
         console.log(`Cloning ${REPO_URL}...`);
         execSync(`git clone ${REPO_URL} ${REPO_DIR}`, { stdio: "inherit" });
         execSync(`git checkout ${PINNED_COMMIT}`, {
