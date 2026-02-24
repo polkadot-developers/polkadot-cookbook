@@ -110,8 +110,8 @@ jobs:
       - name: Add CLI to PATH
         run: echo "${{ github.workspace }}/target/release" >> $GITHUB_PATH
 
-      - name: Install protobuf compiler
-        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler libclang-dev
 
       - name: Cache polkadot tools
         uses: actions/cache@v4
