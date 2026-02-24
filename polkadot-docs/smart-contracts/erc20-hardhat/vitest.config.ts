@@ -20,6 +20,6 @@ export default defineConfig({
       },
     },
     setupFiles: ["./tests/setup.ts"],
-    include: ["tests/guide.test.ts"],
+    include: ["tests/recipe.test.ts"],
   },
 });

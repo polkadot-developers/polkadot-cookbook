@@ -200,11 +200,14 @@ describe("ERC-20 with Hardhat Guide", () => {
   describe("6. Run Hardhat Tests (polkadotTestnet)", () => {
     it("should pass all 6 Hardhat tests against polkadotTestnet", () => {
       console.log("Running Hardhat test suite on polkadotTestnet...");
-      const configPath = join(ERC20_DIR, "hardhat.config.ts");
-      const originalConfig = readFileSync(configPath, "utf-8");
+      const originalConfigPath = join(ERC20_DIR, "hardhat.config.ts");
+      const patchedConfigPath = join(ERC20_DIR, ".hardhat.config.test.ts");
       writeFileSync(
-        configPath,
-        originalConfig.replace(/timeout:\s*40000/, "timeout: 120000"),
+        patchedConfigPath,
+        readFileSync(originalConfigPath, "utf-8").replace(
+          /timeout:\s*40000/,
+          "timeout: 120000"
+        ),
         "utf-8"
       );
 
@@ -212,7 +215,7 @@ describe("ERC-20 with Hardhat Guide", () => {
         "npx hardhat test --network polkadotTestnet",
         {
           cwd: ERC20_DIR,
-          env: hardhatEnv,
+          env: { ...hardhatEnv, HARDHAT_CONFIG: patchedConfigPath },
           encoding: "utf-8",
           timeout: 300000,
         }

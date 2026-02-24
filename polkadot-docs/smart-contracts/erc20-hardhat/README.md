@@ -2,7 +2,7 @@
 title: "ERC-20 with Hardhat"
 description: "Verify the ERC-20 deployment guide using Hardhat from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/smart-contracts/cookbook/smart-contracts/deploy-erc20/erc20-hardhat/"
-source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/smart-contracts/cookbook/smart-contracts/deploy-erc20/erc20-hardhat.md"
+source_repo: "https://github.com/polkadot-developers/polkadot-docs/blob/master/smart-contracts/cookbook/smart-contracts/deploy-erc20/erc20-hardhat.md"
 ---
 
 # ERC-20 with Hardhat
