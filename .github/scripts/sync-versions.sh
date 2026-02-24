@@ -95,7 +95,7 @@ check_and_update \
 check_and_update \
   "Chain Spec Builder" \
   ".parachain_template.crates.chain_spec_builder.version" \
-  ".dependencies.repositories.polkadot_sdk_parachain_template.subdependencies.chain_spec_builder_version"
+  ".dependencies.repositories.polkadot_sdk_parachain_template.subdependencies.staging_chain_spec_builder_version"
 
 check_and_update \
   "Zombienet" \
