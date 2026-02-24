@@ -125,8 +125,8 @@ my-pallet/
 ```
 my-contract/
 ├── README.md              # Contract documentation
-├── package.json           # Hardhat dependencies
-├── hardhat.config.ts      # Hardhat configuration
+├── package.json           # Hardhat dependencies and pallet-revive dev node scripts
+├── hardhat.config.ts      # Hardhat configuration (targets pallet-revive dev node)
 ├── contracts/             # Solidity contracts
 ├── tests/                 # Contract tests
 └── scripts/               # Deployment scripts

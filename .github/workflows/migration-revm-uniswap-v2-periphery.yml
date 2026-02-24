@@ -3,9 +3,11 @@ name: REVM Uniswap V2 Periphery
 on:
   push:
     branches: [master]
-    paths: ['migration/revm/uniswap-v2-periphery/**']
+    paths:
+      - 'migration/revm/uniswap-v2-periphery/**'
   pull_request:
-    paths: ['migration/revm/uniswap-v2-periphery/**']
+    paths:
+      - 'migration/revm/uniswap-v2-periphery/**'
   workflow_dispatch:
 
 jobs:
@@ -30,14 +32,3 @@ jobs:
           cd migration/revm/uniswap-v2-periphery
           npm test
         timeout-minutes: 30
-
-  notify-failure:
-    needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
-    with:
-      workflow_name: 'REVM Uniswap V2 Periphery'
-      guide_path: 'migration/revm/uniswap-v2-periphery'
-    permissions:
-      issues: write
-      contents: read

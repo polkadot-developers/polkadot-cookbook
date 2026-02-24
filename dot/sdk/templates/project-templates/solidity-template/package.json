@@ -5,9 +5,11 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "test:revive": "hardhat test --network localhost",
     "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
     "deploy:testnet": "hardhat run scripts/deploy.ts --network testnet",
-    "node": "hardhat node",
+    "node:substrate": "revive-dev-node --dev",
+    "node:eth-rpc": "eth-rpc --dev",
     "clean": "hardhat clean"
   },
   "keywords": [

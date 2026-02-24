@@ -95,17 +95,17 @@ describe("Uniswap V2 Core REVM Migration", () => {
       console.log("Contracts compiled successfully");
     }, 300000);
 
-    it("should run tests on hardhat network", () => {
-      console.log("Running tests on hardhat network...");
+    it("should run tests on pallet-revive dev node", () => {
+      console.log("Running tests on pallet-revive dev node...");
 
-      execSync("npm test", {
+      execSync("npx hardhat test --network localhost", {
         cwd: WORKSPACE_DIR,
         encoding: "utf-8",
         stdio: "inherit",
         timeout: 600000,
       });
 
-      console.log("Hardhat tests completed successfully");
+      console.log("Tests completed successfully on pallet-revive dev node");
     }, 900000);
   });
 });
