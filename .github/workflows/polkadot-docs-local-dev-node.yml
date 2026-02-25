@@ -31,7 +31,9 @@ jobs:
           echo "POLKADOT_SDK_TAG=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Set up Rust stable toolchain
-        run: rustup show
+        run: |
+          rustup show
+          rustup target add wasm32-unknown-unknown
 
       - uses: actions/setup-node@v4
         with:

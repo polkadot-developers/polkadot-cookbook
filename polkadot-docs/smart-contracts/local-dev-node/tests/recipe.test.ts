@@ -130,6 +130,20 @@ describe("Local Development Node Guide", () => {
       expect(result).toMatch(/git version/);
       console.log(`Git: ${result}`);
     });
+
+    // The WASM runtime crates inside polkadot-sdk require this target.
+    // A missing target causes a cryptic build failure deep into compilation;
+    // checking it here surfaces the problem immediately with a clear message.
+    it("should have wasm32-unknown-unknown target installed", () => {
+      const targets = execSync("rustup target list --installed", {
+        encoding: "utf-8",
+      });
+      expect(
+        targets,
+        "Run: rustup target add wasm32-unknown-unknown"
+      ).toContain("wasm32-unknown-unknown");
+      console.log("wasm32-unknown-unknown: installed");
+    });
   });
 
   // ==================== 2. CLONE POLKADOT-SDK ====================
@@ -161,21 +175,24 @@ describe("Local Development Node Guide", () => {
     }, 300000); // shallow clone takes ~2-5 min
 
     // Verify both target crates exist in the workspace before attempting to build.
+    // NOTE: `cargo metadata` for polkadot-sdk emits several MB of JSON which
+    // overflows execSync's default 1 MB buffer (ENOBUFS). Use grep over
+    // Cargo.toml files instead — it's faster and avoids the buffer issue.
     it("should contain the revive-dev-node crate", () => {
       const result = execSync(
-        `cargo metadata --no-deps --format-version 1 2>&1`,
+        `grep -r --include="Cargo.toml" 'name = "revive-dev-node"' .`,
         { cwd: SDK_DIR, encoding: "utf-8" }
       );
-      expect(result).toContain("revive-dev-node");
+      expect(result.trim()).toBeTruthy();
       console.log("revive-dev-node crate found in workspace.");
     });
 
     it("should contain the pallet-revive-eth-rpc crate", () => {
       const result = execSync(
-        `cargo metadata --no-deps --format-version 1 2>&1`,
+        `grep -r --include="Cargo.toml" 'name = "pallet-revive-eth-rpc"' .`,
         { cwd: SDK_DIR, encoding: "utf-8" }
       );
-      expect(result).toContain("pallet-revive-eth-rpc");
+      expect(result.trim()).toBeTruthy();
       console.log("pallet-revive-eth-rpc crate found in workspace.");
     });
   });
