@@ -16,7 +16,7 @@ This folder contains verification tests for the [contracts-example](https://gith
 2. **Clone**: The external recipe repo is cloned
 3. **Install**: `npm ci` installs dependencies
 4. **Compile**: `npx hardhat compile` compiles Solidity contracts
-5. **Test**: `npx hardhat test` passes all tests
+5. **Test**: `npx hardhat test --network localhost` passes all tests against pallet-revive dev node
 
 ## Running Tests
 
