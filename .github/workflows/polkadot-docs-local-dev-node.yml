@@ -1,0 +1,97 @@
+name: Local Development Node
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/smart-contracts/local-dev-node/**'
+      - '!polkadot-docs/smart-contracts/local-dev-node/README.md'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/smart-contracts/local-dev-node/**'
+      - '!polkadot-docs/smart-contracts/local-dev-node/README.md'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    # Guard: only run in the canonical repository to protect CI secrets
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Read the polkadot-sdk release tag from versions.yml so the test
+      # and caches stay in sync with the rest of the cookbook.
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_TAG=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+
+      - name: Set up Rust stable toolchain
+        run: rustup show
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The revive-dev-node and eth-rpc crates depend on clang/libclang for
+      # bindgen, and on protobuf-compiler for prost code generation.
+      - name: Install system build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler clang libclang-dev make
+
+      # Cache the Cargo package registry to avoid re-downloading crates on
+      # every run. Key rotates when versions.yml changes (new SDK tag).
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-registry-${{ steps.versions.outputs.POLKADOT_SDK_TAG }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      # Cache the entire test workspace (cloned SDK source + compiled binaries).
+      # A cache hit on the SDK tag means the binaries exist and the test will
+      # skip both the clone checkout and the cargo build steps automatically.
+      - name: Cache SDK workspace (source + release binaries)
+        uses: actions/cache@v4
+        with:
+          path: polkadot-docs/smart-contracts/local-dev-node/.test-workspace
+          key: ${{ runner.os }}-local-dev-node-workspace-${{ steps.versions.outputs.POLKADOT_SDK_TAG }}
+
+      - name: Install wrapper dependencies
+        run: |
+          cd polkadot-docs/smart-contracts/local-dev-node
+          npm ci
+
+      # POLKADOT_SDK_TAG is read inside recipe.test.ts via process.env.
+      # The test skips cargo build steps when pre-built binaries are cached.
+      - name: Run tests
+        run: |
+          cd polkadot-docs/smart-contracts/local-dev-node
+          npm test
+        env:
+          POLKADOT_SDK_TAG: ${{ steps.versions.outputs.POLKADOT_SDK_TAG }}
+        timeout-minutes: 120  # cold build: ~60 min per binary; warm build: ~5 min
+
+  post-test:
+    needs: test
+    # Only file issues on master failures — not on every PR
+    if: >
+      github.repository == 'polkadot-developers/polkadot-cookbook' &&
+      always() &&
+      github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/smart-contracts/local-dev-node/README.md'
+      workflow_name: 'Local Development Node'
+    permissions:
+      contents: read
+      issues: write
