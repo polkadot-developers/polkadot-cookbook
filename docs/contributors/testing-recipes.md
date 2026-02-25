@@ -893,6 +893,89 @@ pkill -f chopsticks
 
 ---
 
+## Precompile Testing with Zombienet + eth-rpc
+
+Solidity contracts that interact with Asset Hub precompiles (XCM precompile, XC20/ERC-20 precompiles) cannot be tested with `setup-revive-dev-node` because the standalone dev node does not register runtime precompiles like the XCM precompile. By spinning up a full relay chain + Asset Hub parachain via Zombienet and bridging it through `eth-rpc`, Hardhat tests can interact with real precompiles at their deployed addresses.
+
+### When to Use This vs `setup-revive-dev-node`
+
+| Scenario | Action |
+|----------|--------|
+| Standard Solidity contracts (no precompiles) | Use `setup-revive-dev-node` |
+| Contracts calling precompiles (XCM, XC20, etc.) | Use `setup-zombienet-eth-rpc` |
+
+### Architecture
+
+```
+Zombienet (relay + parachain) → eth-rpc (HTTP :8545) → Hardhat tests
+```
+
+Zombienet spawns a Westend relay chain (2 validators) and an Asset Hub parachain (1 collator on port 9988). The `eth-rpc` adapter bridges the collator's WS endpoint to an Ethereum-compatible JSON-RPC endpoint that Hardhat connects to.
+
+### Zombienet Network Topology
+
+The bundled `zombienet.toml` defines a Westend-local relay chain with Asset Hub:
+
+```toml
+[settings]
+timeout = 600
+
+[relaychain]
+default_command = "polkadot"
+chain = "westend-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 1000
+chain = "asset-hub-westend-local"
+cumulus_based = true
+
+  [[parachains.collators]]
+  name = "collator1"
+  validator = true
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+  rpc_port = 9988
+```
+
+### Hardhat Config
+
+Same `localhost:8545` pattern as the dev node setup:
+
+```typescript
+networks: {
+  localhost: {
+    url: "http://localhost:8545",
+  },
+}
+```
+
+### CI Workflow Pattern
+
+```yaml
+- name: Setup Zombienet + eth-rpc
+  uses: ./.github/actions/setup-zombienet-eth-rpc
+  with:
+    polkadot-sdk-version: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
+    zombienet-version: ${{ steps.versions.outputs.ZOMBIENET_VERSION }}
+```
+
+### Troubleshooting
+
+- **Slow CI runs**: Expected — Zombienet spawns a full relay chain + parachain network. The parachain needs ~3 minutes to start producing blocks. Binaries are cached between runs.
+- **Parachain not producing blocks**: Check relay chain logs for finality issues. Both validators (alice, bob) must be running.
+- **eth-rpc fails to connect**: Verify the collator WS endpoint is available on port 9988 and producing blocks before starting eth-rpc.
+- **Precompile returns `0x`**: Ensure XCM messages use version 5 or later (`0x05` prefix). The precompile rejects earlier versions.
+
+---
+
 ## Integration Testing
 
 ### Multi-Step Workflows
