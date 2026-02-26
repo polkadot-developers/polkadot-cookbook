@@ -131,9 +131,9 @@ describe("Local Development Node Guide", () => {
       console.log(`Git: ${result}`);
     });
 
-    // The WASM runtime crates inside polkadot-sdk require this target.
-    // A missing target causes a cryptic build failure deep into compilation;
-    // checking it here surfaces the problem immediately with a clear message.
+    // The Substrate WASM builder requires both the wasm32-unknown-unknown target
+    // and the rust-src component. Missing either causes a cryptic build failure
+    // deep into compilation; checking here surfaces problems immediately.
     it("should have wasm32-unknown-unknown target installed", () => {
       const targets = execSync("rustup target list --installed", {
         encoding: "utf-8",
@@ -143,6 +143,17 @@ describe("Local Development Node Guide", () => {
         "Run: rustup target add wasm32-unknown-unknown"
       ).toContain("wasm32-unknown-unknown");
       console.log("wasm32-unknown-unknown: installed");
+    });
+
+    it("should have rust-src component installed", () => {
+      const components = execSync("rustup component list --installed", {
+        encoding: "utf-8",
+      });
+      expect(
+        components,
+        "Run: rustup component add rust-src"
+      ).toContain("rust-src");
+      console.log("rust-src: installed");
     });
   });
 

@@ -34,6 +34,7 @@ jobs:
         run: |
           rustup show
           rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
 
       - uses: actions/setup-node@v4
         with:
