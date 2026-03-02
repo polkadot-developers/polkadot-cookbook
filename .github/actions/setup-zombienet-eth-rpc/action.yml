@@ -3,7 +3,7 @@ description: 'Spin up Asset Hub via Zombienet (relay + parachain) and bridge thr
 
 inputs:
   polkadot-sdk-version:
-    description: 'Polkadot SDK release tag (e.g. polkadot-stable2512-2)'
+    description: 'Polkadot SDK release tag (e.g. polkadot-stable2512-1)'
     required: true
   zombienet-version:
     description: 'Zombienet release tag (e.g. v1.3.138)'
