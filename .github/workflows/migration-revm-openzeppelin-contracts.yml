@@ -3,9 +3,13 @@ name: REVM OpenZeppelin Contracts
 on:
   push:
     branches: [master]
-    paths: ['migration/revm/openzeppelin-contracts/**']
+    paths:
+      - 'migration/revm/openzeppelin-contracts/**'
+      - 'versions.yml'
   pull_request:
-    paths: ['migration/revm/openzeppelin-contracts/**']
+    paths:
+      - 'migration/revm/openzeppelin-contracts/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
@@ -16,9 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Setup pallet-revive dev node
+        uses: ./.github/actions/setup-revive-dev-node
+        with:
+          polkadot-sdk-version: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
 
       - name: Install npm dependencies
         run: |
@@ -31,13 +45,14 @@ jobs:
           npm test
         timeout-minutes: 30
 
-  notify-failure:
+  post-test:
     needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && failure() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/notify-docs-failure.yml
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
     with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'migration/revm/openzeppelin-contracts/README.md'
       workflow_name: 'REVM OpenZeppelin Contracts'
-      guide_path: 'migration/revm/openzeppelin-contracts'
     permissions:
-      issues: write
       contents: read
+      issues: write
