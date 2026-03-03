@@ -1,0 +1,14 @@
+{
+  "name": "local-dev-node",
+  "version": "1.0.0",
+  "description": "Test verification for the Local Development Node guide",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  }
+}
