@@ -28,7 +28,7 @@ jobs:
       - name: Load versions
         id: versions
         run: |
-          echo "POLKADOT_SDK_TAG=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Set up Rust stable toolchain
         run: |
@@ -55,7 +55,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ runner.os }}-cargo-registry-${{ steps.versions.outputs.POLKADOT_SDK_TAG }}
+          key: ${{ runner.os }}-cargo-registry-${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
           restore-keys: |
             ${{ runner.os }}-cargo-registry-
 
@@ -66,21 +66,21 @@ jobs:
         uses: actions/cache@v4
         with:
           path: polkadot-docs/smart-contracts/local-dev-node/.test-workspace
-          key: ${{ runner.os }}-local-dev-node-workspace-${{ steps.versions.outputs.POLKADOT_SDK_TAG }}
+          key: ${{ runner.os }}-local-dev-node-workspace-${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
 
       - name: Install wrapper dependencies
         run: |
           cd polkadot-docs/smart-contracts/local-dev-node
           npm ci
 
-      # POLKADOT_SDK_TAG is read inside recipe.test.ts via process.env.
+      # POLKADOT_SDK_VERSION is read inside recipe.test.ts via process.env.
       # The test skips cargo build steps when pre-built binaries are cached.
       - name: Run tests
         run: |
           cd polkadot-docs/smart-contracts/local-dev-node
           npm test
         env:
-          POLKADOT_SDK_TAG: ${{ steps.versions.outputs.POLKADOT_SDK_TAG }}
+          POLKADOT_SDK_VERSION: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
         timeout-minutes: 120  # cold build: ~60 min per binary; warm build: ~5 min
 
   post-test:

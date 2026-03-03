@@ -10,8 +10,14 @@ import { join } from "path";
 const SDK_REPO_URL = "https://github.com/paritytech/polkadot-sdk.git";
 
 // Pinned to the release tracked in versions.yml (polkadot_sdk.release_tag).
-// Injected by the CI workflow via POLKADOT_SDK_TAG; falls back for local runs.
-const SDK_TAG = process.env.POLKADOT_SDK_TAG ?? "polkadot-stable2512-1";
+const SDK_TAG = process.env.POLKADOT_SDK_VERSION;
+if (!SDK_TAG) {
+  throw new Error(
+    "POLKADOT_SDK_VERSION env var is required. " +
+    "Set it or run via CI. " +
+    "Example: POLKADOT_SDK_VERSION=polkadot-stable2512-1 npm test"
+  );
+}
 
 const WORKSPACE_DIR  = join(process.cwd(), ".test-workspace");
 const SDK_DIR        = join(WORKSPACE_DIR, "polkadot-sdk");
