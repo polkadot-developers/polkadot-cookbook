@@ -1,0 +1,26 @@
+[settings]
+timeout = 600
+
+[relaychain]
+default_command = "polkadot"
+chain = "westend-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 1000
+chain = "asset-hub-westend-local"
+cumulus_based = true
+
+  [[parachains.collators]]
+  name = "collator1"
+  validator = true
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+  rpc_port = 9988

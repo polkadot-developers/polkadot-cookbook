@@ -1,14 +1,16 @@
-name: Contracts Example Recipe
+name: Contracts Precompile Example Recipe
 
 on:
   push:
     branches: [master]
     paths:
-      - 'recipes/contracts/contracts-example/**'
+      - 'recipes/contracts/contracts-precompile-example/**'
+      - '.github/actions/setup-zombienet-eth-rpc/**'
       - 'versions.yml'
   pull_request:
     paths:
-      - 'recipes/contracts/contracts-example/**'
+      - 'recipes/contracts/contracts-precompile-example/**'
+      - '.github/actions/setup-zombienet-eth-rpc/**'
       - 'versions.yml'
   workflow_dispatch:
 
@@ -24,35 +26,37 @@ jobs:
         id: versions
         run: |
           echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+          echo "ZOMBIENET_VERSION=$(yq '.zombienet.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Setup pallet-revive dev node
-        uses: ./.github/actions/setup-revive-dev-node
+      - name: Setup Zombienet + eth-rpc
+        uses: ./.github/actions/setup-zombienet-eth-rpc
         with:
           polkadot-sdk-version: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
+          zombienet-version: ${{ steps.versions.outputs.ZOMBIENET_VERSION }}
 
       - name: Install test dependencies
         run: |
-          cd recipes/contracts/contracts-example
+          cd recipes/contracts/contracts-precompile-example
           npm ci
 
       - name: Run tests
         run: |
-          cd recipes/contracts/contracts-example
+          cd recipes/contracts/contracts-precompile-example
           npm test
         timeout-minutes: 15
 
   post-test:
     needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && success() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/post-cleanup.yml
     with:
       test_result: ${{ needs.test.result }}
-      readme_path: 'recipes/contracts/contracts-example/README.md'
-      workflow_name: 'Contracts Example Recipe'
+      readme_path: 'recipes/contracts/contracts-precompile-example/README.md'
     permissions:
-      contents: read
+      contents: write
       issues: write
+      pull-requests: write

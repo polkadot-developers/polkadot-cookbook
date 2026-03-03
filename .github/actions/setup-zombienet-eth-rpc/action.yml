@@ -1,0 +1,112 @@
+name: 'Setup Zombienet + ETH-RPC'
+description: 'Spin up Asset Hub via Zombienet (relay + parachain) and bridge through eth-rpc for precompile testing'
+
+inputs:
+  polkadot-sdk-version:
+    description: 'Polkadot SDK release tag (e.g. polkadot-stable2512-1)'
+    required: true
+  zombienet-version:
+    description: 'Zombienet release tag (e.g. v1.3.138)'
+    required: true
+  eth-rpc-port:
+    description: 'HTTP port for eth-rpc'
+    required: false
+    default: '8545'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache Zombienet binary
+      id: cache-zombienet
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/bin/zombienet
+        key: zombienet-${{ inputs.zombienet-version }}-${{ runner.os }}
+
+    - name: Download Zombienet binary
+      if: steps.cache-zombienet.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/.local/bin
+        curl -L -o ~/.local/bin/zombienet \
+          "https://github.com/paritytech/zombienet/releases/download/${{ inputs.zombienet-version }}/zombienet-linux-x64"
+        chmod +x ~/.local/bin/zombienet
+
+    - name: Cache polkadot-sdk binaries
+      id: cache-sdk
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.local/bin/polkadot
+          ~/.local/bin/polkadot-execute-worker
+          ~/.local/bin/polkadot-prepare-worker
+          ~/.local/bin/polkadot-parachain
+          ~/.local/bin/eth-rpc
+        key: polkadot-sdk-zombienet-${{ inputs.polkadot-sdk-version }}-${{ runner.os }}
+
+    - name: Download polkadot-sdk binaries
+      if: steps.cache-sdk.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/.local/bin
+        BASE="https://github.com/paritytech/polkadot-sdk/releases/download/${{ inputs.polkadot-sdk-version }}"
+        for bin in polkadot polkadot-execute-worker polkadot-prepare-worker polkadot-parachain eth-rpc; do
+          echo "Downloading $bin..."
+          curl -L -o ~/.local/bin/$bin "$BASE/$bin"
+          chmod +x ~/.local/bin/$bin
+        done
+
+    - name: Add binaries to PATH
+      shell: bash
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Start Zombienet network
+      shell: bash
+      run: |
+        zombienet --provider native spawn ${{ github.action_path }}/zombienet.toml &
+        echo "Zombienet spawning in background..."
+
+    - name: Wait for parachain to produce blocks
+      shell: bash
+      run: |
+        echo "Waiting for Asset Hub parachain to produce blocks on port 9988..."
+        for i in $(seq 1 60); do
+          BLOCK=$(curl -s -X POST -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","method":"chain_getHeader","params":[],"id":1}' \
+            http://127.0.0.1:9988 2>/dev/null \
+            | python3 -c "import json,sys; print(int(json.load(sys.stdin)['result']['number'],16))" 2>/dev/null || echo "0")
+          if [ "$BLOCK" -gt 0 ]; then
+            echo "Parachain producing blocks (block #$BLOCK)"
+            break
+          fi
+          if [ "$i" -eq 60 ]; then
+            echo "Parachain failed to produce blocks within 600 seconds"
+            exit 1
+          fi
+          echo "Attempt $i/60 - waiting 10s..."
+          sleep 10
+        done
+
+    - name: Start eth-rpc
+      shell: bash
+      run: |
+        eth-rpc --node-rpc-url ws://127.0.0.1:9988 --rpc-port ${{ inputs.eth-rpc-port }} &
+        echo "eth-rpc started in background"
+
+    - name: Wait for ETH-RPC endpoint
+      shell: bash
+      run: |
+        echo "Waiting for ETH-RPC endpoint at http://localhost:${{ inputs.eth-rpc-port }}..."
+        for i in $(seq 1 30); do
+          if curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+            http://localhost:${{ inputs.eth-rpc-port }} | grep -q "200"; then
+            echo "ETH-RPC endpoint is ready"
+            exit 0
+          fi
+          echo "Attempt $i/30 - waiting 2s..."
+          sleep 2
+        done
+        echo "ETH-RPC endpoint failed to start within 60 seconds"
+        exit 1
