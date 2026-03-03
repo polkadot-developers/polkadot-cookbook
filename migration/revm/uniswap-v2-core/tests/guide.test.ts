@@ -98,7 +98,7 @@ describe("Uniswap V2 Core REVM Migration", () => {
     it("should run tests on pallet-revive dev node", () => {
       console.log("Running tests on pallet-revive dev node...");
 
-      execSync("npx hardhat test --network localhost", {
+      execSync("npx hardhat test --network local", {
         cwd: WORKSPACE_DIR,
         encoding: "utf-8",
         stdio: "inherit",

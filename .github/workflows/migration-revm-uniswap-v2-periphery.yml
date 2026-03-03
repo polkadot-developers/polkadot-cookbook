@@ -5,9 +5,11 @@ on:
     branches: [master]
     paths:
       - 'migration/revm/uniswap-v2-periphery/**'
+      - 'versions.yml'
   pull_request:
     paths:
       - 'migration/revm/uniswap-v2-periphery/**'
+      - 'versions.yml'
   workflow_dispatch:
 
 jobs:
@@ -18,9 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Setup pallet-revive dev node
+        uses: ./.github/actions/setup-revive-dev-node
+        with:
+          polkadot-sdk-version: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
 
       - name: Install npm dependencies
         run: |
