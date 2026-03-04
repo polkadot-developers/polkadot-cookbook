@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "child_process";
-import { existsSync, rmSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, rmSync } from "fs";
 import { join } from "path";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
@@ -53,12 +53,6 @@ describe("Uniswap V2 Periphery REVM Migration", () => {
 
       expect(existsSync(join(WORKSPACE_DIR, "package.json"))).toBe(true);
       expect(existsSync(join(WORKSPACE_DIR, "hardhat.config.ts"))).toBe(true);
-
-      // Patch local network URL: eth-rpc binds to IPv6 [::1]:8545,
-      // so 127.0.0.1 (IPv4) won't reach it — use localhost instead
-      const configPath = join(WORKSPACE_DIR, "hardhat.config.ts");
-      const config = readFileSync(configPath, "utf-8");
-      writeFileSync(configPath, config.replace("http://127.0.0.1:8545", "http://localhost:8545"));
 
       console.log("Repository cloned successfully");
     }, 120000);
