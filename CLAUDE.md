@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **`dot` CLI** — interactive scaffolding tool for Polkadot projects
 2. **`dot` SDK** — library powering the CLI, usable programmatically
 3. **`recipes/`** — Node.js/Vitest test harnesses that validate external recipe repos
-4. **`polkadot-docs/`** — tutorial markdown content for docs.polkadot.com
+4. **`polkadot-docs/`** — Node.js/Vitest test harnesses that validate Polkadot documentation guides (same pattern as `recipes/`; subdirs: `chain-interactions/`, `networks/`, `parachains/`, `smart-contracts/`, `shared/`)
+5. **`migration/revm/`** — test harnesses for REVM migration guides (Uniswap V2 core/periphery)
 
 Rust toolchain: `1.91` (pinned in `rust-toolchain.toml`)
 
@@ -69,7 +70,7 @@ Features `fs`, `test_runner`, `query` are gated and not yet in the public API.
 
 ### `dot/cli/` — Binary
 
-Thin wrapper around SDK using `clap` for arg parsing and `cliclack` for interactive prompts. Subcommands: `create`, `contract`, `test`.
+Thin wrapper around SDK using `clap` for arg parsing and `cliclack` for interactive prompts. Subcommands: `create`, `contract`, `parachain`, `test`.
 
 ### `recipes/`
 
@@ -78,9 +79,9 @@ Each recipe is a standalone Node.js project:
 - `tests/recipe.test.ts` — clones external repo at pinned tag, installs, builds, tests
 - `package.json` — `npm test` entry point
 
-### 5 Development Pathways
+### 6 Development Pathways
 
-`Parachains` | `Pallets` | `Contracts` | `Transactions` | `Networks` (XCM also covered)
+`parachains` | `pallets` | `contracts` | `transactions` | `cross-chain-transactions` | `networks`
 
 ### Testing Strategy
 
@@ -91,3 +92,8 @@ Each recipe is a standalone Node.js project:
 - **Coverage threshold**: 80% for SDK (`cargo-llvm-cov`)
 
 Use `#[serial]` from `serial_test` when tests share filesystem state.
+
+### Key Files
+
+- **`versions.yml`** — single source of truth for all dependency versions (`polkadot-sdk` release tag, `zombienet` version, template versions, etc.). All CI workflows and test harnesses read from here. Update this file when bumping dependencies.
+- **`.github/actions/setup-revive-dev-node/`** — reusable composite action that builds, caches, and starts the pallet-revive dev node + eth-rpc adapter for REVM migration tests.
