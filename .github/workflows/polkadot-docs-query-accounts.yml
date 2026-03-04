@@ -26,10 +26,48 @@ jobs:
         with:
           node-version: '22'
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: subxt-cli
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            polkadot-docs/chain-interactions/query-accounts/tests/subxt-query-account/target
+          key: ${{ runner.os }}-cargo-query-accounts-${{ hashFiles('polkadot-docs/chain-interactions/query-accounts/tests/subxt-query-account/Cargo.toml') }}
+
       - name: Install npm dependencies
         run: |
           cd polkadot-docs/chain-interactions/query-accounts
           npm ci
+
+      - name: Generate PAPI descriptors
+        run: |
+          cd polkadot-docs/chain-interactions/query-accounts
+          npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+
+      - name: Install Python dependencies
+        run: pip install substrate-interface
+
+      - name: Download Subxt metadata
+        run: |
+          cd polkadot-docs/chain-interactions/query-accounts/tests/subxt-query-account
+          subxt metadata --url wss://asset-hub-paseo.dotters.network -o polkadot_testnet_metadata.scale
+
+      - name: Build Subxt project
+        run: |
+          cd polkadot-docs/chain-interactions/query-accounts/tests/subxt-query-account
+          cargo build
+        timeout-minutes: 10
 
       - name: Run tests
         run: |

@@ -7,9 +7,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@dedot/chaintypes": "^0.242.0",
     "@polkadot/api": "^15.8.1",
     "dedot": "^1.0.4",
-    "@dedot/chaintypes": "^0.242.0"
+    "polkadot-api": "^1.23.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

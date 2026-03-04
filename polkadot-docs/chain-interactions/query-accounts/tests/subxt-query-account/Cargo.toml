@@ -1,0 +1,10 @@
+[workspace]
+
+[package]
+name = "subxt-query-account"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+subxt = "0.44.0"
+tokio = { version = "1.36.0", features = ["macros", "rt"] }
