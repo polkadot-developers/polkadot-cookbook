@@ -2,98 +2,65 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Build & Test Commands
 
-**Polkadot Cookbook** is a Rust monorepo containing:
-1. **`dot` CLI** — interactive scaffolding tool for Polkadot projects
-2. **`dot` SDK** — library powering the CLI, usable programmatically
-3. **`recipes/`** — Node.js/Vitest test harnesses that validate external recipe repos
-4. **`polkadot-docs/`** — Node.js/Vitest test harnesses that validate Polkadot documentation guides (same pattern as `recipes/`; subdirs: `chain-interactions/`, `networks/`, `parachains/`, `smart-contracts/`, `shared/`)
-5. **`migration/revm/`** — test harnesses for REVM migration guides (Uniswap V2 core/periphery)
-
-Rust toolchain: `1.91` (pinned in `rust-toolchain.toml`)
-
-## Commands
-
-### Rust (SDK & CLI)
+### Rust (dot SDK & CLI)
 
 ```bash
-# Build
-cargo build --release --bin dot
-
-# Format check
 cargo fmt --check --package sdk
-
-# Lint
 cargo clippy --package sdk --locked -- -D warnings
+cargo build --workspace --locked --verbose
 
-# SDK unit tests
-cargo test --package sdk --lib
+# SDK tests (use --test-threads=1, tests share filesystem state)
+cargo test --package sdk --lib --locked --verbose -- --test-threads=1
+cargo test --package sdk --test integration_test --locked --verbose -- --test-threads=1
+cargo test --package sdk --doc --locked --verbose
 
-# SDK integration tests
-cargo test --package sdk --test integration_test
+# CLI validation
+cargo run --package cli --locked -- create --title "Test" --skip-install --no-git --non-interactive
 
-# SDK doc tests
-cargo test --package sdk --doc
+# Pathway integration tests (slow, ~90 min cold, must use --release --ignored)
+cargo test --package cli --test pathway_integration_tests --release -- --ignored --nocapture
 
-# Template/pathway integration tests (slow, ~90 min cold)
-cargo test --package cli --test pathway_integration_tests -- --ignored
+# Coverage (80% threshold enforced for SDK)
+cargo llvm-cov --package sdk --locked --summary-only -- --test-threads=1
 ```
 
-### Recipe Test Harnesses (Node.js)
+### Node.js Test Harnesses (recipes, polkadot-docs, migration)
 
-Each recipe under `recipes/{pathway}/{name}/` is independently runnable:
+Each harness is a standalone npm project:
 
 ```bash
-cd recipes/contracts/contracts-example
+cd recipes/{pathway}/{recipe-name}   # or polkadot-docs/... or migration/...
 npm ci && npm test
 ```
 
-These harnesses clone an external GitHub repo, build it, and run its tests.
-
 ## Architecture
 
-### `dot/sdk/` — Library
+**Rust workspace** (`dot/`): The `dot` CLI wraps the SDK library. CLI uses `clap` + `cliclack` for interactive prompts; SDK is pure library with no UI. Default cargo member is `cli` — bare `cargo build` only builds the CLI; use `--package sdk` to target the SDK.
 
-| Module | Purpose |
-|--------|---------|
-| `config/` | `ProjectConfig`, `ProjectType` (enum of 5 pathways), validation |
-| `scaffold/` | `Bootstrap` + `Scaffold` — project generation logic |
-| `templates/` | Embedded project templates (README, test harness) per pathway |
-| `git/` | `git2`-based operations (init, commit, push) |
-| `metadata/` | Project detection and YAML front matter parsing |
-| `dependencies/` | Checks for required tools per pathway (e.g. `cargo`, `node`) |
-| `error.rs` | `CookbookError` enum — all operations return `Result<T, CookbookError>` |
-| `constants.rs` | Shared constants (brand color `#E6007A`, repo URLs, etc.) |
+**Test harnesses** (`recipes/`, `polkadot-docs/`, `migration/`): Standalone Node.js/Vitest projects that clone external repos at pinned versions, install, build, and run their tests. They verify that external code and documentation guides actually work. Recipe tests pin by **git tag**; polkadot-docs tests pin by **commit SHA**.
 
-Features `fs`, `test_runner`, `query` are gated and not yet in the public API.
+**`versions.yml`**: Single source of truth for pinned dependency versions (polkadot-sdk release tag, parachain template version, zombienet version). Referenced by CI workflows and `polkadot-docs/shared/load-variables.ts` (shared utility that parses versions at test runtime). Changes here trigger downstream CI runs.
 
-### `dot/cli/` — Binary
+**CI composite actions** (`.github/actions/`): Reusable actions like `setup-revive-dev-node` (builds/caches pallet-revive dev node + eth-rpc adapter) and `setup-zombienet-eth-rpc`. Used by recipe and migration workflows.
 
-Thin wrapper around SDK using `clap` for arg parsing and `cliclack` for interactive prompts. Subcommands: `create`, `contract`, `parachain`, `test`.
+## Key Conventions
 
-### `recipes/`
+- Rust toolchain pinned to **1.91** (`rust-toolchain.toml`)
+- Rust formatting: `max_width = 100`, `wrap_comments = true` (`rustfmt.toml`)
+- SDK tests require `--test-threads=1` and use `#[serial]` from `serial_test` (shared filesystem state)
+- Recipe source code lives in **external repos** (`brunopgalvao/recipe-*`); this repo only contains test harnesses
+- Test file naming: recipes use `recipe.test.ts`, migrations use `guide.test.ts`
+- CI workflows are **path-filtered** per component (e.g., `recipe-contracts-example.yml` only triggers on `recipes/contracts/contracts-example/**`)
+- `versions.yml` changes also trigger downstream workflow runs
+- Commit both `Cargo.lock` and `package-lock.json` — locked dependencies are intentional
+- No local git hooks — run `cargo fmt` and `cargo clippy` manually before pushing
+- Workspace version: check `Cargo.toml` `[workspace.package]`
 
-Each recipe is a standalone Node.js project:
-- `vitest.config.ts` — test runner config
-- `tests/recipe.test.ts` — clones external repo at pinned tag, installs, builds, tests
-- `package.json` — `npm test` entry point
+## Workflow
 
-### 6 Development Pathways
-
-`parachains` | `pallets` | `contracts` | `transactions` | `cross-chain-transactions` | `networks`
-
-### Testing Strategy
-
-- **SDK unit tests**: in `#[cfg(test)]` blocks within each module
-- **SDK integration tests**: `dot/sdk/tests/integration_test.rs`
-- **Pathway integration tests**: `dot/cli/tests/pathway_integration_tests.rs` — runs `dot create` end-to-end (marked `#[ignore]`, run explicitly)
-- **Recipe tests**: per-recipe `npm test` (CI runs these in parallel)
-- **Coverage threshold**: 80% for SDK (`cargo-llvm-cov`)
-
-Use `#[serial]` from `serial_test` when tests share filesystem state.
-
-### Key Files
-
-- **`versions.yml`** — single source of truth for all dependency versions (`polkadot-sdk` release tag, `zombienet` version, template versions, etc.). All CI workflows and test harnesses read from here. Update this file when bumping dependencies.
-- **`.github/actions/setup-revive-dev-node/`** — reusable composite action that builds, caches, and starts the pallet-revive dev node + eth-rpc adapter for REVM migration tests.
+- Never work directly on the `master` branch — create feature branches
+- Keep related changes on one branch; don't split iterative fixes across branches/PRs
+- Conventional commits: `feat:`, `fix:`, `chore:`, etc.
+- When adding a `polkadot-docs/` test harness, open a **companion PR** in [`polkadot-developers/polkadot-docs`](https://github.com/polkadot-developers/polkadot-docs) to add the CI badge to the corresponding documentation page
