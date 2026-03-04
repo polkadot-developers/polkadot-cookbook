@@ -28,3 +28,33 @@ parachain_template:
 zombienet:
   version: v1.3.138
   repository: https://github.com/paritytech/zombienet
+
+# Crates (Rust)
+crates:
+  subxt:
+    name: subxt
+    version: "0.44.2"
+  tokio:
+    name: tokio
+    version: "1.44.2"
+
+# JavaScript / TypeScript packages
+javascript_packages:
+  polkadot_api:
+    name: polkadot-api
+    version: "1.23.3"
+  polkadot_js_api:
+    name: "@polkadot/api"
+    version: "16.5.4"
+  dedot:
+    name: dedot
+    version: "1.0.4"
+  dedot_chaintypes:
+    name: "@dedot/chaintypes"
+    version: "0.242.0"
+
+# Python packages
+python_packages:
+  substrate_interface:
+    name: substrate-interface
+    version: "1.8.1"

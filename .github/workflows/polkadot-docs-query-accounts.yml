@@ -45,14 +45,10 @@ jobs:
             polkadot-docs/chain-interactions/query-accounts/tests/subxt-query-account/target
           key: ${{ runner.os }}-cargo-query-accounts-${{ hashFiles('polkadot-docs/chain-interactions/query-accounts/tests/subxt-query-account/Cargo.toml') }}
 
-      - name: Install npm dependencies
+      - name: Install npm dependencies and generate PAPI descriptors
         run: |
           cd polkadot-docs/chain-interactions/query-accounts
-          npm ci
-
-      - name: Generate PAPI descriptors
-        run: |
-          cd polkadot-docs/chain-interactions/query-accounts
+          npm install
           npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
 
       - name: Install Python dependencies
