@@ -22,6 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load versions
+        id: versions
+        run: |
+          echo "SUBXT_CLI_VERSION=$(yq '.crates.subxt_cli.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "SUBSTRATE_INTERFACE_VERSION=$(yq '.python_packages.substrate_interface.version' versions.yml)" >> $GITHUB_OUTPUT
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -34,7 +40,7 @@ jobs:
 
       - uses: taiki-e/install-action@v2
         with:
-          tool: subxt-cli
+          tool: subxt-cli@${{ steps.versions.outputs.SUBXT_CLI_VERSION }}
 
       - name: Cache cargo registry and build
         uses: actions/cache@v4
@@ -52,7 +58,7 @@ jobs:
           npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
 
       - name: Install Python dependencies
-        run: pip install substrate-interface
+        run: pip install substrate-interface==${{ steps.versions.outputs.SUBSTRATE_INTERFACE_VERSION }}
 
       - name: Download Subxt metadata
         run: |
