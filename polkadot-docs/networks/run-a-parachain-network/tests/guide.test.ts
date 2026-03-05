@@ -13,6 +13,11 @@ const POLKADOT_RELEASE_URL = `https://github.com/paritytech/polkadot-sdk/release
 const POLKADOT_BINARY = join(BIN_DIR, "polkadot");
 const POLKADOT_PREPARE_WORKER = join(BIN_DIR, "polkadot-prepare-worker");
 const POLKADOT_EXECUTE_WORKER = join(BIN_DIR, "polkadot-execute-worker");
+const CHAIN_SPEC_BUILDER = join(BIN_DIR, "chain-spec-builder");
+const CHAIN_SPEC_BUILDER_VERSION = process.env.CHAIN_SPEC_BUILDER_VERSION!;
+const PASEO_RUNTIME_VERSION = process.env.PASEO_RUNTIME_VERSION!;
+const PASEO_RUNTIME_WASM = join(BIN_DIR, "paseo_runtime.compressed.wasm");
+const PASEO_LOCAL_CHAIN_SPEC = join(PROJECT_DIR, "configs", "paseo-local.json");
 const PARACHAIN_BINARY = join(TEMPLATE_DIR, "target/release/parachain-template-node");
 const PID_FILE = join(PROJECT_DIR, "zombienet.pid");
 
@@ -180,8 +185,79 @@ describe("Run a Parachain Network Guide", () => {
     }, 300000);
   });
 
+  // ==================== GENERATE PASEO LOCAL CHAIN SPEC ====================
+  describe("4. Generate Paseo Local Chain Spec", () => {
+    it("should download chain-spec-builder", () => {
+      if (existsSync(CHAIN_SPEC_BUILDER)) {
+        console.log("chain-spec-builder already exists");
+        return;
+      }
+
+      console.log(`Downloading chain-spec-builder v${CHAIN_SPEC_BUILDER_VERSION}...`);
+
+      const platform = process.platform;
+      if (platform !== "linux") {
+        // Install via cargo for non-Linux platforms
+        execSync(
+          `cargo install staging-chain-spec-builder@${CHAIN_SPEC_BUILDER_VERSION} --locked --root ${BIN_DIR}`,
+          { encoding: "utf-8", stdio: "inherit", timeout: 600000 }
+        );
+        // cargo install puts binary in bin/bin/chain-spec-builder
+        const cargoInstallPath = join(BIN_DIR, "bin", "chain-spec-builder");
+        if (existsSync(cargoInstallPath) && !existsSync(CHAIN_SPEC_BUILDER)) {
+          execSync(`mv ${cargoInstallPath} ${CHAIN_SPEC_BUILDER}`);
+        }
+      } else {
+        execSync(
+          `curl -L -o chain-spec-builder ${POLKADOT_RELEASE_URL}/chain-spec-builder`,
+          { cwd: BIN_DIR, encoding: "utf-8", stdio: "inherit", timeout: 300000 }
+        );
+        execSync(`chmod +x chain-spec-builder`, { cwd: BIN_DIR });
+      }
+
+      expect(existsSync(CHAIN_SPEC_BUILDER)).toBe(true);
+      console.log("chain-spec-builder downloaded successfully");
+    }, 600000);
+
+    it("should download Paseo runtime WASM", () => {
+      if (existsSync(PASEO_RUNTIME_WASM)) {
+        console.log("Paseo runtime WASM already exists");
+        return;
+      }
+
+      console.log(`Downloading Paseo runtime ${PASEO_RUNTIME_VERSION}...`);
+      const releaseUrl = `https://github.com/paseo-network/runtimes/releases/download/${PASEO_RUNTIME_VERSION}/paseo_runtime.compressed.wasm`;
+      execSync(
+        `curl -L -o paseo_runtime.compressed.wasm ${releaseUrl}`,
+        { cwd: BIN_DIR, encoding: "utf-8", stdio: "inherit", timeout: 300000 }
+      );
+
+      expect(existsSync(PASEO_RUNTIME_WASM)).toBe(true);
+      console.log("Paseo runtime WASM downloaded successfully");
+    }, 300000);
+
+    it("should generate Paseo local testnet chain spec", () => {
+      if (existsSync(PASEO_LOCAL_CHAIN_SPEC)) {
+        console.log("Paseo local chain spec already exists");
+        return;
+      }
+
+      console.log("Generating Paseo local testnet chain spec...");
+
+      // Generate plain chain spec with local_testnet preset (alice + bob as validators)
+      // Zombienet expects the plain version so it can customize and convert to raw itself
+      execSync(
+        `${CHAIN_SPEC_BUILDER} -c ${PASEO_LOCAL_CHAIN_SPEC} create -r ${PASEO_RUNTIME_WASM} named-preset local_testnet`,
+        { encoding: "utf-8", stdio: "inherit" }
+      );
+
+      expect(existsSync(PASEO_LOCAL_CHAIN_SPEC)).toBe(true);
+      console.log("Paseo local chain spec generated successfully");
+    }, 60000);
+  });
+
   // ==================== CONFIGURE NETWORK ====================
-  describe("4. Configure Network", () => {
+  describe("5. Configure Network", () => {
     it("should have valid network.toml configuration", () => {
       const configPath = join(PROJECT_DIR, "configs", "network.toml");
       expect(existsSync(configPath)).toBe(true);
@@ -190,7 +266,7 @@ describe("Run a Parachain Network Guide", () => {
 
       // Verify essential configuration elements
       expect(config).toContain("[relaychain]");
-      expect(config).toContain('chain = "paseo"');
+      expect(config).toContain('chain_spec_path = "./configs/paseo-local.json"');
       expect(config).toContain("[[relaychain.nodes]]");
       expect(config).toContain('name = "alice"');
       expect(config).toContain("[[parachains]]");
@@ -201,7 +277,7 @@ describe("Run a Parachain Network Guide", () => {
   });
 
   // ==================== SPAWN NETWORK ====================
-  describe("5. Spawn Network", () => {
+  describe("6. Spawn Network", () => {
     it("should spawn the network with zombienet", async () => {
       console.log("Spawning network with Zombienet...");
 

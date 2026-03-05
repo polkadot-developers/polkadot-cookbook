@@ -8,6 +8,8 @@ export default defineConfig({
     env: {
       TEMPLATE_VERSION: vars.TEMPLATE_VERSION,
       POLKADOT_SDK_VERSION: vars.POLKADOT_SDK_VERSION,
+      CHAIN_SPEC_BUILDER_VERSION: vars.CHAIN_SPEC_BUILDER_VERSION,
+      PASEO_RUNTIME_VERSION: vars.PASEO_RUNTIME_VERSION,
     },
     // Run test FILES sequentially (critical - build depends on clone, spawn depends on build)
     fileParallelism: false,
