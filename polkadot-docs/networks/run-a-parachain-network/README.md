@@ -48,7 +48,7 @@ This test suite takes approximately 30-45 minutes due to:
 ## Network Configuration
 
 The test uses `configs/network.toml` which defines:
-- A rococo-local relay chain with 2 validators (alice, bob)
+- A Paseo relay chain with 2 validators (alice, bob)
 - A parachain (id 1000) with 1 collator
 
 ## Source Documentation

@@ -190,7 +190,7 @@ describe("Run a Parachain Network Guide", () => {
 
       // Verify essential configuration elements
       expect(config).toContain("[relaychain]");
-      expect(config).toContain('chain = "rococo-local"');
+      expect(config).toContain('chain = "paseo"');
       expect(config).toContain("[[relaychain.nodes]]");
       expect(config).toContain('name = "alice"');
       expect(config).toContain("[[parachains]]");
@@ -418,7 +418,7 @@ async function stopZombienet(): Promise<void> {
 
   // Also try to kill any lingering polkadot/parachain processes
   try {
-    execSync("pkill -f 'polkadot.*rococo-local' 2>/dev/null || true", {
+    execSync("pkill -f 'polkadot.*paseo' 2>/dev/null || true", {
       encoding: "utf-8",
     });
     execSync("pkill -f 'parachain-template-node' 2>/dev/null || true", {
