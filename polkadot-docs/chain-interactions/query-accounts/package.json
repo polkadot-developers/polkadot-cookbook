@@ -1,0 +1,20 @@
+{
+  "name": "query-accounts",
+  "version": "1.0.0",
+  "description": "Test verification for the Query Account Information guide",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@dedot/chaintypes": "^0.242.0",
+    "@polkadot/api": "^16.5.4",
+    "dedot": "^1.0.4",
+    "polkadot-api": "^1.23.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  }
+}
