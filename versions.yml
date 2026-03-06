@@ -25,6 +25,10 @@ parachain_template:
       name: staging-chain-spec-builder
       version: "16.0.0"
 
+paseo_runtime:
+  version: v1.9.2
+  repository: https://github.com/paseo-network/runtimes
+
 zombienet:
   version: v1.3.138
   repository: https://github.com/paritytech/zombienet

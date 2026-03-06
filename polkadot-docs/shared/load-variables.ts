@@ -8,6 +8,7 @@ export interface Variables {
   ZOMBIENET_VERSION: string;
   POLKADOT_OMNI_NODE_VERSION: string;
   CHAIN_SPEC_BUILDER_VERSION: string;
+  PASEO_RUNTIME_VERSION: string;
 }
 
 interface YamlNode {
@@ -90,11 +91,15 @@ export function loadVariables(): Variables {
   const chainSpecVersion = getNestedValue(yaml, "parachain_template.crates.chain_spec_builder.version");
   if (!chainSpecVersion) throw new Error("Missing parachain_template.crates.chain_spec_builder.version in versions.yml");
 
+  const paseoRuntimeVersion = getNestedValue(yaml, "paseo_runtime.version");
+  if (!paseoRuntimeVersion) throw new Error("Missing paseo_runtime.version in versions.yml");
+
   return {
     TEMPLATE_VERSION: templateVersion,
     POLKADOT_SDK_VERSION: sdkVersion,
     ZOMBIENET_VERSION: zombienetVersion,
     POLKADOT_OMNI_NODE_VERSION: omniNodeVersion,
     CHAIN_SPEC_BUILDER_VERSION: chainSpecVersion,
+    PASEO_RUNTIME_VERSION: paseoRuntimeVersion,
   };
 }

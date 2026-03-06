@@ -17,9 +17,10 @@ This folder contains verification tests for the [Run a Parachain Network](https:
 1. **Prerequisites**: Rust, cargo, and Zombienet are available
 2. **Clone Repository**: Parity's polkadot-sdk-parachain-template is cloned
 3. **Build Parachain Binary**: `cargo build --release` succeeds
-4. **Download Relay Chain**: Polkadot binary is downloaded via `zombienet setup`
-5. **Spawn Network**: Zombienet spawns a network with relay chain and parachain
-6. **Block Production**: Both relay chain and parachain produce blocks
+4. **Download Relay Chain**: Polkadot binary is downloaded from polkadot-sdk releases
+5. **Generate Paseo Local Chain Spec**: Uses `chain-spec-builder` with the Paseo runtime to generate a local testnet chain spec with dev accounts (alice, bob)
+6. **Spawn Network**: Zombienet spawns a network with relay chain and parachain
+7. **Block Production**: Both relay chain and parachain produce blocks
 
 ## Running Tests
 
@@ -43,12 +44,13 @@ This test suite takes approximately 30-45 minutes due to:
 - Cloning the repository (~1 min)
 - Building the parachain binary (~15-30 min)
 - Downloading relay chain binary (~2-5 min)
+- Generating Paseo local chain spec (~1 min)
 - Spawning network and verifying blocks (~2-5 min)
 
 ## Network Configuration
 
 The test uses `configs/network.toml` which defines:
-- A rococo-local relay chain with 2 validators (alice, bob)
+- A Paseo local relay chain with 2 validators (alice, bob) via a generated chain spec
 - A parachain (id 1000) with 1 collator
 
 ## Source Documentation
