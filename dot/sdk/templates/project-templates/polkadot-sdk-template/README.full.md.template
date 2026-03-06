@@ -365,7 +365,7 @@ This uses your custom-built parachain node binary instead of the omni node.
 - Platform-specific guidance for manual steps
 
 **Binaries Required:**
-- `polkadot` - Relay chain (rococo-local)
+- `polkadot` - Relay chain (Paseo local testnet)
 - `polkadot-omni-node` - For omni node testing
 - `{{slug}}-node` - (Optional) For custom node testing
 

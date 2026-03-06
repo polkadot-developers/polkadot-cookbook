@@ -35,6 +35,40 @@ npm install
 
 Zombienet allows you to spawn a local test network with multiple chains.
 
+### Generate Chain Specs
+
+Neither `paseo-local` nor `asset-hub-paseo-local` are built-in chain specs, so you need to generate them using `chain-spec-builder` and the Paseo runtime WASMs.
+
+1. **Download the runtimes** from [paseo-network/runtimes releases](https://github.com/paseo-network/runtimes/releases):
+
+```bash
+# Download Paseo relay chain runtime
+curl -L -o configs/paseo_runtime.compressed.wasm \
+  https://github.com/paseo-network/runtimes/releases/download/<VERSION>/paseo_runtime.compressed.wasm
+
+# Download Asset Hub Paseo runtime
+curl -L -o configs/asset-hub-paseo_runtime.compressed.wasm \
+  https://github.com/paseo-network/runtimes/releases/download/<VERSION>/asset-hub-paseo_runtime.compressed.wasm
+```
+
+Replace `<VERSION>` with the desired release version (e.g., `v1.3.5`).
+
+2. **Generate the chain specs** using `chain-spec-builder`:
+
+```bash
+# Generate Paseo local chain spec
+chain-spec-builder -c configs/paseo-local.json \
+  create -r configs/paseo_runtime.compressed.wasm \
+  named-preset local_testnet
+
+# Generate Asset Hub Paseo local chain spec
+chain-spec-builder -c configs/asset-hub-paseo-local.json \
+  create -r configs/asset-hub-paseo_runtime.compressed.wasm \
+  named-preset development
+```
+
+> Install `chain-spec-builder` via `cargo install staging-chain-spec-builder` if you don't have it.
+
 ### Running Zombienet
 
 ```bash
