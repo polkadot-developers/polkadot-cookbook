@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
+
+# PAPI generated descriptors
+.papi/
+
+# Python
+__pycache__/
+*.pyc
+
+# Rust
+tests/subxt-query-sdks/target/
+tests/subxt-query-sdks/asset_hub_metadata.scale

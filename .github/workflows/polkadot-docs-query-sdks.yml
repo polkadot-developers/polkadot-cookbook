@@ -1,0 +1,90 @@
+name: Query On-Chain State with SDKs
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/query-sdks/**'
+      - '!polkadot-docs/chain-interactions/query-sdks/README.md'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/query-sdks/**'
+      - '!polkadot-docs/chain-interactions/query-sdks/README.md'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "SUBXT_CLI_VERSION=$(yq '.crates.subxt_cli.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "SUBSTRATE_INTERFACE_VERSION=$(yq '.python_packages.substrate_interface.version' versions.yml)" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: subxt-cli@${{ steps.versions.outputs.SUBXT_CLI_VERSION }}
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            polkadot-docs/chain-interactions/query-sdks/tests/subxt-query-sdks/target
+          key: ${{ runner.os }}-cargo-query-sdks-${{ hashFiles('polkadot-docs/chain-interactions/query-sdks/tests/subxt-query-sdks/Cargo.toml') }}
+
+      - name: Install npm dependencies and generate PAPI descriptors
+        run: |
+          cd polkadot-docs/chain-interactions/query-sdks
+          npm install
+          npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+
+      - name: Install Python dependencies
+        run: pip install substrate-interface==${{ steps.versions.outputs.SUBSTRATE_INTERFACE_VERSION }}
+
+      - name: Download Subxt metadata
+        run: |
+          cd polkadot-docs/chain-interactions/query-sdks/tests/subxt-query-sdks
+          subxt metadata --url wss://asset-hub-paseo.dotters.network -o asset_hub_metadata.scale
+
+      - name: Build Subxt project
+        run: |
+          cd polkadot-docs/chain-interactions/query-sdks/tests/subxt-query-sdks
+          cargo build
+        timeout-minutes: 10
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/query-sdks
+          npm test
+        timeout-minutes: 5
+
+  post-test:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/query-sdks/README.md'
+      workflow_name: 'Query On-Chain State with SDKs'
+    permissions:
+      contents: read
+      issues: write
