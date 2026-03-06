@@ -1,0 +1,18 @@
+[workspace]
+
+[package]
+name = "subxt-query-sdks"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "query_balance"
+path = "src/bin/query_balance.rs"
+
+[[bin]]
+name = "query_asset"
+path = "src/bin/query_asset.rs"
+
+[dependencies]
+subxt = "0.44.2"
+tokio = { version = "1.44.2", features = ["macros", "rt"] }
