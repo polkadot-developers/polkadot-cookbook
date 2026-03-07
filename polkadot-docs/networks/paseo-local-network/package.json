@@ -1,0 +1,14 @@
+{
+  "name": "paseo-local-network-test",
+  "version": "1.0.0",
+  "description": "Verification tests for Paseo local relay chain + Asset Hub network",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  }
+}

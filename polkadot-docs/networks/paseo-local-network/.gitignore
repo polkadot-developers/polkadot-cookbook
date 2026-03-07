@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Binaries
+bin/
+
+# Build artifacts
+dist/
+
+# Logs
+*.log
+zombienet.log
+
+# Editor
+.vscode/
+.idea/
+
+# Zombienet artifacts
+*.pid
+
+# Generated chain specs
+configs/paseo-local.json
+configs/asset-hub-paseo-local.json
