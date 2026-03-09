@@ -15,8 +15,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  guard:
     if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -80,8 +95,8 @@ jobs:
         timeout-minutes: 45
 
   post-test:
-    needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/post-cleanup.yml
     with:
       test_result: ${{ needs.test.result }}

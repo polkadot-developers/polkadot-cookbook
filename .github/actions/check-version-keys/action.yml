@@ -1,0 +1,88 @@
+name: 'Check Version Keys'
+description: 'Check if specific versions.yml keys changed to decide whether a workflow should run. Keys are auto-detected from yq calls in the calling workflow file.'
+
+inputs:
+  base-sha:
+    description: 'Base commit SHA for comparison'
+    required: true
+  head-sha:
+    description: 'Head commit SHA for comparison'
+    required: true
+  event-name:
+    description: 'GitHub event name (push, pull_request, workflow_dispatch)'
+    required: true
+
+outputs:
+  should-run:
+    description: '"true" if the workflow should run, "false" if it can be skipped'
+    value: ${{ steps.check.outputs.should-run }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: check
+      shell: bash
+      run: |
+        EVENT="${{ inputs.event-name }}"
+        BASE_SHA="${{ inputs.base-sha }}"
+
+        # Always run on workflow_dispatch or if base SHA is missing
+        if [ "$EVENT" = "workflow_dispatch" ] || [ -z "$BASE_SHA" ]; then
+          echo "should-run=true" >> "$GITHUB_OUTPUT"
+          echo "Always run: event=$EVENT base_sha=$BASE_SHA"
+          exit 0
+        fi
+
+        # Check if versions.yml is in the diff
+        CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "${{ inputs.head-sha }}" 2>/dev/null || true)
+
+        if ! echo "$CHANGED_FILES" | grep -q '^versions\.yml$'; then
+          # versions.yml not changed — triggered by harness file changes, always run
+          echo "should-run=true" >> "$GITHUB_OUTPUT"
+          echo "Always run: versions.yml not in diff"
+          exit 0
+        fi
+
+        # Auto-detect keys from the calling workflow file
+        WORKFLOW_FILE=".github/workflows/$(echo "$GITHUB_WORKFLOW_REF" | sed -n 's|.*\.github/workflows/\(.*\)@.*|\1|p')"
+        echo "Detected workflow file: $WORKFLOW_FILE"
+
+        if [ ! -f "$WORKFLOW_FILE" ]; then
+          echo "should-run=true" >> "$GITHUB_OUTPUT"
+          echo "Always run: could not locate workflow file"
+          exit 0
+        fi
+
+        KEYS=$(grep -oP "yq\s+'(\.[^']+)'\s+versions\.yml" "$WORKFLOW_FILE" | grep -oP "'\.[^']+'" | tr -d "'" | sort -u | tr '\n' ' ')
+        echo "Auto-detected keys: $KEYS"
+
+        if [ -z "$KEYS" ]; then
+          echo "should-run=true" >> "$GITHUB_OUTPUT"
+          echo "Always run: no version keys detected in workflow"
+          exit 0
+        fi
+
+        # versions.yml changed — check if any of the specific keys changed
+        git fetch origin "$BASE_SHA" --depth=1 2>/dev/null || true
+        OLD_FILE=$(git show "$BASE_SHA":versions.yml 2>/dev/null || echo "")
+
+        if [ -z "$OLD_FILE" ]; then
+          # Can't get old file (new file or shallow clone issue) — run to be safe
+          echo "should-run=true" >> "$GITHUB_OUTPUT"
+          echo "Always run: could not retrieve old versions.yml"
+          exit 0
+        fi
+
+        for KEY in $KEYS; do
+          OLD_VAL=$(echo "$OLD_FILE" | yq "$KEY" 2>/dev/null || echo "")
+          NEW_VAL=$(yq "$KEY" versions.yml 2>/dev/null || echo "")
+          if [ "$OLD_VAL" != "$NEW_VAL" ]; then
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+            echo "Key changed: $KEY ($OLD_VAL -> $NEW_VAL)"
+            exit 0
+          fi
+          echo "Key unchanged: $KEY ($OLD_VAL)"
+        done
+
+        echo "should-run=false" >> "$GITHUB_OUTPUT"
+        echo "No relevant keys changed, skipping"

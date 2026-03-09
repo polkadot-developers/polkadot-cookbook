@@ -15,12 +15,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  guard:
     if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
         run: |
@@ -59,10 +79,12 @@ jobs:
           cd polkadot-docs/parachains/install-polkadot-sdk
           npm test
         timeout-minutes: 15
+        env:
+          POLKADOT_SDK_VERSION: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
 
   post-test:
-    needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/post-cleanup.yml
     with:
       test_result: ${{ needs.test.result }}

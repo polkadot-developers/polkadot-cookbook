@@ -59,6 +59,9 @@ javascript_packages:
   dedot_chaintypes:
     name: "@dedot/chaintypes"
     version: "0.242.0"
+  polkadot_js_util_crypto:
+    name: "@polkadot/util-crypto"
+    version: "13.5.9"
 
 # Python packages
 python_packages:

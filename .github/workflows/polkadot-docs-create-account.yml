@@ -15,12 +15,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  guard:
     if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "POLKADOT_JS_UTIL_CRYPTO_VERSION=$(yq '.javascript_packages.polkadot_js_util_crypto.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-node@v4
         with:
@@ -30,6 +50,9 @@ jobs:
         run: |
           cd polkadot-docs/chain-interactions/create-account
           npm ci
+          npm install --save-exact \
+            @polkadot/keyring@${{ steps.versions.outputs.POLKADOT_JS_UTIL_CRYPTO_VERSION }} \
+            @polkadot/util-crypto@${{ steps.versions.outputs.POLKADOT_JS_UTIL_CRYPTO_VERSION }}
 
       - name: Run tests
         run: |
@@ -38,8 +61,8 @@ jobs:
         timeout-minutes: 5
 
   post-test:
-    needs: test
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/post-cleanup.yml
     with:
       test_result: ${{ needs.test.result }}
