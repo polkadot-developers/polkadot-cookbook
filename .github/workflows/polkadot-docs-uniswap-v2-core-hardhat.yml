@@ -41,7 +41,6 @@ jobs:
           cd polkadot-docs/smart-contracts/uniswap-v2-core-hardhat
           npm test
         env:
-          TESTNET_URL: ${{ secrets.TESTNET_URL }}
           TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
         timeout-minutes: 25
 

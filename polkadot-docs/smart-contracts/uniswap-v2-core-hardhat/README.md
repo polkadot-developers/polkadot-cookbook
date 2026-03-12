@@ -18,7 +18,7 @@ The tests run against [revm-hardhat-examples](https://github.com/polkadot-develo
 1. **Environment Prerequisites** - Verifies Node.js v22+, npm, and git are available
 2. **Clone Repository** - Clones `revm-hardhat-examples` at the pinned commit and verifies expected files
 3. **Install Dependencies** - Runs `npm install` and confirms Hardhat is available
-4. **Configure Testnet Credentials** - Sets `TESTNET_URL` and `TESTNET_PRIVATE_KEY` as Hardhat configuration variables
+4. **Configure Testnet Credentials** - Sets `TESTNET_PRIVATE_KEY` as a Hardhat configuration variable (RPC URL is hardcoded in config)
 5. **Compile Contracts** - Runs `npx hardhat compile` and verifies the `UniswapV2Factory.json` artifact (ABI + bytecode)
 6. **Run Hardhat Tests** - Runs the full Hardhat/Mocha test suite (29 tests) on the local Hardhat network covering ERC20, Factory, and Pair functionality
 7. **Deploy via Ignition** - Deploys `UniswapV2Factory` using Hardhat Ignition to `polkadotTestnet` and verifies a contract address is returned
@@ -33,8 +33,7 @@ The tests run against [revm-hardhat-examples](https://github.com/polkadot-develo
 ## Running Tests Locally
 
 ```bash
-# 1. Export testnet credentials
-export TESTNET_URL="<your-rpc-endpoint>"
+# 1. Export testnet private key (RPC URL is hardcoded in hardhat.config.ts)
 export TESTNET_PRIVATE_KEY="<your-private-key>"
 
 # 2. Install wrapper dependencies
@@ -48,7 +47,6 @@ npm test
 
 | Variable | Description |
 |---|---|
-| `TESTNET_URL` | RPC endpoint for Polkadot Hub TestNet |
 | `TESTNET_PRIVATE_KEY` | Private key of a funded account (no `0x` prefix) |
 
 ## Test Phases
@@ -63,7 +61,7 @@ Clones `polkadot-developers/revm-hardhat-examples` and checks out the pinned com
 Runs `npm install` inside `uniswap-v2-core-hardhat/` and confirms the Hardhat binary is available.
 
 ### 4. Configure Testnet Credentials
-Reads `TESTNET_URL` and `TESTNET_PRIVATE_KEY` from environment variables and stores them as Hardhat configuration variables.
+Verifies `TESTNET_PRIVATE_KEY` is available (skipped when not set). The RPC URL is hardcoded in `hardhat.config.ts`.
 
 ### 5. Compile Contracts
 Runs `npx hardhat compile` and verifies that:
@@ -92,8 +90,7 @@ cd revm-hardhat-examples/uniswap-v2-core-hardhat
 # 2. Install dependencies
 npm i
 
-# 3. Set testnet credentials
-npx hardhat vars set TESTNET_URL
+# 3. Set testnet private key
 npx hardhat vars set TESTNET_PRIVATE_KEY
 
 # 4. Compile

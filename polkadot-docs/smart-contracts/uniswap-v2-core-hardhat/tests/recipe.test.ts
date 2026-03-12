@@ -18,16 +18,13 @@ const FACTORY_ARTIFACT_PATH = join(
   "UniswapV2Factory.json",
 );
 
-// Environment variables for testnet credentials
-const TESTNET_URL = process.env.TESTNET_URL || undefined;
+// Only TESTNET_PRIVATE_KEY is needed — the RPC URL is hardcoded in hardhat.config.ts
 const TESTNET_PRIVATE_KEY = process.env.TESTNET_PRIVATE_KEY || undefined;
-const HAS_TESTNET_CREDENTIALS = Boolean(TESTNET_URL && TESTNET_PRIVATE_KEY);
 
 const hardhatEnv: Record<string, string> = {
   ...Object.fromEntries(
     Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] != null),
   ),
-  ...(TESTNET_URL ? { HARDHAT_VAR_TESTNET_URL: TESTNET_URL } : {}),
   ...(TESTNET_PRIVATE_KEY ? { HARDHAT_VAR_TESTNET_PRIVATE_KEY: TESTNET_PRIVATE_KEY } : {}),
 };
 
@@ -176,11 +173,7 @@ describe("Uniswap V2 Core with Hardhat Guide", () => {
 
   // ==================== VERIFY TESTNET CREDENTIALS ====================
   describe("4. Verify Testnet Credentials", () => {
-    it.skipIf(!HAS_TESTNET_CREDENTIALS)("should have TESTNET_URL environment variable", () => {
-      expect(TESTNET_URL).toBeTruthy();
-    });
-
-    it.skipIf(!HAS_TESTNET_CREDENTIALS)("should have TESTNET_PRIVATE_KEY environment variable", () => {
+    it.skipIf(!TESTNET_PRIVATE_KEY)("should have TESTNET_PRIVATE_KEY environment variable", () => {
       expect(TESTNET_PRIVATE_KEY).toBeTruthy();
     });
   });
@@ -238,7 +231,7 @@ describe("Uniswap V2 Core with Hardhat Guide", () => {
 
   // ==================== DEPLOY VIA IGNITION ====================
   describe("7. Deploy Factory via Hardhat Ignition (polkadotTestnet)", () => {
-    it.skipIf(!HAS_TESTNET_CREDENTIALS)("should deploy UniswapV2Factory and output a contract address", async () => {
+    it.skipIf(!TESTNET_PRIVATE_KEY)("should deploy UniswapV2Factory and output a contract address", async () => {
       console.log("Deploying UniswapV2Factory via Hardhat Ignition...");
 
       const MAX_ATTEMPTS = 3;
