@@ -22,10 +22,12 @@ const FACTORY_ARTIFACT_PATH = join(
 const TESTNET_URL = process.env.TESTNET_URL;
 const TESTNET_PRIVATE_KEY = process.env.TESTNET_PRIVATE_KEY;
 
-const hardhatEnv = {
-  ...process.env,
-  HARDHAT_VAR_TESTNET_URL: TESTNET_URL ?? "",
-  HARDHAT_VAR_TESTNET_PRIVATE_KEY: TESTNET_PRIVATE_KEY ?? "",
+const hardhatEnv: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] != null),
+  ),
+  ...(TESTNET_URL ? { HARDHAT_VAR_TESTNET_URL: TESTNET_URL } : {}),
+  ...(TESTNET_PRIVATE_KEY ? { HARDHAT_VAR_TESTNET_PRIVATE_KEY: TESTNET_PRIVATE_KEY } : {}),
 };
 
 describe("Uniswap V2 Core with Hardhat Guide", () => {
