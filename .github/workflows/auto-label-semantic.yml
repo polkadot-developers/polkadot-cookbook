@@ -9,6 +9,7 @@ jobs:
     if: github.repository == 'polkadot-developers/polkadot-cookbook' && github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     permissions:
+      issues: write
       pull-requests: write
       contents: read
 
