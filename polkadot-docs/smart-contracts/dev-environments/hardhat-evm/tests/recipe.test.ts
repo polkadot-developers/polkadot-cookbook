@@ -188,7 +188,7 @@ describe("Use Hardhat with Polkadot Hub (EVM) Guide", () => {
       }
       console.log("Installing Hardhat and toolbox (this may take a minute)...");
       execSync(
-        "npm install --save-dev hardhat@^2.27.0 @nomicfoundation/hardhat-toolbox",
+        "npm install --save-dev hardhat@^2.27.0 @nomicfoundation/hardhat-toolbox ts-node",
         { cwd: PROJECT_DIR, stdio: "inherit" }
       );
       expect(existsSync(join(PROJECT_DIR, "node_modules", "hardhat"))).toBe(true);
