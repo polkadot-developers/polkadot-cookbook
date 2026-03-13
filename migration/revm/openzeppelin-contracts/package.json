@@ -1,0 +1,20 @@
+{
+  "name": "openzeppelin-contracts-revm-test",
+  "version": "1.0.0",
+  "description": "Test OpenZeppelin Contracts on Polkadot REVM",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "keywords": [
+    "openzeppelin",
+    "revm",
+    "polkadot"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  }
+}
