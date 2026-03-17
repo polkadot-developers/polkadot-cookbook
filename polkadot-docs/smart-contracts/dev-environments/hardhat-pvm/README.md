@@ -16,8 +16,8 @@ The tests scaffold a fresh PVM-enabled Hardhat project via `npx hardhat-polkadot
 ## What This Tests
 
 1. **Environment Prerequisites** — Node.js v22.5+, npm v10.9.0+, and git are available
-2. **Initialize PVM Project** — Installs `@parity/hardhat-polkadot@0.2.7` and `@parity/resolc@1.0.0`, scaffolds via `npx hardhat-polkadot init`
-3. **Verify Project Structure** — Confirms `contracts/MyToken.sol`, `ignition/modules/MyToken.js`, `hardhat.config.ts`, and `test/` exist; validates config references the PVM plugin and `polkadotTestnet` network
+2. **Initialize PVM Project** — Installs `@parity/hardhat-polkadot@0.2.7` and `@parity/resolc@1.0.0`, writes the project files (`hardhat.config.ts`, `contracts/MyToken.sol`, `ignition/modules/MyToken.js`)
+3. **Verify Project Structure** — Confirms all project files exist; validates config references the PVM plugin, `polkadotTestnet` network, chainId `420420417`, and resolc version
 4. **Compile Contracts** — Runs `npx hardhat compile` using the resolc compiler (PVM bytecode), verifies artifacts with valid ABI and bytecode
 5. **Verify Testnet Credentials** — `PRIVATE_KEY` environment variable is set
 6. **Deploy via Ignition** — Deploys `MyToken` using Hardhat Ignition to `polkadotTestnet` and verifies a contract address is returned
@@ -58,14 +58,13 @@ In CI, Hardhat resolves `vars.get("PRIVATE_KEY")` via the `HARDHAT_VAR_PRIVATE_K
 Verifies Node.js v22.5+, npm v10.9.0+, and git are present.
 
 ### 2. Initialize PVM Project
-Creates a project directory, runs `npm init -y`, and installs `@parity/hardhat-polkadot@0.2.7` and `@parity/resolc@1.0.0`. Runs `npx hardhat-polkadot init` to scaffold the project, then `npm install` for remaining dependencies.
+Creates a project directory, runs `npm init -y`, and installs `@parity/hardhat-polkadot@0.2.7` and `@parity/resolc@1.0.0`. Writes the project files that `npx hardhat-polkadot init` would generate (the init command is interactive and cannot run in CI), then `npm install` for remaining dependencies.
 
 ### 3. Verify Project Structure
-Confirms the scaffolded project contains:
-- `hardhat.config.ts` — references `@parity/hardhat-polkadot` plugin and `polkadotTestnet` network
+Confirms the project contains:
+- `hardhat.config.ts` — references `@parity/hardhat-polkadot` plugin, `polkadotTestnet` network, chainId `420420417`, and resolc version
 - `contracts/MyToken.sol` — sample ERC-20 token contract
 - `ignition/modules/MyToken.js` — Hardhat Ignition deployment module
-- `test/` — test directory
 
 ### 4. Compile Contracts
 Runs `npx hardhat compile` using the resolc compiler to produce PVM bytecode. Verifies:
