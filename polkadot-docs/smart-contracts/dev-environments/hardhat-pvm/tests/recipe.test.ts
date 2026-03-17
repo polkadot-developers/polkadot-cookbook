@@ -332,8 +332,10 @@ describe("Use Hardhat with Polkadot Hub (PVM) Guide", () => {
         encoding: "utf-8",
       });
       console.log(result.trim());
+      // PVM (resolc) output: "Successfully compiled 1 Solidity file"
+      // Standard Hardhat output: "Compiled 1 Solidity file successfully"
       expect(result).toMatch(
-        /Compiled \d+ Solidity files? successfully|Nothing to compile/
+        /Successfully compiled \d+ Solidity files?|Compiled \d+ Solidity files? successfully|Nothing to compile/
       );
     }, 120000);
 
@@ -436,8 +438,9 @@ describe("Use Hardhat with Polkadot Hub (PVM) Guide", () => {
         }
 
         try {
+          // @parity/hardhat-polkadot uses --module-path instead of a positional arg
           result = execSync(
-            "npx hardhat ignition deploy ./ignition/modules/MyToken.js --network polkadotTestnet",
+            "npx hardhat ignition deploy --module-path ./ignition/modules/MyToken.js --network polkadotTestnet",
             {
               cwd: PROJECT_DIR,
               env: hardhatEnv,
