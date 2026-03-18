@@ -87,7 +87,7 @@ jobs:
           cd polkadot-docs/smart-contracts/local-dev-node
           npm ci
 
-      # POLKADOT_SDK_VERSION is read inside recipe.test.ts via process.env.
+      # POLKADOT_SDK_VERSION is read inside docs.test.ts via process.env.
       # The test skips cargo build steps when pre-built binaries are cached.
       - name: Run tests
         run: |

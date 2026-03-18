@@ -1,15 +1,1 @@
-# Cloned repository
 .test-workspace/
-
-# Dependencies
-node_modules/
-
-# Build artifacts
-dist/
-
-# Logs
-*.log
-
-# Editor
-.vscode/
-.idea/

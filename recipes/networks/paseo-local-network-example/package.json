@@ -1,7 +1,7 @@
 {
-  "name": "paseo-local-network-test",
+  "name": "paseo-local-network-example-test",
   "version": "1.0.0",
-  "description": "Verification tests for Paseo local relay chain + Asset Hub network",
+  "description": "Verification tests for the paseo-local-network-example recipe",
   "type": "module",
   "scripts": {
     "test": "vitest run"

@@ -1,20 +1,11 @@
 import { defineConfig } from "vitest/config";
+import { sharedVitestConfig } from "../../../shared/vitest.shared";
 
 export default defineConfig({
   test: {
-    fileParallelism: false,
-    sequence: {
-      shuffle: false,
-    },
+    ...sharedVitestConfig,
     testTimeout: 30000,
     hookTimeout: 10000,
-    reporters: ["verbose"],
-    pool: "forks",
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
-    include: ["tests/recipe.test.ts"],
+    include: ["tests/docs.test.ts"],
   },
 });

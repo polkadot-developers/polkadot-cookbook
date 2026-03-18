@@ -106,63 +106,54 @@ Create these files in `polkadot-docs/{category}/{guide-name}/`:
 **tsconfig.json:**
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "types": ["node"]
-  },
-  "include": ["tests/**/*.ts"],
-  "exclude": ["node_modules"]
+  "extends": "../../../shared/tsconfig.base.json",
+  "include": ["tests/**/*.ts"]
 }
+```
+> Adjust the `extends` path based on directory depth: `../../../` for depth 4 (e.g., `polkadot-docs/category/guide/`), `../../../../` for depth 5, `../../../../../` for depth 6.
 ```
 
 **vitest.config.ts:**
 ```typescript
 import { defineConfig } from "vitest/config";
+import { sharedVitestConfig } from "../../../shared/vitest.shared";
 
 export default defineConfig({
   test: {
-    fileParallelism: false,
-    sequence: { shuffle: false },
+    ...sharedVitestConfig,
     testTimeout: 30000,      // Adjust: 30s simple, 360000 contracts, 1800000 builds
     hookTimeout: 10000,
-    reporters: ["verbose"],
-    pool: "forks",
-    poolOptions: { forks: { singleFork: true } },
-    include: ["tests/recipe.test.ts"],
+    include: ["tests/docs.test.ts"],
   },
 });
 ```
+> Adjust the `sharedVitestConfig` import path to match the `tsconfig.json` extends depth.
 
 If the test needs pinned versions from `versions.yml`, import the shared loader:
 ```typescript
+import { defineConfig } from "vitest/config";
+import { sharedVitestConfig } from "../../../shared/vitest.shared";
 import { loadVariables } from "../../shared/load-variables";
+
 const vars = loadVariables();
 
 export default defineConfig({
   test: {
+    ...sharedVitestConfig,
     env: {
       POLKADOT_SDK_VERSION: vars.POLKADOT_SDK_VERSION,
       // ... other vars as needed
     },
-    // ... rest of config
+    testTimeout: 30000,
+    hookTimeout: 10000,
+    include: ["tests/docs.test.ts"],
   },
 });
 ```
 
 **.gitignore:**
 ```
-node_modules/
 .test-workspace/
-dist/
-*.log
 ```
 
 **README.md** — use this frontmatter format:
@@ -193,7 +184,7 @@ npm test
 
 ## Step 2: Write the Test
 
-Create `tests/recipe.test.ts` with numbered phases:
+Create `tests/docs.test.ts` with numbered phases:
 
 ```typescript
 import { describe, it, expect } from "vitest";
@@ -546,5 +537,5 @@ When generating files, study these existing examples for patterns and convention
 | CI with Rust + guard | `.github/workflows/polkadot-docs-local-dev-node.yml` |
 | CI with secrets | `.github/workflows/polkadot-docs-erc20-hardhat.yml` |
 | Guard action | `.github/actions/check-version-keys/action.yml` |
-| Complex test (build + process mgmt) | `polkadot-docs/smart-contracts/local-dev-node/tests/recipe.test.ts` |
+| Complex test (build + process mgmt) | `polkadot-docs/smart-contracts/local-dev-node/tests/docs.test.ts` |
 | Shared version loader | `polkadot-docs/shared/load-variables.ts` |
