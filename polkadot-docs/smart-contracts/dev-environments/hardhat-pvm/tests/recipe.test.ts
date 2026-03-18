@@ -16,9 +16,31 @@ import { join } from "path";
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const PROJECT_DIR = join(WORKSPACE_DIR, "hardhat-pvm");
 
-// Pinned package versions — match the tutorial exactly
-const HARDHAT_POLKADOT_VERSION = "0.2.7";
-const RESOLC_VERSION = "1.0.0";
+// ---------------------------------------------------------------------------
+// Load pinned versions from versions.yml (single source of truth)
+// ---------------------------------------------------------------------------
+
+function loadPvmVersions(): { hardhatPolkadot: string; resolc: string } {
+  const repoRoot = execSync("git rev-parse --show-toplevel", {
+    encoding: "utf-8",
+  }).trim();
+  const content = readFileSync(join(repoRoot, "versions.yml"), "utf-8");
+
+  const hpMatch = content.match(
+    /hardhat_polkadot:\s*\n\s*name:.*\n\s*version:\s*"?([^"\n]+)"?/
+  );
+  const resolcMatch = content.match(
+    /resolc:\s*\n\s*name:.*\n\s*version:\s*"?([^"\n]+)"?/
+  );
+
+  if (!hpMatch) throw new Error("Missing javascript_packages.hardhat_polkadot.version in versions.yml");
+  if (!resolcMatch) throw new Error("Missing javascript_packages.resolc.version in versions.yml");
+
+  return { hardhatPolkadot: hpMatch[1], resolc: resolcMatch[1] };
+}
+
+const { hardhatPolkadot: HARDHAT_POLKADOT_VERSION, resolc: RESOLC_VERSION } =
+  loadPvmVersions();
 
 // ---------------------------------------------------------------------------
 // Credentials

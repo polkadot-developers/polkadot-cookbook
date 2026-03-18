@@ -76,7 +76,7 @@ Runs `npx hardhat compile` using the resolc compiler to produce PVM bytecode. Ve
 Asserts `PRIVATE_KEY` is populated so subsequent steps fail with a clear message.
 
 ### 6. Deploy via Ignition
-Runs `npx hardhat ignition deploy ./ignition/modules/MyToken.js --network polkadotTestnet` and verifies the output contains a valid EVM contract address. Retries up to 3 times on transient network errors. Soft-fails on infrastructure issues.
+Runs `npx hardhat ignition deploy --module-path ./ignition/modules/MyToken.js --network polkadotTestnet` and verifies the output contains a valid EVM contract address. Retries up to 3 times on transient network errors. Soft-fails on infrastructure issues.
 
 ## Exact Replication Steps
 
@@ -102,7 +102,7 @@ npx hardhat compile
 npx hardhat vars set PRIVATE_KEY
 
 # 6. Deploy to Polkadot Hub TestNet
-npx hardhat ignition deploy ./ignition/modules/MyToken.js --network polkadotTestnet
+npx hardhat ignition deploy --module-path ./ignition/modules/MyToken.js --network polkadotTestnet
 ```
 
 ## Known Limitations
