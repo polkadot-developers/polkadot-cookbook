@@ -35,36 +35,21 @@ Create these files in `recipes/{pathway}/{recipe-name}/`:
 **tsconfig.json:**
 ```json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "outDir": "dist",
-    "rootDir": "."
-  },
-  "include": ["tests/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "extends": "../../../shared/tsconfig.base.json",
+  "include": ["tests/**/*.ts"]
 }
 ```
 
 **vitest.config.ts:**
 ```typescript
 import { defineConfig } from "vitest/config";
+import { sharedVitestConfig } from "../../../shared/vitest.shared";
 
 export default defineConfig({
   test: {
-    fileParallelism: false,
-    sequence: { shuffle: false },
+    ...sharedVitestConfig,
     testTimeout: 300000,     // 5 min for Node.js recipes, 2700000 (45 min) for Rust
     hookTimeout: 60000,
-    reporters: ["verbose"],
-    pool: "forks",
-    poolOptions: { forks: { singleFork: true } },
     include: ["tests/recipe.test.ts"],
   },
 });
@@ -72,10 +57,7 @@ export default defineConfig({
 
 **.gitignore:**
 ```
-node_modules/
 recipe-{name}/
-dist/
-*.log
 ```
 
 **README.md:**

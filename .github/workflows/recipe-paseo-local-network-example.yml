@@ -1,0 +1,50 @@
+name: Paseo Local Network Recipe
+
+on:
+  push:
+    branches: [master]
+    paths: ['recipes/networks/paseo-local-network-example/**']
+  pull_request:
+    paths: ['recipes/networks/paseo-local-network-example/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Zombienet
+        run: |
+          curl -L -o zombienet https://github.com/paritytech/zombienet/releases/latest/download/zombienet-linux-x64
+          chmod +x zombienet
+          sudo mv zombienet /usr/local/bin/
+
+      - name: Install test dependencies
+        run: |
+          cd recipes/networks/paseo-local-network-example
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd recipes/networks/paseo-local-network-example
+          npm test
+        timeout-minutes: 30
+
+  post-test:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'recipes/networks/paseo-local-network-example/README.md'
+      workflow_name: 'Paseo Local Network Recipe'
+    permissions:
+      contents: read
+      issues: write

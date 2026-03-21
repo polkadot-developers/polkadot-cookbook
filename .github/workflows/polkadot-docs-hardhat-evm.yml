@@ -33,7 +33,7 @@ jobs:
         with:
           path: |
             polkadot-docs/smart-contracts/dev-environments/hardhat-evm/.test-workspace/hardhat-evm/node_modules
-          key: ${{ runner.os }}-hardhat-evm-npm-${{ hashFiles('polkadot-docs/smart-contracts/dev-environments/hardhat-evm/tests/recipe.test.ts') }}
+          key: ${{ runner.os }}-hardhat-evm-npm-${{ hashFiles('polkadot-docs/smart-contracts/dev-environments/hardhat-evm/tests/docs.test.ts') }}
 
       # Install the Vitest wrapper's own dependencies (not the Hardhat project)
       - name: Install wrapper dependencies
