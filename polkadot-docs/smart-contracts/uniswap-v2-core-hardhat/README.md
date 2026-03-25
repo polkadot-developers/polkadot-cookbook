@@ -1,8 +1,8 @@
 ---
 title: "Uniswap V2 Core with Hardhat"
 description: "Verify the Uniswap V2 Core deployment guide using Hardhat from docs.polkadot.com"
-source_url: "https://docs.polkadot.com/smart-contracts/cookbook/eth-dapps/uniswap-v2/core/core-v2/"
-source_repo: "https://github.com/polkadot-developers/polkadot-docs/blob/master/smart-contracts/cookbook/eth-dapps/uniswap-v2/core/core-v2.md"
+source_url: "https://docs.polkadot.com/smart-contracts/cookbook/eth-dapps/uniswap-v2/core-v2/"
+source_repo: "https://github.com/polkadot-developers/polkadot-docs/blob/master/smart-contracts/cookbook/eth-dapps/uniswap-v2/core-v2.md"
 ---
 
 # Uniswap V2 Core with Hardhat
