@@ -43,7 +43,7 @@ npm ci && npm test
 
 **`versions.yml`**: Single source of truth for pinned dependency versions (polkadot-sdk release tag, parachain template version, zombienet version). Referenced by CI workflows and `polkadot-docs/shared/load-variables.ts` (shared utility that parses versions at test runtime). Changes here trigger downstream CI runs.
 
-**CI composite actions** (`.github/actions/`): Reusable actions like `setup-revive-dev-node` (builds/caches pallet-revive dev node + eth-rpc adapter) and `setup-zombienet-eth-rpc`. Used by recipe and migration workflows.
+**CI composite actions** (`.github/actions/`): Reusable actions like `setup-revive-dev-node` (builds/caches pallet-revive dev node + eth-rpc adapter), `setup-zombienet-eth-rpc`, and `check-version-keys` (guard that skips expensive test jobs when a `versions.yml` change doesn't affect the workflow's keys). Used by recipe, migration, and polkadot-docs workflows.
 
 ## Key Conventions
 
@@ -51,9 +51,11 @@ npm ci && npm test
 - Rust formatting: `max_width = 100`, `wrap_comments = true` (`rustfmt.toml`)
 - SDK tests require `--test-threads=1` and use `#[serial]` from `serial_test` (shared filesystem state)
 - Recipe source code lives in **external repos** (`brunopgalvao/recipe-*`); this repo only contains test harnesses
-- Test file naming: recipes use `recipe.test.ts`, migrations use `guide.test.ts`
+- Test file naming: recipes use `recipe.test.ts`, polkadot-docs use `docs.test.ts`, migrations use `migration.test.ts`
+- Shared configs: `shared/tsconfig.base.json` and `shared/vitest.shared.ts` — all harnesses extend/import these
 - CI workflows are **path-filtered** per component (e.g., `recipe-contracts-example.yml` only triggers on `recipes/contracts/contracts-example/**`)
-- `versions.yml` changes also trigger downstream workflow runs
+- `versions.yml` changes also trigger downstream workflow runs — each workflow has a `guard` job that auto-detects which `versions.yml` keys it uses (by parsing `yq` calls in the workflow file) and skips the test job if none of those keys changed
+- When adding a new `yq '...' versions.yml` line to a workflow's "Load versions" step, the guard picks it up automatically — no separate key list to maintain
 - Commit both `Cargo.lock` and `package-lock.json` — locked dependencies are intentional
 - No local git hooks — run `cargo fmt` and `cargo clippy` manually before pushing
 - Workspace version: check `Cargo.toml` `[workspace.package]`

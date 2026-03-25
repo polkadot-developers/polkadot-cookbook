@@ -1,14 +1,15 @@
 name: Auto-Label Semantic Version
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 jobs:
   analyze-commits:
-    if: github.repository == 'polkadot-developers/polkadot-cookbook' && github.event_name == 'pull_request'
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     permissions:
+      issues: write
       pull-requests: write
       contents: read
 
@@ -16,6 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Setup Rust
@@ -75,8 +77,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // Guard: only run on pull_request events
-            if (context.eventName !== 'pull_request') {
-              console.log(`Skipping: workflow triggered by '${context.eventName}' event, not 'pull_request'`);
+            if (context.eventName !== 'pull_request_target') {
+              console.log(`Skipping: workflow triggered by '${context.eventName}' event, not 'pull_request_target'`);
               return;
             }
 

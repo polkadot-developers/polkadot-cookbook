@@ -15,9 +15,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    # Guard: only run in the canonical repository to protect CI secrets
+  guard:
     if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -73,7 +87,7 @@ jobs:
           cd polkadot-docs/smart-contracts/local-dev-node
           npm ci
 
-      # POLKADOT_SDK_VERSION is read inside recipe.test.ts via process.env.
+      # POLKADOT_SDK_VERSION is read inside docs.test.ts via process.env.
       # The test skips cargo build steps when pre-built binaries are cached.
       - name: Run tests
         run: |
@@ -84,10 +98,11 @@ jobs:
         timeout-minutes: 120  # cold build: ~60 min per binary; warm build: ~5 min
 
   post-test:
-    needs: test
+    needs: [guard, test]
     # Only file issues on master failures — not on every PR
     if: >
       github.repository == 'polkadot-developers/polkadot-cookbook' &&
+      needs.guard.outputs.should-run == 'true' &&
       always() &&
       github.ref == 'refs/heads/master'
     uses: ./.github/workflows/post-cleanup.yml

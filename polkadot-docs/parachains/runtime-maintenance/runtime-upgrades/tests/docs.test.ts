@@ -720,9 +720,10 @@ impl pallet_custom::Config for Runtime {
     }, 120000);
 
     it("should have spec_version = 2 after upgrade", async () => {
-      // Poll for the spec version change (may take a block or two)
+      // Poll for the spec version change — parachain block times under
+      // Zombienet can be variable, so retry generously.
       let specVersion = 0;
-      for (let attempt = 1; attempt <= 5; attempt++) {
+      for (let attempt = 1; attempt <= 10; attempt++) {
         const result = (await rpcCall("state_getRuntimeVersion")) as {
           specName: string;
           specVersion: number;
@@ -733,7 +734,7 @@ impl pallet_custom::Config for Runtime {
         await new Promise((resolve) => setTimeout(resolve, 12000));
       }
       expect(specVersion).toBe(2);
-    }, 90000);
+    }, 180000);
   });
 
   // ==================== POST-UPGRADE VERIFICATION ====================

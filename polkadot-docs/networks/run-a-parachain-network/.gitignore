@@ -1,23 +1,4 @@
-# Dependencies
-node_modules/
-
-# Test workspace
 polkadot-sdk-parachain-template/
 bin/
-
-# Build artifacts
-dist/
-
-# Logs
-*.log
-zombienet.log
-
-# Editor
-.vscode/
-.idea/
-
-# Zombienet artifacts
 *.pid
-
-# Generated chain specs
 configs/paseo-local.json

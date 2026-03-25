@@ -5,6 +5,7 @@ import { join } from "path";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const SDK_DIR = join(WORKSPACE_DIR, "polkadot-sdk");
+const POLKADOT_SDK_VERSION = process.env.POLKADOT_SDK_VERSION || "";
 
 describe("Install Polkadot SDK Guide", () => {
   // ==================== RUST INSTALLATION ====================
@@ -90,6 +91,10 @@ describe("Install Polkadot SDK Guide", () => {
         mkdirSync(WORKSPACE_DIR, { recursive: true });
       }
 
+      const branchFlag = POLKADOT_SDK_VERSION
+        ? `--branch ${POLKADOT_SDK_VERSION}`
+        : "";
+
       if (existsSync(SDK_DIR)) {
         console.log("polkadot-sdk already cloned, updating...");
         execSync("git fetch --depth 1", {
@@ -98,9 +103,11 @@ describe("Install Polkadot SDK Guide", () => {
           stdio: "inherit",
         });
       } else {
-        console.log("Cloning polkadot-sdk (shallow clone for speed)...");
+        console.log(
+          `Cloning polkadot-sdk (shallow clone${POLKADOT_SDK_VERSION ? ` at ${POLKADOT_SDK_VERSION}` : ""})...`
+        );
         execSync(
-          `git clone --depth 1 https://github.com/paritytech/polkadot-sdk.git ${SDK_DIR}`,
+          `git clone --depth 1 ${branchFlag} https://github.com/paritytech/polkadot-sdk.git ${SDK_DIR}`,
           { encoding: "utf-8", stdio: "inherit" }
         );
       }

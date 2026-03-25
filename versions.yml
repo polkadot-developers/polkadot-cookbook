@@ -59,6 +59,15 @@ javascript_packages:
   dedot_chaintypes:
     name: "@dedot/chaintypes"
     version: "0.242.0"
+  hardhat_polkadot:
+    name: "@parity/hardhat-polkadot"
+    version: "0.2.7"
+  resolc:
+    name: "@parity/resolc"
+    version: "1.0.0"
+  polkadot_js_util_crypto:
+    name: "@polkadot/util-crypto"
+    version: "13.5.9"
 
 # Python packages
 python_packages:
