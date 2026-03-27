@@ -39,14 +39,15 @@ describe("Query On-Chain State with Sidecar REST API", () => {
     });
 
     it("supports querying at a specific block height", async () => {
+      // Guide: curl -s ".../accounts/<INSERT_ADDRESS>/balance-info?at=10000000"
       const data = (await sidecarGet(
-        `/accounts/${ACCOUNT_ID}/balance-info?at=1000000`
+        `/accounts/${ACCOUNT_ID}/balance-info?at=10000000`
       )) as Record<string, unknown>;
 
       const at = data.at as Record<string, unknown>;
       expect(at).toHaveProperty("hash");
       expect(at).toHaveProperty("height");
-      expect(at.height).toBe("1000000");
+      expect(at.height).toBe("10000000");
     });
   });
 
@@ -60,8 +61,19 @@ describe("Query On-Chain State with Sidecar REST API", () => {
     });
 
     it("returns a specific asset balance (USDT)", async () => {
+      // Guide: curl -s ".../accounts/<INSERT_ADDRESS>/asset-balances?assets[]=1984"
       const data = (await sidecarGet(
         `/accounts/${ACCOUNT_ID}/asset-balances?assets[]=${USDT_ASSET_ID}`
+      )) as Record<string, unknown>;
+
+      expect(data).toHaveProperty("at");
+    });
+
+    it("returns multiple asset balances (USDT + USDC)", async () => {
+      // Guide: curl -s ".../accounts/<INSERT_ADDRESS>/asset-balances?assets[]=1984&assets[]=1337"
+      const USDC_ASSET_ID = "1337";
+      const data = (await sidecarGet(
+        `/accounts/${ACCOUNT_ID}/asset-balances?assets[]=${USDT_ASSET_ID}&assets[]=${USDC_ASSET_ID}`
       )) as Record<string, unknown>;
 
       expect(data).toHaveProperty("at");
@@ -124,13 +136,14 @@ describe("Query On-Chain State with Sidecar REST API", () => {
     });
 
     it("returns a specific block by number", async () => {
-      const data = (await sidecarGet("/blocks/1000000")) as Record<
+      // Guide: curl -s ".../blocks/10000000"
+      const data = (await sidecarGet("/blocks/10000000")) as Record<
         string,
         unknown
       >;
 
       expect(data).toHaveProperty("number");
-      expect(data.number).toBe("1000000");
+      expect(data.number).toBe("10000000");
       expect(data).toHaveProperty("hash");
       expect(data).toHaveProperty("extrinsics");
     });
