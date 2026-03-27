@@ -10,6 +10,8 @@ Automated two-phase pipeline that creates a test harness under `polkadot-docs/{c
 
 ## Execution Model
 
+**This skill should run autonomously.** All file writes, git operations, npm commands, and test runs are expected operations — do not prompt the user for permission at each step. The only human checkpoint is between Step 6a and Step 6b (see below).
+
 ### Phase 1: Analyze + Generate (can run as background subagent)
 
 Steps 0–4 below can optionally be dispatched as a single background subagent via the Agent tool when the user wants to continue other work while generation happens. The subagent should:
@@ -23,9 +25,7 @@ Default path: run Steps 0–4 inline in the main session.
 
 Steps 5–6 must stay in the main session because test-debug-fix is iterative — a one-shot subagent can't course-correct across multiple test runs.
 
-**Human checkpoints:**
-- After Phase 1: user reviews generated files before testing
-- Before PR creation: user approves
+**Human checkpoint:** Only one — between Step 6a (cookbook PR) and Step 6b (companion PR). After creating the cookbook draft PR, stop and ask the user to review it. Only proceed to create the companion PR when the user explicitly says to go ahead.
 
 ---
 
@@ -203,6 +203,19 @@ describe("{Guide Title}", () => {
   });
 });
 ```
+
+### Code Fidelity
+
+The test harness must faithfully reproduce the code snippets and commands from the guide. The entire purpose of the test is to verify that the guide's instructions work as documented. If tests deviate from the guide's examples, the harness is meaningless.
+
+- Use the **exact same URLs, endpoints, parameters, and values** shown in the guide's code snippets
+- When the guide uses placeholders (e.g., `<INSERT_ADDRESS>`), substitute a real value that works, but keep everything else identical
+- When the guide shows specific block heights, asset IDs, or other constants, use those exact values
+- Test **every code snippet** in the guide, not just a subset — each fenced code block should have a corresponding test case
+- Add inline comments referencing the guide snippet being tested (e.g., `// Guide: curl -s ".../blocks/10000000"`)
+- **Never commit untested code.** Always run `npm test` locally and confirm all tests pass before committing.
+
+### Other Patterns
 
 **Pinning strategy:** polkadot-docs tests pin external repos by **commit SHA** (not tags).
 
@@ -437,18 +450,30 @@ Use `setup-zombienet-eth-rpc` composite action. Reference: `.github/workflows/re
 
 ---
 
-## Step 4: Install Dependencies and Generate Lock File
+## Step 4: Install Dependencies, Generate Lock File, and Update README
+
+### 4a. Install Dependencies
 
 ```bash
 cd polkadot-docs/{category}/{guide-name}
 npm install   # generates package-lock.json (commit this)
 ```
 
+### 4b. Update `polkadot-docs/README.md`
+
+Add a new row to the appropriate section table in `polkadot-docs/README.md`. Match the existing format:
+
+```markdown
+| [{Guide Title}](./path/to/guide/) | [![{Guide Title}](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml) | [docs.polkadot.com](https://docs.polkadot.com/{path/to/guide}/) |
+```
+
+Place the row in the correct section (Parachains, Networks, Chain Interactions, Smart Contracts) alphabetically or logically grouped with related guides.
+
 ---
 
 ## Step 5: Test + Debug Loop
 
-Run tests locally and iterate on failures:
+**Never commit untested code.** Run tests locally and iterate on failures until green. Only after all tests pass should you proceed to commit and create the PR in Step 6.
 
 ```bash
 cd polkadot-docs/{category}/{guide-name}
@@ -494,10 +519,10 @@ When tests fail, classify the failure and respond accordingly:
 
 ### 6a. Cookbook PR
 
-Create a PR in this repository with all generated files:
+Create a **draft** PR in this repository with all generated files:
 
 ```bash
-gh pr create --title "feat: add {guide-name} polkadot-docs test harness" --body "$(cat <<'EOF'
+gh pr create --draft --title "feat: add {guide-name} polkadot-docs test harness" --body "$(cat <<'EOF'
 ## Summary
 - Add test harness for the [{Guide Title}]({source_url}) documentation guide
 - Verifies guide steps work as documented at commit {docs_commit}
@@ -507,22 +532,59 @@ gh pr create --title "feat: add {guide-name} polkadot-docs test harness" --body 
 - `.github/workflows/polkadot-docs-{guide-name}.yml` — CI workflow
 
 ## Test plan
-- [ ] `npm test` passes locally
+- [x] `npm test` passes locally
 - [ ] CI workflow triggers correctly on PR
 - [ ] Badge renders in README
+- [ ] Companion PR in polkadot-docs for badge
 EOF
 )"
 ```
 
-### 6b. Companion PR (after cookbook PR is merged)
+### CHECKPOINT: Wait for User Review
 
-Open a companion PR in [`polkadot-developers/polkadot-docs`](https://github.com/polkadot-developers/polkadot-docs) to add CI badges to the documentation page. Add badges at both top and bottom of the guide:
+**Stop here and ask the user to review the cookbook draft PR.** Do not proceed to Step 6b until the user explicitly tells you to go ahead. Present the PR URL and wait.
 
+### 6b. Companion PR (after user approval)
+
+Once the user approves, open a companion PR in [`polkadot-developers/polkadot-docs`](https://github.com/polkadot-developers/polkadot-docs) (expected at `~/src/polkadot-docs`). Add CI badges at both the **top** (after the `# Title` heading) and **bottom** (before "Where to Go Next" or equivalent closing section) of the guide.
+
+**Badge format** — wrap in the `status-badge` div used by existing guides:
+
+Top badge (after `# {Title}`):
 ```markdown
-[![{Guide Title}](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml)
+<div class="status-badge" markdown>
+[![{Guide Title}](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml){target=\_blank}
+</div>
 ```
 
-Reference the cookbook PR in the companion PR body: `Companion to polkadot-developers/polkadot-cookbook#{PR-number}`
+Bottom badge (before closing section):
+```markdown
+<div class="status-badge" markdown>
+[![{Guide Title}](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml/badge.svg?event=push)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml){target=\_blank}
+[:material-code-tags: View tests](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/polkadot-docs/{category}/{guide-name}/tests/docs.test.ts){ .tests-button target=\_blank}
+</div>
+```
+
+Reference: see `chain-interactions/query-data/query-sdks.md` in polkadot-docs for the exact pattern.
+
+### 6c. Cross-link Both PRs
+
+After creating both PRs, update their descriptions to reference each other:
+- Cookbook PR body: add `## Companion PR\n- polkadot-developers/polkadot-docs#{companion-PR-number}`
+- Companion PR body: include `Companion to polkadot-developers/polkadot-cookbook#{cookbook-PR-number}`
+
+### 6d. Verify and Check Off Test Plan
+
+After both PRs are created, verify each test plan item and update the PR checklists:
+
+1. **CI workflow triggers correctly on PR** — run `gh pr checks {PR-number}` and confirm the test job passes
+2. **Badge renders in README** — check that the badge SVG URL returns HTTP 200:
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}" "https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml/badge.svg?event=push"
+   ```
+3. **Companion PR badge** — confirm the companion PR's badge also renders after cookbook CI passes
+
+Once verified, update both PR descriptions with `gh pr edit` to check off all items (`- [x]`). Do not leave unchecked items in test plans when the checks have actually passed.
 
 ---
 
@@ -539,3 +601,5 @@ When generating files, study these existing examples for patterns and convention
 | Guard action | `.github/actions/check-version-keys/action.yml` |
 | Complex test (build + process mgmt) | `polkadot-docs/smart-contracts/local-dev-node/tests/docs.test.ts` |
 | Shared version loader | `polkadot-docs/shared/load-variables.ts` |
+| Verified guides index | `polkadot-docs/README.md` |
+| Companion PR badge pattern | `chain-interactions/query-data/query-sdks.md` in polkadot-docs repo |
