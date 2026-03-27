@@ -573,6 +573,19 @@ After creating both PRs, update their descriptions to reference each other:
 - Cookbook PR body: add `## Companion PR\n- polkadot-developers/polkadot-docs#{companion-PR-number}`
 - Companion PR body: include `Companion to polkadot-developers/polkadot-cookbook#{cookbook-PR-number}`
 
+### 6d. Verify and Check Off Test Plan
+
+After both PRs are created, verify each test plan item and update the PR checklists:
+
+1. **CI workflow triggers correctly on PR** — run `gh pr checks {PR-number}` and confirm the test job passes
+2. **Badge renders in README** — check that the badge SVG URL returns HTTP 200:
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}" "https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/polkadot-docs-{guide-name}.yml/badge.svg?event=push"
+   ```
+3. **Companion PR badge** — confirm the companion PR's badge also renders after cookbook CI passes
+
+Once verified, update both PR descriptions with `gh pr edit` to check off all items (`- [x]`). Do not leave unchecked items in test plans when the checks have actually passed.
+
 ---
 
 ## Reference Files
