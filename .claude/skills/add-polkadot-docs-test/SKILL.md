@@ -149,7 +149,17 @@ After completing the pipeline, reflect on what happened during this run:
 3. **What reference files helped most?** Which existing harnesses were the best templates? Should new ones be added to the reference table?
 4. **What was unclear?** Were any instructions in this skill ambiguous or misleading?
 
-If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-add-polkadot-docs-test-skill`) with changes to this skill file. Include in the PR description:
+If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-add-polkadot-docs-test-skill`) with changes to this skill file.
+
+**When writing improvements, follow these skill best practices:**
+- Keep `SKILL.md` **directive, not prescriptive** — say "study this reference file and adapt" instead of embedding full code templates. Inline code goes stale; real files in the repo stay current.
+- Keep the skill **concise** (under ~200 lines). If detailed reference material is needed, split it into supporting files in this skill's directory and link from `SKILL.md`.
+- **Reference existing harnesses** rather than duplicating their patterns. Point to the file path and describe what to look for.
+- **Avoid over-specifying** — the Polkadot SDK accommodates many creative use cases. Provide classification signals and decision trees, not exhaustive templates for every scenario.
+- **Keep the skill autonomous** — never add steps that prompt or wait for user input.
+- Update the reference tables (Steps 2 and 3) when a new harness becomes a better example for a particular guide type.
+
+Include in the PR description:
 - What triggered the improvement (the specific failure or gap encountered)
 - What changed and why
 - Whether the improvement is backward-compatible with other guide types
