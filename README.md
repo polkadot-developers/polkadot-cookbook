@@ -23,7 +23,7 @@ Build runtime logic, smart contracts, dApps, and cross-chain applications with w
 
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-11116B.svg)](LICENSE)
 [![Polkadot Cookbook SDK](https://img.shields.io/github/actions/workflow/status/polkadot-developers/polkadot-cookbook/test-sdk.yml?label=Polkadot%20Cookbook%20SDK&color=E6007A)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml)
-[![CLI](https://img.shields.io/badge/CLI-dot%20v0.5.0-E6007A?logo=rust&logoColor=white)](dot/cli/)
+[![CLI](https://img.shields.io/badge/CLI-dot%20v0.11.6-E6007A?logo=rust&logoColor=white)](dot/cli/)
 
 </div>
 
