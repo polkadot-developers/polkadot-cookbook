@@ -66,3 +66,5 @@ npm ci && npm test
 - Keep related changes on one branch; don't split iterative fixes across branches/PRs
 - Conventional commits: `feat:`, `fix:`, `chore:`, etc.
 - When adding a `polkadot-docs/` test harness, open a **companion PR** in [`polkadot-developers/polkadot-docs`](https://github.com/polkadot-developers/polkadot-docs) to add the CI badge to the corresponding documentation page
+- PRs must include a **Test Plan** checklist — before marking a PR ready, execute every item in the checklist, verify it passes, then check it off (`- [x]`). Never leave test plan items unchecked
+- Skill-generated PRs (from `/add-recipe`, `/add-polkadot-docs-test`, etc.) should be created as **drafts** (`--draft`)
