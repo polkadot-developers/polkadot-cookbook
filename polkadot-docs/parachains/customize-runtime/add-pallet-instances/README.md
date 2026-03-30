@@ -3,7 +3,7 @@ title: "Add Pallet Instances to Runtime"
 description: "Verify the add pallet instances guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/add-pallet-instances/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/add-pallet-instances.md"
-docs_commit: "d4b41f851b16ac909a7422726a4fd47fea239ba3"
+docs_commit: "f67846c4e32a548f4867d9551cde600d94471c74"
 polkadot_sdk_version: "2512.1.0"
 parachain_template_version: "v0.0.5"
 ---
