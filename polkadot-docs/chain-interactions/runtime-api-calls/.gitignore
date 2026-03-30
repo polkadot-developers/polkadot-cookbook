@@ -1,0 +1,5 @@
+.papi/
+__pycache__/
+*.pyc
+tests/subxt-runtime-api-calls/target/
+tests/subxt-runtime-api-calls/polkadot_testnet_metadata.scale
