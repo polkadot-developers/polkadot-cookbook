@@ -35,7 +35,9 @@ Scan all `polkadot-docs/` test harnesses, compare their pinned `docs_commit` aga
 
 ## Phase 2: Analyze Drifts
 
-For each drifted file, spawn a **parallel subagent** (via the Agent tool) that:
+**Optimization:** Before spawning subagents, group drifted files by their `(old_sha, new_sha)` pair. Files sharing the same commit range can be analyzed in a single subagent with one API call, avoiding redundant fetches. This is common when upstream makes a bulk change (e.g., badge updates) that touches many files at once.
+
+For each drift (or group of drifts sharing a commit range), spawn a **parallel subagent** (via the Agent tool) that:
 
 1. Fetches the patch:
    ```bash
@@ -101,3 +103,51 @@ After presenting results, offer the user these actions:
 - **Cosmetic drifts**: "Want me to auto-update `docs_commit` in these READMEs to the latest SHA?" — If yes, edit the frontmatter in each affected README, commit, and push.
 - **Missing `docs_commit`**: "Want me to add `docs_commit` to these READMEs with the current latest SHA?" — If yes, add the field after the last frontmatter line before `---`, commit, and push.
 - **Substantive drifts**: "These guides have meaningful upstream changes. Review the diffs and update test harnesses as needed." — Do not auto-bump; the test code likely needs changes too.
+
+---
+
+## Phase 5: Create GitHub Issue
+
+After presenting results and performing any user-approved actions, create a GitHub issue summarizing the findings so a developer can resolve the substantive drifts later.
+
+- **Title**: `[Docs Drift] {N} tutorial(s) updated upstream`
+- **Label**: `docs-drift`
+- Check for an existing open issue with the `docs-drift` label first. If one exists, comment on it instead of creating a new one.
+- **Body** should include:
+  - The full results table from Phase 3 (substantive drifts, cosmetic drifts, up to date, missing pins)
+  - For substantive drifts: diff links and summaries of what changed
+  - For cosmetic drifts: note whether they were auto-bumped or still pending
+  - A call to action: "Review the substantive drifts and update test harnesses as needed."
+
+```bash
+# Check for existing issue
+gh issue list --state open --label "docs-drift" --json number --jq '.[0].number // empty'
+
+# Create or comment
+gh issue create --title "{title}" --body "{body}" --label "docs-drift"
+# OR
+gh issue comment {number} --body "{body}"
+```
+
+---
+
+## Phase 6: Self-Improvement
+
+After completing the pipeline, reflect on what happened during this run:
+
+1. **Were there API or parsing issues?** Did any README use a frontmatter field name not covered by the skill? Did the GitHub API return unexpected results?
+2. **Was the batching effective?** Did grouping by commit range save API calls, or were there edge cases?
+3. **Were the classifications accurate?** Did any diff get misclassified as cosmetic when it was substantive, or vice versa?
+4. **Were there missing categories?** Did the rubric fail to cover a type of change encountered in the diffs?
+
+If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-check-docs-drift-skill`) with changes to this skill file.
+
+**When writing improvements, follow the [Claude Code skills documentation](https://code.claude.com/docs/en/skills.md) and these best practices:**
+- Keep `SKILL.md` **directive, not prescriptive** — say "study this reference file and adapt" instead of embedding full code templates.
+- Keep the skill **concise** (under ~200 lines).
+- **Reference existing implementations** rather than duplicating patterns.
+- **Keep the skill autonomous** — never add steps that prompt or wait for user input (except Phase 4 where actions require confirmation).
+
+Include in the PR description:
+- What triggered the improvement (the specific failure or gap encountered)
+- What changed and why
