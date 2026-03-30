@@ -155,7 +155,7 @@ After completing the pipeline, reflect on what happened during this run:
 
 If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-add-polkadot-docs-test-skill`) with changes to this skill file.
 
-**When writing improvements, follow these skill best practices:**
+**When writing improvements, follow the [Claude Code skills documentation](https://code.claude.com/docs/en/skills.md) and these best practices:**
 - Keep `SKILL.md` **directive, not prescriptive** — say "study this reference file and adapt" instead of embedding full code templates. Inline code goes stale; real files in the repo stay current.
 - Keep the skill **concise** (under ~200 lines). If detailed reference material is needed, split it into supporting files in this skill's directory and link from `SKILL.md`.
 - **Reference existing harnesses** rather than duplicating their patterns. Point to the file path and describe what to look for.
