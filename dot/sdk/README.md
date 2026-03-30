@@ -208,7 +208,7 @@ To contribute to the SDK:
 3. Write tests for new functionality
 4. Run `cargo fmt` and `cargo clippy` before committing
 
-See the [Contributing Guide](../CONTRIBUTING.md) for details.
+See the [Contributing Guide](../../CONTRIBUTING.md) for details.
 
 ## Documentation
 

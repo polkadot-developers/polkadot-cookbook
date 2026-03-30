@@ -14,10 +14,6 @@ This section contains reference material, schemas, and specifications.
 
 - **[Manifest Schema](manifest-schema.md)** - Release manifest format
 
-### Security
-
-- **[Security Guidelines](security.md)** - Security best practices
-
 ## Quick Reference
 
 ### Manifest Format
@@ -41,18 +37,5 @@ recipes:
 
 [→ Complete Manifest Schema](manifest-schema.md)
 
-
-## Security Guidelines
-
-Before contributing recipes, review:
-
-- Code review requirements
-- Security best practices
-- Vulnerability reporting process
-- Safe coding patterns
-
-[→ Security Guidelines](security.md)
-
----
 
 [← Back to Documentation Hub](../)
