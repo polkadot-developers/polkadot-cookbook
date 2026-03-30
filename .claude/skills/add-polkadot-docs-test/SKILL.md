@@ -131,9 +131,13 @@ Classify failures and respond:
 - **Category B** (infrastructure): Add resilience wrappers (`it.skipIf`, retries, try/catch with warnings).
 - **Category C** (missing prerequisites): Report to user and stop.
 
+**Do NOT proceed to Step 6 until all tests pass.** If tests cannot be made green after 5 iterations, report the status to the user and stop — do not commit or create PRs with failing tests.
+
 ---
 
 ## Step 6: Create PRs
+
+Only after `npm test` exits with all tests passing:
 
 1. **Cookbook PR**: Commit all generated files + CI workflow. Use title `feat: add {guide-name} polkadot-docs test harness`.
 2. **Companion PR** (after cookbook PR merges): PR in `polkadot-developers/polkadot-docs` adding the CI badge to the guide page.
