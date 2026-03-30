@@ -96,13 +96,13 @@ List guides that have a source URL but no `docs_commit` field — suggest adding
 
 ---
 
-## Phase 4: Offer Actions
+## Phase 4: Auto-Bump & Report
 
-After presenting results, offer the user these actions:
+Act autonomously — do not prompt the user for confirmation:
 
-- **Cosmetic drifts**: "Want me to auto-update `docs_commit` in these READMEs to the latest SHA?" — If yes, edit the frontmatter in each affected README, commit, and push.
-- **Missing `docs_commit`**: "Want me to add `docs_commit` to these READMEs with the current latest SHA?" — If yes, add the field after the last frontmatter line before `---`, commit, and push.
-- **Substantive drifts**: "These guides have meaningful upstream changes. Review the diffs and update test harnesses as needed." — Do not auto-bump; the test code likely needs changes too.
+- **Cosmetic drifts**: Automatically update `docs_commit` in each affected README to the latest SHA, commit, and push.
+- **Substantive drifts**: Do NOT auto-bump. Report them in the results and the GitHub issue for manual review.
+- **Missing `docs_commit`**: Report them in the results. Do not add the field automatically — this is an informational note for the user.
 
 ---
 
