@@ -139,8 +139,8 @@ Classify failures and respond:
 
 Only after `npm test` exits with all tests passing:
 
-1. **Cookbook PR**: Commit all generated files + CI workflow. Use title `feat: add {guide-name} polkadot-docs test harness`.
-2. **Companion PR** (after cookbook PR merges): PR in `polkadot-developers/polkadot-docs` adding the CI badge to the guide page.
+1. **Cookbook PR**: Commit all generated files + CI workflow. Create as a **draft PR** (`gh pr create --draft`). Use title `feat: add {guide-name} polkadot-docs test harness`.
+2. **Companion PR** (after cookbook PR merges): **Draft PR** in `polkadot-developers/polkadot-docs` adding the CI badge to the guide page.
 
 ---
 
