@@ -146,7 +146,8 @@ If you identified concrete improvements, create a **draft PR** on a separate bra
 - Keep `SKILL.md` **directive, not prescriptive** — say "study this reference file and adapt" instead of embedding full code templates.
 - Keep the skill **concise** (under ~200 lines).
 - **Reference existing implementations** rather than duplicating patterns.
-- **Keep the skill autonomous** — never add steps that prompt or wait for user input (except Phase 4 where actions require confirmation).
+- **Keep the skill autonomous** — never add steps that prompt or wait for user input.
+- **Always create draft PRs** (`gh pr create --draft`) — never create ready-to-merge PRs from skill runs.
 
 Include in the PR description:
 - What triggered the improvement (the specific failure or gap encountered)
