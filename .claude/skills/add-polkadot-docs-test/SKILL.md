@@ -139,8 +139,10 @@ Classify failures and respond:
 
 Only after `npm test` exits with all tests passing:
 
-1. **Cookbook PR**: Commit all generated files + CI workflow. Create as a **draft PR** (`gh pr create --draft`). Use title `feat: add {guide-name} polkadot-docs test harness`.
-2. **Companion PR**: Immediately after creating the cookbook PR, create a **draft PR** in `polkadot-developers/polkadot-docs` adding the CI badge to the guide page. Reference the cookbook PR in the body: `Companion to polkadot-developers/polkadot-cookbook#{PR-number}`. Do not wait for the cookbook PR to merge — both PRs are created in the same run.
+1. **Update `polkadot-docs/README.md`**: Add a row for the new guide in the appropriate category table (Chain Interactions, Smart Contracts, etc.). Study the existing rows for the exact badge/link format.
+2. **Cookbook PR**: Commit all generated files + CI workflow + README update. Create as a **draft PR** (`gh pr create --draft`). Use title `feat: add {guide-name} polkadot-docs test harness`.
+3. **Companion PR**: Immediately after creating the cookbook PR, create a **draft PR** in `polkadot-developers/polkadot-docs` adding the CI badge to the guide page. Reference the cookbook PR in the body: `Companion to polkadot-developers/polkadot-cookbook#{PR-number}`. Do not wait for the cookbook PR to merge — both PRs are created in the same run.
+4. **Verify test plan**: After creating the cookbook PR, verify each item in the PR's test plan checklist. For items that are already confirmed (e.g., `npm test` passes locally), check them off by updating the PR body via `gh pr edit`. For items that require CI (e.g., workflow triggers), monitor and check them off once confirmed.
 
 ---
 
