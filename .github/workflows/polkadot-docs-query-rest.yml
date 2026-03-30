@@ -1,0 +1,51 @@
+name: Query On-Chain State with Sidecar REST API
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/query-rest/**'
+      - '!polkadot-docs/chain-interactions/query-rest/README.md'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/query-rest/**'
+      - '!polkadot-docs/chain-interactions/query-rest/README.md'
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/chain-interactions/query-rest
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/query-rest
+          npm test
+        timeout-minutes: 10
+
+  post-test:
+    needs: test
+    if: >
+      github.repository == 'polkadot-developers/polkadot-cookbook' &&
+      always() &&
+      github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/query-rest/README.md'
+      workflow_name: 'Query On-Chain State with Sidecar REST API'
+    permissions:
+      contents: read
+      issues: write
