@@ -49,76 +49,30 @@ Tests the core SDK library and CLI tool.
 
 ---
 
-#### `test-polkadot-sdk-recipes.yml` - Polkadot SDK Recipes
+#### `recipe-*.yml` - Per-Recipe Test Workflows
 
-Tests recipes that use the Polkadot SDK (Rust-based).
+Each recipe has its own dedicated workflow file (e.g., `recipe-parachain-example.yml`, `recipe-contracts-example.yml`). Workflows are path-filtered so only the affected recipe's tests run on a given PR.
 
-**Triggers:**
-- Push to master (paths: `recipes/**`)
-- Pull requests (paths: `recipes/**`)
-- Manual dispatch with optional recipe slug
-
-**Jobs:**
-1. **find-changed-recipes** - Detects which recipes changed
-   - PR: Only changed recipes
-   - Push to master: All recipes
-   - Manual: Specified recipe
-2. **test-polkadot-sdk** - Tests each recipe (matrix)
-   - Auto-detects recipe type from project structure
-   - Skips non-Polkadot SDK recipes
-   - Formatting check
-   - Clippy lints
-   - Build
-   - Run tests
-
-**Files:** `.github/workflows/test-polkadot-sdk-recipes.yml`
-
----
-
-#### `test-solidity-recipes.yml` - Solidity Recipes
-
-Tests recipes with Solidity smart contracts (Hardhat-based).
+**Current recipe workflows:**
+- `recipe-contracts-example.yml`
+- `recipe-contracts-precompile-example.yml`
+- `recipe-network-example.yml`
+- `recipe-pallet-example.yml`
+- `recipe-parachain-example.yml`
+- `recipe-paseo-local-network-example.yml`
+- `recipe-transaction-example.yml`
+- `recipe-xcm-example.yml`
 
 **Triggers:**
-- Push/PR to master/main (paths: `recipes/*/contracts/**`, `recipes/*/test/**`, `hardhat.config.ts`, etc.)
+- Push to master (paths: `recipes/{pathway}/{recipe-name}/**`)
+- Pull requests (paths: `recipes/{pathway}/{recipe-name}/**`)
+- Changes to `versions.yml` (filtered by a `guard` job that checks relevant keys)
 
 **Jobs:**
-1. **discover-recipes** - Finds recipes with `hardhat.config.ts`
-2. **test-recipes** - Tests each Solidity recipe (matrix)
-   - Install dependencies (`npm ci`)
-   - Compile contracts (`npm run compile`)
-   - TypeScript check (`tsc --noEmit`)
-   - Run tests (`npm test`)
-3. **summary** - Reports overall test status
+1. **guard** - Skips the test job if a `versions.yml` change doesn't affect the workflow's keys
+2. **test** - Installs dependencies (`npm ci`) and runs tests (`npm test`)
 
-**Files:** `.github/workflows/test-solidity-recipes.yml`
-
----
-
-#### `test-xcm-recipes.yml` - XCM Recipes
-
-Tests XCM recipes using Chopsticks for blockchain simulation.
-
-**Triggers:**
-- Push to master (paths: `recipes/**`)
-- Pull requests (paths: `recipes/**`)
-- Manual dispatch with optional recipe slug
-
-**Jobs:**
-1. **find-changed-recipes** - Detects which recipes changed
-2. **test-xcm** - Tests each XCM recipe (matrix)
-   - Auto-detects recipe type from project structure
-   - Skips non-XCM recipes
-   - Install dependencies
-   - Run linting
-   - Start Chopsticks in background (waits up to 2 minutes for initialization)
-   - Run tests
-   - Stop Chopsticks (cleanup)
-   - Show logs on failure
-
-**Special Handling:** Chopsticks must fully initialize before tests run (checks for "RPC listening" in logs)
-
-**Files:** `.github/workflows/test-xcm-recipes.yml`
+**Files:** `.github/workflows/recipe-*.yml`
 
 ---
 
@@ -349,10 +303,10 @@ This PR will trigger a MINOR version bump when merged.
 ```
 1. Developer creates PR with recipe changes
    ↓
-2. Recipe tests run in parallel:
-   ├─ test-polkadot-sdk-recipes.yml (for Rust recipes)
-   ├─ test-solidity-recipes.yml (for Solidity recipes)
-   └─ test-xcm-recipes.yml (for XCM recipes)
+2. Per-recipe workflows run (only affected recipes):
+   ├─ recipe-parachain-example.yml
+   ├─ recipe-contracts-example.yml
+   └─ ... (one workflow per recipe)
    ↓
 3. SDK changes also trigger:
    └─ test-sdk.yml
@@ -367,8 +321,8 @@ This PR will trigger a MINOR version bump when merged.
 ```bash
 # Via GitHub UI: Actions → Select workflow → Run workflow
 # Or via gh CLI:
-gh workflow run test-polkadot-sdk-recipes.yml -f recipe_slug=basic-pallet
-gh workflow run test-xcm-recipes.yml -f recipe_slug=teleport-assets
+gh workflow run recipe-pallet-example.yml
+gh workflow run recipe-xcm-example.yml
 ```
 
 ### Trigger Weekly Release Manually
@@ -446,7 +400,6 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 
 ## Related Documentation
 
-- [Release Process](RELEASE_PROCESS.md) - Semantic versioning and release automation
-- [Testing Guide](testing.md) - How to test workflows locally
-- [Pre-commit Hooks](pre-commit-hooks.md) - Local quality checks
+- [Release Process](release-process.md) - Semantic versioning and release automation
+- [Pre-commit Hooks](../automation/pre-commit-hooks.md) - Local quality checks
 - [Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) - Development workflow

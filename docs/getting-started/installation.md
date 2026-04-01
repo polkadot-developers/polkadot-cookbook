@@ -73,7 +73,7 @@ $env:PATH += ";$env:LOCALAPPDATA\bin"
 dot --version
 ```
 
-You should see output like: `dot 0.2.0`
+You should see output like: `dot 0.11.6`
 
 ---
 

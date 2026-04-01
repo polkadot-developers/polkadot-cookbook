@@ -17,7 +17,6 @@ This section is for developers building tools or extensions using the Polkadot C
 ### SDK Usage
 
 - **[SDK Guide](sdk-guide.md)** - Using the SDK programmatically
-- **[API Reference](api-reference.md)** - Complete API documentation
 
 ### CLI Development
 
@@ -117,7 +116,7 @@ For complete API documentation, run:
 cargo doc --package sdk --open
 ```
 
-Or see [api-reference.md](api-reference.md) for curated examples.
+Or see the [SDK Guide](sdk-guide.md) for curated examples.
 
 ---
 

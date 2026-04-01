@@ -15,10 +15,6 @@ This section contains documentation for repository maintainers managing releases
 - **[Release Process](release-process.md)** - Semantic versioning and automated releases
 - **[Workflows](workflows.md)** - GitHub Actions workflows and automation
 
-### Governance
-
-- **[Governance](governance.md)** - Decision-making and review process
-
 ## Quick Reference
 
 ### Release Management
