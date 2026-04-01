@@ -13,9 +13,7 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "runArgs": [
-    "--name", "papermoon-polkadot-cookbook",
-    "--cap-add=NET_ADMIN",
-    "--cap-add=NET_RAW"
+    "--name", "polkadot-cookbook-dev"
   ],
   "init": true,
   "updateRemoteUserUID": true,
@@ -47,8 +45,7 @@
     "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
     "source=claude-code-gh-${devcontainerId},target=/home/vscode/.config/gh,type=volume",
-    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly",
-    "source=${localWorkspaceFolder}/.devcontainer,target=/workspace/.devcontainer,type=bind,readonly"
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
@@ -57,10 +54,13 @@
     "GIT_CONFIG_GLOBAL": "/home/vscode/.gitconfig.local",
     "NPM_CONFIG_FUND": "false",
     "NPM_CONFIG_UPDATE_NOTIFIER": "false",
-    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}"
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "CLAUDE_BYPASS_PERMISSIONS": "${localEnv:CLAUDE_BYPASS_PERMISSIONS}",
+    "TESTNET_URL": "${localEnv:TESTNET_URL}",
+    "TESTNET_PRIVATE_KEY": "${localEnv:TESTNET_PRIVATE_KEY}"
   },
   "initializeCommand": "test -f \"$HOME/.gitconfig\" || touch \"$HOME/.gitconfig\"",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "python3 /opt/post_install.py"
+  "postCreateCommand": "python3 /opt/post_install.py && rustup show"
 }

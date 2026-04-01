@@ -85,13 +85,13 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_D
   fnm default ${NODE_VERSION}
 
 # Install Rust via rustup
-ARG RUST_VERSION=1.91
+# The exact toolchain version is resolved from rust-toolchain.toml at first build in /workspace.
+# We install a minimal 'stable' here just for cargo-llvm-cov; rustup will auto-switch in the workspace.
 ENV RUSTUP_HOME="/home/vscode/.rustup"
 ENV CARGO_HOME="/home/vscode/.cargo"
 ENV PATH="/home/vscode/.cargo/bin:$PATH"
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION} && \
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal && \
   . /home/vscode/.cargo/env && \
-  rustup component add rustfmt clippy llvm-tools-preview && \
   cargo install cargo-llvm-cov
 
 # Install Oh My Zsh

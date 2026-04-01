@@ -2,7 +2,7 @@
 """Post-install configuration for Claude Code devcontainer.
 
 Runs on container creation to set up:
-- Claude settings (bypassPermissions mode)
+- Claude settings (bypassPermissions opt-in via CLAUDE_BYPASS_PERMISSIONS=1)
 - Tmux configuration (200k history, mouse support)
 - Directory ownership fixes for mounted volumes
 """
@@ -16,7 +16,12 @@ from pathlib import Path
 
 
 def setup_claude_settings():
-    """Configure Claude Code with bypassPermissions enabled."""
+    """Configure Claude Code settings.
+
+    bypassPermissions is only enabled when CLAUDE_BYPASS_PERMISSIONS=1 is set.
+    This mode lets Claude read/write any file and run any shell command without
+    prompting — only opt in if you understand the trust implications.
+    """
     claude_dir = Path.home() / ".claude"
     claude_dir.mkdir(parents=True, exist_ok=True)
 
@@ -28,10 +33,15 @@ def setup_claude_settings():
         with contextlib.suppress(json.JSONDecodeError):
             settings = json.loads(settings_file.read_text())
 
-    # Set bypassPermissions mode
-    if "permissions" not in settings:
-        settings["permissions"] = {}
-    settings["permissions"]["defaultMode"] = "bypassPermissions"
+    # Only enable bypassPermissions when explicitly opted in via env var
+    bypass = os.environ.get("CLAUDE_BYPASS_PERMISSIONS", "").strip()
+    if bypass == "1":
+        if "permissions" not in settings:
+            settings["permissions"] = {}
+        settings["permissions"]["defaultMode"] = "bypassPermissions"
+        print("[post_install] Claude bypassPermissions ENABLED (opt-in)", file=sys.stderr)
+    else:
+        print("[post_install] Claude bypassPermissions disabled (default)", file=sys.stderr)
 
     settings_file.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
     print(f"[post_install] Claude settings configured: {settings_file}", file=sys.stderr)
