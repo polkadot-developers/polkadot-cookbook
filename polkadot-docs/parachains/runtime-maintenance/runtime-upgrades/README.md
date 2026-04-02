@@ -3,7 +3,7 @@ title: "Runtime Upgrades"
 description: "Verify the runtime upgrades tutorial from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/runtime-maintenance/runtime-upgrades/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/runtime-maintenance/runtime-upgrades.md"
-docs_commit: "6249ee3d8487c858826109648c24cd8e25c76d16"
+docs_commit: "f67846c4e32a548f4867d9551cde600d94471c74"
 polkadot_sdk_version: "polkadot-stable2512-1"
 parachain_template_version: "v0.0.5"
 ---
