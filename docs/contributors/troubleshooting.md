@@ -703,29 +703,14 @@ cargo tarpaulin
 
 ---
 
-### Semantic Label Wrong
+### Version Bump Seems Wrong in Release PR
 
-**Symptom:** PR has wrong `semantic:major/minor/patch` label
-
-**Causes:**
-- Commits don't follow conventional format
-- Breaking change not marked
+**Symptom:** The `/release` skill chose a version bump you disagree with
 
 **Solutions:**
 
-```bash
-# Fix commit messages
-git rebase -i HEAD~3
-# Change commits to follow conventional format
-
-# Mark breaking changes
-git commit --amend -m "feat(recipe)!: breaking change"
-
-# Push changes
-git push --force-with-lease
-
-# Or manually change label in GitHub UI
-```
+- Edit the release PR before merging: update `Cargo.toml` version and the release directory name/content
+- Or use clear conventional commit prefixes (`feat:`, `fix:`, `feat!:`) to help the skill classify changes correctly
 
 ---
 
