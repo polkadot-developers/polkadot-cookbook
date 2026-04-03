@@ -23,11 +23,9 @@ The Polkadot Cookbook uses [Conventional Commits](https://www.conventionalcommit
 
 Using conventional commits enables:
 
-✅ **Automated versioning** - Determines MAJOR/MINOR/PATCH bumps automatically
-✅ **Auto-generated changelogs** - Creates release notes from commit messages
-✅ **Semantic labels** - PRs automatically labeled with `semantic:major/minor/patch`
-✅ **Release automation** - Triggers appropriate release workflows
-✅ **Clear history** - Makes it easy to understand what changed
+- **Automated versioning** - The `/release` skill uses commit types as signals for MAJOR/MINOR/PATCH bumps
+- **Meaningful release notes** - Commit prefixes help categorize changes in release notes
+- **Clear history** - Makes it easy to understand what changed and why
 
 ## Format
 
@@ -248,38 +246,9 @@ The hook automatically skips validation for:
 - Merge commits
 - Revert commits
 
-### PR Validation
+### Version Impact at Release Time
 
-When you create a PR, the `auto-label-semantic` workflow:
-
-1. **Analyzes all commits** in the PR
-2. **Detects version impact** from commit types
-3. **Applies semantic label** (`semantic:major/minor/patch/none`)
-4. **Posts comment** explaining the analysis
-
-**Example comment:**
-```
-🤖 Semantic Version Analysis
-
-Result: MINOR version bump
-
-Commit Analysis
-| Commit | Type | Impact | Message |
-|--------|------|--------|---------|
-| abc123 | feat | 🟡 MINOR | feat(recipe): add feature |
-| def456 | fix  | 🟢 PATCH | fix(cli): bug fix |
-
-This PR will trigger a MINOR version bump when merged.
-```
-
-### Manual Override
-
-If the automatic label is wrong, you can manually change it:
-
-- `semantic:major` 🔴 - Breaking changes
-- `semantic:minor` 🟡 - New features
-- `semantic:patch` 🟢 - Bug fixes
-- `semantic:none` ⚪ - No version bump
+Version bumps are determined at release time by the `/release` skill, which analyzes all commits since the last tag. The skill reads actual diffs to understand what changed, so conventional commit prefixes serve as hints but the actual change content takes precedence.
 
 ## Best Practices
 
@@ -357,60 +326,27 @@ git commit --amend -m "feat: proper format"
 git commit --no-verify -m "invalid format"
 ```
 
-### Wrong Semantic Label on PR
+### Release Didn't Include My Changes
 
-**Symptom:** PR has incorrect `semantic:*` label
-
-**Causes:**
-- Commits don't follow conventional format
-- Mixed commit types in PR
-- Breaking change not properly marked
-
-**Solution:**
-1. Review PR commits
-2. Manually change label if needed
-3. Or fix commit messages:
-   ```bash
-   git rebase -i HEAD~3
-   git commit --amend
-   git push --force-with-lease
-   ```
-
-### Release Didn't Trigger
-
-**Symptom:** Expected release didn't happen
+**Symptom:** Expected changes not in the release
 
 **Causes:**
-- All commits were `docs`, `chore`, etc. (no version bump)
-- Commits don't follow conventional format
-- No changes since last release
+- Changes not merged to `master` before `/release` was run
+- No changes since last release tag
 
 **Solution:**
-- Check commit messages follow format
-- Ensure at least one `feat` or `fix` commit
-- Review release workflow logs
+- Verify your PR is merged to `master`
+- Check `git log v0.x.x..HEAD` to confirm your commit is included
 
 ### Breaking Change Not Detected
 
-**Symptom:** Breaking change didn't trigger major release
+**Symptom:** Breaking change not reflected in version bump
 
-**Causes:**
-- Missing `!` or `BREAKING CHANGE:` marker
-- Not detected by semantic analysis
-
-**Solution:**
+**Solution:** Mark breaking changes clearly using `!` or `BREAKING CHANGE:` footer:
 ```bash
-# Use ! notation
 git commit -m "feat(sdk)!: breaking change"
-
-# Or use footer
-git commit -m "$(cat <<'EOF'
-feat(sdk): breaking change
-
-BREAKING CHANGE: Description of what broke
-EOF
-)"
 ```
+The `/release` skill reads actual diffs but conventional markers help ensure correct classification.
 
 ## Related Documentation
 
