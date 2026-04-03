@@ -1,7 +1,6 @@
 ---
 name: release
 description: Cut a new versioned release. Analyzes changes since last tag, determines semver bump, generates release notes and manifest, updates Cargo.toml, and opens a draft PR that triggers publish-release.yml on merge.
-disable-model-invocation: true
 ---
 
 # Release
