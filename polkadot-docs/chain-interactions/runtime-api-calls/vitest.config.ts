@@ -4,9 +4,8 @@ import { sharedVitestConfig } from "../../../shared/vitest.shared";
 export default defineConfig({
   test: {
     ...sharedVitestConfig,
-    testTimeout: 360000,
-    hookTimeout: 120000,
-    setupFiles: ["./tests/setup.ts"],
+    testTimeout: 60000,
+    hookTimeout: 30000,
     include: ["tests/docs.test.ts"],
   },
 });

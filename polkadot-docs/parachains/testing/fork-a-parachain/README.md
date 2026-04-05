@@ -3,7 +3,7 @@ title: "Fork a Parachain"
 description: "Verify the Fork a Parachain guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/testing/fork-a-parachain/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/testing/fork-a-parachain.md"
-docs_commit: "d1a754e3af7f11ba5a160fdcd58287f8a7c40329"
+docs_commit: "f67846c4e32a548f4867d9551cde600d94471c74"
 ---
 
 # Fork a Parachain
