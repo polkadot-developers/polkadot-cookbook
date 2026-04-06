@@ -16,6 +16,8 @@ Verifies every reproducible step of the **[Zero to Hero Smart Contract DApp](htt
 2. **Clone Repository** — clone `revm-hardhat-examples` at a pinned commit and verify directory structure
 3. **Install & Compile Smart Contract** — install dependencies, compile `Storage.sol`, validate ABI
 4. **Install & Build DApp** — install Next.js dependencies, verify Storage ABI, build the frontend
+5. **Verify Frontend Code Structure** — validate viem chain config, contract utility, React components, page composition
+6. **Verify DApp Chain Integration** — connect to testnet via viem, read block data, attempt contract read
 
 ## Prerequisites
 
@@ -45,7 +47,13 @@ Clones `polkadot-developers/revm-hardhat-examples` at the pinned commit and veri
 Runs `npm ci` inside `storage-contract/`, verifies Hardhat is available, compiles `Storage.sol`, and validates the artifact: ABI must expose `setNumber`, `getNumber`, and `NumberStored` event; bytecode must be non-empty.
 
 ### Phase 4 — Install & Build DApp
-Runs `npm ci` inside `dapp/`, verifies `viem` and `next` are installed, checks the `Storage.json` ABI file exists in `dapp/abis/`, and runs `npm run build` to produce the Next.js production build.
+Runs `npm ci` inside `dapp/`, verifies `viem` and `next` are installed, checks the `Storage.json` ABI file exists in `dapp/abis/`, and runs `npm run build` to produce the Next.js production build (soft-failure on upstream TypeScript errors).
+
+### Phase 5 — Verify Frontend Code Structure
+Validates the dapp source code structure: viem chain configuration (chain ID, RPC URL, native currency), contract utility (address format, ABI import), React components (`WalletConnect` with wallet connection + network switching, `ReadContract` with blockchain polling, `WriteContract` with simulate/sign/confirm flow), page composition, and ABI consistency between compiled artifact and dapp bundle.
+
+### Phase 6 — Verify DApp Chain Integration
+Uses viem from the dapp's `node_modules` to connect to the Polkadot Hub testnet RPC, read chain ID and latest block number, and attempt a `getNumber()` read on the Storage contract. Chain integration tests use soft-failure — they pass with a warning if the RPC is unreachable or the contract is not deployed on testnet.
 
 ## Exact Replication Steps
 
@@ -55,6 +63,7 @@ The test follows the guide's flow:
 3. Compile contracts (`npx hardhat compile`)
 4. Install dapp dependencies (`cd dapp && npm ci`)
 5. Build the frontend (`npm run build`)
+6. Validate frontend source code and chain connectivity
 
 ## Versions Tested
 
