@@ -27,11 +27,9 @@ jobs:
 
       # Install Foundry nightly — required for Polkadot Hub support
       # (stable Foundry does not include polkadot-testnet chain support)
-      - name: Install Foundry nightly
-        run: |
-          curl -L https://foundry.paradigm.xyz | bash
-          echo "$HOME/.foundry/bin" >> $GITHUB_PATH
-          "$HOME/.foundry/bin/foundryup" --version nightly
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
       - name: Verify Foundry installation
         run: forge --version
