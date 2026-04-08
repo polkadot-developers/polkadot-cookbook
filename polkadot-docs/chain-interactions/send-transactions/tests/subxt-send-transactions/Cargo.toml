@@ -1,0 +1,15 @@
+[workspace]
+
+[package]
+name = "subxt-send-transactions"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "send_transfer"
+path = "src/bin/send_transfer.rs"
+
+[dependencies]
+subxt = "0.44.2"
+subxt-signer = { version = "0.44.2", features = ["sr25519", "subxt"] }
+tokio = { version = "1.44.2", features = ["macros", "rt"] }
