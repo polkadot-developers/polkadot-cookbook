@@ -1,8 +1,14 @@
+<div align="center">
+  <img src="cover.svg" alt="Release v0.13.0" width="100%" />
+</div>
+
 # Release v0.13.0
 
 Released: 2026-04-09
 
-> Three new documentation test harnesses, a Claude Code devcontainer, and a professionally overhauled release pipeline.
+## Summary
+
+This release adds three new documentation test harnesses for chain-interactions and smart-contracts guides, giving developers automated verification that tutorials actually work before they follow them. A new Claude Code devcontainer enables one-click cloud development, and the release pipeline itself was overhauled with professional open-source standards including changelogs, contributor credits, and generative cover art.
 
 ## What's New
 

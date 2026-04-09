@@ -95,11 +95,19 @@ tooling:
 
 Get actual tool versions from the local environment.
 
-### 3c. Release notes
+### 3c. Cover art
+
+Generate a unique Mondrian-inspired SVG at `.github/releases/vX.Y.Z/cover.svg`. Follow the specification in [`COVER_ART.md`](COVER_ART.md) — it defines the Polkadot brand palette, grid composition rules, and variation strategy. Study the reference cover at `.github/releases/v0.13.0/cover.svg` and create a **distinct but recognizably related** composition for this release.
+
+### 3d. Release notes
 
 Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in `.github/releases/` for the established format, then **enhance** with these sections:
 
 ```
+<div align="center">
+  <img src="cover.svg" alt="Release vX.Y.Z" width="100%" />
+</div>
+
 # Release vX.Y.Z
 
 Released: YYYY-MM-DD
@@ -141,7 +149,7 @@ Tested with:
 
 **Do NOT include a Contributors section** — GitHub auto-generates one with avatars at the bottom of every release. Adding a manual one creates duplicates.
 
-### 3d. Update CHANGELOG.md
+### 3e. Update CHANGELOG.md
 
 Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format.
 
@@ -176,7 +184,7 @@ At the bottom of the file, maintain a link reference section:
 
 If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` section, and the current release only.
 
-### 3e. Update Cargo.toml and lockfile
+### 3f. Update Cargo.toml and lockfile
 
 - Edit `Cargo.toml` `[workspace.package]` → `version = "X.Y.Z"` (strip `v` prefix)
 - Run `cargo update --workspace`
@@ -189,7 +197,7 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
 
 2. Stage and commit:
    ```bash
-   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md
+   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md  # includes cover.svg
    git commit -m "chore(release): vX.Y.Z"
    ```
 
