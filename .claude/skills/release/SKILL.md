@@ -1,11 +1,11 @@
 ---
 name: release
-description: Cut a new versioned release. Analyzes changes since last tag, determines semver bump, generates release notes and manifest, updates Cargo.toml, and opens a draft PR that triggers publish-release.yml on merge.
+description: Cut a new versioned release. Analyzes changes since last tag, determines semver bump, generates release notes and manifest, updates Cargo.toml and CHANGELOG.md, and opens a draft PR that triggers publish-release.yml on merge.
 ---
 
 # Release
 
-Create a versioned release of the Polkadot Cookbook. This skill replaces the old `release-weekly.yml` and `release-on-breaking-change.yml` workflows.
+Create a versioned release of the Polkadot Cookbook.
 
 **Contract with CI:** The `publish-release.yml` workflow triggers on merge to `master` when `.github/releases/v*/manifest.yml` changes. It builds CLI binaries, creates a git tag, and publishes the GitHub Release. This skill's job is to produce the artifacts that workflow expects.
 
@@ -45,122 +45,140 @@ Create a versioned release of the Polkadot Cookbook. This skill replaces the old
 
 ## Phase 2: Determine Version Bump
 
-Analyze the categorized changes to determine the semver bump. Use your understanding of the actual changes, not just commit prefixes.
+Analyze the categorized changes to determine the semver bump. Use **both** your understanding of the actual changes and conventional commit signals.
 
-**Rules (alpha v0.x.x):**
+### Breaking Change Detection
+
+Scan every commit for breaking change signals (any match = breaking):
+- Conventional commit footer: `BREAKING CHANGE:` or `BREAKING-CHANGE:` in the commit body (`git log --format="%B"`)
+- Exclamation mark convention: `feat!:`, `fix!:`, `refactor!:` etc. in the subject line
+- Public API surface changes: if CLI/SDK files changed, diff `dot/sdk/src/lib.rs` exports and CLI help output for removed/renamed items
+
+### Version Bump Rules (alpha v0.x.x)
+
 - Breaking changes to CLI/SDK public API → **minor** (becomes major post-v1.0)
 - New recipes, new docs test harnesses, new features (`feat:`) → **minor**
 - Bug fixes, CI changes, config, docs, chores → **patch**
 
 **Highest wins:** If any change is minor-worthy, the whole release is minor.
 
-Calculate the new version:
-```
-Current: v0.11.6
-Patch:   v0.11.7
-Minor:   v0.12.0
-```
-
 ---
 
 ## Phase 3: Generate Release Artifacts
 
-1. **Create the release directory:**
+### 3a. Gather metadata
 
-   ```
-   .github/releases/vX.Y.Z/
-   ```
+Collect this information before generating any files:
 
-2. **Generate `manifest.yml`:**
+- **Contributors:** `git log {tag}..HEAD --format="%aN" | sort -u` — deduplicate, look up GitHub usernames where possible
+- **Stats:** `git diff --shortstat {tag}..HEAD` — extract files changed, insertions, deletions
+- **Diff link:** `https://github.com/polkadot-developers/polkadot-cookbook/compare/{tag}...v{new}`
 
-   ```yaml
-   release: vX.Y.Z
-   release_date: 2026-04-03T00:00:00Z   # current UTC time
-   status: alpha
+### 3b. Release directory and manifest
 
-   tooling:
-     rust: "1.91.1"       # from: rustc --version
-     node: "v20.20.1"     # from: node --version
-   ```
+Create `.github/releases/vX.Y.Z/` with `manifest.yml`:
 
-   Get actual tool versions from the local environment.
+```yaml
+release: vX.Y.Z
+previous_release: vA.B.C          # ← the tag from Phase 1
+release_date: 2026-04-09T00:00:00Z
+status: alpha
 
-3. **Generate `RELEASE_NOTES.md`:**
+tooling:
+  rust: "1.91.0"       # from: rustc --version
+  node: "v24.7.0"      # from: node --version
+```
 
-   Write meaningful, human-readable release notes. Group changes by category, not just a raw commit list. Example structure:
+Get actual tool versions from the local environment.
 
-   ```markdown
-   # Release vX.Y.Z
+### 3c. Release notes
 
-   Released: YYYY-MM-DD
+Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in `.github/releases/` for the established format, then **enhance** with these sections:
 
-   ## What's New
+```
+# Release vX.Y.Z
 
-   ### Recipes
-   - Added **Uniswap V2 Core with Hardhat** recipe (contracts pathway)
+Released: YYYY-MM-DD
 
-   ### Documentation Tests
-   - Added test harness for **Query On-Chain State with Sidecar REST API** guide
+> One-sentence release summary highlighting the most impactful change.
 
-   ### CLI & SDK
-   - (if applicable)
+## Breaking Changes          ← only if breaking changes exist; omit otherwise
+- Description of what broke and migration steps
 
-   ### Infrastructure
-   - Standardized test harness configuration across all harnesses
+## What's New               ← group by category, omit empty categories
+### Recipes / Documentation Tests / CLI & SDK / Infrastructure
 
-   ## Commits
+## Migration Notes           ← only if versions.yml changed or deps bumped
+- What downstream consumers need to update
 
-   - feat: add query-rest polkadot-docs test harness (#210)
-   - chore: standardize test harness configuration (#206)
+## Commits                   ← ordered by type: feat → fix → chore → docs
+- feat: ... (#N)
+- fix: ... (#N)
 
-   ## Compatibility
+## Contributors
+- @username1, @username2, ...
 
-   Tested with:
-   - Rust: 1.91.1
-   - Node.js: v20.20.1
+## Stats
+**N commits, N contributors, +X / -Y lines**
+**Full Changelog:** https://github.com/polkadot-developers/polkadot-cookbook/compare/vA.B.C...vX.Y.Z
 
-   ---
+## Compatibility
+Tested with:
+- Rust: 1.91.0
+- Node.js: v24.7.0
 
-   **Status:** Alpha (v0.x.x)
-   ```
+---
+**Status:** Alpha (v0.x.x)
+```
 
-   Omit empty categories. The "What's New" section should summarize in plain language; the "Commits" section is the raw list for reference.
+### 3d. Update CHANGELOG.md
 
-4. **Update `Cargo.toml`** workspace version (strip `v` prefix):
+Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format:
 
-   Edit `Cargo.toml` `[workspace.package]` → `version = "X.Y.Z"`
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
 
-5. **Update `Cargo.lock`:**
+### Added
+- ...
 
-   ```bash
-   cargo update --workspace
-   ```
+### Changed
+- ...
+
+### Fixed
+- ...
+
+### Breaking
+- ...
+```
+
+At the bottom of the file, maintain a link reference section:
+```
+[X.Y.Z]: https://github.com/polkadot-developers/polkadot-cookbook/compare/vA.B.C...vX.Y.Z
+```
+
+If `CHANGELOG.md` doesn't exist yet, create it with a header and backfill the current release only — don't attempt to reconstruct past releases.
+
+### 3e. Update Cargo.toml and lockfile
+
+- Edit `Cargo.toml` `[workspace.package]` → `version = "X.Y.Z"` (strip `v` prefix)
+- Run `cargo update --workspace`
 
 ---
 
 ## Phase 4: Create Release PR
 
-1. Create a release branch:
-
-   ```bash
-   git checkout -b release/vX.Y.Z
-   ```
+1. Create a release branch: `git checkout -b release/vX.Y.Z`
 
 2. Stage and commit:
-
    ```bash
-   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock
+   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md
    git commit -m "chore(release): vX.Y.Z"
    ```
 
 3. Push and create a **draft PR**:
-
    ```bash
    git push -u origin release/vX.Y.Z
-   gh pr create --draft \
-     --title "Release vX.Y.Z" \
-     --label "release" \
-     --body "..."
+   gh pr create --draft --title "Release vX.Y.Z" --label "release" --body "..."
    ```
 
    The PR body should include:
@@ -175,22 +193,9 @@ Minor:   v0.12.0
 
 After completing the pipeline, reflect on what happened during this run:
 
-1. **What edge cases were hit?** Did the version bump logic handle all commit patterns correctly? Were there commits that were hard to categorize (e.g., a `chore:` that actually added a feature)?
-2. **Were the release notes accurate?** Did the categorization match reality? Were any changes miscategorized or missed entirely?
-3. **Did the `publish-release.yml` contract hold?** Was the manifest format correct? Did the file paths match what the workflow expects?
-4. **What was unclear?** Were any instructions in this skill ambiguous or missing for the scenario encountered?
+1. Did the version bump logic handle all commit patterns correctly?
+2. Were the release notes accurate and well-categorized?
+3. Did the `publish-release.yml` contract hold?
+4. Were any instructions ambiguous?
 
-If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-release-skill`) with changes to this skill file.
-
-**When writing improvements, follow the [Claude Code skills documentation](https://code.claude.com/docs/en/skills.md) and these best practices:**
-- Keep `SKILL.md` **directive, not prescriptive** — say "study this reference file and adapt" instead of embedding full code templates. Inline code goes stale; real files in the repo stay current.
-- Keep the skill **concise** (under ~200 lines). If detailed reference material is needed, split it into supporting files in this skill's directory and link from `SKILL.md`.
-- **Reference existing releases** (e.g., `.github/releases/v0.11.6/`) rather than duplicating their patterns.
-- **Keep the skill autonomous** — never add steps that prompt or wait for user input.
-- Always create **draft PRs** (`gh pr create --draft`).
-
-Include in the PR description:
-- What triggered the improvement (the specific failure or gap encountered)
-- What changed and why
-
-This ensures the skill evolves with each use rather than accumulating blind spots.
+If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-release-skill`) with changes to this skill file. Follow the best practices in the skill directory's supporting docs.
