@@ -5,7 +5,7 @@ description: Cut a new versioned release. Analyzes changes since last tag, deter
 
 # Release
 
-Create a versioned release of the Polkadot Cookbook.
+Create a versioned release of the Polkadot Cookbook. Accepts an optional bump override argument: `/release patch`, `/release minor`, or `/release major`. If no argument is given, the bump is determined automatically.
 
 **Contract with CI:** The `publish-release.yml` workflow triggers on merge to `master` when `.github/releases/v*/manifest.yml` changes. It builds CLI binaries, creates a git tag, and publishes the GitHub Release. This skill's job is to produce the artifacts that workflow expects.
 
@@ -39,20 +39,26 @@ Create a versioned release of the Polkadot Cookbook.
    | **Docs** | `*.md` files, `docs/` |
    | **Chore** | Everything else |
 
-4. If there are zero commits since the last tag, report "Nothing to release" and **stop**.
+4. **Filter out release bookkeeping commits** — exclude commits matching `chore(release): v*` from the "What's New" and categorization. They are version bumps from prior releases, not user-facing changes.
+
+5. If there are zero non-bookkeeping commits since the last tag, report "Nothing to release" and **stop**.
 
 ---
 
 ## Phase 2: Determine Version Bump
 
-Analyze the categorized changes to determine the semver bump. Use **both** your understanding of the actual changes and conventional commit signals.
+If a bump override was provided (`/release patch|minor|major`), use it directly and skip auto-detection. Otherwise, analyze commits.
 
 ### Breaking Change Detection
 
 Scan every commit for breaking change signals (any match = breaking):
-- Conventional commit footer: `BREAKING CHANGE:` or `BREAKING-CHANGE:` in the commit body (`git log --format="%B"`)
-- Exclamation mark convention: `feat!:`, `fix!:`, `refactor!:` etc. in the subject line
-- Public API surface changes: if CLI/SDK files changed, diff `dot/sdk/src/lib.rs` exports and CLI help output for removed/renamed items
+- **Footer convention:** `BREAKING CHANGE:` or `BREAKING-CHANGE:` appearing at the **start of a line** in the commit body (`git log --format="%B"`). Ignore free-text mentions of "breaking" that aren't footer-formatted — these are descriptions, not signals.
+- **Exclamation mark convention:** `feat!:`, `fix!:`, `refactor!:` etc. in the subject line
+- **Public API surface:** if CLI/SDK files changed, diff `dot/sdk/src/lib.rs` exports and CLI help output for removed/renamed items
+
+### Squash merge handling
+
+GitHub squash merges often strip conventional commit prefixes (e.g., "Add feature (#123)" instead of "feat: add feature"). When a commit has no `type:` prefix, fall back to **diff-based categorization** — the file paths changed determine the category, not the subject line.
 
 ### Version Bump Rules (alpha v0.x.x)
 
@@ -68,10 +74,8 @@ Scan every commit for breaking change signals (any match = breaking):
 
 ### 3a. Gather metadata
 
-Collect this information before generating any files:
-
-- **Contributors:** `git log {tag}..HEAD --format="%aN" | sort -u` — deduplicate, look up GitHub usernames where possible
-- **Stats:** `git diff --shortstat {tag}..HEAD` — extract files changed, insertions, deletions
+- **Contributors:** `git log {tag}..HEAD --format="%aN <%aE>" | sort -u` — extract GitHub usernames from noreply emails
+- **Stats:** `git diff --shortstat {tag}..HEAD`
 - **Diff link:** `https://github.com/polkadot-developers/polkadot-cookbook/compare/{tag}...v{new}`
 
 ### 3b. Release directory and manifest
@@ -133,9 +137,16 @@ Tested with:
 
 ### 3d. Update CHANGELOG.md
 
-Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format:
+Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format.
+
+**Structure:** The file must always have an `## [Unreleased]` section at the top (below the header), followed by versioned entries. When cutting a release:
+1. Move any content under `[Unreleased]` into the new version entry
+2. Leave `[Unreleased]` empty (with no subsections) for future changes
+3. Add the new version entry below `[Unreleased]`
 
 ```markdown
+## [Unreleased]
+
 ## [X.Y.Z] - YYYY-MM-DD
 
 ### Added
@@ -153,10 +164,11 @@ Prepend the new release to `CHANGELOG.md` at the repository root (create the fil
 
 At the bottom of the file, maintain a link reference section:
 ```
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/vX.Y.Z...HEAD
 [X.Y.Z]: https://github.com/polkadot-developers/polkadot-cookbook/compare/vA.B.C...vX.Y.Z
 ```
 
-If `CHANGELOG.md` doesn't exist yet, create it with a header and backfill the current release only — don't attempt to reconstruct past releases.
+If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` section, and the current release only.
 
 ### 3e. Update Cargo.toml and lockfile
 
@@ -191,11 +203,4 @@ If `CHANGELOG.md` doesn't exist yet, create it with a header and backfill the cu
 
 ## Phase 5: Self-Improvement
 
-After completing the pipeline, reflect on what happened during this run:
-
-1. Did the version bump logic handle all commit patterns correctly?
-2. Were the release notes accurate and well-categorized?
-3. Did the `publish-release.yml` contract hold?
-4. Were any instructions ambiguous?
-
-If you identified concrete improvements, create a **draft PR** on a separate branch (`chore/improve-release-skill`) with changes to this skill file. Follow the best practices in the skill directory's supporting docs.
+Reflect on this run: bump logic correctness, release notes accuracy, CI contract validity, instruction gaps. If concrete improvements exist, open a **draft PR** on `chore/improve-release-skill` with changes to this skill file.
