@@ -1,11 +1,22 @@
 ---
 name: check-docs-drift
-description: Detect upstream changes to polkadot-docs tutorials and classify drifts as cosmetic or substantive. Run on-demand to find which test harnesses need updating.
+description: Detect upstream changes to polkadot-docs tutorials, classify drifts, and sync dependency versions from upstream variables.yml.
 ---
 
 # Check Docs Drift
 
-Scan all `polkadot-docs/` test harnesses, compare their pinned `docs_commit` against the latest upstream commit, and classify any drifts.
+Scan all `polkadot-docs/` test harnesses, compare their pinned `docs_commit` against the latest upstream commit, classify any drifts, and sync dependency versions from the upstream `variables.yml`.
+
+---
+
+## Metrics Tracking
+
+Throughout the entire run, maintain running counters to produce a Run Report at the end:
+
+- **Wall-clock time**: Record `date +%s` at the start and end of each phase to measure duration.
+- **Counts per phase**: READMEs scanned, drifts found, subagents spawned, diff lines fetched, `gh api` calls made, files read/modified, `npm install` runs, versions bumped.
+
+Track these as you go — do not retroactively estimate. Report them in Phase 8.
 
 ---
 
@@ -131,7 +142,36 @@ gh issue comment {number} --body "{body}"
 
 ---
 
-## Phase 6: Self-Improvement
+## Phase 6: Sync Dependency Versions
+
+Compare our `versions.yml` against the upstream [polkadot-docs `variables.yml`](https://github.com/polkadot-developers/polkadot-docs/blob/master/variables.yml).
+
+1. Fetch the upstream file:
+   ```bash
+   gh api repos/polkadot-developers/polkadot-docs/contents/variables.yml --jq '.content' | base64 -d
+   ```
+
+2. For each entry in our `versions.yml`, find the matching entry in upstream `variables.yml` and compare versions. The structures differ — map between them:
+   - `polkadot_sdk.release_tag` ↔ `dependencies.repositories.polkadot_sdk.version`
+   - `parachain_template.crates.*` ↔ `dependencies.repositories.polkadot_sdk_parachain_template.subdependencies.*` and `dependencies.crates.*`
+   - `zombienet.version` ↔ `dependencies.repositories.zombienet.version`
+   - `crates.*` ↔ `dependencies.crates.*`
+   - `javascript_packages.*` ↔ `dependencies.javascript_packages.*`
+
+3. Build a list of version mismatches (our version vs upstream version).
+
+4. For each outdated entry:
+   - Update `versions.yml`
+   - Find all `package.json` files (in `polkadot-docs/`, `recipes/`, `migration/`, and `dot/sdk/templates/`) that reference the same package at the old version and update them
+   - Run `npm install --package-lock-only` in each modified harness directory to regenerate lockfiles
+
+5. If any entries exist in upstream but not in our `versions.yml`, check whether that package is used in any harness `package.json`. If so, add it to `versions.yml` and report it.
+
+6. Present a summary table of version changes made, and any new entries added.
+
+---
+
+## Phase 7: Self-Improvement
 
 After completing the pipeline, reflect on what happened during this run:
 
@@ -152,3 +192,32 @@ If you identified concrete improvements, create a **draft PR** on a separate bra
 Include in the PR description:
 - What triggered the improvement (the specific failure or gap encountered)
 - What changed and why
+
+---
+
+## Phase 8: Run Report
+
+Display a final metrics summary so the user can see where time and tokens were spent:
+
+```
+## Run Report
+
+| Phase | Duration | Key stats |
+|-------|----------|-----------|
+| 1. Scan & Detect | 12s | 15 READMEs scanned, 4 drifted |
+| 2. Analyze Drifts | 38s | 3 subagents, 2 batches, 847 diff lines |
+| 3. Present Results | 2s | — |
+| 4. Auto-Bump | 5s | 2 cosmetic bumps committed |
+| 5. GitHub Issue | 3s | Created #248 |
+| 6. Version Sync | 22s | 4 bumped, 10 package.json, 8 lockfiles |
+| 7. Self-Improvement | 8s | No improvements identified |
+| **Total** | **90s** | **3 subagents, 847 diff lines, 15 API calls** |
+
+### Bottleneck notes
+- Phase 2 consumed most time due to 1 large diff (623 lines)
+```
+
+**Guidelines:**
+- Always populate with real numbers from the run — never estimate or omit.
+- In **Bottleneck notes**, call out the single largest time/token consumer and suggest whether it could be optimized (e.g., better batching, skipping unchanged sections, splitting large diffs).
+- If any phase took 0s or had no work, show it as `—` to confirm it was reached.
