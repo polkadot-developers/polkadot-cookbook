@@ -76,13 +76,9 @@ jobs:
             RELEASE_TASK="- [x] **Cut a release** — no unreleased commits since \`$LAST_TAG\` (nothing to release)"
           fi
 
-          gh issue create \
-            --title "Weekly tasks — $WEEK_OF" \
-            --label "weekly-tasks" \
-            --body "$(cat <<EOF
-          ## Weekly Maintainer Tasks
+          BODY="## Weekly Maintainer Tasks
 
-          $RELEASE_TASK
+          ${RELEASE_TASK}
           - [ ] **Check docs drift** — run \`/check-docs-drift\` to detect upstream tutorial changes
           - [ ] **Review open PRs** — check for stale or ready-to-merge PRs
           - [ ] **Check CI health** — review any failing workflows in [Actions](https://github.com/polkadot-developers/polkadot-cookbook/actions)
@@ -90,6 +86,12 @@ jobs:
 
           ---
 
-          *Created automatically by the [Weekly Maintainer Tasks](.github/workflows/weekly-maintainer-tasks.yml) workflow.*
-          EOF
-          )"
+          *Created automatically by the [Weekly Maintainer Tasks](.github/workflows/weekly-maintainer-tasks.yml) workflow.*"
+
+          # Strip leading whitespace from each line (from YAML indentation)
+          BODY=$(echo "$BODY" | sed 's/^          //')
+
+          gh issue create \
+            --title "Weekly tasks — $WEEK_OF" \
+            --label "weekly-tasks" \
+            --body "$BODY"
