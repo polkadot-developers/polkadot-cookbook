@@ -51,7 +51,8 @@ npm ci && npm test
 - Rust formatting: `max_width = 100`, `wrap_comments = true` (`rustfmt.toml`)
 - SDK tests require `--test-threads=1` and use `#[serial]` from `serial_test` (shared filesystem state)
 - Recipe source code lives in **external repos** (`brunopgalvao/recipe-*`); this repo only contains test harnesses
-- Test file naming: recipes use `recipe.test.ts`, migrations use `guide.test.ts`
+- Test file naming: recipes use `recipe.test.ts`, polkadot-docs use `docs.test.ts`, migrations use `migration.test.ts`
+- Shared configs: `shared/tsconfig.base.json` and `shared/vitest.shared.ts` — all harnesses extend/import these
 - CI workflows are **path-filtered** per component (e.g., `recipe-contracts-example.yml` only triggers on `recipes/contracts/contracts-example/**`)
 - `versions.yml` changes also trigger downstream workflow runs — each workflow has a `guard` job that auto-detects which `versions.yml` keys it uses (by parsing `yq` calls in the workflow file) and skips the test job if none of those keys changed
 - When adding a new `yq '...' versions.yml` line to a workflow's "Load versions" step, the guard picks it up automatically — no separate key list to maintain
@@ -65,3 +66,6 @@ npm ci && npm test
 - Keep related changes on one branch; don't split iterative fixes across branches/PRs
 - Conventional commits: `feat:`, `fix:`, `chore:`, etc.
 - When adding a `polkadot-docs/` test harness, open a **companion PR** in [`polkadot-developers/polkadot-docs`](https://github.com/polkadot-developers/polkadot-docs) to add the CI badge to the corresponding documentation page
+- PRs must include a **Test Plan** checklist — before marking a PR ready, execute every item in the checklist, verify it passes, then check it off (`- [x]`). Never leave test plan items unchecked
+- Skill-generated PRs (from `/add-recipe`, `/add-polkadot-docs-test`, etc.) should be created as **drafts** (`--draft`)
+- When changing `Cargo.toml` version, docs, workflow files, or badges, run `/check-internal-docs` before creating the PR to catch stale references

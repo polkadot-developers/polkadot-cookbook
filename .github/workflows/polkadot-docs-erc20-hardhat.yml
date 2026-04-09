@@ -29,7 +29,7 @@ jobs:
         with:
           path: |
             polkadot-docs/smart-contracts/erc20-hardhat/.test-workspace/revm-hardhat-examples/erc20-hardhat/node_modules
-          key: ${{ runner.os }}-erc20-hardhat-npm-${{ hashFiles('polkadot-docs/smart-contracts/erc20-hardhat/tests/recipe.test.ts') }}
+          key: ${{ runner.os }}-erc20-hardhat-npm-${{ hashFiles('polkadot-docs/smart-contracts/erc20-hardhat/tests/docs.test.ts') }}
 
       - name: Install wrapper dependencies
         run: |

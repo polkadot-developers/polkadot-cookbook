@@ -1,11 +1,1 @@
-# Dependencies
-node_modules/
-
-# Test workspace
 .test-workspace/
-
-# Build output
-dist/
-
-# Logs
-*.log

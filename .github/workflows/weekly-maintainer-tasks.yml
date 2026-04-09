@@ -1,0 +1,98 @@
+name: Weekly Maintainer Tasks
+
+on:
+  schedule:
+    # Every Monday at 9:00 AM Bangkok Time (02:00 UTC)
+    - cron: '0 2 * * 1'
+
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  create-weekly-issue:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Gather context
+        id: context
+        run: |
+          # Last release tag
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*.*.*" 2>/dev/null || echo "v0.0.0")
+          echo "last_tag=$LAST_TAG" >> $GITHUB_OUTPUT
+
+          # Commits since last release
+          COMMIT_COUNT=$(git log $LAST_TAG..HEAD --oneline --no-merges | wc -l | tr -d ' ')
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+
+          # Commit summary (first 20)
+          COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges | head -20)
+          # Use a delimiter for multiline output
+          {
+            echo "commits<<COMMITS_EOF"
+            echo "$COMMITS"
+            echo "COMMITS_EOF"
+          } >> $GITHUB_OUTPUT
+
+          # Date for title
+          WEEK_OF=$(date -u +"%b %d, %Y")
+          echo "week_of=$WEEK_OF" >> $GITHUB_OUTPUT
+
+      - name: Check for existing open issue
+        id: existing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(gh issue list --state open --label "weekly-tasks" --json number --jq '.[0].number // empty')
+          echo "issue_number=$EXISTING" >> $GITHUB_OUTPUT
+
+      - name: Create weekly issue
+        if: steps.existing.outputs.issue_number == ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LAST_TAG: ${{ steps.context.outputs.last_tag }}
+          COMMIT_COUNT: ${{ steps.context.outputs.commit_count }}
+          COMMITS: ${{ steps.context.outputs.commits }}
+          WEEK_OF: ${{ steps.context.outputs.week_of }}
+        run: |
+          # Build release task text based on whether there are unreleased commits
+          if [ "$COMMIT_COUNT" -gt 0 ]; then
+            RELEASE_TASK="- [ ] **Cut a release** — $COMMIT_COUNT commit(s) since \`$LAST_TAG\`. Run \`/release\` in Claude Code
+            <details>
+            <summary>Unreleased commits</summary>
+
+            $COMMITS
+            </details>"
+          else
+            RELEASE_TASK="- [x] **Cut a release** — no unreleased commits since \`$LAST_TAG\` (nothing to release)"
+          fi
+
+          BODY="## Weekly Maintainer Tasks
+
+            ${RELEASE_TASK}
+
+            - [ ] **Check docs drift** — run \`/check-docs-drift\` to detect upstream tutorial changes
+            - [ ] **Review open PRs** — check for stale or ready-to-merge PRs
+            - [ ] **Check CI health** — review any failing workflows in [Actions](https://github.com/polkadot-developers/polkadot-cookbook/actions)
+            - [ ] **Review open issues** — triage new issues, close resolved ones
+
+            ---
+
+            *Created automatically by the [Weekly Maintainer Tasks](.github/workflows/weekly-maintainer-tasks.yml) workflow.*"
+
+          # Strip leading whitespace (12 spaces of YAML indentation)
+          BODY=$(printf '%s' "$BODY" | sed 's/^            //')
+
+          gh issue create \
+            --title "Weekly tasks — $WEEK_OF" \
+            --label "weekly-tasks" \
+            --body "$BODY"

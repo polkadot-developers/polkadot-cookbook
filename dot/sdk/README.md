@@ -208,12 +208,12 @@ To contribute to the SDK:
 3. Write tests for new functionality
 4. Run `cargo fmt` and `cargo clippy` before committing
 
-See the [Contributing Guide](../CONTRIBUTING.md) for details.
+See the [Contributing Guide](../../CONTRIBUTING.md) for details.
 
 ## Documentation
 
 - **API Docs** - Run `cargo doc --package sdk --open`
-- **Version Management** - See [Release Process - Dependency Version Management](../docs/RELEASE_PROCESS.md#dependency-version-management)
+- **Version Management** - See [Release Process - Dependency Version Management](../../docs/maintainers/release-process.md#dependency-version-management)
 - **Examples** - Check `examples/` directory
 
 ## License

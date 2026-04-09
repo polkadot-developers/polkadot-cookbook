@@ -3,7 +3,7 @@ title: "Add Existing Pallets to Runtime"
 description: "Verify the add existing pallets guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/parachains/customize-runtime/add-existing-pallets/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/parachains/customize-runtime/add-existing-pallets.md"
-docs_commit: "d4b41f851b16ac909a7422726a4fd47fea239ba3"
+docs_commit: "f67846c4e32a548f4867d9551cde600d94471c74"
 polkadot_sdk_version: "polkadot-stable2512-1"
 ---
 

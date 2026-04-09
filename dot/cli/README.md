@@ -177,7 +177,7 @@ dot create --title "My Recipe" --non-interactive
 
 ## Development
 
-To contribute to the CLI itself, see the [Contributing Guide](../CONTRIBUTING.md) and [Development Guide](../docs/architecture.md).
+To contribute to the CLI itself, see the [Contributing Guide](../../CONTRIBUTING.md) and [Development Guide](../../docs/developers/architecture.md).
 
 ## License
 

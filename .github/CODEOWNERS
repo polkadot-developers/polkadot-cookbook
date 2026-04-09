@@ -1,2 +1,6 @@
 # Default owner for everything
 * @brunopgalvao
+
+# Smart contracts
+/polkadot-docs/smart-contracts/ @nhussein11
+/recipes/contracts/ @nhussein11

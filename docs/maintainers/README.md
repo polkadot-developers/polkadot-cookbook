@@ -15,29 +15,25 @@ This section contains documentation for repository maintainers managing releases
 - **[Release Process](release-process.md)** - Semantic versioning and automated releases
 - **[Workflows](workflows.md)** - GitHub Actions workflows and automation
 
-### Governance
-
-- **[Governance](governance.md)** - Decision-making and review process
-
 ## Quick Reference
 
 ### Release Management
 
-The Polkadot Cookbook uses automated semantic versioning with three release streams:
+The Polkadot Cookbook uses the `/release` Claude Code skill with three release streams:
 
-1. **Recipe Releases** (`v0.x.x`) - Weekly automated releases
-2. **CLI Releases** (`cli-v0.x.x`) - Breaking change triggered
-3. **SDK Releases** (`sdk-v0.x.x`) - Breaking change triggered
+1. **Recipe Releases** (`v0.x.x`) - Created via `/release` skill (on-demand or scheduled)
+2. **CLI Releases** (`cli-v0.x.x`) - Via `release-cli.yml` workflow
+3. **SDK Releases** (`sdk-v0.x.x`) - Via manual workflow dispatch
 
 [→ Full Release Process Guide](release-process.md)
 
 ### Workflow Management
 
-All CI/CD is handled through GitHub Actions:
+CI/CD is handled through GitHub Actions and Claude Code skills:
 
 - **Testing Workflows** - Recipe and SDK tests on every PR
-- **Release Workflows** - Automated version detection and releases
-- **Automation Workflows** - Semantic labeling and quality checks
+- **Release Publishing** - `publish-release.yml` builds binaries and publishes on merge
+- **Release Creation** - `/release` skill analyzes changes and creates release PRs
 
 [→ Complete Workflows Documentation](workflows.md)
 
@@ -63,10 +59,10 @@ As a maintainer, you're responsible for:
 
 ### For Release Management
 
-- Monitor weekly release workflow
-- Review breaking change releases carefully
+- Run `/release` skill when ready to cut a release
+- Review draft release PRs before merging
+- Monitor `publish-release.yml` after merging
 - Verify release artifacts are correct
-- Update documentation as needed
 
 ### For Workflow Maintenance
 

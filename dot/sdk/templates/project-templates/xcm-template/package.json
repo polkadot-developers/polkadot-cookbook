@@ -20,7 +20,7 @@
   "author": "",
   "license": "MIT OR Apache-2.0",
   "dependencies": {
-    "polkadot-api": "^1.20.0",
+    "polkadot-api": "^1.23.3",
     "@polkadot-labs/hdkd": "^0.0.10",
     "@polkadot-labs/hdkd-helpers": "^0.0.10"
   },
@@ -28,11 +28,11 @@
     "@acala-network/chopsticks": "^1.2.3",
     "@acala-network/chopsticks-testing": "^1.2.3",
     "@polkadot-api/cli": "^0.15.3",
-    "@types/node": "^20.14.0",
+    "@types/node": "^22.10.5",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
     "eslint": "^8.57.0",
-    "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
   }
 }
