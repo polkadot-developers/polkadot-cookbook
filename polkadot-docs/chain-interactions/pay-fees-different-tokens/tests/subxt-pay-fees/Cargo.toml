@@ -1,0 +1,16 @@
+[workspace]
+
+[package]
+name = "subxt-pay-fees"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "fee_payment_transaction"
+path = "src/bin/fee_payment_transaction.rs"
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3", features = ["derive"] }
+subxt = "0.50.0"
+subxt-signer = { version = "0.50.0", features = ["sr25519", "subxt"] }
+tokio = { version = "1.44.2", features = ["macros", "rt"] }

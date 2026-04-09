@@ -20,8 +20,8 @@
   "license": "MIT OR Apache-2.0",
   "dependencies": {
     "polkadot-api": "^1.23.3",
-    "@polkadot-labs/hdkd": "^0.0.10",
-    "@polkadot-labs/hdkd-helpers": "^0.0.10"
+    "@polkadot-labs/hdkd": "^0.0.27",
+    "@polkadot-labs/hdkd-helpers": "^0.0.28"
   },
   "devDependencies": {
     "@polkadot-api/cli": "^0.15.3",
