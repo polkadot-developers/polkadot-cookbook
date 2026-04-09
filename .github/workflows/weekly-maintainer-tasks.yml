@@ -81,9 +81,12 @@ jobs:
             ${RELEASE_TASK}
 
             - [ ] **Check docs drift** — run \`/check-docs-drift\` to detect upstream tutorial changes
-            - [ ] **Review open PRs** — check for stale or ready-to-merge PRs
-            - [ ] **Check CI health** — review any failing workflows in [Actions](https://github.com/polkadot-developers/polkadot-cookbook/actions)
-            - [ ] **Review open issues** — triage new issues, close resolved ones
+
+            ## Periodic Tasks
+
+            _Not required every week — run these when it's been a while._
+
+            - [ ] **Check internal docs** — run \`/check-internal-docs\` to catch stale references, version mismatches, and broken links
 
             ---
 
