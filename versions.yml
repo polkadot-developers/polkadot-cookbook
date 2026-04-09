@@ -8,7 +8,7 @@
 
 # Root-level defaults — used unless overridden by a specific dependency below
 polkadot_sdk:
-  release_tag: polkadot-stable2512-1
+  release_tag: polkadot-stable2512-3
   repository: https://github.com/paritytech/polkadot-sdk
 
 parachain_template:
@@ -20,7 +20,7 @@ parachain_template:
   crates:
     polkadot_omni_node:
       name: polkadot-omni-node
-      version: "0.13.0"
+      version: "0.14.0"
     chain_spec_builder:
       name: staging-chain-spec-builder
       version: "16.0.0"
@@ -52,7 +52,7 @@ javascript_packages:
     version: "1.23.3"
   polkadot_js_api:
     name: "@polkadot/api"
-    version: "16.5.4"
+    version: "16.5.6"
   dedot:
     name: dedot
     version: "1.0.4"
@@ -65,9 +65,21 @@ javascript_packages:
   resolc:
     name: "@parity/resolc"
     version: "1.0.0"
+  chopsticks:
+    name: "@acala-network/chopsticks"
+    version: "1.2.8"
+  hdkd:
+    name: "@polkadot-labs/hdkd"
+    version: "0.0.27"
+  hdkd_helpers:
+    name: "@polkadot-labs/hdkd-helpers"
+    version: "0.0.28"
+  polkadot_keyring:
+    name: "@polkadot/keyring"
+    version: "14.0.2"
   polkadot_js_util_crypto:
     name: "@polkadot/util-crypto"
-    version: "13.5.9"
+    version: "14.0.2"
 
 # Python packages
 python_packages:
