@@ -207,11 +207,18 @@ jobs:
             fi
           done
 
-          # Create release with manifest and CLI binaries
+          # Collect optional cover art
+          COVER_ART=""
+          if [ -f ".github/releases/$VERSION/cover.svg" ]; then
+            COVER_ART=".github/releases/$VERSION/cover.svg"
+          fi
+
+          # Create release with manifest, cover art, and CLI binaries
           gh release create $VERSION \
             --title "$TITLE" \
             --notes-file ".github/releases/$VERSION/RELEASE_NOTES.md" \
             ".github/releases/$VERSION/manifest.yml" \
+            $COVER_ART \
             $CLI_ASSETS
 
           echo "✅ Created GitHub Release $VERSION with CLI binaries"

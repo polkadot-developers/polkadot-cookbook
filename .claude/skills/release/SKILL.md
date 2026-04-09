@@ -74,9 +74,8 @@ GitHub squash merges often strip conventional commit prefixes (e.g., "Add featur
 
 ### 3a. Gather metadata
 
-- **Contributors:** `git log {tag}..HEAD --format="%aN <%aE>" | sort -u` — extract GitHub usernames from noreply emails
 - **PR numbers:** For each commit, if the subject doesn't already contain `(#N)`, look up the associated PR: `gh pr list --search "{sha}" --state merged --json number --jq '.[0].number'`. Every commit in the release notes **must** have a `(#N)` PR reference so GitHub renders clickable links.
-- **Stats:** `git diff --shortstat {tag}..HEAD`
+- **Stats:** `git diff --shortstat {tag}..HEAD` and `git log --oneline {tag}..HEAD | wc -l` for commit count
 - **Diff link:** `https://github.com/polkadot-developers/polkadot-cookbook/compare/{tag}...v{new}`
 
 ### 3b. Release directory and manifest
@@ -96,32 +95,44 @@ tooling:
 
 Get actual tool versions from the local environment.
 
-### 3c. Release notes
+### 3c. Cover art
+
+Generate a unique Mondrian-inspired SVG at `.github/releases/vX.Y.Z/cover.svg`. Follow the specification in [`COVER_ART.md`](COVER_ART.md) — it defines the Polkadot brand palette, grid composition rules, and variation strategy. Study the reference cover at `.github/releases/v0.13.0/cover.svg` and create a **distinct but recognizably related** composition for this release.
+
+### 3d. Release notes
 
 Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in `.github/releases/` for the established format, then **enhance** with these sections:
 
 ```
+<div align="center">
+  <img src="cover.svg" alt="Release vX.Y.Z" width="100%" />
+</div>
+
 # Release vX.Y.Z
 
 Released: YYYY-MM-DD
 
-> One-sentence release summary highlighting the most impactful change.
+## Summary
+2-3 sentences: what this release delivers and why it matters. Lead with the most impactful change.
 
 ## Breaking Changes          ← only if breaking changes exist; omit otherwise
 - Description of what broke and migration steps
 
 ## What's New               ← group by category, omit empty categories
 ### Recipes / Documentation Tests / CLI & SDK / Infrastructure
+```
 
+**What's New writing rules:**
+- Every bullet **must** include a PR link `(#N)` — look up missing ones via `gh`
+- After stating what changed, explain **why it matters** to users in the same bullet. Don't use "why is this important" — just naturally say what it enables, what problem it solves, or what's now possible. Keep it to one sentence.
+- Example: "Added test harness for **Pay Fees with a Different Token** guide — developers can now verify cross-chain fee payment flows work end-to-end before deploying (#237)"
+
+```
 ## Migration Notes           ← only if versions.yml changed or deps bumped
-- What downstream consumers need to update
 
 ## Commits                   ← ordered by type: feat → fix → chore → docs
 - feat: ... (#N)             ← every commit MUST have a PR link
 - fix: ... (#N)
-
-## Contributors
-- @username1, @username2, ...
 
 ## Stats
 **N commits, N contributors, +X / -Y lines**
@@ -136,7 +147,9 @@ Tested with:
 **Status:** Alpha (v0.x.x)
 ```
 
-### 3d. Update CHANGELOG.md
+**Do NOT include a Contributors section** — GitHub auto-generates one with avatars at the bottom of every release. Adding a manual one creates duplicates.
+
+### 3e. Update CHANGELOG.md
 
 Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format.
 
@@ -171,7 +184,7 @@ At the bottom of the file, maintain a link reference section:
 
 If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` section, and the current release only.
 
-### 3e. Update Cargo.toml and lockfile
+### 3f. Update Cargo.toml and lockfile
 
 - Edit `Cargo.toml` `[workspace.package]` → `version = "X.Y.Z"` (strip `v` prefix)
 - Run `cargo update --workspace`
@@ -184,7 +197,7 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
 
 2. Stage and commit:
    ```bash
-   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md
+   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md  # includes cover.svg
    git commit -m "chore(release): vX.Y.Z"
    ```
 
