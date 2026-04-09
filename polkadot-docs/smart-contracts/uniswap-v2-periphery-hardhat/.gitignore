@@ -1,22 +1,2 @@
-# Dependencies
-node_modules/
-
-# Environment variables (never commit secrets)
-.env
-.env.local
-
-# Test workspace
 .test-workspace/
-
-# TypeScript
-*.tsbuildinfo
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+node_modules/
