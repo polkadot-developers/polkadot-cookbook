@@ -7,7 +7,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@acala-network/chopsticks": "1.2.5",
+    "@acala-network/chopsticks": "1.2.8",
     "@types/node": "^22.10.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.9"
