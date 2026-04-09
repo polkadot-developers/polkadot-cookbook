@@ -7,8 +7,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@polkadot/keyring": "13.5.9",
-    "@polkadot/util-crypto": "13.5.9"
+    "@polkadot/keyring": "14.0.2",
+    "@polkadot/util-crypto": "14.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

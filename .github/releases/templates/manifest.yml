@@ -3,6 +3,7 @@
 # Actual releases will be in releases/v0.x.x/manifest.yml
 
 release: v0.0.0
+previous_release: v0.0.0          # tag of the prior release
 release_date: 2025-01-01T00:00:00Z
 status: alpha  # alpha | beta | stable
 
