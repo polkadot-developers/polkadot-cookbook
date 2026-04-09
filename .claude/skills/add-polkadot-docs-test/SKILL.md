@@ -51,6 +51,7 @@ Determine which patterns to use:
 | Needs full network / custom precompiles | Add `setup-zombienet-eth-rpc` |
 | Needs secrets | Add `env:` block with `${{ secrets.* }}`, use `it.skipIf` |
 | Clones an external repo | Pin by commit SHA, add cache |
+| Uses Chopsticks (local chain fork) | Start/stop in `beforeAll`/`afterAll`, add `@acala-network/chopsticks` devDep, add `db.sqlite*` to `.gitignore` |
 | Simple Node.js-only | CI Variant A (simple) |
 
 ---
@@ -82,6 +83,7 @@ Create `tests/docs.test.ts`. **Study the closest reference test file** and adapt
 | Partial SDK (PAPI + PJS only) | `polkadot-docs/chain-interactions/calculate-transaction-fees/tests/docs.test.ts` |
 | Clone + build (Hardhat) | `polkadot-docs/smart-contracts/basic-hardhat/tests/docs.test.ts` |
 | Complex build + process | `polkadot-docs/smart-contracts/local-dev-node/tests/docs.test.ts` |
+| Chopsticks-based (local fork) | `polkadot-docs/chain-interactions/pay-fees-different-tokens/tests/docs.test.ts` |
 
 Key conventions to follow from the reference files:
 - Each SDK or phase gets a numbered `describe` block
@@ -106,6 +108,7 @@ Create `.github/workflows/polkadot-docs-{guide-name}.yml`. **Study the closest r
 | Multi-SDK (all 5 SDKs) | `.github/workflows/polkadot-docs-runtime-api-calls.yml` |
 | Rust + guard | `.github/workflows/polkadot-docs-local-dev-node.yml` |
 | Secrets (private keys) | `.github/workflows/polkadot-docs-erc20-hardhat.yml` |
+| Chopsticks (local fork) | `.github/workflows/polkadot-docs-pay-fees-different-tokens.yml` |
 
 The `check-version-keys` guard action auto-detects which `versions.yml` keys your workflow uses by parsing `yq` calls — just add the right `yq` lines in the "Load versions" step.
 
