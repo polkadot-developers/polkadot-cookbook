@@ -10,6 +10,8 @@ Automated pipeline that creates a test harness under `polkadot-docs/{category}/{
 
 Run all steps sequentially without prompting the user. The pipeline is fully autonomous.
 
+**Important:** This skill must run without triggering permission prompts. Use `mode: "bypassPermissions"` when spawning this skill as an agent, or ensure your Claude Code permission settings allow file writes and bash commands for this project directory before invoking.
+
 ---
 
 ## Step 0: Analyze Tutorial
