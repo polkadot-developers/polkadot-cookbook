@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [0.13.0] - 2026-04-09
+
+### Added
+- Test harness for **Pay Fees with a Different Token** guide with Rust subxt binary
+- Test harness for **Calculate Transaction Fees** guide
+- Test harness for **Uniswap V2 Periphery with Hardhat** guide
+- Claude Code devcontainer for one-click cloud development environments
+- Version sync and run metrics to check-docs-drift skill
+- Chopsticks-based guide pattern to add-polkadot-docs-test skill
+- nhussein11 as code owner for smart contracts pathway
+- Shared configs: `shared/tsconfig.base.json` and `shared/vitest.shared.ts`
+
+### Changed
+- Enhanced /release skill with CHANGELOG.md generation, contributor credits, breaking change detection, diff links, and migration notes
+- Synced dependency versions from polkadot-docs PR #1606
+- Replaced legacy `sync-versions.yml` and `check-docs-drift.sh` with Claude Code skills
+
+### Fixed
+- Bumped pinned commit SHAs for 3 polkadot-docs test harnesses (query-rest, runtime-api-calls, run-a-parachain-network)
+- Weekly maintainer tasks issue body formatting
+- Uniswap V2 Periphery harness alignment with polkadot-docs conventions
+- Source URLs after upstream docs restructured periphery page
+- CI cache key to reference `docs.test.ts` after test file rename
+
+[0.13.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.12.0...v0.13.0
