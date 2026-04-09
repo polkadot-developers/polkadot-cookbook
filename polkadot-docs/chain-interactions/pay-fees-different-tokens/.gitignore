@@ -1,0 +1,4 @@
+.papi/
+db.sqlite*
+tests/subxt-pay-fees/target/
+tests/subxt-pay-fees/metadata/asset_hub.scale
