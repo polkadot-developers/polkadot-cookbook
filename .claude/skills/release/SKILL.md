@@ -75,6 +75,7 @@ GitHub squash merges often strip conventional commit prefixes (e.g., "Add featur
 ### 3a. Gather metadata
 
 - **Contributors:** `git log {tag}..HEAD --format="%aN <%aE>" | sort -u` — extract GitHub usernames from noreply emails
+- **PR numbers:** For each commit, if the subject doesn't already contain `(#N)`, look up the associated PR: `gh pr list --search "{sha}" --state merged --json number --jq '.[0].number'`. Every commit in the release notes **must** have a `(#N)` PR reference so GitHub renders clickable links.
 - **Stats:** `git diff --shortstat {tag}..HEAD`
 - **Diff link:** `https://github.com/polkadot-developers/polkadot-cookbook/compare/{tag}...v{new}`
 
@@ -116,7 +117,7 @@ Released: YYYY-MM-DD
 - What downstream consumers need to update
 
 ## Commits                   ← ordered by type: feat → fix → chore → docs
-- feat: ... (#N)
+- feat: ... (#N)             ← every commit MUST have a PR link
 - fix: ... (#N)
 
 ## Contributors
