@@ -1,0 +1,52 @@
+name: Calculate Transaction Fees
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/calculate-transaction-fees/**'
+      - '!polkadot-docs/chain-interactions/calculate-transaction-fees/README.md'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/calculate-transaction-fees/**'
+      - '!polkadot-docs/chain-interactions/calculate-transaction-fees/README.md'
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies and generate PAPI descriptors
+        run: |
+          cd polkadot-docs/chain-interactions/calculate-transaction-fees
+          npm install
+          npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/calculate-transaction-fees
+          npm test
+        timeout-minutes: 5
+
+  post-test:
+    needs: test
+    if: >
+      github.repository == 'polkadot-developers/polkadot-cookbook' &&
+      always() &&
+      github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/calculate-transaction-fees/README.md'
+      workflow_name: 'Calculate Transaction Fees'
+    permissions:
+      contents: read
+      issues: write

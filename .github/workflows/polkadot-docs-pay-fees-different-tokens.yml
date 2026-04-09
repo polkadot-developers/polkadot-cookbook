@@ -1,0 +1,109 @@
+name: Pay Fees with Different Tokens
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/pay-fees-different-tokens/**'
+      - '!polkadot-docs/chain-interactions/pay-fees-different-tokens/README.md'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/pay-fees-different-tokens/**'
+      - '!polkadot-docs/chain-interactions/pay-fees-different-tokens/README.md'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  guard:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "SUBXT_CLI_VERSION=$(yq '.crates.subxt_cli.version' versions.yml)" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: subxt-cli@${{ steps.versions.outputs.SUBXT_CLI_VERSION }}
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            polkadot-docs/chain-interactions/pay-fees-different-tokens/tests/subxt-pay-fees/target
+          key: ${{ runner.os }}-cargo-pay-fees-${{ hashFiles('polkadot-docs/chain-interactions/pay-fees-different-tokens/tests/subxt-pay-fees/Cargo.toml') }}
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/chain-interactions/pay-fees-different-tokens
+          npm install
+
+      # Start Chopsticks fork, generate PAPI descriptors, download Subxt metadata
+      - name: Start Chopsticks and generate artifacts
+        run: |
+          cd polkadot-docs/chain-interactions/pay-fees-different-tokens
+          npx @acala-network/chopsticks -c polkadot-asset-hub &
+          echo "Waiting for Chopsticks..."
+          for i in $(seq 1 40); do
+            if curl -s -o /dev/null -w '' http://localhost:8000; then break; fi
+            sleep 3
+          done
+          npx papi add assetHub -n polkadot_asset_hub
+          cd tests/subxt-pay-fees
+          subxt metadata --url ws://localhost:8000 -o metadata/asset_hub.scale
+
+      - name: Build Subxt project
+        run: |
+          cd polkadot-docs/chain-interactions/pay-fees-different-tokens/tests/subxt-pay-fees
+          cargo build
+        timeout-minutes: 10
+
+      # Kill Chopsticks — the test suite starts its own instance
+      - name: Stop Chopsticks
+        run: pkill -f chopsticks || true
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/pay-fees-different-tokens
+          npm test
+        timeout-minutes: 15
+
+  post-test:
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/pay-fees-different-tokens/README.md'
+      workflow_name: 'Pay Fees with Different Tokens'
+    permissions:
+      contents: read
+      issues: write

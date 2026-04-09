@@ -1,0 +1,79 @@
+name: Use Foundry with Polkadot Hub
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/smart-contracts/dev-environments/foundry/**'
+      - '!polkadot-docs/smart-contracts/dev-environments/foundry/README.md'
+  pull_request:
+    paths:
+      - 'polkadot-docs/smart-contracts/dev-environments/foundry/**'
+      - '!polkadot-docs/smart-contracts/dev-environments/foundry/README.md'
+  workflow_dispatch:
+
+jobs:
+  test:
+    # Guard: only run in the canonical repository to protect CI secrets
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Install Foundry nightly — required for Polkadot Hub support
+      # (stable Foundry does not include polkadot-testnet chain support)
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Verify Foundry installation
+        run: forge --version
+
+      # Cache the scaffolded Foundry project's build artifacts and lib/.
+      # Keyed on the test file: when forge init output or pinned versions change
+      # the test file changes, busting the cache.
+      - name: Cache Foundry project artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            polkadot-docs/smart-contracts/dev-environments/foundry/.test-workspace/my-foundry-project/out
+            polkadot-docs/smart-contracts/dev-environments/foundry/.test-workspace/my-foundry-project/lib
+          key: ${{ runner.os }}-foundry-project-${{ hashFiles('polkadot-docs/smart-contracts/dev-environments/foundry/tests/docs.test.ts') }}
+
+      # Install the Vitest wrapper's own dependencies (not the Foundry project)
+      - name: Install wrapper dependencies
+        run: |
+          cd polkadot-docs/smart-contracts/dev-environments/foundry
+          npm ci
+
+      # Run the full 6-phase test suite.
+      # PRIVATE_KEY is used by phase 6 (testnet deployment); phases 1–5 run
+      # without network access. Phase 6 soft-fails when PRIVATE_KEY is absent.
+      - name: Run tests
+        run: |
+          cd polkadot-docs/smart-contracts/dev-environments/foundry
+          npm test
+        env:
+          PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
+        timeout-minutes: 20
+
+  post-test:
+    needs: test
+    # Only file issues on master — not on every PR failure
+    if: >
+      github.repository == 'polkadot-developers/polkadot-cookbook' &&
+      always() &&
+      github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/smart-contracts/dev-environments/foundry/README.md'
+      workflow_name: 'Use Foundry with Polkadot Hub'
+    permissions:
+      contents: read
+      issues: write

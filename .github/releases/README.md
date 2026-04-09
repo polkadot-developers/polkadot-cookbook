@@ -65,6 +65,7 @@ Each release includes a `manifest.yml` file with:
 
 ```yaml
 release: v0.1.0               # Release version
+previous_release: v0.0.9      # Prior release tag (for diff links)
 release_date: 2025-01-01T00:00:00Z  # ISO 8601 timestamp
 status: alpha                 # alpha | beta | stable
 
@@ -72,6 +73,10 @@ tooling:                      # Versions used to test recipes
   rust: "1.91"
   node: "v20.20.1"
 ```
+
+## CHANGELOG.md
+
+A cumulative changelog is maintained at the repository root following [Keep a Changelog](https://keepachangelog.com/) format. The `/release` skill appends to it automatically with each release. Each entry includes Added/Changed/Fixed/Breaking sections and a compare link.
 
 ## Integration with docs.polkadot.com
 
