@@ -74,9 +74,8 @@ GitHub squash merges often strip conventional commit prefixes (e.g., "Add featur
 
 ### 3a. Gather metadata
 
-- **Contributors:** `git log {tag}..HEAD --format="%aN <%aE>" | sort -u` — extract GitHub usernames from noreply emails
 - **PR numbers:** For each commit, if the subject doesn't already contain `(#N)`, look up the associated PR: `gh pr list --search "{sha}" --state merged --json number --jq '.[0].number'`. Every commit in the release notes **must** have a `(#N)` PR reference so GitHub renders clickable links.
-- **Stats:** `git diff --shortstat {tag}..HEAD`
+- **Stats:** `git diff --shortstat {tag}..HEAD` and `git log --oneline {tag}..HEAD | wc -l` for commit count
 - **Diff link:** `https://github.com/polkadot-developers/polkadot-cookbook/compare/{tag}...v{new}`
 
 ### 3b. Release directory and manifest
@@ -105,23 +104,27 @@ Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in 
 
 Released: YYYY-MM-DD
 
-> One-sentence release summary highlighting the most impactful change.
+## Summary
+2-3 sentences: what this release delivers and why it matters. Lead with the most impactful change.
 
 ## Breaking Changes          ← only if breaking changes exist; omit otherwise
 - Description of what broke and migration steps
 
 ## What's New               ← group by category, omit empty categories
 ### Recipes / Documentation Tests / CLI & SDK / Infrastructure
+```
 
+**What's New writing rules:**
+- Every bullet **must** include a PR link `(#N)` — look up missing ones via `gh`
+- After stating what changed, explain **why it matters** to users in the same bullet. Don't use "why is this important" — just naturally say what it enables, what problem it solves, or what's now possible. Keep it to one sentence.
+- Example: "Added test harness for **Pay Fees with a Different Token** guide — developers can now verify cross-chain fee payment flows work end-to-end before deploying (#237)"
+
+```
 ## Migration Notes           ← only if versions.yml changed or deps bumped
-- What downstream consumers need to update
 
 ## Commits                   ← ordered by type: feat → fix → chore → docs
 - feat: ... (#N)             ← every commit MUST have a PR link
 - fix: ... (#N)
-
-## Contributors
-- @username1, @username2, ...
 
 ## Stats
 **N commits, N contributors, +X / -Y lines**
@@ -135,6 +138,8 @@ Tested with:
 ---
 **Status:** Alpha (v0.x.x)
 ```
+
+**Do NOT include a Contributors section** — GitHub auto-generates one with avatars at the bottom of every release. Adding a manual one creates duplicates.
 
 ### 3d. Update CHANGELOG.md
 
