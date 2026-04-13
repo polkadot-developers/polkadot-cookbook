@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-04-13
+
+### Added
+- Test harness for **Foundry dev environment** polkadot-docs guide
+- Test harness for **NFT Hardhat** polkadot-docs guide
+- Test harness for **Zero-to-Hero dApp** polkadot-docs guide
+- Test harness for **Send Transactions** polkadot-docs guide with Rust subxt binary
+- Mondrian cover art, wordmark, and release notes polish in /release skill
+- Every release-notes commit now carries a `(#N)` PR link
+
+### Fixed
+- `publish-release.yml` duplicate tag check no longer fails on re-runs
+
 ## [0.13.0] - 2026-04-09
 
 ### Added
@@ -30,5 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.12.0...v0.13.0

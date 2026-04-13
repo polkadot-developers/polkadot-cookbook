@@ -1,0 +1,77 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @keyframes fade-block {
+        0%, 100% { opacity: 0.85; }
+        50% { opacity: 1; }
+      }
+      .block-animate { animation: fade-block 7s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0D0D0D"/>
+
+  <!-- Mondrian grid lines — asymmetric, shifted from v0.13.0 -->
+  <g stroke="#2A2A2A" stroke-width="4">
+    <line x1="180" y1="0" x2="180" y2="630"/>
+    <line x1="460" y1="0" x2="460" y2="630"/>
+    <line x1="820" y1="0" x2="820" y2="630"/>
+    <line x1="0" y1="120" x2="1200" y2="120"/>
+    <line x1="0" y1="320" x2="1200" y2="320"/>
+    <line x1="0" y1="470" x2="1200" y2="470"/>
+  </g>
+
+  <!-- Color blocks — Polkadot palette -->
+  <!-- Primary pink blocks -->
+  <rect class="block-animate" x="184" y="4" width="272" height="112" fill="#E6007A" opacity="0.85"/>
+  <rect class="block-animate" x="824" y="124" width="372" height="192" fill="#E6007A" opacity="0.75" style="animation-delay: 1.2s;"/>
+  <rect class="block-animate" x="4" y="474" width="172" height="152" fill="#E6007A" opacity="0.55" style="animation-delay: 3.2s;"/>
+
+  <!-- Deep blue blocks -->
+  <rect class="block-animate" x="464" y="4" width="352" height="112" fill="#11116B" opacity="0.9" style="animation-delay: 0.6s;"/>
+  <rect class="block-animate" x="4" y="124" width="172" height="192" fill="#11116B" opacity="0.8" style="animation-delay: 2.1s;"/>
+  <rect class="block-animate" x="464" y="324" width="352" height="142" fill="#11116B" opacity="0.65" style="animation-delay: 1.8s;"/>
+
+  <!-- Accent blocks — lighter variants -->
+  <rect class="block-animate" x="184" y="324" width="272" height="142" fill="#E6007A" opacity="0.18" style="animation-delay: 2.7s;"/>
+  <rect class="block-animate" x="824" y="474" width="372" height="152" fill="#11116B" opacity="0.25" style="animation-delay: 3.6s;"/>
+  <rect class="block-animate" x="184" y="474" width="272" height="152" fill="#FFFFFF" opacity="0.06" style="animation-delay: 4.1s;"/>
+  <rect class="block-animate" x="824" y="4" width="372" height="112" fill="#FFFFFF" opacity="0.04" style="animation-delay: 5s;"/>
+
+  <!-- Polkadot dots — repositioned network nodes -->
+  <g fill="#E6007A">
+    <circle cx="90" cy="60" r="16" opacity="0.55"/>
+    <circle cx="320" cy="60" r="10" opacity="0.4"/>
+    <circle cx="1010" cy="220" r="18" opacity="0.55"/>
+    <circle cx="640" cy="395" r="12" opacity="0.5"/>
+    <circle cx="90" cy="395" r="14" opacity="0.4"/>
+    <circle cx="1120" cy="550" r="11" opacity="0.45"/>
+  </g>
+
+  <!-- Connection lines between dots — network mesh -->
+  <g stroke="#E6007A" stroke-width="1" opacity="0.15" fill="none">
+    <line x1="90" y1="60" x2="320" y2="60"/>
+    <line x1="320" y1="60" x2="1010" y2="220"/>
+    <line x1="1010" y1="220" x2="640" y2="395"/>
+    <line x1="640" y1="395" x2="90" y2="395"/>
+    <line x1="90" y1="395" x2="90" y2="60"/>
+    <line x1="1010" y1="220" x2="1120" y2="550"/>
+  </g>
+
+  <!-- Version text -->
+  <text x="1170" y="600" font-family="monospace" font-size="42" fill="#FFFFFF" opacity="0.15" text-anchor="end" font-weight="bold">v0.14.0</text>
+
+  <!-- Polkadot Cookbook wordmark -->
+  <text x="30" y="600" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#FFFFFF" opacity="0.25" font-weight="500">POLKADOT COOKBOOK</text>
+
+  <!-- Bold overlay grid lines for Mondrian effect -->
+  <g stroke="#1A1A1A" stroke-width="6">
+    <line x1="180" y1="0" x2="180" y2="630"/>
+    <line x1="460" y1="0" x2="460" y2="630"/>
+    <line x1="820" y1="0" x2="820" y2="630"/>
+    <line x1="0" y1="120" x2="1200" y2="120"/>
+    <line x1="0" y1="320" x2="1200" y2="320"/>
+    <line x1="0" y1="470" x2="1200" y2="470"/>
+  </g>
+</svg>
