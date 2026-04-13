@@ -211,6 +211,14 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
    - The full release notes content from Phase 3
    - A "Next Steps" section explaining that merging triggers `publish-release.yml` (tag creation, binary builds, GitHub Release)
 
+   **Cover art in PR body:** `RELEASE_NOTES.md` uses `src="cover.svg"` which works inside the release folder, but relative paths **do not resolve in PR descriptions** — the image will render broken. When copying the release notes into the PR body, rewrite the `<img>` `src` to the raw URL for the release branch:
+
+   ```
+   https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/release/vX.Y.Z/.github/releases/vX.Y.Z/cover.svg
+   ```
+
+   Do **not** modify `RELEASE_NOTES.md` itself — the relative path is correct for the file's context once merged.
+
 4. Report the PR URL.
 
 ---
