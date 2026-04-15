@@ -1,0 +1,20 @@
+{
+  "name": "transfer-assets-parachains",
+  "version": "1.0.0",
+  "description": "Test verification for the Transfer Assets Between Parachains guide",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@paraspell/sdk": "^12.8.8",
+    "@polkadot-labs/hdkd": "^0.0.27",
+    "@polkadot-labs/hdkd-helpers": "^0.0.28",
+    "polkadot-api": "^1.23.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.9"
+  }
+}
