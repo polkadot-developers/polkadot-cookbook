@@ -13,6 +13,7 @@
 #   {{RUST_VERSION}}     e.g. 1.91.0
 #   {{NODE_VERSION}}     e.g. v24.7.0
 # =============================================================================
+# TEMPLATE_HEADER_END
 
 release: v{{VERSION}}
 previous_release: v{{PREV_VERSION}}

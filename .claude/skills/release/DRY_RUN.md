@@ -101,13 +101,31 @@ Render `$SCRATCH/pr-body.md` from [`RELEASE_PR_BODY.template.md`](RELEASE_PR_BOD
 
 ## Template rendering convention
 
-Every template file starts with a **documentation header block** that explains tokens and markers for humans reading the template source. This header must be **stripped before any substitution**, because the doc text often *names* the tokens/markers (`{{VERSION}}`, `<!-- @@COMMIT_LIST -->`) as examples — if you substitute into the doc text, you inject content where it doesn't belong, or (for SVGs) corrupt the XML comment structure with `--` characters from commit subjects.
+Every template file starts with a **documentation header block** that explains tokens and markers for humans reading the template source. The doc text often *names* the tokens/markers (`{{VERSION}}`, `<!-- @@COMMIT_LIST -->`) as examples — if you substitute into the doc text, you inject content where it doesn't belong, or (for SVGs) corrupt the XML comment structure with `--` characters from commit subjects.
 
-- **Markdown templates** (`*.template.md`): delete all lines from line 1 through the first empty line.
-- **YAML templates** (`*.template.yml`): delete all contiguous leading lines that start with `#`.
-- **SVG templates** (`*.svg.template`): delete the first top-level `<!-- ... -->` comment block that appears before the first element content. The stripped block is purely documentation; the SVG remains valid without it.
+Every template ends its doc header with an unambiguous sentinel line:
 
-Then perform scalar substitution and marker fills on the remaining content.
+- **Markdown / SVG templates**: `<!-- TEMPLATE_HEADER_END -->`
+- **YAML templates**: `# TEMPLATE_HEADER_END`
+
+**Strip rule:** delete all lines from line 1 up to **and including** the sentinel line, plus any immediately-following blank line. Use a simple line scan — do not use a regex against the comment delimiters, because doc headers may contain nested-looking `<!-- @@MARKER -->` references.
+
+```python
+lines = template.splitlines(keepends=True)
+body_start = None
+for i, line in enumerate(lines):
+    if "TEMPLATE_HEADER_END" in line:
+        body_start = i + 1
+        # consume one trailing blank line if present
+        if body_start < len(lines) and lines[body_start].strip() == "":
+            body_start += 1
+        break
+if body_start is None:
+    fail("template is missing TEMPLATE_HEADER_END sentinel")
+template = "".join(lines[body_start:])
+```
+
+Then perform scalar substitution and marker fills on the remaining content. If a template is missing the sentinel, abort — do not attempt ad-hoc stripping.
 
 ## Exit criteria
 
