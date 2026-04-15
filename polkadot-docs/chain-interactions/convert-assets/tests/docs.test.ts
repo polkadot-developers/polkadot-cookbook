@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { spawn, execSync, ChildProcess } from "child_process";
+import { spawn, exec, ChildProcess } from "child_process";
 
 const CHOPSTICKS_PORT = 8000;
 const CHOPSTICKS_WS = `ws://localhost:${CHOPSTICKS_PORT}`;
@@ -78,16 +78,41 @@ async function waitForChopsticks(
 }
 
 async function stopChopsticks(): Promise<void> {
-  if (chopsticksProcess && !chopsticksProcess.killed) {
+  const proc = chopsticksProcess;
+  chopsticksProcess = null;
+
+  if (proc && !proc.killed) {
+    // Kill the whole process group first (spawned with detached: true)
     try {
-      process.kill(-chopsticksProcess.pid!, "SIGTERM");
+      process.kill(-proc.pid!, "SIGTERM");
     } catch {
-      chopsticksProcess.kill("SIGTERM");
+      try {
+        proc.kill("SIGTERM");
+      } catch {
+        // ignore
+      }
     }
-    chopsticksProcess = null;
+
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // Force-kill if still alive
+    try {
+      process.kill(-proc.pid!, "SIGKILL");
+    } catch {
+      try {
+        proc.kill("SIGKILL");
+      } catch {
+        // ignore
+      }
+    }
   }
-  execSync("pkill -f 'chopsticks' 2>/dev/null || true", { encoding: "utf-8" });
-  await new Promise((r) => setTimeout(r, 2000));
+
+  // Best-effort cleanup for any stray processes; never fail the test suite
+  await new Promise<void>((resolve) => {
+    exec("pkill -f '@acala-network/chopsticks' 2>/dev/null || true", () => resolve());
+  });
+
+  await new Promise((r) => setTimeout(r, 500));
 }
 
 /**
