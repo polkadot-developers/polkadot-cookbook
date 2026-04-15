@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" shape-rendering="crispEdges">
+  <!-- ==========================================================================
+       Polkadot Cookbook — Release Cover Template
+       ==========================================================================
+       DO NOT hand-edit per release. The /release skill renders this template with
+       values from git queries. See COVER_DATA.md for the full data contract.
+
+       SCALAR TOKENS (exact string substitution):
+         {{VERSION}}          e.g. 0.14.0
+         {{PREV_VERSION}}     e.g. 0.13.0
+         {{BUMP_TYPE}}        MAJOR | MINOR | PATCH
+         {{DATE_START}}       YYYY-MM-DD of first commit in range
+         {{DATE_END_SHORT}}   MM-DD of release commit
+         {{DAYS}}             integer days
+         {{COMMIT_COUNT}}     total commits PREV..CURR
+         {{CONTRIB_COUNT}}    distinct authors
+         {{INSERTIONS}}       comma-grouped, e.g. 16,756
+         {{DELETIONS}}        comma-grouped
+         {{FILES_COUNT}}      files changed
+         {{HEAD_SHA}}         7-char release SHA
+         {{PR_LIST}}          "#N #N #N ..." space-separated
+         {{DIFF_RATIO}}       "930:1" etc.
+         {{DIFF_NARRATIVE}}   parenthetical, e.g. "(test-heavy release)"
+         {{SCOPES}}           e.g. "docs · ci · skill"
+
+       VARIABLE-COUNT MARKERS (replace marker comment with generated fragment):
+         <!-- @@COMMIT_LIST -->        commit rows in terminal panel
+         <!-- @@DAILY_TIMELINE -->     per-day bullet rows in B1
+         <!-- @@CONTRIBUTOR_LIST -->   author rows in B1
+         <!-- @@BAR_CHART -->          per-path bar rows in B3
+         <!-- @@COMMIT_TYPES -->       feat/fix/release tallies
+         <!-- @@REPO_STATE -->         current counts in B5
+       ========================================================================== -->
+
+  <rect width="1200" height="630" fill="#0D0D0D"/>
+
+  <!-- B1 genesis pink -->
+  <rect x="0" y="0" width="742" height="390" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="0s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="0" width="742" height="390" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.7;0" dur="0.6s" begin="0s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="240" width="0" height="14" fill="#0D0D0D">
+    <animate attributeName="width" from="0" to="444" dur="0.5s" begin="0.7s" fill="freeze"/>
+  </rect>
+  <rect x="742" y="0" width="14" height="0" fill="#0D0D0D">
+    <animate attributeName="height" from="0" to="390" dur="0.4s" begin="0.9s" fill="freeze"/>
+  </rect>
+
+  <!-- B2 TERMINAL PANEL -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.3s" fill="freeze"/>
+    <rect x="756" y="0" width="444" height="240" fill="#07070A"/>
+    <rect x="764" y="8" width="428" height="224" fill="none" stroke="#F5F1E8" stroke-opacity="0.15" stroke-width="1"/>
+
+    <text x="774" y="26" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0.9" letter-spacing="0.4">
+      ┌─┤ v{{PREV_VERSION}}..v{{VERSION}}  {{DATE_START}} → {{DATE_END_SHORT}} ├────────┐
+    </text>
+
+    <!-- @@COMMIT_LIST -->
+
+    <text x="774" y="196" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.8" dur="0.2s" begin="3.9s" fill="freeze"/>
+      │ {{COMMIT_COUNT}} commits · {{CONTRIB_COUNT}} contrib · +{{INSERTIONS}} / -{{DELETIONS}} · {{FILES_COUNT}} files
+    </text>
+    <text x="774" y="210" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.75" dur="0.2s" begin="4.1s" fill="freeze"/>
+      │ PRs {{PR_LIST}}
+    </text>
+    <text x="774" y="224" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0.55" letter-spacing="0.4">
+      └─ HEAD {{HEAD_SHA}} · TAG v{{VERSION}} ─────────────────────┘
+    </text>
+  </g>
+
+  <rect x="0" y="390" width="0" height="14" fill="#0D0D0D">
+    <animate attributeName="width" from="0" to="1200" dur="0.7s" begin="1.9s" fill="freeze"/>
+  </rect>
+
+  <rect x="297" y="404" width="903" height="226" fill="#11116B" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="2.7s" fill="freeze"/>
+  </rect>
+  <rect x="297" y="404" width="903" height="226" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="2.7s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="254" width="161" height="136" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="3.3s" fill="freeze"/>
+  </rect>
+  <rect x="756" y="254" width="161" height="136" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" dur="0.6s" begin="3.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="917" y="240" width="14" height="0" fill="#0D0D0D">
+    <animate attributeName="height" from="0" to="164" dur="0.4s" begin="3.6s" fill="freeze"/>
+  </rect>
+
+  <rect x="0" y="404" width="283" height="226" fill="#11116B" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="4.3s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="404" width="283" height="226" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="4.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="283" y="390" width="14" height="0" fill="#0D0D0D">
+    <animate attributeName="height" from="0" to="240" dur="0.4s" begin="4.6s" fill="freeze"/>
+  </rect>
+
+  <rect x="0" y="404" width="283" height="226" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;0.2;0;0.2;0" keyTimes="0;0.25;0.5;0.75;1"
+             dur="4s" begin="6.5s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- B1 PINK overlay: headline + activity + contributors -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.6s" fill="freeze"/>
+
+    <text x="36" y="108" font-size="72" font-weight="700" letter-spacing="-1" opacity="0.97">v{{VERSION}}</text>
+    <text x="36" y="134" font-size="11" letter-spacing="2.5" opacity="0.75">
+      {{BUMP_TYPE}} RELEASE  ·  {{DATE_START}} → {{DATE_END_SHORT}}  ·  {{DAYS}} DAYS
+    </text>
+
+    <rect x="36" y="158" width="670" height="1" fill="#FFFFFF" opacity="0.35"/>
+
+    <text x="36" y="182" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT ACTIVITY</text>
+
+    <!-- @@DAILY_TIMELINE -->
+
+    <text x="36" y="320" font-size="10" letter-spacing="1.5" opacity="0.65">CONTRIBUTORS</text>
+
+    <!-- @@CONTRIBUTOR_LIST -->
+  </g>
+
+  <!-- B4 PINK ACCENT: SEMVER -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.7s" fill="freeze"/>
+    <text x="772" y="278" font-size="10" letter-spacing="1.5" opacity="0.8">SEMVER</text>
+    <text x="772" y="312" font-size="22" font-weight="700" opacity="0.95">{{BUMP_TYPE}}</text>
+    <text x="772" y="340" font-size="11" opacity="0.8">{{PREV_VERSION}} → {{VERSION}}</text>
+    <text x="772" y="360" font-size="11" opacity="0.65">{{DAYS}} days · +{{INSERTIONS}}</text>
+  </g>
+
+  <!-- Empty cell: COMMIT TYPES -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.0s" fill="freeze"/>
+    <text x="946" y="278" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT TYPES</text>
+
+    <!-- @@COMMIT_TYPES -->
+
+    <text x="946" y="368" font-size="10" opacity="0.45">SCOPES  {{SCOPES}}</text>
+  </g>
+
+  <!-- B3 BIG BLUE: bar chart -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="3.1s" fill="freeze"/>
+
+    <text x="320" y="432" font-size="10" letter-spacing="1.5" opacity="0.6">FILES CHANGED BY AREA</text>
+    <text x="1124" y="432" font-size="10" letter-spacing="1.5" opacity="0.6" text-anchor="end">{{FILES_COUNT}} TOTAL</text>
+
+    <rect x="320" y="442" width="804" height="1" fill="#FFFFFF" opacity="0.25"/>
+
+    <!-- @@BAR_CHART -->
+
+    <text x="320" y="612" font-size="10" opacity="0.55">+{{INSERTIONS}} insertions · -{{DELETIONS}} deletions · Δ ratio {{DIFF_RATIO}} {{DIFF_NARRATIVE}}</text>
+  </g>
+
+  <!-- B5 HEAD: repo state -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.9s" fill="freeze"/>
+    <text x="18" y="432" font-size="10" letter-spacing="1.5" opacity="0.65">REPO @ v{{VERSION}}</text>
+
+    <rect x="18" y="442" width="247" height="1" fill="#F5F1E8" opacity="0.25"/>
+
+    <!-- @@REPO_STATE -->
+
+    <text x="18" y="614" font-size="10" opacity="0.55">HEAD {{HEAD_SHA}}</text>
+  </g>
+</svg>

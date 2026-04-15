@@ -1,52 +1,53 @@
-# Release Cover Art Specification
+# Release Cover Art — Template-Based (Retired Generative Spec)
 
-Each release gets a unique, generative **Mondrian-inspired** SVG artwork — like a textbook cover for that version. The art uses the Polkadot brand palette and is seeded by the version number so each release has a distinct composition.
+The previous generative Mondrian spec has been retired. Each release now renders a **single canonical template** filled with facts pulled from git. This guarantees every value on the cover is verifiable and the design can't drift.
 
-## Design Rules
+Two files own this:
 
-- **Format:** SVG, 1200x630px (GitHub social preview / Open Graph size)
-- **Style:** Abstract geometric — Mondrian grid with Polkadot network overlay
-- **Palette:** See `.github/media/BRANDING.md` for authoritative colors:
-  - `#E6007A` (Polkadot Pink) — primary blocks and dots
-  - `#11116B` (Deep Blue) — secondary blocks
-  - `#0D0D0D` (near-black) — background
-  - `#FFFFFF` at low opacity — subtle accent blocks
-- **Output:** `.github/releases/vX.Y.Z/cover.svg`
+- **[`COVER_TEMPLATE.svg`](COVER_TEMPLATE.svg)** — the 1200×630 template. Scalar tokens (`{{VERSION}}`, `{{COMMIT_COUNT}}`, …) and variable-count markers (`<!-- @@COMMIT_LIST -->`, `<!-- @@BAR_CHART -->`, …). **Do not hand-edit per release.**
+- **[`COVER_DATA.md`](COVER_DATA.md)** — the data contract. For every token and marker: the exact command that produces it, sanitization rules, and scaling rules for edge cases (1 commit, 200 commits).
 
-## Composition Structure
+## Design anatomy
 
-1. **Background:** Dark (#0D0D0D)
-2. **Mondrian grid:** 4-5 vertical lines and 3-4 horizontal lines, creating an asymmetric grid. Vary the line positions per release — use the version number components (major, minor, patch) to shift positions. Lines should be bold (#1A1A1A, 6px stroke) for the characteristic Mondrian look.
-3. **Color blocks:** Fill 4-6 grid cells with brand colors at varying opacities (0.5–0.9). Balance pink and blue blocks. Leave some cells empty for breathing room. Add subtle `fade-block` CSS animation for a living feel.
-4. **Polkadot network overlay:** Scatter 4-6 small circles (Polkadot dots) across the composition. Connect them with thin lines (1px, low opacity) to suggest network connectivity — the defining visual metaphor of Polkadot.
-5. **Version watermark:** Bottom-right corner, monospace font, very low opacity (0.15). Shows `vX.Y.Z`.
-6. **Wordmark:** Bottom-left corner, "POLKADOT COOKBOOK" in small caps, very low opacity (0.25).
+The cover is a Mondrian composition (Polkadot pink / deep blue / cream / near-black) with a terminal-style data panel anchored in the top-right cell. Each remaining block carries one factual readout:
 
-## Variation Strategy
+| Region | Content |
+|---|---|
+| B1 (pink, top-left) | Giant `v{{VERSION}}`, bump type, date range, days; commit-activity timeline by day; contributor list with commit-count bars |
+| B2 (terminal panel, top-right) | Full commit log for the range, aggregate footer (`N commits · N contrib · +ins / -del · N files`), PR numbers, `HEAD · TAG` |
+| B3 (deep blue, bottom) | `FILES CHANGED BY AREA` horizontal bar chart, insertions/deletions/Δ-ratio narrative |
+| B4 (pink accent) | SEMVER bump callout |
+| Empty cell (mid-right) | Commit types tally (feat / fix / release) with colored bars, conventional-commit scopes |
+| B5 (blue head, bottom-left) | Repo state snapshot: counts of recipes, docs harnesses, migration tests, CI workflows, skills, Rust crates |
 
-Each release must look **distinct but recognizably part of the same series.** Vary:
-- Grid line positions (shift by version components)
-- Which grid cells get filled and with which colors
-- Dot positions and connection topology
-- Block opacity levels
-- Number and placement of accent blocks
+The cover art is **text-with-purpose**, not decorative — every numeral and identifier is real. No version watermark/wordmark is added separately because the cover itself is a structured report.
 
-**Do NOT** vary: the overall aesthetic (Mondrian + Polkadot dots), the color palette, the dimensions, or the watermark placement.
+## Rendering pipeline
 
-## Reference
+See `COVER_DATA.md` § Rendering pipeline. Abbreviated:
 
-Study the existing cover at `.github/releases/v0.13.0/cover.svg` for the established pattern. Each subsequent release should follow the same structure but with a fresh composition.
+1. Compute scalar tokens and fragments from git.
+2. Substitute into `COVER_TEMPLATE.svg`.
+3. Sanitize commit subjects / author names (`&` → `&amp;`, etc.).
+4. Write to `.github/releases/v${VERSION}/cover.svg`.
+5. `xmllint --noout` — abort release on failure.
 
-## Usage in Release Notes
+## Usage in release notes
 
-The cover appears at the very top of `RELEASE_NOTES.md`:
+Embed with a tag-pinned absolute raw URL (relative paths don't resolve on GitHub Release pages):
 
 ```markdown
 <div align="center">
-  <img src="cover.svg" alt="Release vX.Y.Z" width="100%" />
+  <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/v{{VERSION}}/.github/releases/v{{VERSION}}/cover.svg" alt="Release v{{VERSION}}" width="100%" />
 </div>
-
-# Release vX.Y.Z
-...
 ```
 
+In the release **PR body**, use the branch's head commit SHA (not the branch name — it's deleted on merge, and the tag doesn't exist yet):
+
+```
+https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/{commit-sha}/.github/releases/v{{VERSION}}/cover.svg
+```
+
+## Adding new facts
+
+See `COVER_DATA.md` § Adding new facts. Any new token or marker must ship with its git/filesystem source command and a length-bounded rendering rule.

@@ -95,9 +95,19 @@ tooling:
 
 Get actual tool versions from the local environment.
 
-### 3c. Cover art
+### 3c. Cover art (template-driven, fact-bound)
 
-Generate a unique Mondrian-inspired SVG at `.github/releases/vX.Y.Z/cover.svg`. Follow the specification in [`COVER_ART.md`](COVER_ART.md) — it defines the Polkadot brand palette, grid composition rules, and variation strategy. Study the reference cover at `.github/releases/v0.13.0/cover.svg` and create a **distinct but recognizably related** composition for this release.
+**Do not hand-design.** Render `.github/releases/vX.Y.Z/cover.svg` from the canonical template at [`COVER_TEMPLATE.svg`](COVER_TEMPLATE.svg), filled with values from git queries per the contract in [`COVER_DATA.md`](COVER_DATA.md).
+
+Pipeline:
+
+1. Compute every scalar token (`{{VERSION}}`, `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{HEAD_SHA}}`, `{{PR_LIST}}`, …) using the commands listed in `COVER_DATA.md`. A failed command aborts the release — never fabricate a fallback value.
+2. Generate the six variable-count fragments (`@@COMMIT_LIST`, `@@DAILY_TIMELINE`, `@@CONTRIBUTOR_LIST`, `@@BAR_CHART`, `@@COMMIT_TYPES`, `@@REPO_STATE`). Apply the scaling rules in `COVER_DATA.md` for commit counts of 1, 14, 27, 200, etc.
+3. Substitute scalars first, then markers, then write to `.github/releases/vX.Y.Z/cover.svg`.
+4. Sanitize any injected commit subject / author name: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`.
+5. Validate: `xmllint --noout .github/releases/vX.Y.Z/cover.svg` — on failure, fix the template/data issue and re-render. Do **not** ship an invalid SVG.
+
+The template itself is frozen. If a release needs a new data point on the cover, add the token to `COVER_TEMPLATE.svg` and its source command to `COVER_DATA.md` — never inline a value directly.
 
 ### 3d. Release notes
 
@@ -105,7 +115,7 @@ Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in 
 
 ```
 <div align="center">
-  <img src="cover.svg" alt="Release vX.Y.Z" width="100%" />
+  <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/vX.Y.Z/.github/releases/vX.Y.Z/cover.svg" alt="Release vX.Y.Z" width="100%" />
 </div>
 
 # Release vX.Y.Z
@@ -211,13 +221,13 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
    - The full release notes content from Phase 3
    - A "Next Steps" section explaining that merging triggers `publish-release.yml` (tag creation, binary builds, GitHub Release)
 
-   **Cover art in PR body:** `RELEASE_NOTES.md` uses `src="cover.svg"` which works inside the release folder, but relative paths **do not resolve in PR descriptions** — the image will render broken. When copying the release notes into the PR body, rewrite the `<img>` `src` to the raw URL for the release branch:
+   **Cover art in PR body:** `RELEASE_NOTES.md` is authored with an absolute tag-pinned raw URL so the **published release page** renders correctly (tags exist at publish time; relative paths on release pages resolve against repo root and 404). That URL will 404 in the PR body because the tag does not exist yet. For the PR body only, rewrite the `<img>` `src` to a raw URL pinned to the release branch's HEAD **commit SHA** — the SHA is immutable, so the image keeps rendering even after the release branch is deleted post-merge:
 
    ```
-   https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/release/vX.Y.Z/.github/releases/vX.Y.Z/cover.svg
+   https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/{commit-sha}/.github/releases/vX.Y.Z/cover.svg
    ```
 
-   Do **not** modify `RELEASE_NOTES.md` itself — the relative path is correct for the file's context once merged.
+   Do **not** pin the PR body URL to the branch name (`release/vX.Y.Z`) — the branch is deleted on merge and the PR body image will break retroactively.
 
 4. Report the PR URL.
 

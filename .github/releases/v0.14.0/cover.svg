@@ -1,77 +1,234 @@
-<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <style>
-      @keyframes fade-block {
-        0%, 100% { opacity: 0.85; }
-        50% { opacity: 1; }
-      }
-      .block-animate { animation: fade-block 7s ease-in-out infinite; }
-    </style>
-  </defs>
-
-  <!-- Background -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" shape-rendering="crispEdges">
   <rect width="1200" height="630" fill="#0D0D0D"/>
 
-  <!-- Mondrian grid lines — asymmetric, shifted from v0.13.0 -->
-  <g stroke="#2A2A2A" stroke-width="4">
-    <line x1="180" y1="0" x2="180" y2="630"/>
-    <line x1="460" y1="0" x2="460" y2="630"/>
-    <line x1="820" y1="0" x2="820" y2="630"/>
-    <line x1="0" y1="120" x2="1200" y2="120"/>
-    <line x1="0" y1="320" x2="1200" y2="320"/>
-    <line x1="0" y1="470" x2="1200" y2="470"/>
+  <!-- Terminal-anchor variant: B2 cream cell REPLACED with a terminal log panel.
+       Mondrian blocks = results. Terminal cell = process. -->
+
+  <!-- B1 genesis pink -->
+  <rect x="0" y="0" width="742" height="390" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="0s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="0" width="742" height="390" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.7;0" dur="0.6s" begin="0s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="240" width="0" height="14" fill="#0D0D0D">
+    <animate attributeName="width" from="0" to="444" dur="0.5s" begin="0.7s" fill="freeze"/>
+  </rect>
+  <rect x="742" y="0" width="14" height="0" fill="#0D0D0D">
+    <animate attributeName="height" from="0" to="390" dur="0.4s" begin="0.9s" fill="freeze"/>
+  </rect>
+
+  <!-- B2 TERMINAL PANEL: complete commit log for v0.13.0..v0.14.0.
+       »=feat  ✓=chore/fix  ◆=release  ± =refactor/other
+       Layout strategy (codified in release skill):
+         ≤13 commits → single column, all shown
+         14-26      → two columns, all shown
+         >26        → two columns w/ truncated subjects + "+N earlier" footer -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.3s" fill="freeze"/>
+    <rect x="756" y="0" width="444" height="240" fill="#07070A"/>
+    <rect x="764" y="8" width="428" height="224" fill="none" stroke="#F5F1E8" stroke-opacity="0.15" stroke-width="1"/>
+
+    <!-- Header with date range -->
+    <text x="774" y="26" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0.9" letter-spacing="0.4">
+      ┌─┤ v0.13.0..v0.14.0  2026-04-09 → 04-13 ├────────┐
+    </text>
+
+    <!-- All 9 commits, chronological, oldest first -->
+    <text x="774" y="46" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="1.7s" fill="freeze"/>
+      │ d2bafe4 » add foundry recipe
+    </text>
+    <text x="774" y="60" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="1.9s" fill="freeze"/>
+      │ 59ebaa5 » zero-to-hero-dapp test harness
+    </text>
+    <text x="774" y="74" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="2.1s" fill="freeze"/>
+      │ aaa7c7f » nft-hardhat test harness
+    </text>
+    <text x="774" y="88" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="2.3s" fill="freeze"/>
+      │ 343f1c8 » send-transactions test harness
+    </text>
+    <text x="774" y="102" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="2.5s" fill="freeze"/>
+      │ 2f9dca1 ✓ ensure commits carry PR links
+    </text>
+    <text x="774" y="116" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="2.7s" fill="freeze"/>
+      │ ee169df ✓ Mondrian cover art and branding
+    </text>
+    <text x="774" y="130" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="2.9s" fill="freeze"/>
+      │ 60ccd97 ✓ publish-release tag duplicate check
+    </text>
+    <text x="774" y="144" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="3.1s" fill="freeze"/>
+      │ 00fc678 ✓ fix cover art broken image in PR body
+    </text>
+    <text x="774" y="158" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#E6007A" opacity="0">
+      <animate attributeName="opacity" values="0;0.95" dur="0.15s" begin="3.4s" fill="freeze"/>
+      │ 1fe089b ◆ Release v0.14.0
+    </text>
+
+    <!-- Aggregate footer: all factual -->
+    <text x="774" y="196" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.8" dur="0.2s" begin="3.9s" fill="freeze"/>
+      │ 9 commits · 2 contrib · +16,756 / -18 · 53 files
+    </text>
+    <text x="774" y="210" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.75" dur="0.2s" begin="4.1s" fill="freeze"/>
+      │ PRs #228 #229 #230 #232 #252 #253 #254 #256 #257
+    </text>
+    <text x="774" y="224" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F5F1E8" opacity="0.55" letter-spacing="0.4">
+      └─ HEAD 1fe089b · TAG v0.14.0 ─────────────────────┘
+    </text>
   </g>
 
-  <!-- Color blocks — Polkadot palette -->
-  <!-- Primary pink blocks -->
-  <rect class="block-animate" x="184" y="4" width="272" height="112" fill="#E6007A" opacity="0.85"/>
-  <rect class="block-animate" x="824" y="124" width="372" height="192" fill="#E6007A" opacity="0.75" style="animation-delay: 1.2s;"/>
-  <rect class="block-animate" x="4" y="474" width="172" height="152" fill="#E6007A" opacity="0.55" style="animation-delay: 3.2s;"/>
+  <!-- H2 full width -->
+  <rect x="0" y="390" width="0" height="14" fill="#0D0D0D">
+    <animate attributeName="width" from="0" to="1200" dur="0.7s" begin="1.9s" fill="freeze"/>
+  </rect>
 
-  <!-- Deep blue blocks -->
-  <rect class="block-animate" x="464" y="4" width="352" height="112" fill="#11116B" opacity="0.9" style="animation-delay: 0.6s;"/>
-  <rect class="block-animate" x="4" y="124" width="172" height="192" fill="#11116B" opacity="0.8" style="animation-delay: 2.1s;"/>
-  <rect class="block-animate" x="464" y="324" width="352" height="142" fill="#11116B" opacity="0.65" style="animation-delay: 1.8s;"/>
+  <!-- B3 blue -->
+  <rect x="297" y="404" width="903" height="226" fill="#11116B" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="2.7s" fill="freeze"/>
+  </rect>
+  <rect x="297" y="404" width="903" height="226" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="2.7s" fill="freeze"/>
+  </rect>
 
-  <!-- Accent blocks — lighter variants -->
-  <rect class="block-animate" x="184" y="324" width="272" height="142" fill="#E6007A" opacity="0.18" style="animation-delay: 2.7s;"/>
-  <rect class="block-animate" x="824" y="474" width="372" height="152" fill="#11116B" opacity="0.25" style="animation-delay: 3.6s;"/>
-  <rect class="block-animate" x="184" y="474" width="272" height="152" fill="#FFFFFF" opacity="0.06" style="animation-delay: 4.1s;"/>
-  <rect class="block-animate" x="824" y="4" width="372" height="112" fill="#FFFFFF" opacity="0.04" style="animation-delay: 5s;"/>
+  <!-- B4 pink accent -->
+  <rect x="756" y="254" width="161" height="136" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="3.3s" fill="freeze"/>
+  </rect>
+  <rect x="756" y="254" width="161" height="136" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" dur="0.6s" begin="3.3s" fill="freeze"/>
+  </rect>
 
-  <!-- Polkadot dots — repositioned network nodes -->
-  <g fill="#E6007A">
-    <circle cx="90" cy="60" r="16" opacity="0.55"/>
-    <circle cx="320" cy="60" r="10" opacity="0.4"/>
-    <circle cx="1010" cy="220" r="18" opacity="0.55"/>
-    <circle cx="640" cy="395" r="12" opacity="0.5"/>
-    <circle cx="90" cy="395" r="14" opacity="0.4"/>
-    <circle cx="1120" cy="550" r="11" opacity="0.45"/>
+  <rect x="917" y="240" width="14" height="0" fill="#0D0D0D">
+    <animate attributeName="height" from="0" to="164" dur="0.4s" begin="3.6s" fill="freeze"/>
+  </rect>
+
+  <!-- B5 blue head -->
+  <rect x="0" y="404" width="283" height="226" fill="#11116B" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="4.3s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="404" width="283" height="226" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="4.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="283" y="390" width="14" height="0" fill="#0D0D0D">
+    <animate attributeName="height" from="0" to="240" dur="0.4s" begin="4.6s" fill="freeze"/>
+  </rect>
+
+  <!-- Tip pulse -->
+  <rect x="0" y="404" width="283" height="226" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;0.2;0;0.2;0" keyTimes="0;0.25;0.5;0.75;1"
+             dur="4s" begin="6.5s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- ============ FACTUAL DATA OVERLAYS ============ -->
+
+  <!-- B1 PINK: Headline + Commit Activity timeline -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.6s" fill="freeze"/>
+
+    <!-- Giant version headline -->
+    <text x="36" y="108" font-size="72" font-weight="700" letter-spacing="-1" opacity="0.97">v0.14.0</text>
+    <text x="36" y="134" font-size="11" letter-spacing="2.5" opacity="0.75">
+      MINOR RELEASE  ·  2026-04-09 → 04-13  ·  4 DAYS
+    </text>
+
+    <!-- Section divider -->
+    <rect x="36" y="158" width="670" height="1" fill="#FFFFFF" opacity="0.35"/>
+
+    <!-- Section header -->
+    <text x="36" y="182" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT ACTIVITY</text>
+
+    <!-- Timeline: each day as a line with dots. ● per commit. -->
+    <text x="36" y="208" font-size="12" opacity="0.9">Thu 04-09  ●●●●●●●             <tspan opacity="0.6">7 commits</tspan></text>
+    <text x="36" y="226" font-size="12" opacity="0.45">Fri 04-10  ·                   <tspan opacity="0.4">0</tspan></text>
+    <text x="36" y="244" font-size="12" opacity="0.45">Sat 04-11  ·                   <tspan opacity="0.4">0</tspan></text>
+    <text x="36" y="262" font-size="12" opacity="0.45">Sun 04-12  ·                   <tspan opacity="0.4">0</tspan></text>
+    <text x="36" y="280" font-size="12" opacity="0.9">Mon 04-13  ●●                  <tspan opacity="0.6">2 (incl. release)</tspan></text>
+
+    <!-- Contributors -->
+    <text x="36" y="320" font-size="10" letter-spacing="1.5" opacity="0.65">CONTRIBUTORS</text>
+    <text x="36" y="342" font-size="12" opacity="0.9">Bruno Galvao       <tspan opacity="0.6">█████     5</tspan></text>
+    <text x="36" y="360" font-size="12" opacity="0.9">Nicolás Hussein    <tspan opacity="0.6">████      4</tspan></text>
   </g>
 
-  <!-- Connection lines between dots — network mesh -->
-  <g stroke="#E6007A" stroke-width="1" opacity="0.15" fill="none">
-    <line x1="90" y1="60" x2="320" y2="60"/>
-    <line x1="320" y1="60" x2="1010" y2="220"/>
-    <line x1="1010" y1="220" x2="640" y2="395"/>
-    <line x1="640" y1="395" x2="90" y2="395"/>
-    <line x1="90" y1="395" x2="90" y2="60"/>
-    <line x1="1010" y1="220" x2="1120" y2="550"/>
+  <!-- B4 PINK ACCENT: SEMVER indicator -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.7s" fill="freeze"/>
+    <text x="772" y="278" font-size="10" letter-spacing="1.5" opacity="0.8">SEMVER</text>
+    <text x="772" y="312" font-size="22" font-weight="700" opacity="0.95">MINOR</text>
+    <text x="772" y="340" font-size="11" opacity="0.8">0.13.0 → 0.14.0</text>
+    <text x="772" y="360" font-size="11" opacity="0.65">4 days · +16,756</text>
   </g>
 
-  <!-- Version text -->
-  <text x="1170" y="600" font-family="monospace" font-size="42" fill="#FFFFFF" opacity="0.15" text-anchor="end" font-weight="bold">v0.14.0</text>
+  <!-- EMPTY CELL (931,254,269,136): Commit types breakdown -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.0s" fill="freeze"/>
+    <text x="946" y="278" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT TYPES</text>
+    <text x="946" y="302" font-size="12" opacity="0.85">» feat     <tspan fill="#E6007A">████</tspan>  4</text>
+    <text x="946" y="320" font-size="12" opacity="0.85">✓ fix      <tspan fill="#5FB3B3">████</tspan>  4</text>
+    <text x="946" y="338" font-size="12" opacity="0.85">◆ release  <tspan fill="#E6007A">█</tspan>     1</text>
+    <text x="946" y="368" font-size="10" opacity="0.45">SCOPES  docs · release · ci · skill</text>
+  </g>
 
-  <!-- Polkadot Cookbook wordmark -->
-  <text x="30" y="600" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#FFFFFF" opacity="0.25" font-weight="500">POLKADOT COOKBOOK</text>
+  <!-- B3 BIG BLUE: Files-changed bar chart by area -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="3.1s" fill="freeze"/>
 
-  <!-- Bold overlay grid lines for Mondrian effect -->
-  <g stroke="#1A1A1A" stroke-width="6">
-    <line x1="180" y1="0" x2="180" y2="630"/>
-    <line x1="460" y1="0" x2="460" y2="630"/>
-    <line x1="820" y1="0" x2="820" y2="630"/>
-    <line x1="0" y1="120" x2="1200" y2="120"/>
-    <line x1="0" y1="320" x2="1200" y2="320"/>
-    <line x1="0" y1="470" x2="1200" y2="470"/>
+    <text x="320" y="432" font-size="10" letter-spacing="1.5" opacity="0.6">FILES CHANGED BY AREA</text>
+    <text x="1124" y="432" font-size="10" letter-spacing="1.5" opacity="0.6" text-anchor="end">53 TOTAL</text>
+
+    <rect x="320" y="442" width="804" height="1" fill="#FFFFFF" opacity="0.25"/>
+
+    <!-- Bar chart: values are real file counts. Scale: 1 file = 8px. Max 25 → 200px. -->
+    <text x="320" y="466" font-size="12" opacity="0.9">polkadot-docs/smart-contracts    <tspan opacity="0.5">████████████████████████████████████████████████████████████████████████████████████████████████████</tspan>  25</text>
+    <text x="320" y="484" font-size="12" opacity="0.9">polkadot-docs/chain-interactions <tspan opacity="0.5">████████████████████████████████████████████████</tspan>  12</text>
+    <text x="320" y="502" font-size="12" opacity="0.9">.github/workflows                <tspan opacity="0.5">████████████████████</tspan>  5</text>
+    <text x="320" y="520" font-size="12" opacity="0.9">.github/releases                 <tspan opacity="0.5">████████████████████</tspan>  5</text>
+    <text x="320" y="538" font-size="12" opacity="0.9">.claude/skills                   <tspan opacity="0.5">████████</tspan>  2</text>
+    <text x="320" y="556" font-size="12" opacity="0.9">root (Cargo · CHANGELOG)         <tspan opacity="0.5">████████████</tspan>  3</text>
+    <text x="320" y="574" font-size="12" opacity="0.9">polkadot-docs/README.md          <tspan opacity="0.5">████</tspan>  1</text>
+
+    <!-- Footer summary -->
+    <text x="320" y="612" font-size="10" opacity="0.55">+16,756 insertions · -18 deletions · Δ ratio 930:1 (test-heavy release)</text>
+  </g>
+
+  <!-- B5 HEAD: Repo state snapshot -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.9s" fill="freeze"/>
+    <text x="18" y="432" font-size="10" letter-spacing="1.5" opacity="0.65">REPO @ v0.14.0</text>
+
+    <rect x="18" y="442" width="247" height="1" fill="#F5F1E8" opacity="0.25"/>
+
+    <text x="18" y="466" font-size="13" opacity="0.95"><tspan fill="#E6007A" font-weight="700">31</tspan>  docs test harnesses</text>
+    <text x="18" y="486" font-size="13" opacity="0.95"><tspan fill="#E6007A" font-weight="700"> 8</tspan>  recipes</text>
+    <text x="18" y="506" font-size="13" opacity="0.95"><tspan fill="#E6007A" font-weight="700"> 2</tspan>  migration tests</text>
+    <text x="18" y="526" font-size="13" opacity="0.95"><tspan fill="#E6007A" font-weight="700">54</tspan>  CI workflows</text>
+    <text x="18" y="546" font-size="13" opacity="0.95"><tspan fill="#E6007A" font-weight="700"> 5</tspan>  Claude skills</text>
+    <text x="18" y="566" font-size="13" opacity="0.95"><tspan fill="#E6007A" font-weight="700"> 2</tspan>  Rust crates  <tspan opacity="0.55">(sdk · cli)</tspan></text>
+
+    <text x="18" y="614" font-size="10" opacity="0.55">HEAD 1fe089b</text>
   </g>
 </svg>

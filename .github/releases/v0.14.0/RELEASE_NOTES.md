@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="cover.svg" alt="Release v0.14.0" width="100%" />
+  <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/v0.14.0/.github/releases/v0.14.0/cover.svg" alt="Release v0.14.0" width="100%" />
 </div>
 
 # Release v0.14.0
