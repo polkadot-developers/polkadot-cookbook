@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a new versioned release. Analyzes changes since last tag, determines semver bump, generates release notes and manifest, updates Cargo.toml and CHANGELOG.md, and opens a draft PR that triggers publish-release.yml on merge.
+description: Cut a new versioned release. Analyzes changes since last tag, determines semver bump, generates release notes and manifest, updates Cargo.toml and CHANGELOG.md, and opens a draft PR that triggers publish-release.yml on merge. Supports `--dry-run` to preview all artifacts in a scratch dir without any git or GitHub mutations.
 ---
 
 # Release
@@ -8,6 +8,8 @@ description: Cut a new versioned release. Analyzes changes since last tag, deter
 Create a versioned release of the Polkadot Cookbook. Accepts an optional bump override argument: `/release patch`, `/release minor`, or `/release major`. If no argument is given, the bump is determined automatically.
 
 **Contract with CI:** The `publish-release.yml` workflow triggers on merge to `master` when `.github/releases/v*/manifest.yml` changes. It builds CLI binaries, creates a git tag, and publishes the GitHub Release. This skill's job is to produce the artifacts that workflow expects.
+
+**If invoked with `--dry-run`, read [`DRY_RUN.md`](DRY_RUN.md) and follow that pipeline instead of the one below.** The real-run pipeline below makes git/GitHub mutations. Do not run it in dry-run mode.
 
 ---
 
