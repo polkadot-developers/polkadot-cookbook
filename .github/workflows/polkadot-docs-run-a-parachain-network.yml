@@ -7,11 +7,13 @@ on:
       - 'polkadot-docs/networks/run-a-parachain-network/**'
       - '!polkadot-docs/networks/run-a-parachain-network/README.md'
       - 'versions.yml'
+      - '.github/workflows/polkadot-docs-run-a-parachain-network.yml'
   pull_request:
     paths:
       - 'polkadot-docs/networks/run-a-parachain-network/**'
       - '!polkadot-docs/networks/run-a-parachain-network/README.md'
       - 'versions.yml'
+      - '.github/workflows/polkadot-docs-run-a-parachain-network.yml'
   workflow_dispatch:
 
 jobs:
