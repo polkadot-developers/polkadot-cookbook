@@ -8,7 +8,7 @@ All queries assume `${PREV}` = previous tag (e.g. `v0.13.0`) and `${TAG}` = the 
 
 ## Scalar tokens
 
-Substitute `{{TOKEN}}` in `COVER_TEMPLATE.svg` with the command output.
+Substitute `{{TOKEN}}` in `cover.svg.template` with the command output.
 
 | Token | Command | Notes |
 |---|---|---|
@@ -118,24 +118,44 @@ One `<text>` per contributor, sorted by commit count descending. Starts at y=342
 
 ### `@@BAR_CHART` (in B3)
 
-One `<text>` per top-level path, sorted by file count descending. Starts at y=466, increments 18px.
+Three elements per row: label text (left), **animated rect bar** (middle, staggered fill-in), count text (right). Starts at y=466, increments 18px.
 
 **Source:**
 ```bash
 git diff --name-only ${PREV}..${TAG} | awk -F'/' 'NF>=2{print $1"/"$2} NF==1{print $0}' | sort | uniq -c | sort -rn
 ```
 
-**Row template:**
+**Row template (per path):**
 ```xml
-<text x="320" y="{Y}" font-size="12" opacity="0.9">
-  {PATH_PADDED}<tspan opacity="0.5">{BARS}</tspan>  {COUNT}
-</text>
+<text x="320" y="{Y}" font-size="12" opacity="0.9">{PATH}</text>
+<rect x="600" y="{Y-9}" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+  <animate attributeName="width" from="0" to="{BAR_W}" dur="{DUR}s" begin="{T}s" fill="freeze"
+           calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+</rect>
+<text x="{COUNT_X}" y="{Y}" font-size="12" opacity="0.95" font-weight="700">{COUNT}</text>
 ```
 
-- `{PATH_PADDED}` = path padded to 33 chars
-- `{BARS}` = `█` × count (1 char per file, cap at 100 chars)
+Computed values:
+- `{BAR_W}` = `round(count / max_count * 500)`; max bar width = 500px (fits within B3)
+- `{COUNT_X}` = `600 + {BAR_W} + 10` (count text sits 10px right of the bar's end)
+- `{DUR}` = `0.5 + 0.2 * (count / max_count)` — top bar animates longest, trailing bars shorter
+- `{T}` starts at 3.3s, increments by 0.1s per row
 
-**Scaling rule:** show top 8 paths; group remainder into final row `other  {BARS}  {COUNT}` if >8.
+**Scaling rule:** show top 8 paths; group remainder into final row `other` with summed count if >8. Max bar width is fixed at 500px regardless of commit count — this prevents any overflow even for a single dominant path.
+
+### Animated contributor bars (`@@CONTRIBUTOR_LIST` — updated)
+
+Matches the bar-chart pattern: label + animated rect + count, instead of the previous text-based `█` bars. Bar width = `min(count * 20, 100)` (1 commit = 20px, cap at 100). Stagger begin at 1.3s, +0.15s per row.
+
+### Animated commit-types bars (`@@COMMIT_TYPES` — updated)
+
+Same pattern. Bar fill color varies: `#E6007A` for feat/release, `#5FB3B3` for fix. Bar width = `min(count * 15, 60)`. Stagger begin at 4.2s, +0.15s per row.
+
+### Why animated rects instead of text `█` characters
+
+- **Precise width control.** Text bars use character count; character widths vary subtly across platforms and can overflow a fixed cell.
+- **Progressive reveal.** `<rect>` width animates smoothly via SMIL `<animate>`, reinforcing the "data being plotted" feel — a short cosmetic win without cost.
+- **Length-scaled to the max.** Rect bars always fit the cell regardless of commit count (1 commit or 200), because scaling is relative to the row with the highest count.
 
 ### `@@COMMIT_TYPES` (in empty cell)
 
@@ -188,7 +208,7 @@ The /release skill performs:
 
 1. Compute all scalar tokens from the command table above.
 2. Generate all six variable fragments.
-3. Read `COVER_TEMPLATE.svg`, perform substitutions (scalars first, then markers).
+3. Read `cover.svg.template`, perform substitutions (scalars first, then markers).
 4. Sanitize all injected commit subjects and author names.
 5. Write to `.github/releases/v${VERSION}/cover.svg`.
 6. Run `xmllint --noout .github/releases/v${VERSION}/cover.svg` — if it fails, abort.
@@ -200,6 +220,6 @@ Any command failure in steps 1–2 aborts the release. No fallbacks, no placehol
 
 If a future release wants to surface something new on the cover:
 
-1. Add the computed token or marker here in `COVER_DATA.md`.
-2. Add the substitution/marker to `COVER_TEMPLATE.svg`.
+1. Add the computed token or marker here in `cover.data.md`.
+2. Add the substitution/marker to `cover.svg.template`.
 3. Keep the rendered value length bounded so it fits the Mondrian cell geometry (test with edge cases: 1 commit, 200 commits).
