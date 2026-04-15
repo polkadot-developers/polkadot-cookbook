@@ -40,6 +40,7 @@ jobs:
       - name: Load versions
         id: versions
         run: |
+          echo "POLKADOT_SDK_VERSION=$(yq '.polkadot_sdk.release_tag' versions.yml)" >> $GITHUB_OUTPUT
           echo "TEMPLATE_VERSION=$(yq '.parachain_template.version' versions.yml)" >> $GITHUB_OUTPUT
           echo "ZOMBIENET_VERSION=$(yq '.zombienet.version' versions.yml)" >> $GITHUB_OUTPUT
 
@@ -107,6 +108,8 @@ jobs:
         run: |
           cd polkadot-docs/networks/run-a-parachain-network
           npm test
+        env:
+          POLKADOT_SDK_VERSION: ${{ steps.versions.outputs.POLKADOT_SDK_VERSION }}
         timeout-minutes: 60
 
   post-test:
