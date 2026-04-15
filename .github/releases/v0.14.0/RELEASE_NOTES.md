@@ -48,3 +48,9 @@ Tested with:
 ---
 
 **Status:** Alpha (v0.x.x)
+
+---
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/v0.14.0/.github/releases/v0.14.0/cover-chain.svg" alt="Polkadot network state at v0.14.0 release" width="100%" />
+</div>

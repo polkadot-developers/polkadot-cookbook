@@ -109,6 +109,26 @@ Pipeline:
 
 The template itself is frozen. If a release needs a new data point on the cover, add the token to `COVER_TEMPLATE.svg` and its source command to `COVER_DATA.md` — never inline a value directly.
 
+### 3c.2. Footer cover — chain-state reading
+
+Each release also ships a second cover at `.github/releases/vX.Y.Z/cover-chain.svg`: a point-in-time reading of Polkadot mainnet as it was at release-cut time. Rendered from [`COVER_CHAIN_TEMPLATE.svg`](COVER_CHAIN_TEMPLATE.svg) using data pulled via JSON-RPC per the contract in [`COVER_CHAIN_DATA.md`](COVER_CHAIN_DATA.md).
+
+Pipeline:
+
+1. Walk the endpoint list (primary → fallbacks) until one answers within 5s total-budget 15s.
+2. Run the one-shot capture sequence (`chain_getFinalizedHead` → `chain_getHeader` → `state_getRuntimeVersion` → `system_*` → `system_properties` → `chain_getBlockHash [0]`), record capture timestamp in UTC.
+3. **If all endpoints fail: skip this cover entirely.** Do not write `cover-chain.svg`. Omit the footer embed from `RELEASE_NOTES.md`. Log the failure in the release PR body. Never fabricate or cache-reuse chain data.
+4. If success: compute scalars per the table in `COVER_CHAIN_DATA.md`, substitute into template, sanitize (`&<>`), write, `xmllint --noout`.
+5. Append the footer embed block to `RELEASE_NOTES.md` (after the "Next Steps" section, preceded by an `---` separator):
+
+   ```html
+   <div align="center">
+     <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/v{{VERSION}}/.github/releases/v{{VERSION}}/cover-chain.svg" alt="Polkadot network state at v{{VERSION}} release" width="100%" />
+   </div>
+   ```
+
+The footer cover is deliberately text-dense and point-in-time; the B1 disclaimer badge is the single source of truth for its historical nature. Do not add redundant "at snapshot" / "at release-cut" qualifiers elsewhere in the template.
+
 ### 3d. Release notes
 
 Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in `.github/releases/` for the established format, then **enhance** with these sections:
