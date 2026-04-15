@@ -124,6 +124,25 @@ def render(tpl_name: str, out_path: Path, extra: dict | None = None, canvas_key:
             sys.exit(f"xmllint fail {out_path}: {r.stderr.decode()}")
 
 
+def rasterize(svg: Path, png: Path, width: int):
+    """Rasterize SVG → PNG. Tries rsvg-convert, then cairosvg, else warns."""
+    png.parent.mkdir(parents=True, exist_ok=True)
+    if shutil.which("rsvg-convert"):
+        subprocess.run(
+            ["rsvg-convert", "-w", str(width), "-o", str(png), str(svg)],
+            check=True, capture_output=True,
+        )
+        return True
+    try:
+        import cairosvg  # type: ignore
+        cairosvg.svg2png(url=str(svg), write_to=str(png), output_width=width)
+        return True
+    except ImportError:
+        pass
+    print(f"  ⚠ PNG skipped ({png.name}) — install librsvg: brew install librsvg")
+    return False
+
+
 # --- render everything ----------------------------------------------------
 print("▸ hero")
 render("hero.svg.template", OUT / "hero-dark.svg", canvas_key="dark")
@@ -136,6 +155,14 @@ render("divider.svg.template", OUT / "divider-light.svg", canvas_key="light")
 print("▸ social-preview + og-image")
 render("social-preview.svg.template", OUT / "social-preview.svg", canvas_key="dark")
 shutil.copyfile(OUT / "hero-dark.svg", OUT / "og-image.svg")
+
+# Rasterize PNGs for platforms that don't render SVG OG images (X, Slack, etc.)
+rasterize(OUT / "social-preview.svg", OUT / "social-preview.png", 1280)
+rasterize(OUT / "og-image.svg", OUT / "og-image.png", 1200)
+# Mirror og-image.png into docs/ so GitHub Pages serves it at the URL already
+# referenced by docs/index.html meta tags.
+if (OUT / "og-image.png").exists():
+    shutil.copyfile(OUT / "og-image.png", DOCS / "og-image.png")
 
 print("▸ contributing-hero")
 render("contributing-hero.svg.template", OUT / "contributing-hero-dark.svg", canvas_key="dark")
