@@ -1,6 +1,7 @@
 ---
 name: release
 description: Cut a new versioned release. Analyzes changes since last tag, determines semver bump, generates release notes and manifest, updates Cargo.toml and CHANGELOG.md, and opens a draft PR that triggers publish-release.yml on merge. Supports `--dry-run` to preview all artifacts in a scratch dir without any git or GitHub mutations.
+argument-hint: "[--dry-run] [patch|minor|major]"
 ---
 
 # Release
