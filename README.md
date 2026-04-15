@@ -5,15 +5,11 @@
   <img alt="Polkadot Cookbook — Practical, tested recipes for building on Polkadot" src=".github/media/hero-dark.svg">
 </picture>
 
-<div align="center">
-
 [**Browse Recipes**](#recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#documentation)
 
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-11116B.svg)](LICENSE)
 [![Polkadot Cookbook SDK](https://img.shields.io/github/actions/workflow/status/polkadot-developers/polkadot-cookbook/test-sdk.yml?label=Polkadot%20Cookbook%20SDK&color=E6007A)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml)
 [![CLI](https://img.shields.io/badge/CLI-dot%20v0.14.0-E6007A?logo=rust&logoColor=white)](dot/cli/)
-
-</div>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/media/divider-dark.svg">
