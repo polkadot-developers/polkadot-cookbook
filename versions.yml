@@ -68,6 +68,9 @@ javascript_packages:
   chopsticks:
     name: "@acala-network/chopsticks"
     version: "1.2.8"
+  paraspell_sdk:
+    name: "@paraspell/sdk"
+    version: "12.8.8"
   hdkd:
     name: "@polkadot-labs/hdkd"
     version: "0.0.27"
