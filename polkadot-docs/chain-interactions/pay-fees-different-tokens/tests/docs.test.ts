@@ -118,10 +118,7 @@ describe("Pay Fees with Different Tokens Guide", () => {
         await import("@polkadot-labs/hdkd-helpers");
       const { getPolkadotSigner } = await import("polkadot-api/signer");
       const { createClient } = await import("polkadot-api");
-      const { withPolkadotSdkCompat } = await import(
-        "polkadot-api/polkadot-sdk-compat"
-      );
-      const { getWsProvider } = await import("polkadot-api/ws-provider/node");
+      const { getWsProvider } = await import("polkadot-api/ws");
       const { assetHub, MultiAddress } = await import(
         "@polkadot-api/descriptors"
       );
@@ -138,9 +135,7 @@ describe("Pay Fees with Different Tokens Guide", () => {
       );
 
       // Connect
-      client = createClient(
-        withPolkadotSdkCompat(getWsProvider(CHOPSTICKS_WS))
-      );
+      client = createClient(getWsProvider(CHOPSTICKS_WS));
       const api = client.getTypedApi(assetHub);
 
       // Create and submit tx
