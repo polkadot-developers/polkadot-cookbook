@@ -9,37 +9,7 @@ Create a versioned release of the Polkadot Cookbook. Accepts an optional bump ov
 
 **Contract with CI:** The `publish-release.yml` workflow triggers on merge to `master` when `.github/releases/v*/manifest.yml` changes. It builds CLI binaries, creates a git tag, and publishes the GitHub Release. This skill's job is to produce the artifacts that workflow expects.
 
----
-
-## Dry-Run Mode
-
-**`/release --dry-run [patch|minor|major]`** runs the full pipeline **without any git or GitHub mutations**. Use this to preview every rendered artifact before committing to a real release.
-
-What dry-run does:
-- Computes all scalar tokens + marker fills from git + RPC exactly as a real run would
-- Renders every template (`cover.svg`, `cover-chain.svg`, `RELEASE_NOTES.md`, `manifest.yml`, PR body)
-- Writes outputs to `/tmp/release-dry-run/v{VERSION}/` (not to `.github/releases/`)
-- Runs `xmllint --noout` on both SVGs
-- Prints a summary: the scratch-dir path, per-file size/validity, remaining un-substituted tokens (should be zero)
-
-What dry-run does **NOT** do:
-- No `git checkout -b release/vX.Y.Z`
-- No edits to `Cargo.toml`, `Cargo.lock`, `CHANGELOG.md` (print the proposed diff instead)
-- No `git commit`, no `git push`
-- No `gh pr create`
-- No `gh release edit` on any existing release
-
-The chain-state RPC capture (Phase 3c.2) **does** run against live endpoints — it's cheap (one HTTP burst) and it's the only way to verify the endpoint walk + fallback logic. If all endpoints fail, the dry-run marks the footer cover as `SKIPPED` in the summary, same as a real run would.
-
-Every phase below has a `**Dry-run:**` note describing its behavior under the flag. The rule is: if a phase's side effects are filesystem-local and reversible (template substitution), it runs and writes to the scratch dir. If a phase mutates git state or remote state, it prints what it would do instead.
-
-Exit criteria for a clean dry-run:
-- All six artifact files exist in `/tmp/release-dry-run/v{VERSION}/` (cover.svg, cover-chain.svg OR skip-notice, RELEASE_NOTES.md, manifest.yml, pr-body.md, and the proposed CHANGELOG/Cargo diffs as `proposed-changes.diff`)
-- `xmllint --noout` passes on both SVGs
-- Zero remaining `{{TOKEN}}` patterns in rendered output
-- Zero remaining `<!-- @@MARKER -->` comments in rendered output, except when a marker was intentionally omitted (e.g. `@@BREAKING` when there are no breaking changes)
-
-A clean dry-run is not a substitute for manual review of the narrative sections (`@@SUMMARY`, `@@WHATS_NEW`), but it does guarantee the scaffolding is correct.
+**If invoked with `--dry-run`, read [`DRY_RUN.md`](DRY_RUN.md) and follow that pipeline instead of the one below.** The real-run pipeline below makes git/GitHub mutations. Do not run it in dry-run mode.
 
 ---
 
@@ -110,8 +80,6 @@ GitHub squash merges often strip conventional commit prefixes (e.g., "Add featur
 - **Stats:** `git diff --shortstat {tag}..HEAD` and `git log --oneline {tag}..HEAD | wc -l` for commit count
 - **Diff link:** `https://github.com/polkadot-developers/polkadot-cookbook/compare/{tag}...v{new}`
 
-**Dry-run:** runs as normal — metadata gathering is read-only.
-
 ### 3b. Release directory and manifest
 
 Create `.github/releases/vX.Y.Z/` with `manifest.yml`:
@@ -128,8 +96,6 @@ tooling:
 ```
 
 Get actual tool versions from the local environment.
-
-**Dry-run:** substitute the scratch path `/tmp/release-dry-run/vX.Y.Z/` for `.github/releases/vX.Y.Z/` in every write. `mkdir -p` the scratch dir at phase start.
 
 ### 3c. Cover art (template-driven, fact-bound)
 
@@ -231,8 +197,6 @@ Tested with:
 
 </details>
 
-**Dry-run:** write `cover.svg` and `cover-chain.svg` (or skip-notice) to `/tmp/release-dry-run/vX.Y.Z/`. Write `RELEASE_NOTES.md` to the same dir — but use URLs pinned to `master` for the embedded cover images (the real tag doesn't exist in a dry-run, so rendering with `v{VERSION}` paths would 404 on GitHub).
-
 ### 3e. Update CHANGELOG.md
 
 Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format.
@@ -268,22 +232,16 @@ At the bottom of the file, maintain a link reference section:
 
 If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` section, and the current release only.
 
-**Dry-run:** do not write `CHANGELOG.md`. Compute the proposed new content, diff against the current file (`diff -u CHANGELOG.md /tmp/proposed.md`), and append the diff to `/tmp/release-dry-run/vX.Y.Z/proposed-changes.diff`.
-
 ### 3f. Update Cargo.toml and lockfile
 
 - Edit `Cargo.toml` `[workspace.package]` → `version = "X.Y.Z"` (strip `v` prefix)
 - Run `cargo update --workspace`
-
-**Dry-run:** do not edit `Cargo.toml`. Print the one-line change to `proposed-changes.diff`. Skip `cargo update`.
 
 ### 3g. Manifest (template-driven)
 
 Render `.github/releases/vX.Y.Z/manifest.yml` from [`MANIFEST.template.yml`](MANIFEST.template.yml). Substitute `{{VERSION}}`, `{{PREV_VERSION}}`, `{{RELEASE_DATE}}` (ISO-8601 UTC), `{{STATUS}}` (`alpha` while major=0, `beta` during 1.0 RC, `stable` thereafter), `{{RUST_VERSION}}`, `{{NODE_VERSION}}`. No markers — manifest is scalar-only.
 
 ---
-
-**Dry-run:** write `manifest.yml` to the scratch dir; do not touch `.github/releases/`.
 
 ## Phase 4: Create Release PR
 
@@ -309,34 +267,6 @@ Render `.github/releases/vX.Y.Z/manifest.yml` from [`MANIFEST.template.yml`](MAN
 4. Report the PR URL.
 
 ---
-
-**Dry-run:** do NOT create a branch, commit, push, or open a PR. Render the PR body from `RELEASE_PR_BODY.template.md` and write it to `/tmp/release-dry-run/vX.Y.Z/pr-body.md`. Print what the `gh pr create` invocation would be, including title and branch name. Then run the dry-run summary:
-
-```
-======================================================
-DRY RUN SUMMARY — vX.Y.Z
-======================================================
-scratch dir: /tmp/release-dry-run/vX.Y.Z/
-
-  cover.svg                 12,418 bytes  ✓ xmllint passes
-  cover-chain.svg           13,902 bytes  ✓ xmllint passes
-  RELEASE_NOTES.md           2,748 bytes  0 unfilled tokens / 0 unfilled markers
-  manifest.yml                 612 bytes
-  pr-body.md                 1,904 bytes
-  proposed-changes.diff      1,206 bytes  (CHANGELOG.md + Cargo.toml deltas)
-
-Would do on real run:
-  git checkout -b release/vX.Y.Z
-  git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md
-  git commit -m "Release vX.Y.Z"
-  git push -u origin release/vX.Y.Z
-  gh pr create --draft --title "Release vX.Y.Z" --label "release" --body-file pr-body.md
-
-No mutations were performed. Open the scratch dir to review artifacts.
-======================================================
-```
-
-Fail the dry-run loudly (exit non-zero-equivalent) if any exit-criteria check from the top-level "Dry-Run Mode" section fails. A dry-run with leftover `{{TOKENS}}` or failing `xmllint` is a real-release bug caught early.
 
 ## Phase 5: Self-Improvement
 
