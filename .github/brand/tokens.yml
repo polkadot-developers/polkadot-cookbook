@@ -1,0 +1,78 @@
+# Polkadot Cookbook — Brand Tokens
+# Single source of truth. Every artifact under .github/media/, every SVG
+# template, every hex code in repo code SHOULD resolve back here.
+#
+# CHANGING A VALUE: bump .github/brand/CHANGELOG.md in the same commit
+# and re-run /branding to regenerate .github/media/ assets. CI enforces.
+
+color:
+  primary:
+    pink: "#E6007A"       # Polkadot brand pink (official; polkadot.network/brand-assets)
+    blue: "#11116B"       # deep blue — release cover B3/B5
+  surface:
+    canvas: "#0D0D0D"     # near-black grid divider, README dark bg
+    terminal: "#07070A"   # terminal panel bg (cover B2)
+    cream: "#F5F1E8"      # text on dark surfaces
+  semantic:
+    success: "#E6007A"    # reuse brand pink for passing/success (CLI convention)
+    fix: "#5FB3B3"        # teal — `fix:` commits in release cover
+    warn: "#E6B800"       # mustard — warnings, deprecation
+  mode:
+    light-bg: "#FFFFFF"
+    dark-bg: "#0D0D0D"
+
+type:
+  mono: "ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+  weight:
+    regular: 400
+    bold: 700
+  size:
+    kpi-xl: 72
+    kpi-lg: 52
+    kpi-md: 36
+    kpi-sm: 28
+    h1: 36
+    h2: 22
+    body: 16
+    mono-md: 14
+    mono-sm: 11
+    mono-xs: 10
+    mono-xxs: 9
+  tracking:
+    tight: -1
+    normal: 0
+    wide: 2
+    wider: 3
+
+space:
+  grid-gutter: 14         # Mondrian block divider (matches cover.svg.template)
+  canvas:
+    og: [1200, 630]       # Open Graph / release cover standard
+    social: [1280, 640]   # GitHub social preview
+    divider: [1200, 12]
+    pathway-banner: [1200, 200]
+    contributing-hero: [1200, 400]
+
+motion:
+  reveal-dur: "0.35s"     # block fade-in (from cover template)
+  cascade-stagger: "0.2s" # between rows in terminal panels
+  float-heading-dur: "6s"
+  float-offset-px: 2
+  gradient-flow-dur: "8s"
+  honor-reduced-motion: true
+
+logo:
+  clear-space-ratio: 0.25
+  min-size-px: 40
+  hero-size-px: 80
+
+a11y:
+  min-contrast-body: 4.5  # WCAG AA
+  min-contrast-large: 3.0
+
+# Palette allowlist: hex codes permitted OUTSIDE tokens.yml.
+# Append here only for third-party/unavoidable cases. CI lint uses this.
+allowlist:
+  - "#000000"             # pure black (fallback)
+  - "#FFFFFF"             # pure white (fallback)
+  - "#08080d"             # legacy PWA manifest bg — migrate then remove

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" shape-rendering="crispEdges" role="img" aria-label="Polkadot Cookbook — Build on Polkadot.">
+  <!-- Generated. 1280×640 GitHub social preview — readable at thumbnail size. -->
+  <rect width="1280" height="640" fill="#0D0D0D"/>
+
+  <!-- Pink title slab -->
+  <rect x="0" y="0" width="1280" height="400" fill="#E6007A"/>
+  <text x="80" y="200" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="108" font-weight="700" fill="#07070A" letter-spacing="-2">POLKADOT</text>
+  <text x="80" y="310" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="108" font-weight="700" fill="#07070A" letter-spacing="-2">COOKBOOK</text>
+  <rect x="80" y="336" width="460" height="5" fill="#07070A"/>
+
+  <!-- Black tagline + blue KPI -->
+  <rect x="0" y="400" width="880" height="240" fill="#07070A"/>
+  <text x="80" y="490" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="26" fill="#F5F1E8" opacity="0.9">Practical, tested recipes</text>
+  <text x="80" y="528" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="26" fill="#F5F1E8" opacity="0.9">for building on Polkadot.</text>
+  <text x="80" y="578" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#F5F1E8" opacity="0.5" letter-spacing="3">PALLETS · CONTRACTS · XCM · TRANSACTIONS · NETWORKS</text>
+  <text x="80" y="604" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.4">+ 19 tutorial test harnesses from polkadot-docs</text>
+
+  <rect x="880" y="400" width="400" height="240" fill="#11116B"/>
+  <text x="904" y="448" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.7" letter-spacing="2">v0.14.0</text>
+  <text x="904" y="516" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="60" font-weight="700" fill="#F5F1E8">8</text>
+  <text x="904" y="540" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.7" letter-spacing="2">RECIPES</text>
+  <text x="1080" y="516" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="60" font-weight="700" fill="#F5F1E8">19</text>
+  <text x="1080" y="540" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.7" letter-spacing="2">DOCS</text>
+  <text x="904" y="602" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#F5F1E8" opacity="0.5">MIT / Apache-2.0</text>
+</svg>
