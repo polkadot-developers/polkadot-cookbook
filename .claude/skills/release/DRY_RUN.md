@@ -101,11 +101,11 @@ Render `$SCRATCH/pr-body.md` from [`RELEASE_PR_BODY.template.md`](RELEASE_PR_BOD
 
 ## Template rendering convention
 
-Each non-SVG template (`RELEASE_NOTES.template.md`, `MANIFEST.template.yml`, `RELEASE_PR_BODY.template.md`) starts with a **documentation header block** that explains tokens/markers for humans reading the template source. This header must be **stripped before rendering**:
+Every template file starts with a **documentation header block** that explains tokens and markers for humans reading the template source. This header must be **stripped before any substitution**, because the doc text often *names* the tokens/markers (`{{VERSION}}`, `<!-- @@COMMIT_LIST -->`) as examples — if you substitute into the doc text, you inject content where it doesn't belong, or (for SVGs) corrupt the XML comment structure with `--` characters from commit subjects.
 
-- **Markdown templates:** delete all lines from line 1 through the first empty line.
-- **YAML templates:** delete all contiguous leading lines that start with `#`.
-- **SVG templates:** do NOT strip. SVG comments are invisible in renders.
+- **Markdown templates** (`*.template.md`): delete all lines from line 1 through the first empty line.
+- **YAML templates** (`*.template.yml`): delete all contiguous leading lines that start with `#`.
+- **SVG templates** (`*.svg.template`): delete the first top-level `<!-- ... -->` comment block that appears before the first element content. The stripped block is purely documentation; the SVG remains valid without it.
 
 Then perform scalar substitution and marker fills on the remaining content.
 
