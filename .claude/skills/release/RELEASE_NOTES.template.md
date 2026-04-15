@@ -25,6 +25,7 @@
        <!-- @@COMMITS -->       Bulleted list of commit subjects with PR links,
                                 one line per commit, newest first.
      ============================================================================= -->
+<!-- TEMPLATE_HEADER_END -->
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/v{{VERSION}}/.github/releases/v{{VERSION}}/cover.svg" alt="Release v{{VERSION}}" width="100%" />

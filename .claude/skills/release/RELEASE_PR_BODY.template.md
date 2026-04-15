@@ -27,6 +27,7 @@
        commit SHA, not the branch name (`release/v{VERSION}`) — the branch is
        deleted on merge and branch-based raw URLs break retroactively.
      ============================================================================= -->
+<!-- TEMPLATE_HEADER_END -->
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/{{HEAD_SHA}}/.github/releases/v{{VERSION}}/cover.svg" alt="Release v{{VERSION}}" width="100%" />
