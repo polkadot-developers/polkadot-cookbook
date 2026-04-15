@@ -150,10 +150,7 @@ Only after `npm test` exits with all tests passing:
 2. **Cookbook PR**: Commit all generated files + CI workflow + README update. Create as a **draft PR** (`gh pr create --draft`). Use title `feat: add {guide-name} polkadot-docs test harness`.
 3. **Companion PR**: Immediately after creating the cookbook PR, create a **draft PR** in `polkadot-developers/polkadot-docs` adding the CI badge to the guide page. Reference the cookbook PR in the body: `Companion to polkadot-developers/polkadot-cookbook#{PR-number}`. Do not wait for the cookbook PR to merge — both PRs are created in the same run.
 
-   **Badge placement pattern** — study an existing docs page that already has a badge (e.g., `chain-interactions/accounts/query-accounts.md`) and replicate the exact pattern:
-   - **Top**: A `<div class="status-badge" markdown>` block with the badge image link immediately after the `# Title` heading.
-   - **Bottom**: A `<div class="status-badge" markdown>` block with both the badge image link and a `[:material-code-tags: View tests](...)` link placed **before** the `## Where to Go Next` section.
-   - Both links must include `{target=\_blank}` and the "View tests" link must use the `{ .tests-button target=\_blank}` class.
+   **Badge pattern** — docs pages now wire up badges via frontmatter, not HTML. Study a recent example (e.g. `chain-interactions/accounts/query-accounts.md`) and replicate the pattern: add `page_badges.test_workflow: polkadot-docs-{guide-name}` and `page_tests.path: polkadot-docs/{category}/{guide-name}/tests/docs.test.ts` to the existing frontmatter block. The docs theme renders the badge and "View tests" link from these keys — do not hand-roll `<div class="status-badge">` blocks.
 4. **Verify test plan**: After creating the cookbook PR, verify each item in the PR's test plan checklist. For items that are already confirmed (e.g., `npm test` passes locally), check them off by updating the PR body via `gh pr edit`. For items that require CI (e.g., workflow triggers), monitor and check them off once confirmed.
 
 ---
