@@ -3,7 +3,7 @@
        Polkadot Cookbook — Release Cover Template
        ==========================================================================
        DO NOT hand-edit per release. The /release skill renders this template with
-       values from git queries. See COVER_DATA.md for the full data contract.
+       values from git queries. See cover.data.md for the full data contract.
 
        SCALAR TOKENS (exact string substitution):
          {{VERSION}}          e.g. 0.14.0

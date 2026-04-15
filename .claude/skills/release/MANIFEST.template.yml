@@ -1,0 +1,24 @@
+# =============================================================================
+# Polkadot Cookbook — Release Manifest Template
+# =============================================================================
+# DO NOT hand-edit per release. The /release skill substitutes tokens and writes
+# to .github/releases/v{VERSION}/manifest.yml.
+#
+# TOKENS:
+#   {{VERSION}}          e.g. 0.14.0
+#   {{PREV_VERSION}}     e.g. 0.13.0
+#   {{RELEASE_DATE}}     ISO 8601 UTC, e.g. 2026-04-13T00:00:00Z
+#   {{STATUS}}           alpha | beta | stable — derived from semver: 0.x.x=alpha,
+#                        major=0 after first stable tag=beta, 1.x.x+=stable
+#   {{RUST_VERSION}}     e.g. 1.91.0
+#   {{NODE_VERSION}}     e.g. v24.7.0
+# =============================================================================
+
+release: v{{VERSION}}
+previous_release: v{{PREV_VERSION}}
+release_date: {{RELEASE_DATE}}
+status: {{STATUS}}
+
+tooling:
+  rust: "{{RUST_VERSION}}"
+  node: "{{NODE_VERSION}}"

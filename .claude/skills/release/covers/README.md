@@ -6,13 +6,13 @@ Each release ships two covers:
 
 ### Top cover — release-focused (commit-activity report)
 
-- **[`COVER_TEMPLATE.svg`](COVER_TEMPLATE.svg)** — the 1200×630 template. Scalar tokens (`{{VERSION}}`, `{{COMMIT_COUNT}}`, …) and variable-count markers (`<!-- @@COMMIT_LIST -->`, `<!-- @@BAR_CHART -->`, …). **Do not hand-edit per release.**
-- **[`COVER_DATA.md`](COVER_DATA.md)** — the data contract. For every token and marker: the exact command that produces it, sanitization rules, and scaling rules for edge cases (1 commit, 200 commits).
+- **[`cover.svg.template`](cover.svg.template)** — the 1200×630 template. Scalar tokens (`{{VERSION}}`, `{{COMMIT_COUNT}}`, …) and variable-count markers (`<!-- @@COMMIT_LIST -->`, `<!-- @@BAR_CHART -->`, …). **Do not hand-edit per release.**
+- **[`cover.data.md`](cover.data.md)** — the data contract. For every token and marker: the exact command that produces it, sanitization rules, and scaling rules for edge cases (1 commit, 200 commits).
 
 ### Footer cover — ecosystem-focused (chain-state reading)
 
-- **[`COVER_CHAIN_TEMPLATE.svg`](COVER_CHAIN_TEMPLATE.svg)** — the 1200×630 template for the point-in-time reading of Polkadot mainnet at release-cut time. Scalar tokens only (no variable-count sections — the chain readout is fixed-shape).
-- **[`COVER_CHAIN_DATA.md`](COVER_CHAIN_DATA.md)** — the chain-data contract. For every token: the JSON-RPC method, post-processing, fallback endpoint order, and the "all endpoints fail → skip the footer cover" rule (never fabricate chain data).
+- **[`cover-chain.svg.template`](cover-chain.svg.template)** — the 1200×630 template for the point-in-time reading of Polkadot mainnet at release-cut time. Scalar tokens only (no variable-count sections — the chain readout is fixed-shape).
+- **[`cover-chain.data.md`](cover-chain.data.md)** — the chain-data contract. For every token: the JSON-RPC method, post-processing, fallback endpoint order, and the "all endpoints fail → skip the footer cover" rule (never fabricate chain data).
 
 ## Design anatomy
 
@@ -31,10 +31,10 @@ The cover art is **text-with-purpose**, not decorative — every numeral and ide
 
 ## Rendering pipeline
 
-See `COVER_DATA.md` § Rendering pipeline. Abbreviated:
+See `cover.data.md` § Rendering pipeline. Abbreviated:
 
 1. Compute scalar tokens and fragments from git.
-2. Substitute into `COVER_TEMPLATE.svg`.
+2. Substitute into `cover.svg.template`.
 3. Sanitize commit subjects / author names (`&` → `&amp;`, etc.).
 4. Write to `.github/releases/v${VERSION}/cover.svg`.
 5. `xmllint --noout` — abort release on failure.
@@ -57,4 +57,4 @@ https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/{commit-
 
 ## Adding new facts
 
-See `COVER_DATA.md` § Adding new facts. Any new token or marker must ship with its git/filesystem source command and a length-bounded rendering rule.
+See `cover.data.md` § Adding new facts. Any new token or marker must ship with its git/filesystem source command and a length-bounded rendering rule.

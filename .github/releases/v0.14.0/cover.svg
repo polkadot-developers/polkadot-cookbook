@@ -170,8 +170,19 @@
 
     <!-- Contributors -->
     <text x="36" y="320" font-size="10" letter-spacing="1.5" opacity="0.65">CONTRIBUTORS</text>
-    <text x="36" y="342" font-size="12" opacity="0.9">Bruno Galvao       <tspan opacity="0.6">█████     5</tspan></text>
-    <text x="36" y="360" font-size="12" opacity="0.9">Nicolás Hussein    <tspan opacity="0.6">████      4</tspan></text>
+    <text x="36" y="342" font-size="12" opacity="0.9">Bruno Galvao</text>
+    <rect x="190" y="333" width="0" height="10" fill="#FFFFFF" opacity="0.55">
+      <animate attributeName="width" from="0" to="100" dur="0.55s" begin="1.3s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="300" y="342" font-size="12" opacity="0.95" font-weight="700">5</text>
+
+    <text x="36" y="360" font-size="12" opacity="0.9">Nicolás Hussein</text>
+    <rect x="190" y="351" width="0" height="10" fill="#FFFFFF" opacity="0.55">
+      <animate attributeName="width" from="0" to="80" dur="0.5s" begin="1.45s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="280" y="360" font-size="12" opacity="0.95" font-weight="700">4</text>
   </g>
 
   <!-- B4 PINK ACCENT: SEMVER indicator -->
@@ -187,9 +198,26 @@
   <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
     <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.0s" fill="freeze"/>
     <text x="946" y="278" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT TYPES</text>
-    <text x="946" y="302" font-size="12" opacity="0.85">» feat     <tspan fill="#E6007A">████</tspan>  4</text>
-    <text x="946" y="320" font-size="12" opacity="0.85">✓ fix      <tspan fill="#5FB3B3">████</tspan>  4</text>
-    <text x="946" y="338" font-size="12" opacity="0.85">◆ release  <tspan fill="#E6007A">█</tspan>     1</text>
+    <text x="946" y="302" font-size="12" opacity="0.85">» feat</text>
+    <rect x="1020" y="293" width="0" height="10" fill="#E6007A" opacity="0.8">
+      <animate attributeName="width" from="0" to="60" dur="0.5s" begin="4.2s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="1090" y="302" font-size="12" opacity="0.95" font-weight="700">4</text>
+
+    <text x="946" y="320" font-size="12" opacity="0.85">✓ fix</text>
+    <rect x="1020" y="311" width="0" height="10" fill="#5FB3B3" opacity="0.8">
+      <animate attributeName="width" from="0" to="60" dur="0.5s" begin="4.35s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="1090" y="320" font-size="12" opacity="0.95" font-weight="700">4</text>
+
+    <text x="946" y="338" font-size="12" opacity="0.85">◆ release</text>
+    <rect x="1020" y="329" width="0" height="10" fill="#E6007A" opacity="0.8">
+      <animate attributeName="width" from="0" to="15" dur="0.4s" begin="4.5s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="1090" y="338" font-size="12" opacity="0.95" font-weight="700">1</text>
     <text x="946" y="368" font-size="10" opacity="0.45">SCOPES  docs · release · ci · skill</text>
   </g>
 
@@ -202,14 +230,56 @@
 
     <rect x="320" y="442" width="804" height="1" fill="#FFFFFF" opacity="0.25"/>
 
-    <!-- Bar chart: values are real file counts. Scale: 1 file = 8px. Max 25 → 200px. -->
-    <text x="320" y="466" font-size="12" opacity="0.9">polkadot-docs/smart-contracts    <tspan opacity="0.5">████████████████████████████████████████████████████████████████████████████████████████████████████</tspan>  25</text>
-    <text x="320" y="484" font-size="12" opacity="0.9">polkadot-docs/chain-interactions <tspan opacity="0.5">████████████████████████████████████████████████</tspan>  12</text>
-    <text x="320" y="502" font-size="12" opacity="0.9">.github/workflows                <tspan opacity="0.5">████████████████████</tspan>  5</text>
-    <text x="320" y="520" font-size="12" opacity="0.9">.github/releases                 <tspan opacity="0.5">████████████████████</tspan>  5</text>
-    <text x="320" y="538" font-size="12" opacity="0.9">.claude/skills                   <tspan opacity="0.5">████████</tspan>  2</text>
-    <text x="320" y="556" font-size="12" opacity="0.9">root (Cargo · CHANGELOG)         <tspan opacity="0.5">████████████</tspan>  3</text>
-    <text x="320" y="574" font-size="12" opacity="0.9">polkadot-docs/README.md          <tspan opacity="0.5">████</tspan>  1</text>
+    <!-- Bar chart: animated rects, width scaled to max count (25 → 500px). No overflow.
+         Stagger: each bar starts 0.1s after the previous. Easing: emphasized-decelerate. -->
+    <text x="320" y="466" font-size="12" opacity="0.9">polkadot-docs/smart-contracts</text>
+    <rect x="600" y="457" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="500" dur="0.7s" begin="3.3s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="1110" y="466" font-size="12" opacity="0.95" font-weight="700">25</text>
+
+    <text x="320" y="484" font-size="12" opacity="0.9">polkadot-docs/chain-interactions</text>
+    <rect x="600" y="475" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="240" dur="0.55s" begin="3.4s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="850" y="484" font-size="12" opacity="0.95" font-weight="700">12</text>
+
+    <text x="320" y="502" font-size="12" opacity="0.9">.github/workflows</text>
+    <rect x="600" y="493" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="100" dur="0.5s" begin="3.5s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="710" y="502" font-size="12" opacity="0.95" font-weight="700">5</text>
+
+    <text x="320" y="520" font-size="12" opacity="0.9">.github/releases</text>
+    <rect x="600" y="511" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="100" dur="0.5s" begin="3.6s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="710" y="520" font-size="12" opacity="0.95" font-weight="700">5</text>
+
+    <text x="320" y="538" font-size="12" opacity="0.9">.claude/skills</text>
+    <rect x="600" y="529" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="40" dur="0.5s" begin="3.7s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="650" y="538" font-size="12" opacity="0.95" font-weight="700">2</text>
+
+    <text x="320" y="556" font-size="12" opacity="0.9">root (Cargo · CHANGELOG)</text>
+    <rect x="600" y="547" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="60" dur="0.5s" begin="3.8s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="670" y="556" font-size="12" opacity="0.95" font-weight="700">3</text>
+
+    <text x="320" y="574" font-size="12" opacity="0.9">polkadot-docs/README.md</text>
+    <rect x="600" y="565" width="0" height="10" fill="#FFFFFF" opacity="0.5">
+      <animate attributeName="width" from="0" to="20" dur="0.5s" begin="3.9s" fill="freeze"
+               calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/>
+    </rect>
+    <text x="630" y="574" font-size="12" opacity="0.95" font-weight="700">1</text>
 
     <!-- Footer summary -->
     <text x="320" y="612" font-size="10" opacity="0.55">+16,756 insertions · -18 deletions · Δ ratio 930:1 (test-heavy release)</text>

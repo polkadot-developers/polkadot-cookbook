@@ -97,28 +97,28 @@ Get actual tool versions from the local environment.
 
 ### 3c. Cover art (template-driven, fact-bound)
 
-**Do not hand-design.** Render `.github/releases/vX.Y.Z/cover.svg` from the canonical template at [`COVER_TEMPLATE.svg`](COVER_TEMPLATE.svg), filled with values from git queries per the contract in [`COVER_DATA.md`](COVER_DATA.md).
+**Do not hand-design.** Render `.github/releases/vX.Y.Z/cover.svg` from the canonical template at [`covers/cover.svg.template`](covers/cover.svg.template), filled with values from git queries per the contract in [`covers/cover.data.md`](covers/cover.data.md).
 
 Pipeline:
 
-1. Compute every scalar token (`{{VERSION}}`, `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{HEAD_SHA}}`, `{{PR_LIST}}`, …) using the commands listed in `COVER_DATA.md`. A failed command aborts the release — never fabricate a fallback value.
-2. Generate the six variable-count fragments (`@@COMMIT_LIST`, `@@DAILY_TIMELINE`, `@@CONTRIBUTOR_LIST`, `@@BAR_CHART`, `@@COMMIT_TYPES`, `@@REPO_STATE`). Apply the scaling rules in `COVER_DATA.md` for commit counts of 1, 14, 27, 200, etc.
+1. Compute every scalar token (`{{VERSION}}`, `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{HEAD_SHA}}`, `{{PR_LIST}}`, …) using the commands listed in `covers/cover.data.md`. A failed command aborts the release — never fabricate a fallback value.
+2. Generate the six variable-count fragments (`@@COMMIT_LIST`, `@@DAILY_TIMELINE`, `@@CONTRIBUTOR_LIST`, `@@BAR_CHART`, `@@COMMIT_TYPES`, `@@REPO_STATE`). Apply the scaling rules in `covers/cover.data.md` for commit counts of 1, 14, 27, 200, etc.
 3. Substitute scalars first, then markers, then write to `.github/releases/vX.Y.Z/cover.svg`.
 4. Sanitize any injected commit subject / author name: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`.
 5. Validate: `xmllint --noout .github/releases/vX.Y.Z/cover.svg` — on failure, fix the template/data issue and re-render. Do **not** ship an invalid SVG.
 
-The template itself is frozen. If a release needs a new data point on the cover, add the token to `COVER_TEMPLATE.svg` and its source command to `COVER_DATA.md` — never inline a value directly.
+The template itself is frozen. If a release needs a new data point on the cover, add the token to `covers/cover.svg.template` and its source command to `covers/cover.data.md` — never inline a value directly.
 
 ### 3c.2. Footer cover — chain-state reading
 
-Each release also ships a second cover at `.github/releases/vX.Y.Z/cover-chain.svg`: a point-in-time reading of Polkadot mainnet as it was at release-cut time. Rendered from [`COVER_CHAIN_TEMPLATE.svg`](COVER_CHAIN_TEMPLATE.svg) using data pulled via JSON-RPC per the contract in [`COVER_CHAIN_DATA.md`](COVER_CHAIN_DATA.md).
+Each release also ships a second cover at `.github/releases/vX.Y.Z/cover-chain.svg`: a point-in-time reading of Polkadot mainnet as it was at release-cut time. Rendered from [`covers/cover-chain.svg.template`](covers/cover-chain.svg.template) using data pulled via JSON-RPC per the contract in [`covers/cover-chain.data.md`](covers/cover-chain.data.md).
 
 Pipeline:
 
 1. Walk the endpoint list (primary → fallbacks) until one answers within 5s total-budget 15s.
 2. Run the one-shot capture sequence (`chain_getFinalizedHead` → `chain_getHeader` → `state_getRuntimeVersion` → `system_*` → `system_properties` → `chain_getBlockHash [0]`), record capture timestamp in UTC.
 3. **If all endpoints fail: skip this cover entirely.** Do not write `cover-chain.svg`. Omit the footer embed from `RELEASE_NOTES.md`. Log the failure in the release PR body. Never fabricate or cache-reuse chain data.
-4. If success: compute scalars per the table in `COVER_CHAIN_DATA.md`, substitute into template, sanitize (`&<>`), write, `xmllint --noout`.
+4. If success: compute scalars per the table in `covers/cover-chain.data.md`, substitute into template, sanitize (`&<>`), write, `xmllint --noout`.
 5. Append the footer embed block to `RELEASE_NOTES.md` (after the "Next Steps" section, preceded by an `---` separator):
 
    ```html
@@ -129,9 +129,23 @@ Pipeline:
 
 The footer cover is deliberately text-dense and point-in-time; the B1 disclaimer badge is the single source of truth for its historical nature. Do not add redundant "at snapshot" / "at release-cut" qualifiers elsewhere in the template.
 
-### 3d. Release notes
+### 3d. Release notes (template-driven)
 
-Generate `.github/releases/vX.Y.Z/RELEASE_NOTES.md`. Study existing releases in `.github/releases/` for the established format, then **enhance** with these sections:
+**Do not hand-author the scaffolding.** Render `.github/releases/vX.Y.Z/RELEASE_NOTES.md` from [`RELEASE_NOTES.template.md`](RELEASE_NOTES.template.md). Substitute scalar tokens (`{{VERSION}}`, `{{PREV_VERSION}}`, `{{RELEASE_DATE}}`, `{{RUST_VERSION}}`, `{{NODE_VERSION}}`, `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{DELETIONS}}`) from the same git queries used by the top cover; then fill four LLM-authored marker sections:
+
+| Marker | Content |
+|---|---|
+| `<!-- @@SUMMARY -->` | 2-3 sentences: what this release delivers and why. Lead with the most impactful change. |
+| `<!-- @@BREAKING -->` | If no breaking changes, omit the entire `## Breaking Changes` block. If present, bullet list of what broke + migration steps. |
+| `<!-- @@WHATS_NEW -->` | `### Category` subheadings (Recipes / Documentation Tests / CLI & SDK / Infrastructure / Tooling) and bulleted entries. Every bullet MUST include a PR link `(#N)` — look up missing ones via `gh`. After stating what changed, explain **why it matters** in the same bullet. Example: "Added test harness for **Pay Fees with a Different Token** guide — developers can now verify cross-chain fee payment flows work end-to-end before deploying (#237)" |
+| `<!-- @@COMMITS -->` | Bulleted commit subjects with `(#N)` PR links, ordered by type (`feat` → `fix` → `chore` → `docs` → `ci`), newest first within each group. |
+
+**Do NOT include a Contributors section** — GitHub auto-generates one with avatars at the bottom of every release. Adding a manual one creates duplicates.
+
+**Do NOT** add the cover embeds, the `## Next Steps` block, the `---\n**Status:** Alpha` footer, or the footer-cover embed manually — those are part of the template scaffolding and are generated by substitution.
+
+<details>
+<summary>Previous prose shape (kept here for reference — superseded by the template)</summary>
 
 ```
 <div align="center">
@@ -179,6 +193,8 @@ Tested with:
 
 **Do NOT include a Contributors section** — GitHub auto-generates one with avatars at the bottom of every release. Adding a manual one creates duplicates.
 
+</details>
+
 ### 3e. Update CHANGELOG.md
 
 Prepend the new release to `CHANGELOG.md` at the repository root (create the file if it doesn't exist). Follow the [Keep a Changelog](https://keepachangelog.com/) format.
@@ -219,6 +235,10 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
 - Edit `Cargo.toml` `[workspace.package]` → `version = "X.Y.Z"` (strip `v` prefix)
 - Run `cargo update --workspace`
 
+### 3g. Manifest (template-driven)
+
+Render `.github/releases/vX.Y.Z/manifest.yml` from [`MANIFEST.template.yml`](MANIFEST.template.yml). Substitute `{{VERSION}}`, `{{PREV_VERSION}}`, `{{RELEASE_DATE}}` (ISO-8601 UTC), `{{STATUS}}` (`alpha` while major=0, `beta` during 1.0 RC, `stable` thereafter), `{{RUST_VERSION}}`, `{{NODE_VERSION}}`. No markers — manifest is scalar-only.
+
 ---
 
 ## Phase 4: Create Release PR
@@ -231,23 +251,16 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
    git commit -m "chore(release): vX.Y.Z"
    ```
 
-3. Push and create a **draft PR**:
+3. Push and create a **draft PR** whose body is rendered from [`RELEASE_PR_BODY.template.md`](RELEASE_PR_BODY.template.md):
+
    ```bash
    git push -u origin release/vX.Y.Z
-   gh pr create --draft --title "Release vX.Y.Z" --label "release" --body "..."
+   gh pr create --draft --title "Release vX.Y.Z" --label "release" --body-file <rendered-body>
    ```
 
-   The PR body should include:
-   - The full release notes content from Phase 3
-   - A "Next Steps" section explaining that merging triggers `publish-release.yml` (tag creation, binary builds, GitHub Release)
+   The template embeds the cover via a **commit-SHA-pinned** raw URL (not the branch name — the branch is deleted on merge and branch-based raw URLs break retroactively). Scalar tokens and marker sections are documented inline in the template file.
 
-   **Cover art in PR body:** `RELEASE_NOTES.md` is authored with an absolute tag-pinned raw URL so the **published release page** renders correctly (tags exist at publish time; relative paths on release pages resolve against repo root and 404). That URL will 404 in the PR body because the tag does not exist yet. For the PR body only, rewrite the `<img>` `src` to a raw URL pinned to the release branch's HEAD **commit SHA** — the SHA is immutable, so the image keeps rendering even after the release branch is deleted post-merge:
-
-   ```
-   https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/{commit-sha}/.github/releases/vX.Y.Z/cover.svg
-   ```
-
-   Do **not** pin the PR body URL to the branch name (`release/vX.Y.Z`) — the branch is deleted on merge and the PR body image will break retroactively.
+   Branch name, commit subject, and tag format follow [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) — do not vary from those.
 
 4. Report the PR URL.
 

@@ -3,7 +3,7 @@
      ==========================================================================
      DO NOT hand-edit per release. The /release skill renders this template with
      values from a single JSON-RPC capture against a Polkadot mainnet node. See
-     COVER_CHAIN_DATA.md for the full data contract.
+     cover-chain.data.md for the full data contract.
 
      SCALAR TOKENS:
        {{VERSION}}              cookbook release, e.g. 0.14.0

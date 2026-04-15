@@ -101,7 +101,7 @@ The /release skill:
 2. Run the capture sequence. On any method failure, abandon this endpoint and try the next.
 3. If all endpoints fail: **skip** this cover. Do not write `cover-chain.svg`. Remove the footer embed from `RELEASE_NOTES.md`. Log the failure in the release PR body.
 4. If success: compute all scalar tokens per the table above.
-5. Read `COVER_CHAIN_TEMPLATE.svg`, perform substitutions.
+5. Read `cover-chain.svg.template`, perform substitutions.
 6. Sanitize: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;` in any value that could contain them. (In practice only `{{NODE_VERSION}}` could, and rarely.)
 7. Write to `.github/releases/v${VERSION}/cover-chain.svg`.
 8. `xmllint --noout` — abort release on failure.
@@ -138,4 +138,4 @@ For the cookbook, default target is **Polkadot**. This can be overridden by a sk
 
 ## Adding new facts
 
-Same rule as the top cover: any new token ships with its RPC method (or derivation) here in `COVER_CHAIN_DATA.md` and its substitution site in `COVER_CHAIN_TEMPLATE.svg`. Length-bound every value (hash prefixes, comma-grouped numerals) so the Mondrian cell geometry doesn't break.
+Same rule as the top cover: any new token ships with its RPC method (or derivation) here in `cover-chain.data.md` and its substitution site in `cover-chain.svg.template`. Length-bound every value (hash prefixes, comma-grouped numerals) so the Mondrian cell geometry doesn't break.
