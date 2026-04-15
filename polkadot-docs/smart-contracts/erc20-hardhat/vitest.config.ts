@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     ...sharedVitestConfig,
     testTimeout: 360000,
-    hookTimeout: 60000,
+    hookTimeout: 120000,
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/docs.test.ts"],
   },

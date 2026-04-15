@@ -19,9 +19,13 @@ releases/
 
 ## Release Process
 
-Releases are created automatically every **Wednesday at 9:00 AM Bangkok time** (02:00 UTC) via GitHub Actions, or can be triggered manually for critical updates.
+Releases are created using the `/release` Claude Code skill, which can be run on-demand or scheduled via Claude Code triggers.
 
-**Frequency:** Weekly (skips if no changes since last release)
+### How It Works
+
+1. **`/release` skill** — Analyzes changes since the last tag, determines the semver bump, generates a manifest + release notes, updates `Cargo.toml`, and opens a draft PR
+2. **Review & merge** — A maintainer reviews and merges the release PR
+3. **`publish-release.yml`** — Automatically triggers on merge, builds CLI binaries for 5 platforms, creates a git tag, and publishes the GitHub Release
 
 ### Release Types
 
@@ -61,25 +65,18 @@ Each release includes a `manifest.yml` file with:
 
 ```yaml
 release: v0.1.0               # Release version
+previous_release: v0.0.9      # Prior release tag (for diff links)
 release_date: 2025-01-01T00:00:00Z  # ISO 8601 timestamp
 status: alpha                 # alpha | beta | stable
 
 tooling:                      # Versions used to test recipes
-  cli_version: cli-v0.1.0
-  sdk_version: sdk-v0.1.0
-  rust: "1.86"
-  polkadot_sdk: "1.15.0"
-
-recipes:                      # Recipe inventory
-  basic-pallet:
-    version: "0.1.0"          # Recipe version
-    path: "recipes/basic-pallet"
-    tested: true              # Passed CI tests?
-    commit: "abc123"          # Git commit hash
-    pathway: "runtime"        # Recipe pathway
-    difficulty: "beginner"    # Difficulty level
-    description: "..."        # Brief description
+  rust: "1.91"
+  node: "v20.20.1"
 ```
+
+## CHANGELOG.md
+
+A cumulative changelog is maintained at the repository root following [Keep a Changelog](https://keepachangelog.com/) format. The `/release` skill appends to it automatically with each release. Each entry includes Added/Changed/Fixed/Breaking sections and a compare link.
 
 ## Integration with docs.polkadot.com
 
@@ -88,34 +85,6 @@ Documentation can reference stable recipe code using release tags:
 ```
 https://github.com/polkadot-developers/polkadot-cookbook/tree/v0.1.0/recipes/basic-pallet
 ```
-
-The manifest provides:
-- List of tested recipes
-- Commit hashes for immutable references
-- Compatibility information (Polkadot SDK, Rust versions)
-
-## Release Triggers
-
-### Automated Triggers
-
-1. **Scheduled Release** - Every Wednesday 9 AM Bangkok time
-   - Collects all changes since last release
-   - Tests all recipes
-   - Generates manifest and release notes
-   - Creates GitHub release with tag
-
-2. **Breaking Change Release** - Immediate release after:
-   - CLI breaking change (`cli/**` with `semantic:major`)
-   - SDK breaking change (`core/**` with `semantic:major`)
-   - Tests all recipes with new tooling
-   - Creates recipe release if tests pass
-
-### Manual Triggers
-
-Use GitHub Actions `workflow_dispatch` for:
-- Critical fixes between scheduled releases
-- Coordinated releases with docs.polkadot.com
-- Milestone releases (v1.0.0, v2.0.0)
 
 ## Contributing
 

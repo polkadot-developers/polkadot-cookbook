@@ -3,7 +3,7 @@ title: "Runtime API Calls"
 description: "Verify the Runtime API Calls guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/chain-interactions/query-data/runtime-api-calls/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/chain-interactions/query-data/runtime-api-calls.md"
-docs_commit: "54b8f69c0f9dca0a797ca7e8c033001d8079e71b"
+docs_commit: "af1d65b6e4564c74a0c268090c1b278a7d91023f"
 ---
 
 # Runtime API Calls

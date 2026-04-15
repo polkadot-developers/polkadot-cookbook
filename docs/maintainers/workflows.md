@@ -11,9 +11,10 @@ This document describes all GitHub Actions workflows in the Polkadot Cookbook re
 
 The repository uses GitHub Actions for:
 - **Automated Testing** - Recipe and SDK tests on every PR
-- **Semantic Versioning** - Automatic version detection from commits
-- **Release Automation** - Weekly and breaking-change-triggered releases
+- **Release Publishing** - Binary builds and GitHub Releases on merge
 - **Quality Control** - Code coverage, formatting, linting
+
+Release creation (version bump, release notes, manifest) is handled by the `/release` Claude Code skill, not a workflow. See [Release Process](release-process.md) for details.
 
 ## Workflow Categories
 
@@ -49,151 +50,53 @@ Tests the core SDK library and CLI tool.
 
 ---
 
-#### `test-polkadot-sdk-recipes.yml` - Polkadot SDK Recipes
+#### `recipe-*.yml` - Per-Recipe Test Workflows
 
-Tests recipes that use the Polkadot SDK (Rust-based).
+Each recipe has its own dedicated workflow file (e.g., `recipe-parachain-example.yml`, `recipe-contracts-example.yml`). Workflows are path-filtered so only the affected recipe's tests run on a given PR.
 
-**Triggers:**
-- Push to master (paths: `recipes/**`)
-- Pull requests (paths: `recipes/**`)
-- Manual dispatch with optional recipe slug
-
-**Jobs:**
-1. **find-changed-recipes** - Detects which recipes changed
-   - PR: Only changed recipes
-   - Push to master: All recipes
-   - Manual: Specified recipe
-2. **test-polkadot-sdk** - Tests each recipe (matrix)
-   - Auto-detects recipe type from project structure
-   - Skips non-Polkadot SDK recipes
-   - Formatting check
-   - Clippy lints
-   - Build
-   - Run tests
-
-**Files:** `.github/workflows/test-polkadot-sdk-recipes.yml`
-
----
-
-#### `test-solidity-recipes.yml` - Solidity Recipes
-
-Tests recipes with Solidity smart contracts (Hardhat-based).
+**Current recipe workflows:**
+- `recipe-contracts-example.yml`
+- `recipe-contracts-precompile-example.yml`
+- `recipe-network-example.yml`
+- `recipe-pallet-example.yml`
+- `recipe-parachain-example.yml`
+- `recipe-paseo-local-network-example.yml`
+- `recipe-transaction-example.yml`
+- `recipe-xcm-example.yml`
 
 **Triggers:**
-- Push/PR to master/main (paths: `recipes/*/contracts/**`, `recipes/*/test/**`, `hardhat.config.ts`, etc.)
+- Push to master (paths: `recipes/{pathway}/{recipe-name}/**`)
+- Pull requests (paths: `recipes/{pathway}/{recipe-name}/**`)
+- Changes to `versions.yml` (filtered by a `guard` job that checks relevant keys)
 
 **Jobs:**
-1. **discover-recipes** - Finds recipes with `hardhat.config.ts`
-2. **test-recipes** - Tests each Solidity recipe (matrix)
-   - Install dependencies (`npm ci`)
-   - Compile contracts (`npm run compile`)
-   - TypeScript check (`tsc --noEmit`)
-   - Run tests (`npm test`)
-3. **summary** - Reports overall test status
+1. **guard** - Skips the test job if a `versions.yml` change doesn't affect the workflow's keys
+2. **test** - Installs dependencies (`npm ci`) and runs tests (`npm test`)
 
-**Files:** `.github/workflows/test-solidity-recipes.yml`
-
----
-
-#### `test-xcm-recipes.yml` - XCM Recipes
-
-Tests XCM recipes using Chopsticks for blockchain simulation.
-
-**Triggers:**
-- Push to master (paths: `recipes/**`)
-- Pull requests (paths: `recipes/**`)
-- Manual dispatch with optional recipe slug
-
-**Jobs:**
-1. **find-changed-recipes** - Detects which recipes changed
-2. **test-xcm** - Tests each XCM recipe (matrix)
-   - Auto-detects recipe type from project structure
-   - Skips non-XCM recipes
-   - Install dependencies
-   - Run linting
-   - Start Chopsticks in background (waits up to 2 minutes for initialization)
-   - Run tests
-   - Stop Chopsticks (cleanup)
-   - Show logs on failure
-
-**Special Handling:** Chopsticks must fully initialize before tests run (checks for "RPC listening" in logs)
-
-**Files:** `.github/workflows/test-xcm-recipes.yml`
+**Files:** `.github/workflows/recipe-*.yml`
 
 ---
 
 ### 2. Release Workflows
 
-#### `release-weekly.yml` - Weekly Recipe Release
+#### `/release` Skill - Release Creation
 
-Automated weekly release of tested recipes.
+Release creation is handled by the `/release` Claude Code skill (`.claude/skills/release/SKILL.md`), not a GitHub Actions workflow.
 
-**Triggers:**
-- Schedule: Every Wednesday at 9:00 AM Bangkok Time (02:00 UTC)
-- Manual dispatch (optional version bump and skip tests)
+**Process:**
+1. Analyzes commits since last git tag (`v*.*.*`)
+2. Determines version bump from semantic understanding of changes
+3. Generates `manifest.yml` and `RELEASE_NOTES.md` under `.github/releases/vX.Y.Z/`
+4. Updates `Cargo.toml` workspace version and `Cargo.lock`
+5. Creates a draft release PR
 
-**Jobs:**
-1. **check-changes** - Analyzes commits since last release
-   - Gets last recipe release tag (`v*.*.*`)
-   - Analyzes commits for conventional commit types
-   - Determines version bump type (major/minor/patch)
-   - Calculates new version (respects alpha versioning: `v0.x.x`)
-   - Skips if no changes
-2. **test-recipes** - Tests all recipes (unless `skip_tests` is true)
-   - Rust recipes: `cargo test`
-   - TypeScript recipes: `npm test` (with Chopsticks if needed)
-3. **create-release** - Generates release artifacts
-   - Generates `manifest.yml` with recipe inventory
-   - Generates `RELEASE_NOTES.md`
-   - Creates release branch
-   - Creates PR with `semantic:patch` and `release` labels
+**Invocation:**
+```bash
+# Run the skill in Claude Code
+/release
+```
 
-**Version Bump Logic:**
-- Breaking changes → MAJOR (MINOR in alpha)
-- Features (`feat`) → MINOR
-- Fixes (`fix`) → PATCH
-- Docs/chore → No bump (skips release)
-
-**Alpha Versioning:** In `v0.x.x`, major bumps become minor bumps
-
-**Files:** `.github/workflows/release-weekly.yml`
-
-**Artifacts:**
-- `.github/releases/v<version>/manifest.yml`
-- `.github/releases/v<version>/RELEASE_NOTES.md`
-
----
-
-#### `release-on-breaking-change.yml` - Breaking Change Release
-
-Triggers immediate release when breaking changes are merged to master.
-
-**Triggers:**
-- Push to master (paths: `dot/cli/**`, `dot/sdk/**`)
-
-**Jobs:**
-1. **detect-breaking-change** - Checks if merged PR has `semantic:major` label
-   - Extracts PR number from merge commit
-   - Checks PR labels
-   - Determines if CLI or SDK changed
-   - Skips if not a breaking change
-2. **get-cli-version** - Calculates new CLI version (if CLI changed)
-3. **release-cli** - Calls reusable `release-cli.yml` workflow
-4. **release-sdk** - Creates SDK release (if SDK changed)
-   - Builds and tests SDK
-   - Creates `sdk-v*.*.*` tag and release
-5. **test-and-release-recipes** - Tests all recipes with new tooling
-   - Tests all recipes
-   - Calculates new recipe version
-   - Generates manifest and release notes
-   - Creates release PR
-
-**Version Bumps:**
-- CLI: Bumps MAJOR version
-- SDK: Bumps MAJOR version
-- Recipes: Bumps MINOR in alpha (triggered by breaking change)
-
-**Files:** `.github/workflows/release-on-breaking-change.yml`
+The skill can also be scheduled via Claude Code triggers for automated periodic releases.
 
 ---
 
@@ -258,59 +161,6 @@ Publishes final GitHub Release when manifest is merged to master.
 
 ---
 
-### 3. Automation Workflows
-
-#### `auto-label-semantic.yml` - Auto-Label Semantic Version
-
-Automatically labels PRs based on commit analysis and API breaking changes.
-
-**Triggers:**
-- Pull request opened, synchronized, or reopened
-
-**Jobs:**
-1. **analyze-commits** - Analyzes commits and applies semantic label
-   - Runs `cargo-semver-checks` on SDK to detect API breaking changes
-   - Analyzes all commits in PR for conventional commit format
-   - Determines highest semantic level:
-     - API breaking change (detected by cargo-semver-checks) → `semantic:major`
-     - Breaking change (`!` or `BREAKING CHANGE:`) → `semantic:major`
-     - Feature (`feat:`) → `semantic:minor`
-     - Fix (`fix:`, `perf:`) → `semantic:patch`
-     - Docs/chore only → `semantic:none`
-   - Applies semantic label
-   - Posts comment with analysis table
-   - Respects manual labels (doesn't override if label already exists)
-
-**Semantic Labels:**
-- `semantic:major` - Breaking changes
-- `semantic:minor` - New features
-- `semantic:patch` - Bug fixes
-- `semantic:none` - No version bump
-
-**API Breaking Change Detection:**
-- Uses `cargo-semver-checks` to detect breaking changes in SDK public API
-- Only checks `dot/sdk/` crate (SDK library)
-- Skips `dot/cli/` crate (binary-only, no public API)
-
-**Files:** `.github/workflows/auto-label-semantic.yml`
-
-**Comment Format:**
-```
-🤖 Semantic Version Analysis
-
-Result: MINOR version bump
-
-Commit Analysis
-| Commit | Type | Impact | Message |
-|--------|------|--------|---------|
-| abc123 | feat | 🟡 MINOR | feat(recipe): add feature |
-| def456 | fix  | 🟢 PATCH | fix(cli): bug fix |
-
-This PR will trigger a MINOR version bump when merged.
-```
-
----
-
 ## Workflow Interactions
 
 ### Release Flow
@@ -318,30 +168,21 @@ This PR will trigger a MINOR version bump when merged.
 ```
 1. Developer creates PR with conventional commits
    ↓
-2. auto-label-semantic.yml analyzes commits → applies semantic label
+2. PR reviewed and merged to master
    ↓
-3. PR merged to master
+3. Maintainer runs /release skill (on-demand or scheduled)
+   ├─ Analyzes all commits since last tag
+   ├─ Determines version bump from actual changes
+   ├─ Generates release notes and manifest
+   └─ Creates draft release PR
    ↓
-4. Two possible paths:
-
-   Path A: Breaking Change (semantic:major + CLI/SDK changes)
-   ├─ release-on-breaking-change.yml detects breaking change
-   ├─ Releases CLI or SDK immediately
-   ├─ Tests all recipes with new tooling
-   └─ Creates recipe release PR
-
-   Path B: Regular Changes
-   ├─ Changes accumulate until Wednesday
-   ├─ release-weekly.yml runs on schedule
-   ├─ Analyzes all commits since last release
-   ├─ Tests all recipes
-   └─ Creates release PR
-
-5. Release PR merged to master
+4. Release PR reviewed and merged to master
    ↓
-6. publish-release.yml detects manifest files
-   ↓
-7. Creates Git tag and GitHub Release with binaries
+5. publish-release.yml triggers automatically
+   ├─ Detects manifest files
+   ├─ Builds CLI binaries for 5 platforms
+   ├─ Creates Git tag
+   └─ Publishes GitHub Release
 ```
 
 ### Testing Flow
@@ -349,10 +190,10 @@ This PR will trigger a MINOR version bump when merged.
 ```
 1. Developer creates PR with recipe changes
    ↓
-2. Recipe tests run in parallel:
-   ├─ test-polkadot-sdk-recipes.yml (for Rust recipes)
-   ├─ test-solidity-recipes.yml (for Solidity recipes)
-   └─ test-xcm-recipes.yml (for XCM recipes)
+2. Per-recipe workflows run (only affected recipes):
+   ├─ recipe-parachain-example.yml
+   ├─ recipe-contracts-example.yml
+   └─ ... (one workflow per recipe)
    ↓
 3. SDK changes also trigger:
    └─ test-sdk.yml
@@ -367,14 +208,15 @@ This PR will trigger a MINOR version bump when merged.
 ```bash
 # Via GitHub UI: Actions → Select workflow → Run workflow
 # Or via gh CLI:
-gh workflow run test-polkadot-sdk-recipes.yml -f recipe_slug=basic-pallet
-gh workflow run test-xcm-recipes.yml -f recipe_slug=teleport-assets
+gh workflow run recipe-pallet-example.yml
+gh workflow run recipe-xcm-example.yml
 ```
 
-### Trigger Weekly Release Manually
+### Create a Release
 
 ```bash
-gh workflow run release-weekly.yml -f version_bump=minor -f skip_tests=false
+# Run the /release skill in Claude Code
+/release
 ```
 
 ### Release CLI Version
@@ -392,12 +234,12 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 - Verify Rust toolchain compatibility (check recipe `rust-toolchain.toml`)
 - Check for environment-specific issues (CI runs Ubuntu)
 
-### Release Didn't Trigger
+### Release Didn't Publish After PR Merge
 
 **Check:**
-- Were there changes since last release?
-- Do commits follow conventional commit format?
-- Check workflow logs for errors
+- Does the release PR contain `.github/releases/v*/manifest.yml`?
+- Was the PR merged to `master`?
+- Check `publish-release.yml` workflow logs for errors
 
 ### Chopsticks Fails to Start
 
@@ -421,32 +263,18 @@ gh workflow run release-cli.yml -f version=0.3.0 -f is_breaking=true
 
 ### For Contributors
 
-✅ **DO:**
 - Use conventional commits for all commits
 - Wait for CI to pass before requesting review
-- Check semantic label on your PR (correct if wrong)
 - Test locally before pushing
-
-❌ **DON'T:**
-- Skip CI checks with `[skip ci]`
-- Force push to branches with open PRs
-- Ignore failed CI checks
 
 ### For Maintainers
 
-✅ **DO:**
-- Verify semantic labels before merging
-- Monitor release workflows for failures
+- Review release PRs created by `/release` before merging
+- Monitor `publish-release.yml` after merging release PRs
 - Review breaking change releases carefully
-
-❌ **DON'T:**
-- Merge PRs with failing CI
-- Override semantic labels without reason
-- Skip release process for "quick fixes"
 
 ## Related Documentation
 
-- [Release Process](RELEASE_PROCESS.md) - Semantic versioning and release automation
-- [Testing Guide](testing.md) - How to test workflows locally
-- [Pre-commit Hooks](pre-commit-hooks.md) - Local quality checks
+- [Release Process](release-process.md) - Semantic versioning and release automation
+- [Pre-commit Hooks](../automation/pre-commit-hooks.md) - Local quality checks
 - [Contributing Guide](https://github.com/polkadot-developers/polkadot-cookbook/blob/master/CONTRIBUTING.md) - Development workflow

@@ -1,0 +1,108 @@
+name: Send Transactions with SDKs
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/send-transactions/**'
+      - '!polkadot-docs/chain-interactions/send-transactions/README.md'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/send-transactions/**'
+      - '!polkadot-docs/chain-interactions/send-transactions/README.md'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  guard:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "SUBXT_CLI_VERSION=$(yq '.crates.subxt_cli.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "SUBSTRATE_INTERFACE_VERSION=$(yq '.python_packages.substrate_interface.version' versions.yml)" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: subxt-cli@${{ steps.versions.outputs.SUBXT_CLI_VERSION }}
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            polkadot-docs/chain-interactions/send-transactions/tests/subxt-send-transactions/target
+          key: ${{ runner.os }}-cargo-send-transactions-${{ hashFiles('polkadot-docs/chain-interactions/send-transactions/tests/subxt-send-transactions/Cargo.toml') }}
+
+      - name: Install npm dependencies and generate PAPI descriptors
+        run: |
+          cd polkadot-docs/chain-interactions/send-transactions
+          npm install
+          npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+
+      - name: Install Python dependencies
+        run: pip install substrate-interface==${{ steps.versions.outputs.SUBSTRATE_INTERFACE_VERSION }}
+
+      - name: Download Subxt metadata
+        run: |
+          cd polkadot-docs/chain-interactions/send-transactions/tests/subxt-send-transactions
+          subxt metadata --url wss://asset-hub-paseo.dotters.network -o asset_hub_metadata.scale
+
+      - name: Build Subxt project
+        run: |
+          cd polkadot-docs/chain-interactions/send-transactions/tests/subxt-send-transactions
+          cargo build
+        timeout-minutes: 10
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/send-transactions
+          npm test
+        env:
+          SENDER_MNEMONIC: ${{ secrets.SENDER_MNEMONIC }}
+          DEST_ADDRESS: ${{ secrets.DEST_ADDRESS }}
+        timeout-minutes: 10
+
+  post-test:
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/send-transactions/README.md'
+      workflow_name: 'Send Transactions with SDKs'
+    permissions:
+      contents: read
+      issues: write

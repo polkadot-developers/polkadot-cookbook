@@ -3,7 +3,7 @@ title: "Query On-Chain State with Sidecar REST API"
 description: "Verify the Query On-Chain State with Sidecar REST API guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/chain-interactions/query-data/query-rest/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/chain-interactions/query-data/query-rest.md"
-docs_commit: "54b8f69c0f9dca0a797ca7e8c033001d8079e71b"
+docs_commit: "87a7ed1dd0f837dcf4ff018d2770554d8bfabd30"
 ---
 
 # Query On-Chain State with Sidecar REST API

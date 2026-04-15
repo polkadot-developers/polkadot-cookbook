@@ -90,61 +90,35 @@ git commit -m "feat(cli): add recipe submit command"
 git commit -m "docs: fix typo in README"
 ```
 
-## Automated Release Triggers
+## Creating a Release
 
-### 1. Weekly Recipe Release
+Releases are created using the `/release` Claude Code skill (`.claude/skills/release/SKILL.md`).
 
-**Schedule:** Every Wednesday at 9:00 AM Bangkok time (02:00 UTC)
+### On-Demand Release
 
-**Workflow:** `.github/workflows/release-weekly.yml`
-
-**Process:**
-1. Collects all merged PRs since last release
-2. Determines version bump from semantic labels
-3. Tests all recipes
-4. Generates manifest with recipe inventory
-5. Creates GitHub release with tag (e.g., `v0.2.0`)
-
-**Skips release if:**
-- No changes since last release
-- Only non-version-bump commits (docs, chore, etc.)
-
-### 2. Breaking Change Release
-
-**Trigger:** CLI or SDK breaking change merged to master
-
-**Workflow:** `.github/workflows/release-on-breaking-change.yml`
-
-**Process:**
-1. Detects `semantic:major` label on merged PR
-2. Checks if CLI (`dot/cli/**`) or SDK (`dot/sdk/**`) changed
-3. Releases new CLI/SDK version
-4. Tests all recipes with new tooling
-5. Creates immediate recipe release if tests pass
-
-**Example flow:**
-```
-PR #123: feat(cli)!: redesign validation API
-  → Merged with semantic:major label
-  → CLI Release: cli-v0.3.0
-  → Tests all recipes
-  → Recipe Release: v0.2.0 (if tests pass)
+```bash
+# Run in Claude Code
+/release
 ```
 
-### 3. Manual Release
+The skill:
+1. Analyzes all commits since the last git tag (`v*.*.*`)
+2. Determines the version bump from semantic understanding of actual changes
+3. Generates `manifest.yml` and human-readable `RELEASE_NOTES.md`
+4. Updates `Cargo.toml` workspace version and `Cargo.lock`
+5. Creates a draft release PR
 
-**Trigger:** Manual `workflow_dispatch` on GitHub Actions
+### Scheduled Release
 
-**Use cases:**
-- Critical fixes between scheduled releases
-- Coordinated releases with docs.polkadot.com
-- Milestone releases (v1.0.0, v2.0.0)
+The `/release` skill can be scheduled via Claude Code triggers for automated periodic releases.
 
-**Process:**
-1. Go to Actions → "Weekly Recipe Release"
-2. Click "Run workflow"
-3. Select branch and options
-4. Click "Run workflow"
+### Publishing
+
+When a release PR is merged to `master`, the `publish-release.yml` workflow automatically:
+1. Detects the version from the manifest path
+2. Builds CLI binaries for 5 platforms (Linux x86/ARM, macOS Intel/Apple Silicon, Windows)
+3. Creates a git tag (`vX.Y.Z`)
+4. Publishes the GitHub Release with binaries attached
 
 ## Pull Request Workflow
 
@@ -165,52 +139,17 @@ PR title can be human-friendly (no semantic syntax required):
 "Add basic pallet recipe with storage and events"
 ```
 
-### 2. Auto-Labeling
+### 2. PR Merged
 
-**Workflow:** `.github/workflows/auto-label-semantic.yml`
+When a PR is merged, its changes accumulate on `master`. The version bump is determined at release time by the `/release` skill, which analyzes all commits since the last tag — not individual PRs.
 
-When PR is opened/updated:
-1. Analyzes ALL commits in the PR
-2. Determines highest semantic level:
-   - Breaking change (!) → `semantic:major`
-   - `feat` → `semantic:minor`
-   - `fix`/`perf` → `semantic:patch`
-   - Only docs/chore → `semantic:none`
-3. Applies label automatically
-4. Posts comment explaining decision
+### 3. Release Cut
 
-**Example comment:**
-```
-🤖 Semantic Version Analysis
-
-Result: MINOR version bump
-
-Commit Analysis
-| Commit  | Type | Impact  | Message                              |
-|---------|------|---------|--------------------------------------|
-| abc123  | feat | 🟡 MINOR | feat(recipe): add pallet structure  |
-| def456  | feat | 🟡 MINOR | feat(recipe): add storage items     |
-| ghi789  | test | ⚪ none  | test(recipe): add unit tests        |
-
-This PR will trigger a MINOR version bump when merged.
-```
-
-### 3. Manual Override
-
-If auto-detection is wrong, manually add/change label:
-- `semantic:major` 🔴 - Breaking changes
-- `semantic:minor` 🟡 - New features
-- `semantic:patch` 🟢 - Bug fixes
-- `semantic:none` ⚪ - No version bump
-
-Once manual label is added, automation respects it.
-
-### 4. PR Merged
-
-When PR is squash-merged:
-1. Semantic label is preserved in commit message metadata
-2. Next scheduled release (or breaking change trigger) uses this information
-3. Version bump determined by highest semantic level across all merged PRs
+When a maintainer runs `/release`, the skill:
+1. Reads all commits since the last tag
+2. Examines the actual diffs to understand what changed
+3. Determines the appropriate version bump
+4. Creates a draft release PR for review
 
 ## Release Artifacts
 
@@ -369,39 +308,20 @@ profile = "minimal"
 
 ## Troubleshooting
 
-### Release Didn't Trigger
+### Release PR Not Publishing
 
 **Check:**
-1. Are there changes since last release?
-2. Do commits have valid semantic format?
-3. Check GitHub Actions logs for errors
+1. Does the PR contain `.github/releases/vX.Y.Z/manifest.yml`?
+2. Was it merged to `master`?
+3. Check `publish-release.yml` logs in GitHub Actions
 
 ### Wrong Version Bump
 
-**Cause:** Incorrect semantic labels
+**Fix:** The `/release` skill determines the bump from actual changes. If incorrect, update the version in `Cargo.toml` and the release directory before merging the release PR.
 
-**Fix:**
-1. Next PR can adjust if needed
-2. Or trigger manual release with correct bump type
+### Need an Immediate Release
 
-### Tests Failing
-
-**Cause:** Recipe not compatible with latest CLI/SDK
-
-**Fix:**
-1. Update recipe code
-2. Merge fix
-3. Next release will include fix
-
-### Manual Release Needed
-
-**Process:**
-1. Go to Actions → "Weekly Recipe Release"
-2. Click "Run workflow"
-3. Select options:
-   - `version_bump`: Choose type or `auto`
-   - `skip_tests`: Only for emergencies
-4. Click "Run workflow"
+Run `/release` in Claude Code at any time — there is no schedule dependency.
 
 ## Best Practices
 
