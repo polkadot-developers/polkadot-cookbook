@@ -7,6 +7,9 @@
 
 <div align="center">
 
+<img src=".github/media/dot-logo-dark.svg#gh-dark-mode-only" alt="Dot CLI" width="80" height="80" />
+<img src=".github/media/dot-logo-light.svg#gh-light-mode-only" alt="Dot CLI" width="80" height="80" />
+
 [**Browse Recipes**](#recipes) • [**Contribute a Recipe**](CONTRIBUTING.md) • [**Documentation**](#documentation)
 
 [![License](https://img.shields.io/badge/License-MIT%20%2F%20Apache%202.0-11116B.svg)](LICENSE)
