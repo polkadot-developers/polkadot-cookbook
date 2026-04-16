@@ -41,7 +41,7 @@ function buildBase() {
     .from("AssetHubPaseo")
     .to("PeoplePaseo")
     .currency({ symbol: "PAS", amount: AMOUNT })
-    .address(recipientAddress);
+    .recipient(recipientAddress);
 }
 
 // ---------------------------------------------------------------------------
@@ -50,7 +50,7 @@ function buildBase() {
 
 describe("1. ParaSpell — Build Transfer Transaction", () => {
   it("should build an XCM transfer from AssetHubPaseo to PeoplePaseo", async () => {
-    const tx = await buildBase().senderAddress(senderAddress).build();
+    const tx = await buildBase().sender(senderAddress).build();
     expect(tx).toBeDefined();
     console.log("ParaSpell: Transaction built");
   });
@@ -67,7 +67,7 @@ describe("2. ParaSpell — Dry Run Transfer", () => {
       return;
     }
 
-    const result = await buildBase().senderAddress(senderAddress).dryRun();
+    const result = await buildBase().sender(senderAddress).dryRun();
     console.log("ParaSpell dry run result:", result);
     expect(result).toBeDefined();
   });
@@ -80,7 +80,7 @@ describe("2. ParaSpell — Dry Run Transfer", () => {
 describe("3. ParaSpell — Verify Existential Deposit", () => {
   it("should check ED requirement on destination", async () => {
     const isValid = await buildBase()
-      .senderAddress(senderAddress)
+      .sender(senderAddress)
       .verifyEdOnDestination();
     console.log(`ParaSpell: ED verification ${isValid ? "passed" : "failed"}.`);
     expect(typeof isValid).toBe("boolean");
@@ -94,7 +94,7 @@ describe("3. ParaSpell — Verify Existential Deposit", () => {
 describe("4. ParaSpell — Get Transfer Info", () => {
   it("should return fee estimates and balance info", async () => {
     const info = await buildBase()
-      .senderAddress(senderAddress)
+      .sender(senderAddress)
       .getTransferInfo();
     console.log("ParaSpell transfer info:", info);
     expect(info).toBeDefined();
