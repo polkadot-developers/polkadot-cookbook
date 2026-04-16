@@ -73,6 +73,17 @@ GitHub squash merges often strip conventional commit prefixes (e.g., "Add featur
 
 ---
 
+## Communication cadence (applies to the whole skill)
+
+The /release pipeline runs many shell + GitHub commands unattended. Two rules:
+
+1. **Precede every non-trivial tool call with 1–2 sentences of user-facing text** that say what the command is about to do and, when non-obvious, why. Trivial = a `git rev-parse` or `ls`; non-trivial = anything that mutates, publishes, pushes, or takes >5s.
+2. When Claude Code prompts for Bash permission, the assistant's preceding narration is what the user sees alongside the command. Terse commands with no context force the user to guess. "Branching for the release" + `git checkout -b release/v0.15.0` is readable; a bare `git checkout` is not.
+
+Narration is not "reporting after the fact" — write it before the call, in the same message. Keep it tight: one sentence is usually enough.
+
+If the user has pre-approved the full command palette in `settings.json` → `permissions.allow`, these prompts don't fire. See `.claude/settings.json` for the canonical list; `update-config` skill to edit.
+
 ## Phase 3: Generate Release Artifacts
 
 ### Rendering assertions (apply after every render step)
