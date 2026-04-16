@@ -84,7 +84,7 @@ Narration is not "reporting after the fact" — write it before the call, in the
 
 **Do not `open` artifacts locally for preview.** The user reviews cover.svg, cover-chain.svg, RELEASE_NOTES.md, and pr-body.md on the PR page after the draft is created. Opening files in the default application during a skill run is noise at best and a flow interruption at worst.
 
-If the user has pre-approved the full command palette in `settings.json` → `permissions.allow`, these prompts don't fire. See `.claude/settings.json` for the canonical list; `update-config` skill to edit.
+If the user has pre-approved the full command palette in **their personal** `.claude/settings.local.json` → `permissions.allow`, these prompts don't fire. `.claude/settings.local.json` is gitignored — each contributor maintains their own autonomy surface. A committed `.claude/settings.json` is **intentionally not shipped**: granting write/network/mutate commands repo-wide becomes a supply-chain surface and a convenience trap for contributors who don't realize cloning grants an AI blanket git/gh access. Use `update-config` skill to edit personal settings.
 
 ## Phase 3: Generate Release Artifacts
 
