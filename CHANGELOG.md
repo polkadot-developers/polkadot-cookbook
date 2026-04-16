@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-04-16
+
+### Added
+- Complete brand system at `.github/brand/` (tokens, DESIGN.md, ARCHITECTURE.md, voice.md, CHANGELOG.md, scripts) with strict 3-color palette derived from original Polkadot brand (`#E6007A` / `#000000` / `#FFFFFF`)
+- `/branding` skill (`.claude/skills/branding/`) generates 15 SVGs + 2 PNGs in dark + light modes from one source of truth
+- README hero + divider + CONTRIBUTING hero now generated; social-preview + OG image (1200×630) with rasterized PNGs
+- Pathway banners (Pallets / Contracts / Transactions / XCM / Networks) fact-bound to live `recipes/*` counts
+- Favicon at `docs/favicon.svg`
+- Issue templates (`bug.yml`, `recipe-request.yml`, `docs.yml`) + PR template with required Test Plan checklist
+- Brand Lint CI workflow: palette lint, release-cover-palette verify, drift check, a11y check, CHANGELOG-tokens guard
+- Brand Regenerate CI workflow: auto-PR on master token changes
+- `/release --dry-run` mode previews every artifact in a scratch dir without git or GitHub mutations
+- Chain-state footer cover (`cover-chain.svg`) captured via JSON-RPC at release-cut time
+- Template-driven, fact-bound cover art in the release skill
+- Test harness for **Transfer Assets Across Parachains** polkadot-docs guide
+- `TEMPLATE_HEADER_END` sentinel convention for unambiguous template-doc-header stripping
+- `/release` argument-hint for `--dry-run`
+- Frontmatter badge pattern documented in `/add-polkadot-docs-test` skill
+
+### Changed
+- Release skill cover templates (`cover.svg.template`, `cover-chain.svg.template`) migrated to strict pink/black/white palette; fix-commit bars differentiated by opacity, not a secondary hue
+- polkadot-api harnesses pinned to v2.0.1 with refactored imports
+- `run-a-parachain-network` workflow now wires `polkadot_sdk` version from `versions.yml`
+
 ## [0.14.0] - 2026-04-13
 
 ### Added
@@ -43,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.12.0...v0.13.0
