@@ -82,6 +82,8 @@ The /release pipeline runs many shell + GitHub commands unattended. Two rules:
 
 Narration is not "reporting after the fact" — write it before the call, in the same message. Keep it tight: one sentence is usually enough.
 
+**Do not `open` artifacts locally for preview.** The user reviews cover.svg, cover-chain.svg, RELEASE_NOTES.md, and pr-body.md on the PR page after the draft is created. Opening files in the default application during a skill run is noise at best and a flow interruption at worst.
+
 If the user has pre-approved the full command palette in `settings.json` → `permissions.allow`, these prompts don't fire. See `.claude/settings.json` for the canonical list; `update-config` skill to edit.
 
 ## Phase 3: Generate Release Artifacts

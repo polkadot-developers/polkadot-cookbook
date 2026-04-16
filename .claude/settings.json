@@ -64,7 +64,6 @@
       "Bash(mv:*)",
       "Bash(rm -rf /tmp/*)",
       "Bash(which:*)",
-      "Bash(open:*)",
       "Bash(curl:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
