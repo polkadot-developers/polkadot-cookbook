@@ -1,20 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" shape-rendering="crispEdges" role="img" aria-label="PALLETS pathway — 2 recipes">
-  <!-- Generated. DO NOT EDIT. -->
-  <rect width="1200" height="200" fill="#0D0D0D"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" shape-rendering="geometricPrecision" role="img" aria-label="PALLETS pathway — 2 recipes">
+  <!-- Generated. DO NOT EDIT. Strict 3-color pathway header. -->
+  <rect width="1200" height="200" fill="#000000"/>
 
   <!-- Pink accent strip -->
   <rect x="0" y="0" width="16" height="200" fill="#E6007A"/>
 
-  <!-- Label block -->
-  <rect x="16" y="0" width="380" height="200" fill="#07070A"/>
-  <text x="48" y="68" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.6" letter-spacing="3">PATHWAY · pallets</text>
-  <text x="48" y="128" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="52" font-weight="700" fill="#F5F1E8" letter-spacing="-1">PALLETS</text>
-  <text x="48" y="158" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.6">Runtime logic with FRAME pallets</text>
+  <!-- Label block (pink slab, like B1) -->
+  <rect x="16" y="0" width="380" height="200" fill="#E6007A"/>
+  <text x="48" y="68" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#000000" opacity="0.65" letter-spacing="3">PATHWAY · pallets</text>
+  <text x="48" y="128" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="52" font-weight="700" fill="#000000" letter-spacing="-1">PALLETS</text>
+  <text x="48" y="158" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#000000" opacity="0.7">Runtime logic with FRAME pallets</text>
 
-  <!-- KPI / blue block -->
-  <rect x="400" y="0" width="800" height="200" fill="#11116B"/>
-  <text x="432" y="68" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#F5F1E8" opacity="0.6" letter-spacing="3">RECIPES IN THIS PATHWAY</text>
-  <text x="432" y="140" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="80" font-weight="700" fill="#F5F1E8">2</text>
-  <text x="600" y="128" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#F5F1E8" opacity="0.55">tested in CI · pinned to versions.yml</text>
-  <text x="600" y="152" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#F5F1E8" opacity="0.55">source: brunopgalvao/recipe-* external repos</text>
+  <!-- Accent panel with count -->
+  <rect x="396" y="0" width="804" height="200" fill="#000000"/>
+  <text x="432" y="68" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#FFFFFF" opacity="0.6" letter-spacing="3">RECIPES IN THIS PATHWAY</text>
+  <text x="432" y="140" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="80" font-weight="700" fill="#E6007A">2</text>
+  <text x="600" y="128" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#FFFFFF" opacity="0.55">tested in CI · pinned to versions.yml</text>
+  <text x="600" y="152" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#FFFFFF" opacity="0.55">source: brunopgalvao/recipe-* external repos</text>
 </svg>

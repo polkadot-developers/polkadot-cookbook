@@ -6,6 +6,20 @@ Bump this file **in the same commit** as any change to `tokens.yml`. External em
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-04-15
+
+### Changed — strict 3-color refactor
+- Collapsed palette to **strict Polkadot original**: `#E6007A` pink, `#000000` black, `#FFFFFF` white only. Removed invented `#11116B` blue, `#F5F1E8` cream, `#5FB3B3` fix-teal, `#E6B800` warn-mustard.
+- Hero layout redesigned to **variant 05 · ORIGINAL · STRICT**: pink slab (0–800) + accent panel (800–1200) with Cookbook network mark + footer strip. Dark + light mode via surface role tokens `color.mode.{dark,light}`.
+- Typography unchanged (monospace retained).
+- Pink is reserved for the slab, network mark, and emphasis; no longer used as a wholesale fill on arbitrary surfaces.
+- `tokens.yml.allowlist` emptied — off-palette hex codes now forbidden outside skip-pathed legacy locations (docs/ site, release archive, logos).
+- Release skill cover templates updated: `fix` commit teal replaced by opacity-varied pink.
+
+### Added
+- `logo.cookbook-mark` documented (central + 8 orbital dots).
+- `logo.dot-cli-mark` documented (small dot-in-dot, positioned as footnote under the wordmark).
+
 ## [0.1.0] — 2026-04-15
 
 ### Added

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Polkadot Cookbook — branding asset generator.
 
-Reads .github/brand/tokens.yml + live repo facts, renders every template
-under templates/ into .github/media/. Idempotent.
+Strict 3-color palette (pink/black/white). Every template is rendered
+in both dark and light modes via the color.mode.{dark,light} token set.
 """
 from __future__ import annotations
-import os, re, subprocess, sys, tempfile, yaml, shutil
+import os, re, shutil, subprocess, sys, tempfile, yaml
 from pathlib import Path
 
 REPO_ROOT = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).decode().strip())
@@ -48,7 +48,6 @@ PW = {
 RECIPE_COUNT = sum(PW.values())
 WORKFLOW_COUNT = len(list((REPO_ROOT / ".github" / "workflows").glob("*.yml")))
 
-# polkadot-docs test harnesses (by top-level category under polkadot-docs/)
 docs_root = REPO_ROOT / "polkadot-docs"
 def count_docs_harnesses(cat: str) -> int:
     p = docs_root / cat
@@ -62,27 +61,19 @@ DOCS_BY_CAT = {
 }
 DOCS_HARNESS_COUNT = sum(DOCS_BY_CAT.values())
 
-# --- bar chart widths -----------------------------------------------------
-max_c = max(max(PW.values()), 1)
-def bar_w(c): return 80 + (c * 200 // max_c)
-def label_x(c): return 180 + bar_w(c) + 12
 
-BARS = {
-    f"BAR_{k.upper()}_W": str(bar_w(v)) for k, v in PW.items()
-}
-BARS.update({f"BAR_{k.upper()}_LABEL_X": str(label_x(v)) for k, v in PW.items()})
-
-
-# --- substitution map (base) ----------------------------------------------
-def base_subs(canvas: str) -> dict:
+# --- substitution map -----------------------------------------------------
+def mode_subs(mode: str) -> dict:
+    m = T["color"]["mode"][mode]
     s = {
-        "CANVAS": canvas,
         "PINK": T["color"]["primary"]["pink"],
-        "BLUE": T["color"]["primary"]["blue"],
-        "TERMINAL": T["color"]["surface"]["terminal"],
-        "CREAM": T["color"]["surface"]["cream"],
-        "WARN": T["color"]["semantic"]["warn"],
-        "FIX": T["color"]["semantic"]["fix"],
+        "BLACK": T["color"]["base"]["black"],
+        "WHITE": T["color"]["base"]["white"],
+        "CANVAS": m["canvas"],
+        "ACCENT_PANEL": m["accent-panel"],
+        "FOOTER_SURFACE": m["footer-surface"],
+        "FG": m["fg"],
+        "FG_ON_FOOTER": m["fg-on-footer"],
         "MONO": T["type"]["mono"],
         "REVEAL_DUR": T["motion"]["reveal-dur"],
         "GRADIENT_FLOW_DUR": T["motion"]["gradient-flow-dur"],
@@ -90,23 +81,17 @@ def base_subs(canvas: str) -> dict:
         "RECIPE_COUNT": str(RECIPE_COUNT),
         "WORKFLOW_COUNT": str(WORKFLOW_COUNT),
         "DOCS_HARNESS_COUNT": str(DOCS_HARNESS_COUNT),
-        "DOCS_CHAIN": str(DOCS_BY_CAT["chain"]),
-        "DOCS_CONTRACTS": str(DOCS_BY_CAT["contracts"]),
-        "DOCS_PARACHAINS": str(DOCS_BY_CAT["parachains"]),
-        "DOCS_NETWORKS": str(DOCS_BY_CAT["networks"]),
         "PATHWAY_PALLETS": str(PW["pallets"]),
         "PATHWAY_CONTRACTS": str(PW["contracts"]),
         "PATHWAY_TRANSACTIONS": str(PW["transactions"]),
         "PATHWAY_XCM": str(PW["xcm"]),
         "PATHWAY_NETWORKS": str(PW["networks"]),
     }
-    s.update(BARS)
     return s
 
 
-def render(tpl_name: str, out_path: Path, extra: dict | None = None, canvas_key: str = "dark"):
-    canvas = T["color"]["surface"]["canvas"] if canvas_key == "dark" else T["color"]["mode"]["light-bg"]
-    subs = base_subs(canvas)
+def render(tpl_name: str, out_path: Path, mode: str = "dark", extra: dict | None = None):
+    subs = mode_subs(mode)
     if extra:
         subs.update(extra)
     src = (TPL / tpl_name).read_text()
@@ -117,7 +102,6 @@ def render(tpl_name: str, out_path: Path, extra: dict | None = None, canvas_key:
         sys.exit(f"ERROR unresolved tokens in {tpl_name}: {set(unresolved)}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(src)
-    # validate
     if shutil.which("xmllint"):
         r = subprocess.run(["xmllint", "--noout", str(out_path)], capture_output=True)
         if r.returncode != 0:
@@ -125,7 +109,6 @@ def render(tpl_name: str, out_path: Path, extra: dict | None = None, canvas_key:
 
 
 def rasterize(svg: Path, png: Path, width: int):
-    """Rasterize SVG → PNG. Tries rsvg-convert, then cairosvg, else warns."""
     png.parent.mkdir(parents=True, exist_ok=True)
     if shutil.which("rsvg-convert"):
         subprocess.run(
@@ -143,54 +126,50 @@ def rasterize(svg: Path, png: Path, width: int):
     return False
 
 
-# --- render everything ----------------------------------------------------
+# --- render ---------------------------------------------------------------
 print("▸ hero")
-render("hero.svg.template", OUT / "hero-dark.svg", canvas_key="dark")
-render("hero.svg.template", OUT / "hero-light.svg", canvas_key="light")
+render("hero.svg.template", OUT / "hero-dark.svg",  "dark")
+render("hero.svg.template", OUT / "hero-light.svg", "light")
 
 print("▸ divider")
-render("divider.svg.template", OUT / "divider-dark.svg", canvas_key="dark")
-render("divider.svg.template", OUT / "divider-light.svg", canvas_key="light")
+render("divider.svg.template", OUT / "divider-dark.svg",  "dark")
+render("divider.svg.template", OUT / "divider-light.svg", "light")
 
 print("▸ social-preview + og-image")
-render("social-preview.svg.template", OUT / "social-preview.svg", canvas_key="dark")
+render("social-preview.svg.template", OUT / "social-preview.svg", "dark")
 shutil.copyfile(OUT / "hero-dark.svg", OUT / "og-image.svg")
-
-# Rasterize PNGs for platforms that don't render SVG OG images (X, Slack, etc.)
 rasterize(OUT / "social-preview.svg", OUT / "social-preview.png", 1280)
 rasterize(OUT / "og-image.svg", OUT / "og-image.png", 1200)
-# Mirror og-image.png into docs/ so GitHub Pages serves it at the URL already
-# referenced by docs/index.html meta tags.
 if (OUT / "og-image.png").exists():
     shutil.copyfile(OUT / "og-image.png", DOCS / "og-image.png")
 
 print("▸ contributing-hero")
-render("contributing-hero.svg.template", OUT / "contributing-hero-dark.svg", canvas_key="dark")
-render("contributing-hero.svg.template", OUT / "contributing-hero-light.svg", canvas_key="light")
+render("contributing-hero.svg.template", OUT / "contributing-hero-dark.svg",  "dark")
+render("contributing-hero.svg.template", OUT / "contributing-hero-light.svg", "light")
 
 print("▸ pathway banners")
 pathways = [
-    ("pallets", "PALLETS", PW["pallets"], "Runtime logic with FRAME pallets"),
-    ("contracts", "CONTRACTS", PW["contracts"], "Solidity smart contracts on Polkadot"),
+    ("pallets",      "PALLETS",      PW["pallets"],      "Runtime logic with FRAME pallets"),
+    ("contracts",    "CONTRACTS",    PW["contracts"],    "Solidity smart contracts on Polkadot"),
     ("transactions", "TRANSACTIONS", PW["transactions"], "Single-chain tx and state queries"),
-    ("xcm", "XCM", PW["xcm"], "Cross-chain messaging between parachains"),
-    ("networks", "NETWORKS", PW["networks"], "Zombienet + Chopsticks local networks"),
+    ("xcm",          "XCM",          PW["xcm"],          "Cross-chain messaging between parachains"),
+    ("networks",     "NETWORKS",     PW["networks"],     "Zombienet + Chopsticks local networks"),
 ]
 for name, label, count, tagline in pathways:
     render(
         "pathway-banner.svg.template",
         OUT / f"pathway-{name}-dark.svg",
+        "dark",
         extra={
             "PATHWAY_NAME": name,
             "PATHWAY_LABEL": label,
             "PATHWAY_COUNT": str(count),
             "PATHWAY_TAGLINE": tagline,
         },
-        canvas_key="dark",
     )
 
 print("▸ favicon")
-render("favicon.svg.template", DOCS / "favicon.svg", canvas_key="dark")
+render("favicon.svg.template", DOCS / "favicon.svg", "dark")
 
 count = len(list(OUT.glob("*.svg")))
 print(f"\n✓ generated {count} SVGs in {OUT}")

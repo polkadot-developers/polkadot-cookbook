@@ -42,6 +42,7 @@ skip_paths = {
     "docs/404.html",
     "docs/_layouts",
     "docs/assets",
+    "docs/manifest.json",
     # historical release artifacts are immutable — do not re-palette past releases
     ".github/releases",
     # generated third-party badges

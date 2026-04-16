@@ -1,23 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" shape-rendering="crispEdges" role="img" aria-label="Contributing to Polkadot Cookbook">
-  <!-- Generated. DO NOT EDIT. -->
-  <style>
-    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" shape-rendering="geometricPrecision" role="img" aria-label="Contributing to Polkadot Cookbook">
+  <!-- Generated. DO NOT EDIT. Strict 3-color contributing hero. -->
   <rect width="1200" height="400" fill="#FFFFFF"/>
 
   <!-- Pink slab -->
   <rect x="0" y="0" width="460" height="400" fill="#E6007A"/>
-  <text x="40" y="130" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="44" font-weight="700" fill="#07070A" letter-spacing="-1">HOW TO</text>
-  <text x="40" y="180" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="44" font-weight="700" fill="#07070A" letter-spacing="-1">CONTRIBUTE</text>
-  <rect x="40" y="200" width="180" height="3" fill="#07070A"/>
-  <text x="40" y="240" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="14" fill="#07070A" opacity="0.85">Ship a recipe. Fix a test.</text>
-  <text x="40" y="262" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="14" fill="#07070A" opacity="0.85">Improve a pathway.</text>
+  <text x="40" y="130" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="44" font-weight="700" fill="#000000" letter-spacing="-1">HOW TO</text>
+  <text x="40" y="180" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="44" font-weight="700" fill="#000000" letter-spacing="-1">CONTRIBUTE</text>
+  <rect x="40" y="200" width="260" height="3" fill="#000000"/>
+  <text x="40" y="240" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="14" fill="#000000" opacity="0.85">Ship a recipe. Fix a test.</text>
+  <text x="40" y="262" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="14" fill="#000000" opacity="0.85">Improve a pathway.</text>
 
-  <!-- Terminal steps -->
-  <rect x="460" y="0" width="740" height="400" fill="#07070A"/>
-  <rect x="474" y="14" width="712" height="372" fill="none" stroke="#F5F1E8" stroke-opacity="0.15"/>
-  <text x="490" y="40" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#F5F1E8" opacity="0.9">┌─┤ contributing steps ├──────────────────────────────┐</text>
-  <g font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#F5F1E8">
+  <!-- Accent panel with steps -->
+  <rect x="460" y="0" width="740" height="400" fill="#FFFFFF"/>
+  <rect x="474" y="14" width="712" height="372" fill="none" stroke="#000000" stroke-opacity="0.15"/>
+  <text x="490" y="40" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#000000" opacity="0.9">┌─┤ contributing steps ├──────────────────────────────┐</text>
+  <g font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="13" fill="#000000">
     <text x="490" y="80">│ 01  fork + branch (never work on master)</text>
     <text x="490" y="108">│ 02  pick a skill: /add-recipe or /add-polkadot-docs-test</text>
     <text x="490" y="136">│ 03  run npm ci &amp;&amp; npm test in the harness</text>
@@ -26,9 +23,9 @@
     <text x="490" y="220">│ 06  open a DRAFT pr with completed test-plan checklist</text>
     <text x="490" y="248">│ 07  on merge: release skill auto-bumps + cuts cover</text>
   </g>
-  <rect x="490" y="276" width="680" height="1" fill="#F5F1E8" opacity="0.2"/>
-  <text x="490" y="304" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#F5F1E8" opacity="0.6">│ full guide: CONTRIBUTING.md</text>
-  <text x="490" y="326" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#F5F1E8" opacity="0.6">│ brand system: .github/brand/DESIGN.md</text>
-  <text x="490" y="348" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#F5F1E8" opacity="0.6">│ license: MIT / Apache-2.0</text>
-  <text x="490" y="370" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#F5F1E8" opacity="0.55">└─────────────────────────────────────────────────────┘</text>
+  <rect x="490" y="276" width="680" height="1" fill="#000000" opacity="0.2"/>
+  <text x="490" y="304" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#000000" opacity="0.6">│ full guide: CONTRIBUTING.md</text>
+  <text x="490" y="326" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#000000" opacity="0.6">│ brand system: .github/brand/DESIGN.md</text>
+  <text x="490" y="348" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#000000" opacity="0.6">│ license: MIT / Apache-2.0</text>
+  <text x="490" y="370" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="11" fill="#000000" opacity="0.55">└─────────────────────────────────────────────────────┘</text>
 </svg>
