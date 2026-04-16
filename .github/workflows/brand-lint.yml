@@ -1,0 +1,49 @@
+name: Brand Lint
+
+on:
+  pull_request:
+    paths:
+      - ".github/brand/**"
+      - ".github/media/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".claude/skills/branding/**"
+      - ".claude/skills/release/covers/**"
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "docs/**"
+      - "dot/cli/**.rs"
+  push:
+    branches: [master]
+    paths:
+      - ".github/brand/**"
+      - ".claude/skills/branding/**"
+
+jobs:
+  lint:
+    name: palette · drift · a11y
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-yaml libxml2-utils
+      - name: Palette lint
+        run: bash .github/brand/scripts/lint-palette.sh
+      - name: Verify release cover palette
+        run: bash .github/brand/scripts/verify-release-cover.sh
+      - name: Drift check
+        run: bash .github/brand/scripts/check-drift.sh
+      - name: Accessibility check
+        run: bash .github/brand/scripts/check-a11y.sh
+      - name: CHANGELOG bumped with tokens.yml
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '.github/brand/tokens.yml'; then
+            if ! git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '.github/brand/CHANGELOG.md'; then
+              echo "✗ tokens.yml changed but CHANGELOG.md did not. Add an entry under [Unreleased]."
+              exit 1
+            fi
+          fi
+          echo "✓ changelog in sync"

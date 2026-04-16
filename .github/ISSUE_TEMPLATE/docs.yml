@@ -1,0 +1,33 @@
+name: Docs issue
+description: A README, CONTRIBUTING, or per-recipe doc is wrong, stale, or unclear.
+labels: ["documentation"]
+body:
+  - type: input
+    id: location
+    attributes:
+      label: File + line
+      placeholder: README.md:42  or  recipes/contracts/contracts-example/README.md
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Wrong (factually incorrect)
+        - Stale (out of date after a version bump)
+        - Unclear (technically correct but hard to follow)
+        - Missing (topic not covered)
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: Detail
+    validations:
+      required: true
+  - type: textarea
+    id: suggest
+    attributes:
+      label: Suggested fix (optional)
+      description: If you have one. A PR is welcome.

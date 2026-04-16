@@ -149,7 +149,7 @@ Matches the bar-chart pattern: label + animated rect + count, instead of the pre
 
 ### Animated commit-types bars (`@@COMMIT_TYPES` — updated)
 
-Same pattern. Bar fill color varies: `#E6007A` for feat/release, `#5FB3B3` for fix. Bar width = `min(count * 15, 60)`. Stagger begin at 4.2s, +0.15s per row.
+Same pattern. Bar fill is `#E6007A`; fix commits use `opacity="0.55"` to differentiate from feat/release (which use full opacity). This keeps the strict 3-color palette (pink/black/white) — status differentiation is achieved with opacity, not a secondary hue. Bar width = `min(count * 15, 60)`. Stagger begin at 4.2s, +0.15s per row.
 
 ### Why animated rects instead of text `█` characters
 
@@ -171,7 +171,7 @@ Three fixed rows (feat / fix / release), counts from `@@COMMIT_LIST` icon assign
 | Glyph | Label | Color | Counted as |
 |---|---|---|---|
 | `»` | `feat` | `#E6007A` | feat / add commits |
-| `✓` | `fix` | `#5FB3B3` | fix / chore / ci / docs / refactor |
+| `✓` | `fix` | `#E6007A" opacity="0.55` | fix / chore / ci / docs / refactor |
 | `◆` | `release` | `#E6007A` | `Release v*` commit |
 
 `{BARS}` = `█` × count, capped at 8.

@@ -1,0 +1,48 @@
+name: Bug report
+description: A test harness, CLI, or SDK behavior is wrong.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please give us enough to reproduce.
+        Brand/visual issues: see `.github/brand/DESIGN.md` before filing.
+  - type: input
+    id: area
+    attributes:
+      label: Component
+      description: e.g. `dot/cli`, `recipes/contracts/contracts-example`, `polkadot-docs/…`, `.github/workflows/…`
+      placeholder: recipes/xcm/cross-chain-transaction-example
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / SHA
+      description: Output of `dot --version` or the commit SHA you reproduced on.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Exact commands. Copy-pasteable.
+      render: bash
+      placeholder: |
+        cd recipes/contracts/contracts-example
+        npm ci && npm test
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: One sentence each. Paste failing logs if short.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, rust version (`cargo --version`), node version.
+      placeholder: macOS 14.5, rust 1.91, node 22.4

@@ -1,0 +1,101 @@
+# Polkadot Cookbook — Brand Tokens
+# STRICT 3-COLOR system derived from the original/official Polkadot palette.
+# Single source of truth. Every artifact under .github/media/, every SVG
+# template, every hex code in repo code SHOULD resolve back here.
+#
+# CHANGING A VALUE: bump .github/brand/CHANGELOG.md in the same commit
+# and re-run /branding to regenerate .github/media/ assets. CI enforces.
+
+color:
+  # Core palette — official Polkadot (polkadot.network/brand-assets).
+  # No secondary hues, no invented colors. Hierarchy is made with
+  # typography, spacing, and composition — not extra colors.
+  primary:
+    pink: "#E6007A"       # Polkadot brand pink, PMS 213 C
+  base:
+    black: "#000000"
+    white: "#FFFFFF"
+
+  # Semantic roles map back to the 3 core values.
+  # (Status differentiation in dense surfaces uses opacity + composition,
+  # not new hues.)
+  semantic:
+    success: "#E6007A"    # pink = passing (CLI convention; `dot` uses colored crate)
+    emphasis: "#E6007A"   # pink = accent / emphasis
+    ink: "#000000"        # text / foreground on light surfaces
+    paper: "#FFFFFF"      # text / foreground on dark surfaces
+
+  # Surface roles per mode. "accent-panel" is the secondary block alongside
+  # the pink slab in variant-05 composition. "footer-surface" inverts for
+  # contrast. GitHub <picture> swap on prefers-color-scheme.
+  mode:
+    dark:
+      canvas: "#000000"
+      accent-panel: "#000000"
+      footer-surface: "#FFFFFF"
+      fg: "#FFFFFF"
+      fg-on-footer: "#000000"
+    light:
+      canvas: "#FFFFFF"
+      accent-panel: "#FFFFFF"
+      footer-surface: "#000000"
+      fg: "#000000"
+      fg-on-footer: "#FFFFFF"
+
+type:
+  mono: "ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+  weight:
+    regular: 400
+    bold: 700
+  size:
+    kpi-xl: 108
+    kpi-lg: 72
+    kpi-md: 36
+    kpi-sm: 22
+    h1: 36
+    body: 16
+    mono-md: 14
+    mono-sm: 11
+    mono-xs: 10
+  tracking:
+    tight: -2
+    normal: 0
+    wide: 2
+    wider: 3
+
+space:
+  grid-gutter: 14         # Mondrian block divider width
+  canvas:
+    og: [1200, 630]       # Open Graph / release cover standard
+    social: [1280, 640]   # GitHub social preview
+    divider: [1200, 12]
+    pathway-banner: [1200, 200]
+    contributing-hero: [1200, 400]
+
+motion:
+  reveal-dur: "0.35s"
+  cascade-stagger: "0.2s"
+  float-heading-dur: "6s"
+  float-offset-px: 2
+  gradient-flow-dur: "8s"
+  honor-reduced-motion: true
+
+logo:
+  clear-space-ratio: 0.25
+  min-size-px: 40
+  hero-size-px: 80
+  # Our own project marks (resolve against core palette only):
+  # - dot-cli-mark:     small dot-in-dot (pink outer + inner contrast)
+  #   for inline reference to the `dot` CLI.
+  # - cookbook-mark:    central pink circle + 8 orbital dots + connection
+  #   lines — the project's network mark, used as the Cookbook's logo.
+
+a11y:
+  min-contrast-body: 4.5  # WCAG AA
+  min-contrast-large: 3.0
+
+# Palette allowlist: hex codes permitted OUTSIDE tokens.yml.
+# Ruthlessly minimal. Pre-existing third-party paths (docs site legacy,
+# release archive, coverage badge, logo files) are excluded by
+# lint-palette.sh skip-paths, not by allowlist.
+allowlist: []

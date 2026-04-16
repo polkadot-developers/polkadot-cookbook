@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" shape-rendering="geometricPrecision" role="img" aria-label="{{PATHWAY_LABEL}} pathway — {{PATHWAY_COUNT}} recipes">
+  <!-- Generated. DO NOT EDIT. Strict 3-color pathway header. -->
+  <rect width="1200" height="200" fill="{{CANVAS}}"/>
+
+  <!-- Pink accent strip -->
+  <rect x="0" y="0" width="16" height="200" fill="{{PINK}}"/>
+
+  <!-- Label block (pink slab, like B1) -->
+  <rect x="16" y="0" width="380" height="200" fill="{{PINK}}"/>
+  <text x="48" y="68" font-family="{{MONO}}" font-size="12" fill="{{BLACK}}" opacity="0.65" letter-spacing="3">PATHWAY · {{PATHWAY_NAME}}</text>
+  <text x="48" y="128" font-family="{{MONO}}" font-size="52" font-weight="700" fill="{{BLACK}}" letter-spacing="-1">{{PATHWAY_LABEL}}</text>
+  <text x="48" y="158" font-family="{{MONO}}" font-size="12" fill="{{BLACK}}" opacity="0.7">{{PATHWAY_TAGLINE}}</text>
+
+  <!-- Accent panel with count -->
+  <rect x="396" y="0" width="804" height="200" fill="{{ACCENT_PANEL}}"/>
+  <text x="432" y="68" font-family="{{MONO}}" font-size="12" fill="{{FG}}" opacity="0.6" letter-spacing="3">RECIPES IN THIS PATHWAY</text>
+  <text x="432" y="140" font-family="{{MONO}}" font-size="80" font-weight="700" fill="{{PINK}}">{{PATHWAY_COUNT}}</text>
+  <text x="600" y="128" font-family="{{MONO}}" font-size="13" fill="{{FG}}" opacity="0.55">tested in CI · pinned to versions.yml</text>
+  <text x="600" y="152" font-family="{{MONO}}" font-size="13" fill="{{FG}}" opacity="0.55">source: brunopgalvao/recipe-* external repos</text>
+</svg>

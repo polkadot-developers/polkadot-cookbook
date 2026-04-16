@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="geometricPrecision" role="img" aria-label="Polkadot Cookbook">
+  <!-- Generated. Tiny network mark (Cookbook logo) scaled to favicon size. -->
+  <rect width="64" height="64" fill="#000000"/>
+  <g transform="translate(32, 32)">
+    <g stroke="#E6007A" stroke-width="1" opacity="0.4" fill="none">
+      <line x1="0" y1="-10" x2="0" y2="-20"/>
+      <line x1="7" y1="-7"  x2="14" y2="-14"/>
+      <line x1="10" y1="0"  x2="20" y2="0"/>
+      <line x1="7" y1="7"   x2="14" y2="14"/>
+      <line x1="0" y1="10"  x2="0" y2="20"/>
+      <line x1="-7" y1="7"  x2="-14" y2="14"/>
+      <line x1="-10" y1="0" x2="-20" y2="0"/>
+      <line x1="-7" y1="-7" x2="-14" y2="-14"/>
+    </g>
+    <circle cx="0" cy="0" r="10" fill="#E6007A"/>
+    <circle cx="0"   cy="-20" r="3" fill="#E6007A"/>
+    <circle cx="14"  cy="-14" r="3" fill="#E6007A"/>
+    <circle cx="20"  cy="0"   r="3" fill="#E6007A"/>
+    <circle cx="14"  cy="14"  r="3" fill="#E6007A"/>
+    <circle cx="0"   cy="20"  r="3" fill="#E6007A"/>
+    <circle cx="-14" cy="14"  r="3" fill="#E6007A"/>
+    <circle cx="-20" cy="0"   r="3" fill="#E6007A"/>
+    <circle cx="-14" cy="-14" r="3" fill="#E6007A"/>
+  </g>
+</svg>

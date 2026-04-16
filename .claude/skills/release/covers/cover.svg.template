@@ -33,7 +33,7 @@
        ========================================================================== -->
   <!-- TEMPLATE_HEADER_END -->
 
-  <rect width="1200" height="630" fill="#0D0D0D"/>
+  <rect width="1200" height="630" fill="#000000"/>
 
   <!-- B1 genesis pink -->
   <rect x="0" y="0" width="742" height="390" fill="#E6007A" opacity="0">
@@ -43,47 +43,47 @@
     <animate attributeName="opacity" values="0;0.7;0" dur="0.6s" begin="0s" fill="freeze"/>
   </rect>
 
-  <rect x="756" y="240" width="0" height="14" fill="#0D0D0D">
+  <rect x="756" y="240" width="0" height="14" fill="#000000">
     <animate attributeName="width" from="0" to="444" dur="0.5s" begin="0.7s" fill="freeze"/>
   </rect>
-  <rect x="742" y="0" width="14" height="0" fill="#0D0D0D">
+  <rect x="742" y="0" width="14" height="0" fill="#000000">
     <animate attributeName="height" from="0" to="390" dur="0.4s" begin="0.9s" fill="freeze"/>
   </rect>
 
   <!-- B2 TERMINAL PANEL -->
   <g opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.3s" fill="freeze"/>
-    <rect x="756" y="0" width="444" height="240" fill="#07070A"/>
-    <rect x="764" y="8" width="428" height="224" fill="none" stroke="#F5F1E8" stroke-opacity="0.15" stroke-width="1"/>
+    <rect x="756" y="0" width="444" height="240" fill="#000000"/>
+    <rect x="764" y="8" width="428" height="224" fill="none" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="1"/>
 
     <text x="774" y="26" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
-          font-size="10" fill="#F5F1E8" opacity="0.9" letter-spacing="0.4">
+          font-size="10" fill="#FFFFFF" opacity="0.9" letter-spacing="0.4">
       ┌─┤ v{{PREV_VERSION}}..v{{VERSION}}  {{DATE_START}} → {{DATE_END_SHORT}} ├────────┐
     </text>
 
     <!-- @@COMMIT_LIST -->
 
     <text x="774" y="196" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
-          font-size="10" fill="#F5F1E8" opacity="0" letter-spacing="0.3">
+          font-size="10" fill="#FFFFFF" opacity="0" letter-spacing="0.3">
       <animate attributeName="opacity" values="0;0.8" dur="0.2s" begin="3.9s" fill="freeze"/>
       │ {{COMMIT_COUNT}} commits · {{CONTRIB_COUNT}} contrib · +{{INSERTIONS}} / -{{DELETIONS}} · {{FILES_COUNT}} files
     </text>
     <text x="774" y="210" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
-          font-size="10" fill="#F5F1E8" opacity="0" letter-spacing="0.3">
+          font-size="10" fill="#FFFFFF" opacity="0" letter-spacing="0.3">
       <animate attributeName="opacity" values="0;0.75" dur="0.2s" begin="4.1s" fill="freeze"/>
       │ PRs {{PR_LIST}}
     </text>
     <text x="774" y="224" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
-          font-size="10" fill="#F5F1E8" opacity="0.55" letter-spacing="0.4">
+          font-size="10" fill="#FFFFFF" opacity="0.55" letter-spacing="0.4">
       └─ HEAD {{HEAD_SHA}} · TAG v{{VERSION}} ─────────────────────┘
     </text>
   </g>
 
-  <rect x="0" y="390" width="0" height="14" fill="#0D0D0D">
+  <rect x="0" y="390" width="0" height="14" fill="#000000">
     <animate attributeName="width" from="0" to="1200" dur="0.7s" begin="1.9s" fill="freeze"/>
   </rect>
 
-  <rect x="297" y="404" width="903" height="226" fill="#11116B" opacity="0">
+  <rect x="297" y="404" width="903" height="226" fill="#000000" opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.35s" begin="2.7s" fill="freeze"/>
   </rect>
   <rect x="297" y="404" width="903" height="226" fill="#FFFFFF" opacity="0">
@@ -97,18 +97,18 @@
     <animate attributeName="opacity" values="0;0.6;0" dur="0.6s" begin="3.3s" fill="freeze"/>
   </rect>
 
-  <rect x="917" y="240" width="14" height="0" fill="#0D0D0D">
+  <rect x="917" y="240" width="14" height="0" fill="#000000">
     <animate attributeName="height" from="0" to="164" dur="0.4s" begin="3.6s" fill="freeze"/>
   </rect>
 
-  <rect x="0" y="404" width="283" height="226" fill="#11116B" opacity="0">
+  <rect x="0" y="404" width="283" height="226" fill="#000000" opacity="0">
     <animate attributeName="opacity" values="0;1" dur="0.35s" begin="4.3s" fill="freeze"/>
   </rect>
   <rect x="0" y="404" width="283" height="226" fill="#FFFFFF" opacity="0">
     <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="4.3s" fill="freeze"/>
   </rect>
 
-  <rect x="283" y="390" width="14" height="0" fill="#0D0D0D">
+  <rect x="283" y="390" width="14" height="0" fill="#000000">
     <animate attributeName="height" from="0" to="240" dur="0.4s" begin="4.6s" fill="freeze"/>
   </rect>
 
@@ -147,7 +147,7 @@
   </g>
 
   <!-- Empty cell: COMMIT TYPES -->
-  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
     <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.0s" fill="freeze"/>
     <text x="946" y="278" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT TYPES</text>
 
@@ -171,11 +171,11 @@
   </g>
 
   <!-- B5 HEAD: repo state -->
-  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F5F1E8">
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
     <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.9s" fill="freeze"/>
     <text x="18" y="432" font-size="10" letter-spacing="1.5" opacity="0.65">REPO @ v{{VERSION}}</text>
 
-    <rect x="18" y="442" width="247" height="1" fill="#F5F1E8" opacity="0.25"/>
+    <rect x="18" y="442" width="247" height="1" fill="#FFFFFF" opacity="0.25"/>
 
     <!-- @@REPO_STATE -->
 
