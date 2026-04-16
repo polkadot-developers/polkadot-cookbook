@@ -7,10 +7,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@paraspell/sdk": "^12.8.8",
+    "@paraspell/sdk": "^13.2.2",
     "@polkadot-labs/hdkd": "^0.0.27",
     "@polkadot-labs/hdkd-helpers": "^0.0.28",
-    "polkadot-api": "^1.23.3"
+    "polkadot-api": "^2.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.12.0",
