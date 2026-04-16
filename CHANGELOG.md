@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-04-16
+
+### Changed
+- `/release` real-run now hard-asserts zero unresolved template placeholders after every render step (parity with the dry-run exit criteria). Prevents a recurrence of the v0.15.0 cover-chain.svg incident where ~25 `{{TOKEN}}` placeholders shipped visibly to the draft PR because `xmllint` alone passes on unresolved braces.
+- `/release` now requires a 1-2 sentence narration before every non-trivial tool call, so Claude Code permission prompts surface context alongside the raw command.
+- `/release` no longer opens generated artifacts locally via the default application; the PR page is the canonical review surface.
+
 ## [0.15.0] - 2026-04-16
 
 ### Added
@@ -67,7 +74,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.12.0...v0.13.0
