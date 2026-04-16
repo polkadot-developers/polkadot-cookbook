@@ -49,7 +49,7 @@ crates:
 javascript_packages:
   polkadot_api:
     name: polkadot-api
-    version: "1.23.3"
+    version: "2.0.1"
   polkadot_js_api:
     name: "@polkadot/api"
     version: "16.5.6"
