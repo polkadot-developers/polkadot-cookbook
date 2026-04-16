@@ -5,7 +5,7 @@ import { join } from "path";
 
 const REPO_URL =
   "https://github.com/polkadot-developers/revm-hardhat-examples.git";
-const PINNED_COMMIT = "edcf9aa614f7269286c9dba1ac6eb7f705fc0c3a";
+const PINNED_COMMIT = "3ff28ae44c4ab041a96953f49d0e2dae0408f28f";
 
 const WORKSPACE_DIR = join(process.cwd(), ".test-workspace");
 const REPO_DIR = join(WORKSPACE_DIR, "revm-hardhat-examples");
@@ -23,9 +23,13 @@ const TESTNET_PRIVATE_KEY = process.env.TESTNET_PRIVATE_KEY || undefined;
 
 const hardhatEnv: Record<string, string> = {
   ...Object.fromEntries(
-    Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] != null),
+    Object.entries(process.env).filter(
+      (entry): entry is [string, string] => entry[1] != null,
+    ),
   ),
-  ...(TESTNET_PRIVATE_KEY ? { HARDHAT_VAR_TESTNET_PRIVATE_KEY: TESTNET_PRIVATE_KEY } : {}),
+  ...(TESTNET_PRIVATE_KEY
+    ? { HARDHAT_VAR_TESTNET_PRIVATE_KEY: TESTNET_PRIVATE_KEY }
+    : {}),
 };
 
 describe("Uniswap V3 Core with Hardhat Guide", () => {
@@ -140,9 +144,11 @@ describe("Uniswap V3 Core with Hardhat Guide", () => {
       ).toBe(true);
     });
 
-    it("should have the deploy script", () => {
+    it("should have the Ignition deployment module", () => {
       expect(
-        existsSync(join(UNISWAP_DIR, "scripts", "deploy.ts")),
+        existsSync(
+          join(UNISWAP_DIR, "ignition", "modules", "UniswapV3Factory.ts"),
+        ),
       ).toBe(true);
     });
   });
@@ -168,9 +174,12 @@ describe("Uniswap V3 Core with Hardhat Guide", () => {
 
   // ==================== VERIFY TESTNET CREDENTIALS ====================
   describe("4. Verify Testnet Credentials", () => {
-    it.skipIf(!TESTNET_PRIVATE_KEY)("should have TESTNET_PRIVATE_KEY environment variable", () => {
-      expect(TESTNET_PRIVATE_KEY).toBeTruthy();
-    });
+    it.skipIf(!TESTNET_PRIVATE_KEY)(
+      "should have TESTNET_PRIVATE_KEY environment variable",
+      () => {
+        expect(TESTNET_PRIVATE_KEY).toBeTruthy();
+      },
+    );
   });
 
   // ==================== COMPILE CONTRACTS ====================
@@ -224,62 +233,76 @@ describe("Uniswap V3 Core with Hardhat Guide", () => {
     }, 300000);
   });
 
-  // ==================== DEPLOY VIA SCRIPT ====================
-  describe("7. Deploy Contracts via Script (polkadotTestnet)", () => {
-    it.skipIf(!TESTNET_PRIVATE_KEY)("should deploy UniswapV3Factory and output contract addresses", async () => {
-      console.log("Deploying Uniswap V3 Core via deploy script...");
+  // ==================== DEPLOY VIA IGNITION ====================
+  describe("7. Deploy Factory via Hardhat Ignition (polkadotTestnet)", () => {
+    it.skipIf(!TESTNET_PRIVATE_KEY)(
+      "should deploy UniswapV3Factory and output a contract address",
+      async () => {
+        console.log("Deploying UniswapV3Factory via Hardhat Ignition...");
 
-      const MAX_ATTEMPTS = 3;
-      const RETRY_WAIT_MS = 30000;
-      let deployError: unknown = null;
+        const MAX_ATTEMPTS = 3;
+        const RETRY_WAIT_MS = 30000;
+        let deployError: unknown = null;
 
-      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        try {
-          const result = execSync(
-            "npx hardhat run scripts/deploy.ts --network polkadotTestnet",
-            {
-              cwd: UNISWAP_DIR,
-              env: hardhatEnv,
-              encoding: "utf-8",
-              timeout: 120000,
-            },
-          );
-          console.log(result);
-          const addresses = result.match(/0x[0-9a-fA-F]{40}/g);
-          expect(
-            addresses && addresses.length > 0,
-            "Deploy output must contain at least one contract address",
-          ).toBe(true);
-          console.log(`Deployed addresses: ${addresses?.join(", ")}`);
-          deployError = null;
-          break;
-        } catch (e: any) {
-          const combined =
-            (e.stderr ?? "") + (e.stdout ?? "") + (e.message ?? "");
-          const isRetryable =
-            combined.includes("UND_ERR_HEADERS_TIMEOUT") ||
-            combined.includes("ECONNRESET") ||
-            combined.includes("ETIMEDOUT");
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+          // Remove prior deployment state so only one confirmation prompt appears
+          const deploymentsDir = join(UNISWAP_DIR, "ignition", "deployments");
+          if (existsSync(deploymentsDir)) {
+            rmSync(deploymentsDir, { recursive: true, force: true });
+          }
 
-          if (isRetryable && attempt < MAX_ATTEMPTS) {
-            console.log(
-              `Attempt ${attempt} failed (transient): waiting ${RETRY_WAIT_MS / 1000}s then retrying...`,
+          try {
+            const result = execSync(
+              "npx hardhat ignition deploy ./ignition/modules/UniswapV3Factory.ts --network polkadotTestnet",
+              {
+                cwd: UNISWAP_DIR,
+                env: hardhatEnv,
+                input: "y\n",
+                encoding: "utf-8",
+                timeout: 120000,
+              },
             );
-            await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT_MS));
-          } else {
-            deployError = e;
+            console.log(result);
+            const match = result.match(/0x[0-9a-fA-F]{40}/);
+            expect(
+              match,
+              "Ignition output must contain a deployed contract address",
+            ).not.toBeNull();
+            console.log(`Deployed contract address: ${match![0]}`);
+            deployError = null;
+            break;
+          } catch (e: any) {
+            const combined =
+              (e.stderr ?? "") + (e.stdout ?? "") + (e.message ?? "");
+            const isRetryable =
+              combined.includes("IGN403") ||
+              combined.includes("UND_ERR_HEADERS_TIMEOUT") ||
+              combined.includes("ECONNRESET") ||
+              combined.includes("ETIMEDOUT");
+
+            if (isRetryable && attempt < MAX_ATTEMPTS) {
+              console.log(
+                `Attempt ${attempt} failed (transient): waiting ${RETRY_WAIT_MS / 1000}s then retrying...`,
+              );
+              await new Promise((resolve) =>
+                setTimeout(resolve, RETRY_WAIT_MS),
+              );
+            } else {
+              deployError = e;
+            }
           }
         }
-      }
 
-      if (deployError) {
-        console.warn(
-          "\n⚠  Deploy phase skipped — testnet may be unavailable or the account " +
-            "may lack funds. Phases 1–6 fully verify the guide.\n" +
-            `   Error: ${(deployError as any).message ?? deployError}`,
-        );
-        return;
-      }
-    }, 300000);
+        if (deployError) {
+          console.warn(
+            "\n⚠  Deploy phase skipped — testnet may be unavailable or the account " +
+              "may lack funds. Phases 1–6 fully verify the guide.\n" +
+              `   Error: ${(deployError as any).message ?? deployError}`,
+          );
+          return;
+        }
+      },
+      300000,
+    );
   });
 });
