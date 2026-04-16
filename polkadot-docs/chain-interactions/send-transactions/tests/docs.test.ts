@@ -26,14 +26,9 @@ describe("1. PAPI — Connect and Construct", () => {
 
   it("should connect to Asset Hub Paseo", async () => {
     const { createClient } = await import("polkadot-api");
-    const { getWsProvider } = await import("polkadot-api/ws-provider/node");
-    const { withPolkadotSdkCompat } = await import(
-      "polkadot-api/polkadot-sdk-compat"
-    );
+    const { getWsProvider } = await import("polkadot-api/ws");
 
-    client = createClient(
-      withPolkadotSdkCompat(getWsProvider(WS_ENDPOINT))
-    );
+    client = createClient(getWsProvider(WS_ENDPOINT));
     expect(client).toBeDefined();
     console.log("PAPI: Connected to Asset Hub Paseo");
   });
@@ -67,10 +62,7 @@ describe("2. PAPI — Send Balance Transfer", () => {
     "should sign and send a balance transfer",
     async () => {
       const { createClient } = await import("polkadot-api");
-      const { getWsProvider } = await import("polkadot-api/ws-provider/node");
-      const { withPolkadotSdkCompat } = await import(
-        "polkadot-api/polkadot-sdk-compat"
-      );
+      const { getWsProvider } = await import("polkadot-api/ws");
       const { getPolkadotSigner } = await import("polkadot-api/signer");
       const { polkadotTestNet } = await import("@polkadot-api/descriptors");
       const { waitReady } = await import("@polkadot/wasm-crypto");
@@ -84,9 +76,7 @@ describe("2. PAPI — Send Balance Transfer", () => {
         (input) => pair.sign(input)
       );
 
-      client = createClient(
-        withPolkadotSdkCompat(getWsProvider(WS_ENDPOINT))
-      );
+      client = createClient(getWsProvider(WS_ENDPOINT));
       const api = client.getTypedApi(polkadotTestNet);
 
       const tx = api.tx.Balances.transfer_keep_alive({

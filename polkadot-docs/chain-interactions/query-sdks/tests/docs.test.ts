@@ -24,14 +24,9 @@ describe("1. PAPI — Query Balance", () => {
 
   it("should connect to Asset Hub Paseo", async () => {
     const { createClient } = await import("polkadot-api");
-    const { getWsProvider } = await import("polkadot-api/ws-provider/node");
-    const { withPolkadotSdkCompat } = await import(
-      "polkadot-api/polkadot-sdk-compat"
-    );
+    const { getWsProvider } = await import("polkadot-api/ws");
 
-    client = createClient(
-      withPolkadotSdkCompat(getWsProvider(WS_ENDPOINT))
-    );
+    client = createClient(getWsProvider(WS_ENDPOINT));
     expect(client).toBeDefined();
     console.log("PAPI: Connected to Asset Hub Paseo");
   });
@@ -69,16 +64,11 @@ describe("2. PAPI — Query Asset", () => {
   });
 
   it("should connect and query asset metadata", async () => {
-    const { createClient } = await import("polkadot-api");
-    const { getWsProvider } = await import("polkadot-api/ws-provider/node");
-    const { withPolkadotSdkCompat } = await import(
-      "polkadot-api/polkadot-sdk-compat"
-    );
+    const { createClient, Binary } = await import("polkadot-api");
+    const { getWsProvider } = await import("polkadot-api/ws");
     const { polkadotTestNet } = await import("@polkadot-api/descriptors");
 
-    client = createClient(
-      withPolkadotSdkCompat(getWsProvider(WS_ENDPOINT))
-    );
+    client = createClient(getWsProvider(WS_ENDPOINT));
     const api = client.getTypedApi(polkadotTestNet);
 
     const assetMetadata = await api.query.Assets.Metadata.getValue(
@@ -86,12 +76,12 @@ describe("2. PAPI — Query Asset", () => {
     );
 
     console.log(`PAPI: Querying asset metadata for asset ID ${USDT_ASSET_ID}`);
-    console.log(`  Name: ${assetMetadata.name.asText()}`);
-    console.log(`  Symbol: ${assetMetadata.symbol.asText()}`);
+    console.log(`  Name: ${Binary.toText(assetMetadata.name)}`);
+    console.log(`  Symbol: ${Binary.toText(assetMetadata.symbol)}`);
     console.log(`  Decimals: ${assetMetadata.decimals}`);
 
-    expect(assetMetadata.name.asText()).toBeDefined();
-    expect(assetMetadata.symbol.asText()).toBeDefined();
+    expect(Binary.toText(assetMetadata.name)).toBeDefined();
+    expect(Binary.toText(assetMetadata.symbol)).toBeDefined();
     expect(assetMetadata.decimals).toBeDefined();
   });
 
