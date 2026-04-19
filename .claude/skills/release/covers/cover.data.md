@@ -71,7 +71,7 @@ One `<text>` per commit, chronological oldest→newest. Staggered `begin` times.
 
 | Commits | Layout |
 |---|---|
-| ≤13 | Single column, all rows shown, y step = 14px |
+| ≤13 | Single column, all rows shown, y step = 14px, subject truncated to 42 chars with `…` (keeps rows inside the 444px-wide B2 panel at font-size 10) |
 | 14-26 | Two columns (split at N/2), y step = 12px, subject truncated to 32 chars with `…` |
 | ≥27 | Two columns, show latest 24, final row is `│ +{N-24} earlier commits` at low opacity |
 
@@ -149,7 +149,7 @@ Matches the bar-chart pattern: label + animated rect + count, instead of the pre
 
 ### Animated commit-types bars (`@@COMMIT_TYPES` — updated)
 
-Same pattern. Bar fill color varies: `#E6007A` for feat/release, `#5FB3B3` for fix. Bar width = `min(count * 15, 60)`. Stagger begin at 4.2s, +0.15s per row.
+Same pattern. Bar fill is `#E6007A`; fix commits use `opacity="0.55"` to differentiate from feat/release (which use full opacity). This keeps the strict 3-color palette (pink/black/white) — status differentiation is achieved with opacity, not a secondary hue. Bar width = `min(count * 15, 60)`. Stagger begin at 4.2s, +0.15s per row.
 
 ### Why animated rects instead of text `█` characters
 
@@ -171,7 +171,7 @@ Three fixed rows (feat / fix / release), counts from `@@COMMIT_LIST` icon assign
 | Glyph | Label | Color | Counted as |
 |---|---|---|---|
 | `»` | `feat` | `#E6007A` | feat / add commits |
-| `✓` | `fix` | `#5FB3B3` | fix / chore / ci / docs / refactor |
+| `✓` | `fix` | `#E6007A" opacity="0.55` | fix / chore / ci / docs / refactor |
 | `◆` | `release` | `#E6007A` | `Release v*` commit |
 
 `{BARS}` = `█` × count, capped at 8.
@@ -189,7 +189,7 @@ Six fixed rows of current counts at the release tag. Starts at y=466, increments
 | `migration tests` | `find migration -name 'migration.test.ts' 2>/dev/null \| wc -l` |
 | `CI workflows` | `ls .github/workflows/*.yml \| wc -l` |
 | `Claude skills` | `ls .claude/skills \| wc -l` |
-| `Rust crates` | count `[package]` sections across workspace Cargo.toml files |
+| `Rust crates` | `grep -l '^\[package\]' $(grep -oE '"[^"]*"' Cargo.toml \| tr -d '"' \| sed 's\|$\|/Cargo.toml\|') 2>/dev/null \| wc -l` — counts `[package]` sections in the Cargo.toml files of every `members = [ … ]` entry in the root workspace Cargo.toml. Do **not** count templated/embedded Cargo.tomls (e.g. `dot/sdk/templates/**/*.toml.template`) or clone artifacts under `polkadot-docs/**` — only live workspace members. For the current workspace this is `dot/sdk` + `dot/cli` = 2. |
 
 **Row template:**
 ```xml

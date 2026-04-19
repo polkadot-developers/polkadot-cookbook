@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Polkadot Stack Exchange
+    url: https://polkadot.stackexchange.com/
+    about: Questions about building on Polkadot (not cookbook-specific).
+  - name: Polkadot Forum
+    url: https://forum.polkadot.network/
+    about: Governance and ecosystem discussion.
