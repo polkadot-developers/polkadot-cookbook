@@ -48,7 +48,7 @@
   <line x1="800" y1="260" x2="1200" y2="260" stroke="#2A2A30" stroke-width="1"/>
 
   <text x="850" y="300" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="36" font-weight="700"
-        fill="#E6007A" letter-spacing="-1">9</text>
+        fill="#E6007A" letter-spacing="-1">8</text>
   <text x="850" y="320" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="9" fill="#6B6B74"
         letter-spacing="1.5">RECIPES</text>
 

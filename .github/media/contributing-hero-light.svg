@@ -35,7 +35,7 @@
   <!-- Right KPI column -->
   <line x1="1060" y1="80" x2="1060" y2="280" stroke="#D7D4CC" stroke-width="1"/>
 
-  <text x="1090" y="130" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="48" font-weight="800" fill="#0A0A0B" letter-spacing="-2">9</text>
+  <text x="1090" y="130" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="48" font-weight="800" fill="#0A0A0B" letter-spacing="-2">8</text>
   <text x="1090" y="152" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="10" fill="#8A867B" letter-spacing="2">RECIPES</text>
 
   <text x="1090" y="210" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" font-size="48" font-weight="800" fill="#0A0A0B" letter-spacing="-2">57</text>
