@@ -1,5 +1,5 @@
-# Polkadot Cookbook — Brand Tokens
-# STRICT 3-COLOR system derived from the original/official Polkadot palette.
+# Polkadot Cookbook — Brand Tokens v2
+# Product-grade palette: near-black canvas, warm paper, grey ramp.
 # Single source of truth. Every artifact under .github/media/, every SVG
 # template, every hex code in repo code SHOULD resolve back here.
 #
@@ -7,95 +7,118 @@
 # and re-run /branding to regenerate .github/media/ assets. CI enforces.
 
 color:
-  # Core palette — official Polkadot (polkadot.network/brand-assets).
-  # No secondary hues, no invented colors. Hierarchy is made with
-  # typography, spacing, and composition — not extra colors.
+  # Core palette — official Polkadot accent + product neutrals.
   primary:
-    pink: "#E6007A"       # Polkadot brand pink, PMS 213 C
+    pink: "#E6007A"       # Polkadot brand pink, PMS 213 C — the one immutable
+
   base:
-    black: "#000000"
-    white: "#FFFFFF"
+    canvas: "#0A0A0B"     # near-black (softer than pure #000)
+    paper: "#F6F5F2"      # warm paper (replaces pure #FFFFFF)
+    black: "#000000"      # pass-through for CI/legacy
+    white: "#FFFFFF"      # pass-through for CI/legacy
 
-  # Semantic roles map back to the 3 core values.
-  # (Status differentiation in dense surfaces uses opacity + composition,
-  # not new hues.)
+  grey:
+    surface-1: "#111114"  # raised surface, dark mode
+    surface-2: "#1A1A1F"
+    line: "#2A2A30"       # dividers, dark
+    muted: "#6B6B74"      # tertiary text, dark
+    paper-2: "#ECEAE4"    # raised surface, light
+    paper-3: "#E3E0D8"
+    paper-line: "#D7D4CC" # dividers, light
+    paper-muted: "#8A867B" # tertiary text, light
+
   semantic:
-    success: "#E6007A"    # pink = passing (CLI convention; `dot` uses colored crate)
+    success: "#E6007A"    # pink = passing
     emphasis: "#E6007A"   # pink = accent / emphasis
-    ink: "#000000"        # text / foreground on light surfaces
-    paper: "#FFFFFF"      # text / foreground on dark surfaces
+    fg: "#F6F5F2"         # default foreground (on dark)
+    fg-dim: "#9A9AA3"     # dimmed foreground
+    ink: "#0A0A0B"        # text on light surfaces
+    paper: "#F6F5F2"      # text on dark surfaces
 
-  # Surface roles per mode. "accent-panel" is the secondary block alongside
-  # the pink slab in variant-05 composition. "footer-surface" inverts for
-  # contrast. GitHub <picture> swap on prefers-color-scheme.
+  # Surface roles per mode. GitHub <picture> swap on prefers-color-scheme.
   mode:
     dark:
-      canvas: "#000000"
-      accent-panel: "#000000"
-      footer-surface: "#FFFFFF"
-      fg: "#FFFFFF"
-      fg-on-footer: "#000000"
+      canvas: "#0A0A0B"
+      surface: "#111114"
+      surface-2: "#1A1A1F"
+      line: "#2A2A30"
+      fg: "#F6F5F2"
+      fg-muted: "#9A9AA3"
+      fg-dim: "#6B6B74"
     light:
-      canvas: "#FFFFFF"
-      accent-panel: "#FFFFFF"
-      footer-surface: "#000000"
-      fg: "#000000"
-      fg-on-footer: "#FFFFFF"
+      canvas: "#F6F5F2"
+      surface: "#ECEAE4"
+      surface-2: "#E3E0D8"
+      line: "#D7D4CC"
+      fg: "#0A0A0B"
+      fg-muted: "#51504B"
+      fg-dim: "#8A867B"
 
 type:
-  mono: "ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+  mono: "'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
   weight:
     regular: 400
+    medium: 500
+    semibold: 600
     bold: 700
+    black: 800
   size:
-    kpi-xl: 108
-    kpi-lg: 72
-    kpi-md: 36
-    kpi-sm: 22
-    h1: 36
+    display: 96           # cover / hero display
+    h1: 56                # page titles
+    h2: 36                # section titles
+    h3: 22                # sub-heads
     body: 16
     mono-md: 14
     mono-sm: 11
     mono-xs: 10
+    label: 10             # uppercase, tracked +2
+    kpi-xl: 108
+    kpi-lg: 72
+    kpi-md: 48
+    kpi-sm: 36
   tracking:
+    display: -3
     tight: -2
+    h1: -1
     normal: 0
-    wide: 2
-    wider: 3
+    wide: 1.5
+    label: 2
 
 space:
-  grid-gutter: 14         # Mondrian block divider width
+  base: 8                 # 8px base unit
+  grid-gutter: 14         # block divider width
+  margin: 80              # standard margin
   canvas:
     og: [1200, 630]       # Open Graph / release cover standard
     social: [1280, 640]   # GitHub social preview
+    hero: [1200, 400]     # README hero
+    banner: [1200, 200]   # pathway banner
     divider: [1200, 12]
-    pathway-banner: [1200, 200]
-    contributing-hero: [1200, 400]
 
 motion:
   reveal-dur: "0.35s"
-  cascade-stagger: "0.2s"
-  float-heading-dur: "6s"
-  float-offset-px: 2
+  cascade-stagger: "0.08s"
+  counter-dur: "0.9s"
+  scan-dur: "1.2s"
+  prompt-char: "30ms"
+  ease-out: "cubic-bezier(0.22, 1, 0.36, 1)"
   gradient-flow-dur: "8s"
   honor-reduced-motion: true
 
 logo:
   clear-space-ratio: 0.25
-  min-size-px: 40
+  min-size-px: 16
   hero-size-px: 80
-  # Our own project marks (resolve against core palette only):
-  # - dot-cli-mark:     small dot-in-dot (pink outer + inner contrast)
-  #   for inline reference to the `dot` CLI.
-  # - cookbook-mark:    central pink circle + 8 orbital dots + connection
-  #   lines — the project's network mark, used as the Cookbook's logo.
+  # Project marks:
+  # - index-mark:    page-of-recipes with accent top band + right index tab
+  #                  + faint content rules. Primary mark, replaces orbital.
+  # - dot-cli-mark:  ▸ dot_ prompt treatment. Secondary, CLI banner only.
 
 a11y:
   min-contrast-body: 4.5  # WCAG AA
   min-contrast-large: 3.0
 
 # Palette allowlist: hex codes permitted OUTSIDE tokens.yml.
-# Ruthlessly minimal. Pre-existing third-party paths (docs site legacy,
-# release archive, coverage badge, logo files) are excluded by
-# lint-palette.sh skip-paths, not by allowlist.
+# Pre-existing third-party paths (docs site legacy, release archive,
+# coverage badge, logo files) are excluded by lint-palette.sh skip-paths.
 allowlist: []

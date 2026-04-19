@@ -2,25 +2,30 @@
 
 The generator substitutes scalar tokens via exact-string replacement. Every token below must resolve from `.github/brand/tokens.yml` or live repo facts.
 
-## Token → source
+## Token → source (v2)
 
-| Token                      | Source                                                      |
-| -------------------------- | ----------------------------------------------------------- |
-| `{{CANVAS}}`               | `tokens.color.surface.canvas` (dark) / `mode.light-bg` (light) |
-| `{{PINK}}`                 | `tokens.color.primary.pink`                                 |
-| `{{BLUE}}`                 | `tokens.color.primary.blue`                                 |
-| `{{TERMINAL}}`             | `tokens.color.surface.terminal`                             |
-| `{{CREAM}}`                | `tokens.color.surface.cream`                                |
-| `{{MONO}}`                 | `tokens.type.mono`                                          |
-| `{{VERSION}}`              | `grep version Cargo.toml` workspace.package.version         |
-| `{{RECIPE_COUNT}}`         | `find recipes -mindepth 2 -maxdepth 2 -type d \| wc -l`     |
-| `{{WORKFLOW_COUNT}}`       | `ls .github/workflows/*.yml \| wc -l`                       |
-| `{{PATHWAY_PALLETS}}`      | count under `recipes/pallets/` + `recipes/parachains/`      |
-| `{{PATHWAY_CONTRACTS}}`    | count under `recipes/contracts/`                            |
-| `{{PATHWAY_TRANSACTIONS}}` | count under `recipes/transactions/`                         |
-| `{{PATHWAY_XCM}}`          | count under `recipes/cross-chain-transactions/`             |
-| `{{PATHWAY_NETWORKS}}`     | count under `recipes/networks/`                             |
-| `{{REVEAL_DUR}}`           | `tokens.motion.reveal-dur`                                  |
+| Token                      | Source                                                      | Mode-dep? |
+| -------------------------- | ----------------------------------------------------------- | --------- |
+| `{{CANVAS}}`               | `color.mode.{mode}.canvas`                                  | **yes**   |
+| `{{SURFACE}}`              | `color.mode.{mode}.surface`                                 | **yes**   |
+| `{{SURFACE_2}}`            | `color.mode.{mode}.surface-2`                               | **yes**   |
+| `{{LINE}}`                 | `color.mode.{mode}.line`                                    | **yes**   |
+| `{{FG}}`                   | `color.mode.{mode}.fg`                                      | **yes**   |
+| `{{FG_MUTED}}`             | `color.mode.{mode}.fg-muted`                                | **yes**   |
+| `{{FG_DIM}}`               | `color.mode.{mode}.fg-dim`                                  | **yes**   |
+| `{{INK}}`                  | `color.base.canvas` (near-black `#0A0A0B`)                  | no        |
+| `{{PAPER}}`                | `color.base.paper` (warm paper `#F6F5F2`)                   | no        |
+| `{{PINK}}`                 | `color.primary.pink`                                        | no        |
+| `{{MONO}}`                 | `type.mono` (JetBrains Mono)                                | no        |
+| `{{VERSION}}`              | `Cargo.toml` `[workspace.package].version`                  | no        |
+| `{{RECIPE_COUNT}}`         | `find recipes -mindepth 2 -maxdepth 2 -type d \| wc -l`     | no        |
+| `{{PATHWAY_COUNT}}`        | number of pathway directories under `recipes/`              | no        |
+| `{{WORKFLOW_COUNT}}`       | `ls .github/workflows/*.yml \| wc -l`                       | no        |
+| `{{DOCS_HARNESS_COUNT}}`   | polkadot-docs harness count                                 | no        |
+| `{{REVEAL_DUR}}`           | `motion.reveal-dur`                                         | no        |
+| `{{CASCADE_STAGGER}}`      | `motion.cascade-stagger`                                    | no        |
+| `{{GRADIENT_FLOW_DUR}}`    | `motion.gradient-flow-dur`                                  | no        |
+| `{{EASE_OUT}}`             | `motion.ease-out`                                           | no        |
 
 ## Bar widths (B3 pathway chart)
 

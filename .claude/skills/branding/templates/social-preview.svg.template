@@ -1,49 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" shape-rendering="geometricPrecision" role="img" aria-label="Polkadot Cookbook — Practical, tested recipes for building on Polkadot.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" shape-rendering="geometricPrecision"
+     role="img" aria-label="Polkadot Cookbook — Build on Polkadot.">
   <!-- Generated. 1280×640 GitHub social preview.
        EVERGREEN — no version, no counts. Uploaded manually via
-       Settings → Social preview; should not require re-upload on
-       each release. -->
+       Settings → Social preview. -->
+
+  <!-- Background -->
   <rect width="1280" height="640" fill="{{CANVAS}}"/>
 
-  <!-- Pink slab -->
-  <rect x="0" y="0" width="880" height="540" fill="{{PINK}}"/>
-  <text x="80" y="240" font-family="{{MONO}}" font-size="116" font-weight="700" fill="{{BLACK}}" letter-spacing="-2">POLKADOT</text>
-  <text x="80" y="360" font-family="{{MONO}}" font-size="116" font-weight="700" fill="{{BLACK}}" letter-spacing="-2">COOKBOOK</text>
-  <rect x="80" y="388" width="580" height="5" fill="{{BLACK}}"/>
-  <text x="80" y="436" font-family="{{MONO}}" font-size="24" fill="{{BLACK}}" opacity="0.9">Practical, tested recipes for building on Polkadot.</text>
-  <g transform="translate(80, 476)">
-    <circle cx="9" cy="9" r="9" fill="{{BLACK}}"/>
-    <circle cx="9" cy="9" r="4" fill="{{PINK}}"/>
-    <text x="30" y="14" font-family="{{MONO}}" font-size="12" fill="{{BLACK}}" opacity="0.65" letter-spacing="1.5">DOT CLI · scaffolder included</text>
-  </g>
+  <!-- Accent outline frame (24px inset) -->
+  <rect x="24" y="24" width="1232" height="592" fill="none" stroke="{{PINK}}" stroke-width="2"/>
 
-  <!-- Accent panel with network mark -->
-  <rect x="880" y="0" width="400" height="540" fill="{{ACCENT_PANEL}}"/>
-  <g transform="translate(1080, 270)">
-    <g stroke="{{PINK}}" stroke-width="1.5" opacity="0.3" fill="none">
-      <line x1="0"     y1="-45"  x2="0"     y2="-78"/>
-      <line x1="31.8"  y1="-31.8" x2="49.5" y2="-52"/>
-      <line x1="45"    y1="0"     x2="70"   y2="0"/>
-      <line x1="31.8"  y1="31.8"  x2="49.5" y2="52"/>
-      <line x1="0"     y1="45"    x2="0"    y2="78"/>
-      <line x1="-31.8" y1="31.8"  x2="-49.5" y2="52"/>
-      <line x1="-45"   y1="0"     x2="-70"  y2="0"/>
-      <line x1="-31.8" y1="-31.8" x2="-49.5" y2="-52"/>
-    </g>
-    <circle cx="0" cy="0" r="45" fill="{{PINK}}"/>
-    <circle cx="0"     cy="-78"  r="10" fill="{{PINK}}"/>
-    <circle cx="49.5"  cy="-52"  r="10" fill="{{PINK}}"/>
-    <circle cx="70"    cy="0"    r="10" fill="{{PINK}}"/>
-    <circle cx="49.5"  cy="52"   r="10" fill="{{PINK}}"/>
-    <circle cx="0"     cy="78"   r="10" fill="{{PINK}}"/>
-    <circle cx="-49.5" cy="52"   r="10" fill="{{PINK}}"/>
-    <circle cx="-70"   cy="0"    r="10" fill="{{PINK}}"/>
-    <circle cx="-49.5" cy="-52"  r="10" fill="{{PINK}}"/>
-  </g>
+  <!-- Centered content -->
+  <text x="640" y="220" text-anchor="middle" font-family="{{MONO}}"
+        font-size="14" font-weight="700" letter-spacing="3">
+    <tspan fill="{{PINK}}">/</tspan>
+    <tspan fill="{{FG}}" dx="8">THE POLKADOT COOKBOOK</tspan>
+    <tspan fill="{{PINK}}" dx="8">/</tspan>
+  </text>
 
-  <!-- Footer -->
-  <rect x="0" y="540" width="1280" height="100" fill="{{FOOTER_SURFACE}}"/>
-  <text x="80" y="590" font-family="{{MONO}}" font-size="15" fill="{{FG_ON_FOOTER}}" opacity="0.85" letter-spacing="3">PALLETS · CONTRACTS · TRANSACTIONS · XCM · NETWORKS</text>
-  <text x="80" y="618" font-family="{{MONO}}" font-size="12" fill="{{FG_ON_FOOTER}}" opacity="0.55">github.com/polkadot-developers/polkadot-cookbook</text>
-  <text x="1200" y="618" font-family="{{MONO}}" font-size="11" fill="{{FG_ON_FOOTER}}" opacity="0.55" text-anchor="end">MIT / Apache-2.0</text>
+  <!-- Big title -->
+  <text x="640" y="320" text-anchor="middle" font-family="{{MONO}}"
+        font-size="86" font-weight="700" fill="{{FG}}" letter-spacing="-3">Build on Polkadot.</text>
+
+  <!-- Tagline -->
+  <text x="640" y="380" text-anchor="middle" font-family="{{MONO}}"
+        font-size="14" fill="{{FG_MUTED}}" letter-spacing="1">Practical, tested recipes for building on Polkadot.</text>
+
+  <!-- Rule -->
+  <rect x="128" y="410" width="1024" height="2" fill="{{FG}}" opacity=".3"/>
+
+  <!-- Bottom row -->
+  <text x="128" y="450" font-family="{{MONO}}"
+        font-size="11" fill="{{FG_DIM}}" letter-spacing="1.5">github.com/polkadot-developers/polkadot-cookbook</text>
+  <text x="1152" y="450" text-anchor="end" font-family="{{MONO}}"
+        font-size="11" fill="{{FG_DIM}}" letter-spacing="1.5">MIT / Apache-2.0</text>
 </svg>
