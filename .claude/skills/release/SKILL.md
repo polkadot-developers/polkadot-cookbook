@@ -132,39 +132,54 @@ Get actual tool versions from the local environment.
 
 **Do not hand-design.** Render `.github/releases/vX.Y.Z/cover.svg` from the canonical template at [`covers/cover.svg.template`](covers/cover.svg.template), filled with values from git queries per the contract in [`covers/cover.data.md`](covers/cover.data.md).
 
-Pipeline:
+Run the committed renderer — **do not write ad-hoc Python to `/tmp/`**:
 
-1. Compute every scalar token (`{{VERSION}}`, `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{HEAD_SHA}}`, `{{PR_LIST}}`, …) using the commands listed in `covers/cover.data.md`. A failed command aborts the release — never fabricate a fallback value.
-2. Generate the six variable-count fragments (`@@COMMIT_LIST`, `@@DAILY_TIMELINE`, `@@CONTRIBUTOR_LIST`, `@@BAR_CHART`, `@@COMMIT_TYPES`, `@@REPO_STATE`). Apply the scaling rules in `covers/cover.data.md` for commit counts of 1, 14, 27, 200, etc.
-3. Substitute scalars first, then markers, then write to `.github/releases/vX.Y.Z/cover.svg`.
-4. Sanitize any injected commit subject / author name: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`.
-5. Validate per **Rendering assertions** above: `xmllint --noout` + zero unresolved `{{TOKEN}}` / `<!-- @@MARKER -->`. Abort on any failure.
+```bash
+python3 .claude/skills/release/render.py cover \
+    --prev vA.B.C --version X.Y.Z \
+    --out .github/releases/vX.Y.Z/cover.svg
+```
 
-The template itself is frozen. If a release needs a new data point on the cover, add the token to `covers/cover.svg.template` and its source command to `covers/cover.data.md` — never inline a value directly.
+The renderer executes the [`covers/cover.data.md`](covers/cover.data.md) contract: it computes every scalar from git, generates the six variable-count fragments (`@@COMMIT_LIST`, `@@DAILY_TIMELINE`, `@@CONTRIBUTOR_LIST`, `@@BAR_CHART`, `@@COMMIT_TYPES`, `@@REPO_STATE`) per the documented scaling rules, sanitizes injected strings (`&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`), substitutes, writes, and runs the **Rendering assertions** (`xmllint --noout` + zero unresolved `{{TOKEN}}` / `<!-- @@MARKER -->`). It aborts non-zero on any failure — never writes a partial file.
+
+The template itself is frozen. If a release needs a new data point on the cover: (1) add the token to `covers/cover.svg.template`, (2) add its source command to `covers/cover.data.md`, and (3) wire it into `render.py`'s `cmd_cover`. Never inline a value directly.
 
 ### 3c.2. Footer cover — chain-state reading
 
 Each release also ships a second cover at `.github/releases/vX.Y.Z/cover-chain.svg`: a point-in-time reading of Polkadot mainnet as it was at release-cut time. Rendered from [`covers/cover-chain.svg.template`](covers/cover-chain.svg.template) using data pulled via JSON-RPC per the contract in [`covers/cover-chain.data.md`](covers/cover-chain.data.md).
 
-Pipeline:
+```bash
+python3 .claude/skills/release/render.py cover-chain \
+    --version X.Y.Z \
+    --out .github/releases/vX.Y.Z/cover-chain.svg
+```
 
-1. Walk the endpoint list (primary → fallbacks) until one answers within 5s total-budget 15s.
-2. Run the one-shot capture sequence (`chain_getFinalizedHead` → `chain_getHeader` → `state_getRuntimeVersion` → `system_*` → `system_properties` → `chain_getBlockHash [0]`), record capture timestamp in UTC.
-3. **If all endpoints fail: skip this cover entirely.** Do not write `cover-chain.svg`. Omit the footer embed from `RELEASE_NOTES.md`. Log the failure in the release PR body. Never fabricate or cache-reuse chain data.
-4. If success: compute scalars per the table in `covers/cover-chain.data.md`, substitute into template, sanitize (`&<>`), write, then run the **Rendering assertions** above (`xmllint --noout` + zero unresolved `{{TOKEN}}`). The cover-chain template has the most tokens of any artifact (~30); missing even one results in visible `{{TOKEN_NAME}}` text in the rendered SVG. Abort on any failure.
-5. Append the footer embed block to `RELEASE_NOTES.md` (after the "Next Steps" section, preceded by an `---` separator):
+The renderer walks the primary → fallback endpoint list (5s per endpoint, 15s total budget), executes the capture sequence (`chain_getFinalizedHead` → `chain_getHeader` → `state_getRuntimeVersion` → `system_*` → `system_properties` → `chain_getBlockHash [0]`), and records the capture timestamp in UTC.
 
-   ```html
-   <div align="center">
-     <img src="https://raw.githubusercontent.com/polkadot-developers/polkadot-cookbook/v{{VERSION}}/.github/releases/v{{VERSION}}/cover-chain.svg" alt="Polkadot network state at v{{VERSION}} release" width="100%" />
-   </div>
-   ```
+**If all endpoints fail**: the renderer exits 0 and writes **nothing**. You must then omit the footer embed from `RELEASE_NOTES.md` and log the failure in the release PR body. Never fabricate or cache-reuse chain data. Detect the skip case by checking whether `cover-chain.svg` exists after the call.
 
-The footer cover is deliberately text-dense and point-in-time; the B1 disclaimer badge is the single source of truth for its historical nature. Do not add redundant "at snapshot" / "at release-cut" qualifiers elsewhere in the template.
+On success: the renderer applies the [`covers/cover-chain.data.md`](covers/cover-chain.data.md) contract (BABE/AURA detection via runtime-API hash, short-hash formatting, network-age computation from the chain's genesis date), sanitizes injected values, substitutes, writes, and runs the **Rendering assertions**. This template has ~30 tokens — more than any other artifact; a single missing one renders visibly as `{{TOKEN_NAME}}` text on the cover.
+
+The footer cover is embedded at the bottom of `RELEASE_NOTES.md` via the template scaffolding — do not add the embed manually. The B1 disclaimer badge is the single source of truth for its historical nature; do not add redundant "at snapshot" / "at release-cut" qualifiers elsewhere in the template.
+
+To target a non-Polkadot chain (e.g. for a Paseo-keyed release), pass `--chain paseo` or `--chain kusama`. Defaults to Polkadot.
 
 ### 3d. Release notes (template-driven)
 
-**Do not hand-author the scaffolding.** Render `.github/releases/vX.Y.Z/RELEASE_NOTES.md` from [`RELEASE_NOTES.template.md`](RELEASE_NOTES.template.md). Substitute scalar tokens (`{{VERSION}}`, `{{PREV_VERSION}}`, `{{RELEASE_DATE}}`, `{{RUST_VERSION}}`, `{{NODE_VERSION}}`, `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{DELETIONS}}`) from the same git queries used by the top cover; then fill four LLM-authored marker sections:
+**Do not hand-author the scaffolding.** Write each narrative section to a temporary markdown file and pass them to the renderer, which fills the scaffolding from [`RELEASE_NOTES.template.md`](RELEASE_NOTES.template.md):
+
+```bash
+python3 .claude/skills/release/render.py notes \
+    --version X.Y.Z --prev A.B.C --date 2026-MM-DD \
+    --rust 1.91.0 --node v24.7.0 \
+    --summary-file /tmp/summary.md \
+    --whats-new-file /tmp/whats-new.md \
+    --commits-file /tmp/commits.md \
+    [--breaking-file /tmp/breaking.md] \
+    --out .github/releases/vX.Y.Z/RELEASE_NOTES.md
+```
+
+The renderer computes `{{COMMIT_COUNT}}`, `{{INSERTIONS}}`, `{{DELETIONS}}` from `git diff --shortstat v{PREV}..HEAD`, substitutes the scalars you pass (`--version`, `--date`, `--rust`, `--node`), and fills the four LLM-authored marker sections from the files you provide:
 
 | Marker | Content |
 |---|---|
@@ -175,9 +190,9 @@ The footer cover is deliberately text-dense and point-in-time; the B1 disclaimer
 
 **Do NOT include a Contributors section** — GitHub auto-generates one with avatars at the bottom of every release. Adding a manual one creates duplicates.
 
-**Do NOT** add the cover embeds, the `## Next Steps` block, the `---\n**Status:** Alpha` footer, or the footer-cover embed manually — those are part of the template scaffolding and are generated by substitution.
+**Do NOT** add the cover embeds, the `## Next Steps` block, the `---\n**Status:** Alpha` footer, or the footer-cover embed manually — those are part of the template scaffolding and are generated by substitution. If all chain endpoints were unreachable in step 3c.2, edit the rendered output to remove the footer embed block (it's harmless otherwise, but the image src would 404 without the corresponding `cover-chain.svg`).
 
-After rendering, run the **Rendering assertions** on `RELEASE_NOTES.md`: zero unresolved `{{TOKEN}}` and zero unresolved `<!-- @@MARKER -->` (except `@@BREAKING` when omitted for no-breaking-change releases). Abort on any failure.
+The renderer runs the **Rendering assertions** on its output (zero unresolved `{{TOKEN}}` / `<!-- @@MARKER -->` — `@@BREAKING` is stripped when `--breaking-file` is absent) and aborts non-zero on any failure.
 
 <details>
 <summary>Previous prose shape (kept here for reference — superseded by the template)</summary>
@@ -272,9 +287,14 @@ If `CHANGELOG.md` doesn't exist yet, create it with the header, `[Unreleased]` s
 
 ### 3g. Manifest (template-driven)
 
-Render `.github/releases/vX.Y.Z/manifest.yml` from [`MANIFEST.template.yml`](MANIFEST.template.yml). Substitute `{{VERSION}}`, `{{PREV_VERSION}}`, `{{RELEASE_DATE}}` (ISO-8601 UTC), `{{STATUS}}` (`alpha` while major=0, `beta` during 1.0 RC, `stable` thereafter), `{{RUST_VERSION}}`, `{{NODE_VERSION}}`. No markers — manifest is scalar-only.
+```bash
+python3 .claude/skills/release/render.py manifest \
+    --version X.Y.Z --prev A.B.C --date 2026-MM-DDT00:00:00Z \
+    --status alpha --rust 1.91.0 --node v24.7.0 \
+    --out .github/releases/vX.Y.Z/manifest.yml
+```
 
-Run the **Rendering assertions** on `manifest.yml`: YAML-parseable (`python3 -c "import yaml; yaml.safe_load(open('...'))"` or equivalent) and zero unresolved `{{TOKEN}}`. Abort on any failure.
+`--status` is `alpha` while major=0, `beta` during 1.0 RC, `stable` thereafter. The renderer loads the output with `yaml.safe_load` and verifies `release == vX.Y.Z` before exiting; aborts non-zero on any failure.
 
 ---
 
@@ -282,22 +302,31 @@ Run the **Rendering assertions** on `manifest.yml`: YAML-parseable (`python3 -c 
 
 1. Create a release branch: `git checkout -b release/vX.Y.Z`
 
-2. Stage and commit:
+2. Stage and commit. The commit subject must match [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) exactly — `Release v{VERSION}` (capital R, no `chore:` prefix). Downstream tooling matches the regex `^Release v[0-9]+\.[0-9]+\.[0-9]+ \(#[0-9]+\)$` against the squashed commit on `master`:
    ```bash
-   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md  # includes cover.svg
-   git commit -m "chore(release): vX.Y.Z"
+   git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md  # includes cover.svg + cover-chain.svg
+   git commit -m "Release vX.Y.Z"
    ```
 
-3. Push and create a **draft PR** whose body is rendered from [`RELEASE_PR_BODY.template.md`](RELEASE_PR_BODY.template.md):
+3. Push, then render the PR body from [`RELEASE_PR_BODY.template.md`](RELEASE_PR_BODY.template.md) via the renderer. The cover image src uses a **commit-SHA-pinned** raw URL (not the branch name — the branch is deleted on merge and branch-based raw URLs break retroactively). Capture `HEAD_SHA` after the commit lands:
 
    ```bash
    git push -u origin release/vX.Y.Z
-   gh pr create --draft --title "Release vX.Y.Z" --label "release" --body-file <rendered-body>
+   HEAD_SHA=$(git rev-parse --short HEAD)
+   python3 .claude/skills/release/render.py pr-body \
+       --version X.Y.Z --prev A.B.C --head-sha "$HEAD_SHA" \
+       --bump-type MINOR \
+       --summary-file /tmp/summary.md \
+       --whats-new-file /tmp/whats-new.md \
+       [--breaking-file /tmp/breaking.md] \
+       --out /tmp/pr-body.md
+
+   gh pr create --draft --title "Release vX.Y.Z" --label "release" --body-file /tmp/pr-body.md
    ```
 
-   The template embeds the cover via a **commit-SHA-pinned** raw URL (not the branch name — the branch is deleted on merge and branch-based raw URLs break retroactively). Scalar tokens and marker sections are documented inline in the template file.
+   The renderer computes commit/contributor/insertion/deletion/files stats from `git diff --shortstat v{PREV}..HEAD`. Reuse the same `/tmp/summary.md` and `/tmp/whats-new.md` files you created for `3d` — the PR body is intentionally a shorter mirror of the release notes.
 
-   Branch name, commit subject, and tag format follow [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) — do not vary from those.
+   Branch name and tag format also follow [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) — do not vary from those.
 
 4. Report the PR URL.
 
