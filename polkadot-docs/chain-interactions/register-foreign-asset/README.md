@@ -13,12 +13,13 @@ This project verifies the [Register a Foreign Asset on Polkadot Hub](https://doc
 
 ## What This Tests
 
-Uses a local Chopsticks XCM environment (Polkadot relay chain + Polkadot Hub + Astar parachain) to simulate the foreign asset registration process.
+Uses a local Chopsticks fork of Polkadot Asset Hub (single-chain) to simulate the foreign asset registration process via `dev_setStorage` state injection — mirroring the on-chain outcome that an XCM call from the source parachain would produce.
 
-1. **Setup** — Start Chopsticks XCM fork of Polkadot + Asset Hub + Astar
-2. **Polkadot Hub — foreignAssets pallet** — Verify the pallet is available and the `create` extrinsic can be constructed with the correct Multilocation ID
-3. **Astar — XCM call construction** — Verify the xcmPallet `send` extrinsic can be constructed to initiate the cross-chain asset registration
-4. **Foreign asset registration verification** — Submit the XCM transaction and verify the foreign asset appears in the foreignAssets pallet storage on Asset Hub
+1. **Setup** — Start Chopsticks fork of Polkadot Asset Hub; fund the Astar sovereign account via `dev_setStorage`
+2. **foreignAssets pallet** — Verify the pallet and all required extrinsics (`create`, `setMetadata`, `mint`, `freeze`) are available; enumerate existing foreign assets on the forked chain
+3. **Extrinsic construction** — Build a `foreignAssets.create` call for the Astar Multilocation (`{ parents: 1, interior: { X1: [{ Parachain: 2006 }] } }`) and verify its encoded call index against the live runtime metadata
+4. **State injection** — Inject the foreign asset entry via `dev_setStorage`, advance the chain by one block, then query and verify the registered asset's status, admin, and min balance
+5. **Post-registration verification** — Confirm the total foreign asset count increased and the registered Multilocation is queryable
 
 ## Running Tests
 

@@ -33,6 +33,7 @@ const ASTAR_ASSET_MULTILOCATION = {
 };
 
 let chopsticksProcess: ChildProcess | null = null;
+let initialAssetCount = 0;
 
 // ---------------------------------------------------------------------------
 // Chopsticks lifecycle
@@ -235,8 +236,9 @@ describe("Register a Foreign Asset on Polkadot Hub Guide", () => {
 
     it("should list existing foreign assets on the Asset Hub fork", async () => {
       const assets = await api.query.foreignAssets.asset.entries();
-      console.log(`Found ${assets.length} existing foreign asset(s) on Asset Hub fork`);
-      expect(assets.length).toBeGreaterThan(0);
+      initialAssetCount = assets.length;
+      console.log(`Found ${initialAssetCount} existing foreign asset(s) on Asset Hub fork`);
+      expect(initialAssetCount).toBeGreaterThan(0);
 
       // Show the first few assets with their Multilocation IDs
       for (const [key] of assets.slice(0, 3)) {
@@ -292,7 +294,10 @@ describe("Register a Foreign Asset on Polkadot Hub Guide", () => {
       expect(tx).toBeDefined();
       const encodedHex = tx.method.toHex();
       expect(encodedHex).toBeDefined();
-      expect(encodedHex.startsWith("0x35")).toBe(true); // foreignAssets pallet index
+      // Derive the expected prefix dynamically from the runtime metadata
+      const [palletIdx, callIdx] = api.tx.foreignAssets.create.callIndex;
+      const expectedPrefix = `0x${palletIdx.toString(16).padStart(2, "0")}${callIdx.toString(16).padStart(2, "0")}`;
+      expect(encodedHex.startsWith(expectedPrefix)).toBe(true);
       console.log(
         "foreignAssets.create extrinsic encoded:",
         encodedHex.slice(0, 60) + "..."
@@ -354,8 +359,8 @@ describe("Register a Foreign Asset on Polkadot Hub Guide", () => {
 
     it("should confirm total foreign asset count increased", async () => {
       const assets = await api.query.foreignAssets.asset.entries();
-      console.log(`Total foreign assets after registration: ${assets.length}`);
-      expect(assets.length).toBeGreaterThan(46); // was 46 before injection
+      console.log(`Total foreign assets after registration: ${assets.length} (was ${initialAssetCount})`);
+      expect(assets.length).toBeGreaterThan(initialAssetCount);
     });
   });
 
