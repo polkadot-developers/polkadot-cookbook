@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-04-19
+
+### Added
+- Test harness for **Uniswap V3 Core with Hardhat** polkadot-docs guide — clones the pinned commit, compiles 187 contracts, runs 187 Hardhat tests on the local network, and soft-fails testnet deployment when credentials are unavailable
+- v2 product palette (`#0A0A0B` canvas, `#F6F5F2` paper, 8-value grey ramp) with JetBrains Mono as primary typeface
+- Index Mark (page-of-recipes glyph) as the new brand mark, replacing the orbital network mark
+- Wordmark template combining Index Mark with stacked text
+
+### Changed
+- Hero image resized from 1200×630 to 1200×400 with a two-panel layout
+- Release cover templates (`cover.svg.template`, `cover-chain.svg.template`) updated to v2 palette and JetBrains Mono font stack
+- Pathway banners now inject per-pathway SVG glyphs via `PATHWAY_GLYPH` token
+- ParaSpell SDK bumped to v13.2.2 and `transfer-assets-parachains` aligned with upstream rename (`.address` → `.recipient`, `.senderAddress` → `.sender`), adding PAPI v2 compatibility
+
 ## [0.15.1] - 2026-04-16
 
 ### Changed
@@ -74,7 +88,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.1...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.13.0...v0.14.0

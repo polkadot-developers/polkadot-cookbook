@@ -1,0 +1,8 @@
+release: v0.16.0
+previous_release: v0.15.1
+release_date: 2026-04-19T00:00:00Z
+status: alpha
+
+tooling:
+  rust: "1.91.0"
+  node: "v24.7.0"
