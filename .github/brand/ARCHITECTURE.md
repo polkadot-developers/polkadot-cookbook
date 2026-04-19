@@ -21,7 +21,8 @@ How the brand system is built and how it runs. If `DESIGN.md` is *what* the bran
 │    verify-release-  │     │                              │     │                     │
 │      cover.sh       │     │  templates/                  │     │                     │
 │                     │     │    hero.svg.template         │     │                     │
-│  CHANGELOG.md       │     │    social-preview.svg.t…     │     │                     │
+│  CHANGELOG.md       │     │    wordmark.svg.template     │     │                     │
+│                     │     │    social-preview.svg.t…     │     │                     │
 └─────────────────────┘     │    divider.svg.template      │     └─────────────────────┘
           │                 │    pathway-banner.svg.t…     │               │
           │                 │    contributing-hero.svg.t…  │               │
@@ -48,15 +49,16 @@ Single source of truth. YAML scalars, no expressions, no imports. Structure:
 
 ```
 color:
-  primary:      { pink }              # brand
-  base:         { black, white }      # absolutes
+  primary:      { pink }              # brand accent
+  base:         { canvas, paper }     # near-black + warm paper
+  grey:         { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900 }  # 8-value ramp
   semantic:     { success, emphasis, ink, paper }
   mode:
-    dark:       { canvas, accent-panel, footer-surface, fg, fg-on-footer }
-    light:      { canvas, accent-panel, footer-surface, fg, fg-on-footer }
+    dark:       { canvas, surface, surface-2, line, fg, fg-muted, fg-dim }
+    light:      { canvas, surface, surface-2, line, fg, fg-muted, fg-dim }
 type:           { mono, weight, size, tracking }
 space:          { grid-gutter, canvas: { og, social, divider, pathway-banner, contributing-hero } }
-motion:         { reveal-dur, cascade-stagger, float-heading-dur, gradient-flow-dur, honor-reduced-motion }
+motion:         { reveal-dur, cascade-stagger, float-heading-dur, gradient-flow-dur, ease-out, honor-reduced-motion }
 logo:           { clear-space-ratio, min-size-px, hero-size-px }
 a11y:           { min-contrast-body, min-contrast-large }
 allowlist:      []                    # additional hex codes permitted outside tokens.yml
@@ -70,7 +72,7 @@ One file. Reads `tokens.yml`, computes live facts, renders every template twice 
 
 Key functions:
 
-- `mode_subs(mode)` — returns the substitution dict for a given mode. Per-mode values: `CANVAS`, `ACCENT_PANEL`, `FOOTER_SURFACE`, `FG`, `FG_ON_FOOTER`. Mode-independent: `PINK`, `BLACK`, `WHITE`, `MONO`, plus live facts (`VERSION`, `RECIPE_COUNT`, `PATHWAY_*`, `WORKFLOW_COUNT`, `DOCS_HARNESS_COUNT`).
+- `mode_subs(mode)` — returns the substitution dict for a given mode. Per-mode values: `CANVAS`, `SURFACE`, `SURFACE_2`, `LINE`, `FG`, `FG_MUTED`, `FG_DIM`. Mode-independent: `PINK`, `INK`, `PAPER`, `MONO`, plus live facts (`VERSION`, `RECIPE_COUNT`, `PATHWAY_COUNT`, `PATHWAY_GLYPH`, `PATHWAY_NUMBER`, `WORKFLOW_COUNT`, `DOCS_HARNESS_COUNT`).
 - `render(template, out_path, mode, extra=None)` — substitutes `{{TOKEN}}` into template body, writes output, validates.
 - `rasterize(svg, png, width)` — `rsvg-convert` → fallback to `cairosvg` → warn if neither available.
 
@@ -112,18 +114,25 @@ Tokens available inside every template:
 | Token                      | Source                                  | Mode-dependent? |
 | -------------------------- | --------------------------------------- | --------------- |
 | `{{PINK}}`                 | `color.primary.pink`                    | no              |
-| `{{BLACK}}`                | `color.base.black`                      | no              |
-| `{{WHITE}}`                | `color.base.white`                      | no              |
+| `{{INK}}`                  | `color.base.canvas` (near-black `#0A0A0B`) | no          |
+| `{{PAPER}}`                | `color.base.paper` (warm paper `#F6F5F2`)  | no          |
 | `{{CANVAS}}`               | `color.mode.{mode}.canvas`              | **yes**         |
-| `{{ACCENT_PANEL}}`         | `color.mode.{mode}.accent-panel`        | **yes**         |
-| `{{FOOTER_SURFACE}}`       | `color.mode.{mode}.footer-surface`      | **yes**         |
+| `{{SURFACE}}`              | `color.mode.{mode}.surface`             | **yes**         |
+| `{{SURFACE_2}}`            | `color.mode.{mode}.surface-2`           | **yes**         |
+| `{{LINE}}`                 | `color.mode.{mode}.line`                | **yes**         |
 | `{{FG}}`                   | `color.mode.{mode}.fg`                  | **yes**         |
-| `{{FG_ON_FOOTER}}`         | `color.mode.{mode}.fg-on-footer`        | **yes**         |
+| `{{FG_MUTED}}`             | `color.mode.{mode}.fg-muted`            | **yes**         |
+| `{{FG_DIM}}`               | `color.mode.{mode}.fg-dim`              | **yes**         |
 | `{{MONO}}`                 | `type.mono`                             | no              |
 | `{{REVEAL_DUR}}`           | `motion.reveal-dur`                     | no              |
+| `{{CASCADE_STAGGER}}`      | `motion.cascade-stagger`                | no              |
+| `{{EASE_OUT}}`             | `motion.ease-out`                       | no              |
 | `{{GRADIENT_FLOW_DUR}}`    | `motion.gradient-flow-dur`              | no              |
 | `{{VERSION}}`              | `Cargo.toml` `[workspace.package].version` | no           |
 | `{{RECIPE_COUNT}}`         | `find recipes -mindepth 2 -maxdepth 2 -type d` | no       |
+| `{{PATHWAY_COUNT}}`        | number of pathway directories under `recipes/` | no       |
+| `{{PATHWAY_GLYPH}}`        | per-pathway icon glyph                  | no              |
+| `{{PATHWAY_NUMBER}}`        | per-pathway recipe count                | no              |
 | `{{PATHWAY_PALLETS}}`      | count under `recipes/pallets/` + `recipes/parachains/` | no |
 | `{{PATHWAY_CONTRACTS}}`    | count under `recipes/contracts/`        | no              |
 | `{{PATHWAY_TRANSACTIONS}}` | count under `recipes/transactions/`     | no              |

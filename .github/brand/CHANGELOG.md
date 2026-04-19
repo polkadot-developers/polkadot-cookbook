@@ -6,6 +6,31 @@ Bump this file **in the same commit** as any change to `tokens.yml`. External em
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-19
+
+### Changed — v2 product palette + Index Mark
+- Base colors: near-black canvas `#0A0A0B` replaces `#000000`, warm paper `#F6F5F2` replaces `#FFFFFF`. Pure black/white retained as pass-through only.
+- Grey ramp: 8 new neutrals for surfaces, lines, muted text (dark: `#111114`, `#1A1A1F`, `#2A2A30`, `#6B6B74`; light: `#ECEAE4`, `#E3E0D8`, `#D7D4CC`, `#8A867B`).
+- Semantic `fg`/`fg-dim` tokens added; `ink`/`paper` updated to near-black/warm-paper.
+- Mode tokens restructured: `surface`, `surface-2`, `line`, `fg-muted`, `fg-dim` replace `accent-panel`, `footer-surface`, `fg-on-footer`.
+- Type stack now starts with `'JetBrains Mono'`. Added weights 500/600/800, sizes display(96)/h1(56)/h2(36)/h3(22)/label(10), tracking display(-3)/h1(-1)/wide(1.5)/label(2).
+- Hero canvas resized from 1200×630 to 1200×400 (two-panel layout).
+- Motion: cascade stagger 0.08s (was 0.2s), added counter/scan/prompt-char durations, ease-out cubic-bezier.
+
+### Added
+- **Index Mark** replaces Cookbook orbital network mark. Page-of-recipes metaphor with accent top band, right index tab, and faint content rules (200×200 viewBox).
+- **dot CLI mark** updated to `▸ dot_` prompt treatment.
+- `wordmark.svg.template` — Index wordmark (mark + stacked text).
+- Per-pathway SVG glyphs injected via `{{PATHWAY_GLYPH}}` (pallets/contracts/transactions/xcm/networks).
+- OG image template (1200×630) with 2×2 KPI grid.
+
+### Removed
+- `color.mode.*.accent-panel` token.
+- `color.mode.*.footer-surface` token.
+- `color.mode.*.fg-on-footer` token.
+- Cookbook orbital network mark (central circle + 8 dots + connection lines).
+- `motion.float-heading-dur`, `motion.float-offset-px` tokens.
+
 ## [0.2.0] — 2026-04-15
 
 ### Changed — strict 3-color refactor

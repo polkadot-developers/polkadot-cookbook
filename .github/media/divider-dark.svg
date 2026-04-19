@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 12" role="presentation" aria-hidden="true">
   <!-- Generated. DO NOT EDIT.
-       Strict 3-color divider: pink → black/white → pink gradient flowing. -->
+       v2 divider: pink → fg-dim → pink gradient flowing. -->
   <style>
     @media (prefers-reduced-motion: reduce) {
       .flow { animation: none !important; }
@@ -16,11 +16,11 @@
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0"    stop-color="#E6007A"/>
-      <stop offset="0.5"  stop-color="#FFFFFF"/>
+      <stop offset="0.5"  stop-color="#6B6B74"/>
       <stop offset="1"    stop-color="#E6007A"/>
     </linearGradient>
   </defs>
-  <rect width="1200" height="12" fill="#000000"/>
+  <rect width="1200" height="12" fill="#0A0A0B"/>
   <g class="flow">
     <rect x="0" y="4" width="1800" height="4" fill="url(#g)"/>
   </g>

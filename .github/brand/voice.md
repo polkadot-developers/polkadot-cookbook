@@ -51,14 +51,18 @@ Five pathway labels, always in this order and casing:
 - PR bodies: Summary (1–3 bullets), Test Plan (checklist). Always ship with the checklist completed.
 - Co-authorship lines: only real humans. No AI attributions.
 
-## Error & status strings
+## Error & status strings (v2)
 
-The CLI (`dot`) already uses pink for success via the `colored` crate. Extend this convention:
+The CLI (`dot`) uses pink for success via the `colored` crate. Status-string convention:
 
-- Success: `color.primary.pink`, prefix `✓`
-- Info: `color.surface.cream` opacity 0.7, prefix `▸`
-- Warn: `color.semantic.warn`, prefix `!`
-- Error: `color.primary.pink` on `color.surface.terminal`, prefix `✗`
+| Level   | Glyph | Color                          | Notes                        |
+| ------- | ----- | ------------------------------ | ---------------------------- |
+| Success | `✓`   | accent (`#E6007A`)             | brand pink = success         |
+| Info    | `▸`   | fg @ 0.75 opacity              | subtle, doesn't demand focus |
+| Warn    | `!`   | fg @ 1.0, underline            | visible but not alarming     |
+| Error   | `✗`   | accent (`#E6007A`) on surface  | pink on dark/light surface   |
+
+CLI tagline: **"The scaffolder for the Cookbook."**
 
 (Pink does double duty as brand + success. If this ever causes contrast confusion, split success into its own teal token — not today's problem.)
 
