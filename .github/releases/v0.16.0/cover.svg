@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" shape-rendering="crispEdges">
+  <rect width="1200" height="630" fill="#0A0A0B"/>
+
+  <!-- B1 genesis pink -->
+  <rect x="0" y="0" width="742" height="390" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="0s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="0" width="742" height="390" fill="#F6F5F2" opacity="0">
+    <animate attributeName="opacity" values="0;0.7;0" dur="0.6s" begin="0s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="240" width="0" height="14" fill="#0A0A0B">
+    <animate attributeName="width" from="0" to="444" dur="0.5s" begin="0.7s" fill="freeze"/>
+  </rect>
+  <rect x="742" y="0" width="14" height="0" fill="#0A0A0B">
+    <animate attributeName="height" from="0" to="390" dur="0.4s" begin="0.9s" fill="freeze"/>
+  </rect>
+
+  <!-- B2 TERMINAL PANEL -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.3s" fill="freeze"/>
+    <rect x="756" y="0" width="444" height="240" fill="#0A0A0B"/>
+    <rect x="764" y="8" width="428" height="224" fill="none" stroke="#F6F5F2" stroke-opacity="0.15" stroke-width="1"/>
+
+    <text x="774" y="26" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0.9" letter-spacing="0.4">
+      ┌─┤ v0.15.1..v0.16.0  2026-04-16 → 04-19 ├────────┐
+    </text>
+
+        <text x="774" y="46" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="1.7s" fill="freeze"/>
+      │ 4964f8e ✓ chore(paraspell): bump to v13.2.2
+    </text>
+    <text x="774" y="60" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="1.9s" fill="freeze"/>
+      │ 4f1e6a7 » feat: add Uniswap V3 Core with Hardhat harness
+    </text>
+    <text x="774" y="74" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="2.1s" fill="freeze"/>
+      │ 73dd72d » feat(brand): v2 palette, Index Mark, re-cut surfaces
+    </text>
+
+    <text x="774" y="196" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.8" dur="0.2s" begin="3.9s" fill="freeze"/>
+      │ 3 commits · 2 contrib · +3,469 / -1,516 · 49 files
+    </text>
+    <text x="774" y="210" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.75" dur="0.2s" begin="4.1s" fill="freeze"/>
+      │ PRs #272 #273 #274
+    </text>
+    <text x="774" y="224" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#F6F5F2" opacity="0.55" letter-spacing="0.4">
+      └─ HEAD 73dd72d · TAG v0.16.0 ─────────────────────┘
+    </text>
+  </g>
+
+  <rect x="0" y="390" width="0" height="14" fill="#0A0A0B">
+    <animate attributeName="width" from="0" to="1200" dur="0.7s" begin="1.9s" fill="freeze"/>
+  </rect>
+
+  <rect x="297" y="404" width="903" height="226" fill="#0A0A0B" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="2.7s" fill="freeze"/>
+  </rect>
+  <rect x="297" y="404" width="903" height="226" fill="#F6F5F2" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="2.7s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="254" width="161" height="136" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="3.3s" fill="freeze"/>
+  </rect>
+  <rect x="756" y="254" width="161" height="136" fill="#F6F5F2" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" dur="0.6s" begin="3.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="917" y="240" width="14" height="0" fill="#0A0A0B">
+    <animate attributeName="height" from="0" to="164" dur="0.4s" begin="3.6s" fill="freeze"/>
+  </rect>
+
+  <rect x="0" y="404" width="283" height="226" fill="#0A0A0B" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="4.3s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="404" width="283" height="226" fill="#F6F5F2" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="4.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="283" y="390" width="14" height="0" fill="#0A0A0B">
+    <animate attributeName="height" from="0" to="240" dur="0.4s" begin="4.6s" fill="freeze"/>
+  </rect>
+
+  <rect x="0" y="404" width="283" height="226" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;0.2;0;0.2;0" keyTimes="0;0.25;0.5;0.75;1"
+             dur="4s" begin="6.5s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- B1 PINK overlay: headline + activity + contributors -->
+  <g opacity="0" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F6F5F2">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.6s" fill="freeze"/>
+
+    <text x="36" y="108" font-size="72" font-weight="700" letter-spacing="-1" opacity="0.97">v0.16.0</text>
+    <text x="36" y="134" font-size="11" letter-spacing="2.5" opacity="0.75">
+      MINOR RELEASE  ·  2026-04-16 → 04-19  ·  3 DAYS
+    </text>
+
+    <rect x="36" y="158" width="670" height="1" fill="#F6F5F2" opacity="0.35"/>
+
+    <text x="36" y="182" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT ACTIVITY</text>
+
+        <text x="36" y="208" font-size="12" opacity="0.9">
+      Thu 04-16  ●  <tspan opacity="0.6">1 commits</tspan>
+    </text>
+    <text x="36" y="226" font-size="12" opacity="0.9">
+      Fri 04-17  ●  <tspan opacity="0.6">1 commits</tspan>
+    </text>
+    <text x="36" y="244" font-size="12" opacity="0.45">
+      Sat 04-18  ·  <tspan opacity="0.6">0</tspan>
+    </text>
+    <text x="36" y="262" font-size="12" opacity="0.9">
+      Sun 04-19  ●  <tspan opacity="0.6">1 commits (incl. release)</tspan>
+    </text>
+
+    <text x="36" y="320" font-size="10" letter-spacing="1.5" opacity="0.65">CONTRIBUTORS</text>
+
+        <text x="36" y="342" font-size="12" opacity="0.9">Bruno Galvao      </text>
+    <rect x="180" y="333" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="40" dur="0.6s" begin="1.30s" fill="freeze"/></rect>
+    <text x="225" y="342" font-size="12" opacity="0.95" font-weight="700">2</text>
+    <text x="36" y="360" font-size="12" opacity="0.9">sekiseki          </text>
+    <rect x="180" y="351" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="20" dur="0.6s" begin="1.45s" fill="freeze"/></rect>
+    <text x="205" y="360" font-size="12" opacity="0.95" font-weight="700">1</text>
+  </g>
+
+  <!-- B4 PINK ACCENT: SEMVER -->
+  <g opacity="0" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F6F5F2">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.7s" fill="freeze"/>
+    <text x="772" y="278" font-size="10" letter-spacing="1.5" opacity="0.8">SEMVER</text>
+    <text x="772" y="312" font-size="22" font-weight="700" opacity="0.95">MINOR</text>
+    <text x="772" y="340" font-size="11" opacity="0.8">0.15.1 → 0.16.0</text>
+    <text x="772" y="360" font-size="11" opacity="0.65">3 days · +3,469</text>
+  </g>
+
+  <!-- Empty cell: COMMIT TYPES -->
+  <g opacity="0" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F6F5F2">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.0s" fill="freeze"/>
+    <text x="946" y="278" font-size="10" letter-spacing="1.5" opacity="0.65">COMMIT TYPES</text>
+
+        <text x="946" y="302" font-size="12" opacity="0.85">» feat   </text>
+    <rect x="1026" y="293" width="0" height="10" fill="#E6007A" opacity="1.0"><animate attributeName="width" from="0" to="30" dur="0.5s" begin="4.20s" fill="freeze"/></rect>
+    <text x="1066" y="302" font-size="12" opacity="0.95" font-weight="700">2</text>
+    <text x="946" y="320" font-size="12" opacity="0.85">✓ fix    </text>
+    <rect x="1026" y="311" width="0" height="10" fill="#E6007A" opacity="0.55"><animate attributeName="width" from="0" to="15" dur="0.5s" begin="4.35s" fill="freeze"/></rect>
+    <text x="1051" y="320" font-size="12" opacity="0.95" font-weight="700">1</text>
+    <text x="946" y="338" font-size="12" opacity="0.85">◆ release</text>
+    <rect x="1026" y="329" width="0" height="10" fill="#E6007A" opacity="1.0"><animate attributeName="width" from="0" to="0" dur="0.5s" begin="4.50s" fill="freeze"/></rect>
+    <text x="1036" y="338" font-size="12" opacity="0.95" font-weight="700">0</text>
+
+    <text x="946" y="368" font-size="10" opacity="0.45">SCOPES  brand · paraspell</text>
+  </g>
+
+  <!-- B3 BIG BLUE: bar chart -->
+  <g opacity="0" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F6F5F2">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="3.1s" fill="freeze"/>
+
+    <text x="320" y="432" font-size="10" letter-spacing="1.5" opacity="0.6">FILES CHANGED BY AREA</text>
+    <text x="1124" y="432" font-size="10" letter-spacing="1.5" opacity="0.6" text-anchor="end">49 TOTAL</text>
+
+    <rect x="320" y="442" width="804" height="1" fill="#F6F5F2" opacity="0.25"/>
+
+        <text x="320" y="466" font-size="12" opacity="0.9">.github/media</text>
+    <rect x="600" y="457" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="500" dur="0.70s" begin="3.30s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="1110" y="466" font-size="12" opacity="0.95" font-weight="700">17</text>
+    <text x="320" y="484" font-size="12" opacity="0.9">.claude/skills</text>
+    <rect x="600" y="475" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="324" dur="0.63s" begin="3.40s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="934" y="484" font-size="12" opacity="0.95" font-weight="700">11</text>
+    <text x="320" y="502" font-size="12" opacity="0.9">polkadot-docs/smart-contracts</text>
+    <rect x="600" y="493" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="235" dur="0.59s" begin="3.50s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="845" y="502" font-size="12" opacity="0.95" font-weight="700">8</text>
+    <text x="320" y="520" font-size="12" opacity="0.9">.github/brand</text>
+    <rect x="600" y="511" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="147" dur="0.56s" begin="3.60s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="757" y="520" font-size="12" opacity="0.95" font-weight="700">5</text>
+    <text x="320" y="538" font-size="12" opacity="0.9">polkadot-docs/chain-interactions</text>
+    <rect x="600" y="529" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="88" dur="0.54s" begin="3.70s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="698" y="538" font-size="12" opacity="0.95" font-weight="700">3</text>
+    <text x="320" y="556" font-size="12" opacity="0.9">versions.yml</text>
+    <rect x="600" y="547" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="29" dur="0.51s" begin="3.80s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="639" y="556" font-size="12" opacity="0.95" font-weight="700">1</text>
+    <text x="320" y="574" font-size="12" opacity="0.9">polkadot-docs/README.md</text>
+    <rect x="600" y="565" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="29" dur="0.51s" begin="3.90s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="639" y="574" font-size="12" opacity="0.95" font-weight="700">1</text>
+    <text x="320" y="592" font-size="12" opacity="0.9">docs/og-image.png</text>
+    <rect x="600" y="583" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="29" dur="0.51s" begin="4.00s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="639" y="592" font-size="12" opacity="0.95" font-weight="700">1</text>
+    <text x="320" y="610" font-size="12" opacity="0.9">other</text>
+    <rect x="600" y="601" width="0" height="10" fill="#F6F5F2" opacity="0.5"><animate attributeName="width" from="0" to="59" dur="0.52s" begin="4.10s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1"/></rect>
+    <text x="669" y="610" font-size="12" opacity="0.95" font-weight="700">2</text>
+
+    <text x="320" y="612" font-size="10" opacity="0.55">+3,469 insertions · -1,516 deletions · Δ ratio 2:1 </text>
+  </g>
+
+  <!-- B5 HEAD: repo state -->
+  <g opacity="0" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#F6F5F2">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.9s" fill="freeze"/>
+    <text x="18" y="432" font-size="10" letter-spacing="1.5" opacity="0.65">REPO @ v0.16.0</text>
+
+    <rect x="18" y="442" width="247" height="1" fill="#F6F5F2" opacity="0.25"/>
+
+        <text x="18" y="466" font-size="13" opacity="0.95">
+      <tspan fill="#E6007A" font-weight="700">32</tspan>  docs test harnesses
+    </text>
+    <text x="18" y="486" font-size="13" opacity="0.95">
+      <tspan fill="#E6007A" font-weight="700"> 8</tspan>  recipes
+    </text>
+    <text x="18" y="506" font-size="13" opacity="0.95">
+      <tspan fill="#E6007A" font-weight="700"> 2</tspan>  migration tests
+    </text>
+    <text x="18" y="526" font-size="13" opacity="0.95">
+      <tspan fill="#E6007A" font-weight="700">57</tspan>  CI workflows
+    </text>
+    <text x="18" y="546" font-size="13" opacity="0.95">
+      <tspan fill="#E6007A" font-weight="700"> 6</tspan>  Claude skills
+    </text>
+    <text x="18" y="566" font-size="13" opacity="0.95">
+      <tspan fill="#E6007A" font-weight="700"> 2</tspan>  Rust crates
+    </text>
+
+    <text x="18" y="614" font-size="10" opacity="0.55">HEAD 73dd72d</text>
+  </g>
+</svg>
