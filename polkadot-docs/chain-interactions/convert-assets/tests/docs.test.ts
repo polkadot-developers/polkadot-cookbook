@@ -540,15 +540,14 @@ describe("Convert Assets on Asset Hub Guide", () => {
     it(
       "should swap PPM tokens for an exact amount of DOT",
       async () => {
-        // Tutorial: path PPM → DOT, amountOut = 0.04 PPM (400_000_000_000),
-        // amountInMax = 0.01 DOT (100_000_000_000).
-        // Note: the tutorial prose has a known inconsistency between path direction
-        // and the described values; we match the u128 literals from the tutorial.
-        const AMOUNT_OUT = 400_000_000_000n; // 0.04 PPM (target exact out)
-        const AMOUNT_IN_MAX = 100_000_000_000n; // max 0.01 DOT to spend
+        // Tutorial: "swap 0.01 DOT for 0.04 PPM" → spend DOT, receive exact PPM.
+        // path = [DOT, PPM]: DOT is the input, PPM is the exact output.
+        // amountOut = 0.04 PPM (400_000_000_000), amountInMax = 0.01 DOT (100_000_000_000).
+        const AMOUNT_OUT = 400_000_000_000n; // 0.04 PPM exact out
+        const AMOUNT_IN_MAX = 100_000_000_000n; // max 0.01 DOT in
 
         const swapTx = api.tx.assetConversion.swapTokensForExactTokens(
-          [TEST_ASSET_MULTILOCATION, DOT_MULTILOCATION], // PPM → DOT
+          [DOT_MULTILOCATION, TEST_ASSET_MULTILOCATION], // DOT → PPM (exact out)
           AMOUNT_OUT,
           AMOUNT_IN_MAX,
           alice.address,
