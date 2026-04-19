@@ -75,7 +75,7 @@ Testing infrastructure with Zombienet and Chopsticks for local network developme
 
 ## Polkadot Docs Tests
 
-Companion test harnesses for the tutorials published at [docs.polkadot.com](https://docs.polkadot.com). Each harness clones the tutorial's source at a pinned commit, runs the documented build and test steps, and fails loudly when a guide drifts from reality — so readers never land on a broken walkthrough.
+Companion test harnesses for the tutorials published at [docs.polkadot.com](https://docs.polkadot.com). Each harness executes the steps a reader would follow — some clone a sample repository at a pinned commit, others scaffold everything locally with the parachain template, a subxt binary, Hardhat, or whatever tooling the guide prescribes — and asserts the documented outputs actually appear. When a guide drifts from reality, the harness fails loudly so readers never land on a broken walkthrough.
 
 These harnesses are maintained primarily by the [polkadot-developers](https://github.com/polkadot-developers) team to guard the published docs. The cookbook's long-term direction is community-submitted **Recipes** (above); the docs-tests section reflects where most of the day-to-day activity sits today, not where the project is headed.
 
