@@ -2,17 +2,13 @@ import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { spawn, exec, ChildProcess } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 
 const CHOPSTICKS_PORT = 8000;
 const CHOPSTICKS_WS = `ws://localhost:${CHOPSTICKS_PORT}`;
 
-// Alice's well-known dev address (funded by Chopsticks dev_setStorage)
-const ALICE_URI = "//Alice";
-const ALICE_ADDRESS = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
-
-// Test asset ID for the DOT/PPM-like pool
-const TEST_ASSET_ID = 1337;
+// PPM test token as used in the tutorial (asset ID 1112)
+const TEST_ASSET_ID = 1112;
 
 // Multilocation for DOT (relay chain asset from Asset Hub parachain perspective)
 const DOT_MULTILOCATION = {
@@ -20,13 +16,18 @@ const DOT_MULTILOCATION = {
   interior: { Here: null },
 };
 
-// Multilocation for test asset (Assets pallet instance 50, generalIndex = TEST_ASSET_ID)
+// Multilocation for PPM token (Assets pallet instance 50, generalIndex 1112)
 const TEST_ASSET_MULTILOCATION = {
   parents: 0,
   interior: {
     X2: [{ PalletInstance: 50 }, { GeneralIndex: TEST_ASSET_ID }],
   },
 };
+
+// Keyring and Alice account — hoisted to module scope to avoid re-deriving per test
+const keyring = new Keyring({ type: "sr25519" });
+const alice = keyring.addFromUri("//Alice");
+const ALICE_ADDRESS = alice.address;
 
 let chopsticksProcess: ChildProcess | null = null;
 
@@ -35,7 +36,7 @@ let chopsticksProcess: ChildProcess | null = null;
 // ---------------------------------------------------------------------------
 
 async function waitForChopsticks(
-  maxRetries = 40,
+  maxRetries = 15,
   retryDelayMs = 3000
 ): Promise<void> {
   for (let i = 1; i <= maxRetries; i++) {
@@ -107,11 +108,6 @@ async function stopChopsticks(): Promise<void> {
     }
   }
 
-  // Best-effort cleanup for any stray processes; never fail the test suite
-  await new Promise<void>((resolve) => {
-    exec("pkill -f '@acala-network/chopsticks' 2>/dev/null || true", () => resolve());
-  });
-
   await new Promise((r) => setTimeout(r, 500));
 }
 
@@ -165,7 +161,6 @@ describe("Convert Assets on Asset Hub Guide", () => {
       "npx",
       ["@acala-network/chopsticks", "-c", "polkadot-asset-hub"],
       {
-        cwd: process.cwd(),
         stdio: ["ignore", "pipe", "pipe"],
         detached: true,
       }
@@ -191,7 +186,19 @@ describe("Convert Assets on Asset Hub Guide", () => {
     // Bootstrap Alice's DOT balance and test asset via dev_setStorage
     // ---------------------------------------------------------------------------
 
-    // 1. Fund Alice with 10000 DOT on the mainnet fork
+    // Helper: encode a u128 as a 0x-prefixed 16-byte little-endian hex string
+    const u128LeHex = (value: bigint): string => {
+      const buf = Buffer.alloc(16);
+      buf.writeBigUInt64LE(value & 0xffffffffffffffffn, 0);
+      buf.writeBigUInt64LE(value >> 64n, 8);
+      return "0x" + buf.toString("hex");
+    };
+
+    const DOT_DECIMALS = 10n;
+    const ALICE_DOT = 10_000n * 10n ** DOT_DECIMALS; // 10 000 DOT
+    const PPM_SUPPLY = 1_000n * 10n ** DOT_DECIMALS; // 1 000 PPM (10 decimals)
+
+    // 1. Fund Alice with 10 000 DOT
     await rpcCall("dev_setStorage", [
       {
         System: {
@@ -200,19 +207,16 @@ describe("Convert Assets on Asset Hub Guide", () => {
               [ALICE_ADDRESS],
               {
                 providers: 1,
-                data: {
-                  free: "0x00000000000000008ac7230489e80000", // 10000 DOT
-                },
+                data: { free: u128LeHex(ALICE_DOT) },
               },
             ],
           ],
         },
       },
     ]);
-    console.log("Funded Alice with 10000 DOT via dev_setStorage");
+    console.log("Funded Alice with 10 000 DOT via dev_setStorage");
 
-    // 2. Create test asset 1337 in storage using dev_setStorage
-    // Set Assets.Asset entry (AssetDetails)
+    // 2. Bootstrap PPM asset (ID 1112) — a fresh test token, not an existing mainnet asset
     await rpcCall("dev_setStorage", [
       {
         Assets: {
@@ -224,7 +228,7 @@ describe("Convert Assets on Asset Hub Guide", () => {
                 issuer: ALICE_ADDRESS,
                 admin: ALICE_ADDRESS,
                 freezer: ALICE_ADDRESS,
-                supply: "0x000000000000000000038d7ea4c68000", // 1000 tokens (10 decimals)
+                supply: u128LeHex(PPM_SUPPLY),
                 deposit: 0,
                 minBalance: 1,
                 isSufficient: true,
@@ -238,9 +242,9 @@ describe("Convert Assets on Asset Hub Guide", () => {
         },
       },
     ]);
-    console.log(`Created test asset ${TEST_ASSET_ID} via dev_setStorage`);
+    console.log(`Created PPM asset (ID ${TEST_ASSET_ID}) via dev_setStorage`);
 
-    // 3. Give Alice a balance of test asset 1337
+    // 3. Give Alice 1 000 PPM tokens
     await rpcCall("dev_setStorage", [
       {
         Assets: {
@@ -248,7 +252,7 @@ describe("Convert Assets on Asset Hub Guide", () => {
             [
               [TEST_ASSET_ID, ALICE_ADDRESS],
               {
-                balance: "0x000000000000000000038d7ea4c68000", // 1000 tokens
+                balance: u128LeHex(PPM_SUPPLY),
                 status: "Liquid",
                 reason: "Sufficient",
                 extra: null,
@@ -258,7 +262,7 @@ describe("Convert Assets on Asset Hub Guide", () => {
         },
       },
     ]);
-    console.log(`Gave Alice balance of test asset ${TEST_ASSET_ID} via dev_setStorage`);
+    console.log(`Gave Alice ${PPM_SUPPLY} PPM tokens via dev_setStorage`);
 
     // 4. Advance chain by 1 block to commit storage changes
     await rpcCall("dev_newBlock", [{ count: 1 }], 60000);
@@ -345,9 +349,6 @@ describe("Convert Assets on Asset Hub Guide", () => {
 
   describe("4. Create Liquidity Pool", () => {
     it("should construct and get payment info for a createPool transaction", async () => {
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri(ALICE_URI);
-
       const tx = api.tx.assetConversion.createPool(
         DOT_MULTILOCATION,
         TEST_ASSET_MULTILOCATION
@@ -361,19 +362,14 @@ describe("Convert Assets on Asset Hub Guide", () => {
       expect(paymentInfo.partialFee.toBigInt()).toBeGreaterThan(0n);
     }, 30000);
 
-    it("should create a DOT/test-asset liquidity pool", async () => {
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri(ALICE_URI);
-
+    it("should create a DOT/PPM liquidity pool", async () => {
       // Check if the pool already exists (may exist from a prior Chopsticks session snapshot)
       const existingPool = await (api.query.assetConversion.pools as any)([
         DOT_MULTILOCATION,
         TEST_ASSET_MULTILOCATION,
       ]);
       if (existingPool.isSome) {
-        console.log(
-          "Pool already exists (DOT/1337) — createPool is idempotent, skipping submission"
-        );
+        console.log("Pool already exists (DOT/PPM) — skipping createPool submission");
         expect(existingPool.isSome).toBe(true);
         return;
       }
@@ -402,12 +398,11 @@ describe("Convert Assets on Asset Hub Guide", () => {
                 const poolCreatedEvent = events.find(({ event }) =>
                   api.events.assetConversion.PoolCreated?.is(event)
                 );
-                if (poolCreatedEvent) {
-                  console.log(
-                    "PoolCreated event:",
-                    poolCreatedEvent.event.data.toString()
-                  );
-                }
+                expect(poolCreatedEvent).toBeDefined();
+                console.log(
+                  "PoolCreated event:",
+                  poolCreatedEvent!.event.data.toString()
+                );
                 resolve(txHash.toHex());
               }
             }
@@ -426,13 +421,10 @@ describe("Convert Assets on Asset Hub Guide", () => {
   // ==================== 5. Add Liquidity ====================
 
   describe("5. Add Liquidity to Pool", () => {
-    it("should add liquidity to the DOT/test-asset pool", async () => {
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri(ALICE_URI);
-
-      // 1 DOT = 10^10 planck (10 decimals); 1 test token = 10^10 units
+    it("should add liquidity to the DOT/PPM pool", async () => {
+      // Tutorial: 1 DOT + 1 PPM (both have 10 decimals → 1_000_000_000_000 each)
       const DOT_AMOUNT = 1_000_000_000_000n; // 1 DOT
-      const ASSET_AMOUNT = 1_000_000_000_000n; // 1 test asset
+      const ASSET_AMOUNT = 1_000_000_000_000n; // 1 PPM
 
       const addLiquidityTx = api.tx.assetConversion.addLiquidity(
         DOT_MULTILOCATION,
@@ -463,12 +455,11 @@ describe("Convert Assets on Asset Hub Guide", () => {
                 const liquidityEvent = events.find(({ event }) =>
                   api.events.assetConversion.LiquidityAdded?.is(event)
                 );
-                if (liquidityEvent) {
-                  console.log(
-                    "LiquidityAdded event:",
-                    liquidityEvent.event.data.toString()
-                  );
-                }
+                expect(liquidityEvent).toBeDefined();
+                console.log(
+                  "LiquidityAdded event:",
+                  liquidityEvent!.event.data.toString()
+                );
                 resolve(txHash.toHex());
               }
             }
@@ -488,12 +479,9 @@ describe("Convert Assets on Asset Hub Guide", () => {
 
   describe("6. Swap Exact Tokens For Tokens", () => {
     it(
-      "should swap an exact amount of DOT for test-asset tokens",
+      "should swap an exact amount of DOT for PPM tokens",
       async () => {
-        const keyring = new Keyring({ type: "sr25519" });
-        const alice = keyring.addFromUri(ALICE_URI);
-
-        // Swap 0.01 DOT for at least 1 unit of test asset
+        // Tutorial: swap 0.01 DOT (100_000_000_000) for at least some PPM
         const AMOUNT_IN = 100_000_000_000n; // 0.01 DOT
         const AMOUNT_OUT_MIN = 1n;
 
@@ -524,12 +512,11 @@ describe("Convert Assets on Asset Hub Guide", () => {
                   const swapEvent = events.find(({ event }) =>
                     api.events.assetConversion.SwapExecuted?.is(event)
                   );
-                  if (swapEvent) {
-                    console.log(
-                      "SwapExecuted event:",
-                      swapEvent.event.data.toString()
-                    );
-                  }
+                  expect(swapEvent).toBeDefined();
+                  console.log(
+                    "SwapExecuted event:",
+                    swapEvent!.event.data.toString()
+                  );
                   resolve(txHash.toHex());
                 }
               }
@@ -551,17 +538,17 @@ describe("Convert Assets on Asset Hub Guide", () => {
 
   describe("7. Swap Tokens For Exact Tokens", () => {
     it(
-      "should swap test-asset tokens for an exact amount of DOT",
+      "should swap PPM tokens for an exact amount of DOT",
       async () => {
-        const keyring = new Keyring({ type: "sr25519" });
-        const alice = keyring.addFromUri(ALICE_URI);
-
-        // Acquire 0.01 DOT exactly, spending at most 1 test token
-        const AMOUNT_OUT = 100_000_000_000n; // 0.01 DOT desired
-        const AMOUNT_IN_MAX = 1_000_000_000_000n; // max 1 test asset to spend
+        // Tutorial: path PPM → DOT, amountOut = 0.04 PPM (400_000_000_000),
+        // amountInMax = 0.01 DOT (100_000_000_000).
+        // Note: the tutorial prose has a known inconsistency between path direction
+        // and the described values; we match the u128 literals from the tutorial.
+        const AMOUNT_OUT = 400_000_000_000n; // 0.04 PPM (target exact out)
+        const AMOUNT_IN_MAX = 100_000_000_000n; // max 0.01 DOT to spend
 
         const swapTx = api.tx.assetConversion.swapTokensForExactTokens(
-          [TEST_ASSET_MULTILOCATION, DOT_MULTILOCATION], // reverse path
+          [TEST_ASSET_MULTILOCATION, DOT_MULTILOCATION], // PPM → DOT
           AMOUNT_OUT,
           AMOUNT_IN_MAX,
           alice.address,
@@ -587,12 +574,11 @@ describe("Convert Assets on Asset Hub Guide", () => {
                   const swapEvent = events.find(({ event }) =>
                     api.events.assetConversion.SwapExecuted?.is(event)
                   );
-                  if (swapEvent) {
-                    console.log(
-                      "SwapExecuted event:",
-                      swapEvent.event.data.toString()
-                    );
-                  }
+                  expect(swapEvent).toBeDefined();
+                  console.log(
+                    "SwapExecuted event:",
+                    swapEvent!.event.data.toString()
+                  );
                   resolve(txHash.toHex());
                 }
               }
@@ -614,11 +600,8 @@ describe("Convert Assets on Asset Hub Guide", () => {
 
   describe("8. Remove Liquidity", () => {
     it(
-      "should remove liquidity from the DOT/test-asset pool",
+      "should remove liquidity from the DOT/PPM pool",
       async () => {
-        const keyring = new Keyring({ type: "sr25519" });
-        const alice = keyring.addFromUri(ALICE_URI);
-
         // Query the pool to find the LP token ID
         const poolInfo = await (api.query.assetConversion.pools as any)([
           DOT_MULTILOCATION,
@@ -643,15 +626,16 @@ describe("Convert Assets on Asset Hub Guide", () => {
         console.log(`Alice's LP token balance: ${lpAmount}`);
         expect(lpAmount).toBeGreaterThan(0n);
 
-        // Burn half the LP tokens
-        const burnAmount = lpAmount / 2n;
+        // Tutorial: burn 0.05 LP tokens (10 decimals → 500_000_000n)
+        const burnAmount = 500_000_000n;
+        expect(lpAmount).toBeGreaterThanOrEqual(burnAmount);
 
         const removeLiquidityTx = api.tx.assetConversion.removeLiquidity(
           DOT_MULTILOCATION,
           TEST_ASSET_MULTILOCATION,
           burnAmount,
           1n, // min DOT to receive
-          1n, // min test asset to receive
+          1n, // min PPM to receive
           alice.address
         );
 
@@ -674,12 +658,11 @@ describe("Convert Assets on Asset Hub Guide", () => {
                   const liquidityRemovedEvent = events.find(({ event }) =>
                     api.events.assetConversion.LiquidityRemoved?.is(event)
                   );
-                  if (liquidityRemovedEvent) {
-                    console.log(
-                      "LiquidityRemoved event:",
-                      liquidityRemovedEvent.event.data.toString()
-                    );
-                  }
+                  expect(liquidityRemovedEvent).toBeDefined();
+                  console.log(
+                    "LiquidityRemoved event:",
+                    liquidityRemovedEvent!.event.data.toString()
+                  );
                   resolve(txHash.toHex());
                 }
               }
