@@ -1,0 +1,248 @@
+
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" shape-rendering="crispEdges">
+  <rect width="1200" height="630" fill="#000000"/>
+
+  <!-- ========== MONDRIAN GRID + BLOCKS (same geometry as top cover) ========== -->
+
+  <rect x="0" y="0" width="742" height="390" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="0s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="0" width="742" height="390" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.7;0" dur="0.6s" begin="0s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="240" width="0" height="14" fill="#000000">
+    <animate attributeName="width" from="0" to="444" dur="0.5s" begin="0.7s" fill="freeze"/>
+  </rect>
+  <rect x="742" y="0" width="14" height="0" fill="#000000">
+    <animate attributeName="height" from="0" to="390" dur="0.4s" begin="0.9s" fill="freeze"/>
+  </rect>
+
+  <!-- B2 RUNTIME TERMINAL PANEL -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.3s" fill="freeze"/>
+    <rect x="756" y="0" width="444" height="240" fill="#000000"/>
+    <rect x="764" y="8" width="428" height="224" fill="none" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="1"/>
+
+    <text x="774" y="26" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0.9" letter-spacing="0.4">
+      ┌─┤ polkadot runtime @ block 30,823,591 ├────────┐
+    </text>
+
+    <text x="774" y="46" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="1.7s" fill="freeze"/>
+      │ spec_name         polkadot
+    </text>
+    <text x="774" y="60" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="1.9s" fill="freeze"/>
+      │ spec_version      2,001,001
+    </text>
+    <text x="774" y="74" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="2.1s" fill="freeze"/>
+      │ impl_name         parity-polkadot
+    </text>
+    <text x="774" y="88" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.85" dur="0.12s" begin="2.3s" fill="freeze"/>
+      │ node              1.22.0-2e4dd0bc223
+    </text>
+    <text x="774" y="102" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="2.5s" fill="freeze"/>
+      │ authoring_version 0
+    </text>
+    <text x="774" y="116" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="2.7s" fill="freeze"/>
+      │ transaction_ver   26
+    </text>
+    <text x="774" y="130" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="2.9s" fill="freeze"/>
+      │ state_version     1
+    </text>
+    <text x="774" y="144" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0">
+      <animate attributeName="opacity" values="0;0.75" dur="0.12s" begin="3.1s" fill="freeze"/>
+      │ system_version    1
+    </text>
+    <text x="774" y="158" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#E6007A" opacity="0">
+      <animate attributeName="opacity" values="0;0.95" dur="0.15s" begin="3.4s" fill="freeze"/>
+      │ runtime_apis      23 exposed
+    </text>
+
+    <text x="774" y="196" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.8" dur="0.2s" begin="3.9s" fill="freeze"/>
+      │ state_root  0xd4ce4b6c..  genesis  0x91b171bb..
+    </text>
+    <text x="774" y="210" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0" letter-spacing="0.3">
+      <animate attributeName="opacity" values="0;0.75" dur="0.2s" begin="4.1s" fill="freeze"/>
+      │ ss58 0 · DOT · 10 decimals · 6s block target
+    </text>
+    <text x="774" y="224" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#FFFFFF" opacity="0.55" letter-spacing="0.4">
+      └─ rpc.ibp.network · peers 26 · synced ✓ ─────────┘
+    </text>
+  </g>
+
+  <rect x="0" y="390" width="0" height="14" fill="#000000">
+    <animate attributeName="width" from="0" to="1200" dur="0.7s" begin="1.9s" fill="freeze"/>
+  </rect>
+
+  <rect x="297" y="404" width="903" height="226" fill="#000000" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="2.7s" fill="freeze"/>
+  </rect>
+  <rect x="297" y="404" width="903" height="226" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="2.7s" fill="freeze"/>
+  </rect>
+
+  <rect x="756" y="254" width="161" height="136" fill="#E6007A" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="3.3s" fill="freeze"/>
+  </rect>
+  <rect x="756" y="254" width="161" height="136" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" dur="0.6s" begin="3.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="917" y="240" width="14" height="0" fill="#000000">
+    <animate attributeName="height" from="0" to="164" dur="0.4s" begin="3.6s" fill="freeze"/>
+  </rect>
+
+  <rect x="0" y="404" width="283" height="226" fill="#000000" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.35s" begin="4.3s" fill="freeze"/>
+  </rect>
+  <rect x="0" y="404" width="283" height="226" fill="#FFFFFF" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="0.6s" begin="4.3s" fill="freeze"/>
+  </rect>
+
+  <rect x="283" y="390" width="14" height="0" fill="#000000">
+    <animate attributeName="height" from="0" to="240" dur="0.4s" begin="4.6s" fill="freeze"/>
+  </rect>
+
+  <!-- No tip-pulse animation: this is a point-in-time reading, not a live chain tip -->
+
+  <!-- ========== FACTUAL OVERLAYS ========== -->
+
+  <!-- B1 PINK: headline + release-time disclaimer badge -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.6s" fill="freeze"/>
+
+    <!-- Disclaimer (the ONE place point-in-time nature is stated) -->
+    <g>
+      <rect x="410" y="22" width="318" height="114" fill="#000000" opacity="0.5" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="1"/>
+      <text x="432" y="52" font-size="11" font-weight="700" letter-spacing="1.8" opacity="0.98">◆ POINT-IN-TIME READING</text>
+      <text x="432" y="82" font-size="13" font-weight="700" opacity="0.95">polkadot-cookbook v0.15.1</text>
+      <text x="432" y="104" font-size="10" opacity="0.75">captured 2026-04-16 04:05 UTC</text>
+      <text x="432" y="122" font-size="10" opacity="0.6">mainnet state at release — not live</text>
+    </g>
+
+    <!-- Corner tag -->
+    <text x="36" y="34" font-size="10" letter-spacing="1.5" opacity="0.85">[0x91b171bb] GENESIS</text>
+
+    <!-- Headline -->
+    <text x="36" y="156" font-size="72" font-weight="700" letter-spacing="-1" opacity="0.97">POLKADOT</text>
+    <text x="36" y="180" font-size="11" letter-spacing="2.5" opacity="0.75">
+      MAINNET  ·  rpc.ibp.network
+    </text>
+
+    <rect x="36" y="204" width="670" height="1" fill="#FFFFFF" opacity="0.35"/>
+
+    <text x="36" y="230" font-size="10" letter-spacing="1.5" opacity="0.65">FINALIZED BLOCK</text>
+    <text x="36" y="278" font-size="48" font-weight="700" letter-spacing="-0.5" opacity="0.95">#30,823,591</text>
+    <text x="36" y="300" font-size="11" opacity="0.55">0x4772f0c9..62e4</text>
+
+    <text x="36" y="340" font-size="10" letter-spacing="1.5" opacity="0.65">NETWORK AGE</text>
+    <text x="36" y="362" font-size="13" opacity="0.9"><tspan fill="#FFFFFF" font-weight="700">~5 years, 10 months</tspan>  <tspan opacity="0.55">since 2020-05-26</tspan></text>
+    <text x="36" y="380" font-size="11" opacity="0.6">block 0 → 30,823,591</text>
+  </g>
+
+  <!-- B4 PINK ACCENT: SPEC callout -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.7s" fill="freeze"/>
+    <text x="772" y="278" font-size="10" letter-spacing="1.5" opacity="0.8">RUNTIME SPEC</text>
+    <text x="772" y="316" font-size="26" font-weight="700" opacity="0.95">2,001,001</text>
+    <text x="772" y="340" font-size="11" opacity="0.8">polkadot runtime</text>
+    <text x="772" y="360" font-size="11" opacity="0.65">tx v26 · state v1</text>
+  </g>
+
+  <!-- Empty cell: ref node health -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.0s" fill="freeze"/>
+    <text x="946" y="278" font-size="10" letter-spacing="1.5" opacity="0.65">REF NODE HEALTH</text>
+    <text x="946" y="302" font-size="12" opacity="0.85">peers       <tspan fill="#E6007A">████████████</tspan>  82</text>
+    <text x="946" y="320" font-size="12" opacity="0.85">syncing     <tspan fill="#E6007A">✓</tspan>     false</text>
+    <text x="946" y="338" font-size="12" opacity="0.85">authoring   <tspan opacity="0.5">—</tspan>     v0</text>
+    <text x="946" y="368" font-size="10" opacity="0.45">NODE  parity-polkadot 1.22.0-2e4dd0bc223</text>
+  </g>
+
+  <!-- B3 BIG BLUE: network at a glance -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="3.1s" fill="freeze"/>
+
+    <text x="320" y="432" font-size="10" letter-spacing="1.5" opacity="0.6">NETWORK AT A GLANCE</text>
+    <text x="1124" y="432" font-size="10" letter-spacing="1.5" opacity="0.6" text-anchor="end">[PARA::0] RELAY</text>
+
+    <rect x="320" y="442" width="804" height="1" fill="#FFFFFF" opacity="0.25"/>
+
+    <text x="320" y="480" font-size="11" letter-spacing="1" opacity="0.6">BLOCKS FINALIZED</text>
+    <text x="320" y="514" font-size="28" font-weight="700" opacity="0.95">30,823,591</text>
+    <text x="320" y="534" font-size="10" opacity="0.5">cumulative since genesis</text>
+
+    <text x="560" y="480" font-size="11" letter-spacing="1" opacity="0.6">RUNTIME APIS</text>
+    <text x="560" y="514" font-size="28" font-weight="700" opacity="0.95">23</text>
+    <text x="560" y="534" font-size="10" opacity="0.5">exposed by runtime</text>
+
+    <text x="760" y="480" font-size="11" letter-spacing="1" opacity="0.6">REF NODE PEERS</text>
+    <text x="760" y="514" font-size="28" font-weight="700" opacity="0.95">26</text>
+    <text x="760" y="534" font-size="10" opacity="0.5">via rpc.ibp.network</text>
+
+    <text x="920" y="480" font-size="11" letter-spacing="1" opacity="0.6">BLOCK TARGET</text>
+    <text x="920" y="514" font-size="28" font-weight="700" opacity="0.95">6s</text>
+    <text x="920" y="534" font-size="10" opacity="0.5">babe slot · network parameter</text>
+
+    <text x="320" y="580" font-size="10" opacity="0.55">Token DOT · 10 decimals · SS58 format 0 · relay chain · para_id 0</text>
+    <text x="320" y="594" font-size="10" opacity="0.45">State root 0xd4ce4b6c..0a55  ·  Genesis 0x91b171bb..ce90c3</text>
+    <text x="320" y="612" font-size="10" opacity="0.55">queried via JSON-RPC  ·  methods: chain_getFinalizedHead · chain_getHeader · state_getRuntimeVersion · system_*</text>
+  </g>
+
+  <!-- B5: chain identity (was the live chain-tip block; now static) -->
+  <g opacity="0" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1" dur="0.4s" begin="4.9s" fill="freeze"/>
+
+    <text x="18" y="432" font-size="10" letter-spacing="1.5" opacity="0.65">
+      <tspan fill="#E6007A" opacity="0.9">◆</tspan> AT COOKBOOK v0.15.1
+    </text>
+
+    <rect x="18" y="442" width="247" height="1" fill="#FFFFFF" opacity="0.25"/>
+
+    <text x="18" y="466" font-size="13" opacity="0.95">CHAIN      <tspan fill="#E6007A" font-weight="700">Polkadot</tspan></text>
+    <text x="18" y="486" font-size="13" opacity="0.95">TYPE       relay</text>
+    <text x="18" y="506" font-size="13" opacity="0.95">PARA_ID    0</text>
+    <text x="18" y="526" font-size="13" opacity="0.95">TOKEN      <tspan fill="#E6007A" font-weight="700">DOT</tspan>  <tspan opacity="0.6">(10 dec)</tspan></text>
+    <text x="18" y="546" font-size="13" opacity="0.95">SS58       0</text>
+    <text x="18" y="566" font-size="13" opacity="0.95">AUTHORING  BABE</text>
+
+    <text x="18" y="614" font-size="10" opacity="0.55">HEAD 0x4772f0c9</text>
+  </g>
+
+  <!-- H2 tickertape — scrolling reference data (ecosystem context, not live feed).
+       Loops slowly so readers can catch all of it; the B1 disclaimer makes the
+       point-in-time nature explicit, so motion here reads as caption, not live data. -->
+  <clipPath id="tick-clip">
+    <rect x="0" y="390" width="1200" height="14"/>
+  </clipPath>
+  <g clip-path="url(#tick-clip)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="5.3s" fill="freeze"/>
+    <text y="401" font-family="ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+          font-size="10" fill="#E6007A" opacity="0.9" letter-spacing="0.8">
+      <animate attributeName="x" from="1200" to="-2800" dur="75s" repeatCount="indefinite" begin="5.3s"/>
+      POLKADOT RELAY  ·  PARA_ID 0  ·  SS58 0  ·  DOT (10 dec)  ·  GENESIS 2020-05-26  ·  BLOCK 0 HASH 0x91b171bb..ce90c3  ·  6s BLOCK TARGET · ≈14,400 blocks/day  ·  BLOCK 30,823,591 · HEAD 0x4772f0c9..62e4  ·  PARENT 0xbc39876b..6a1d  ·  STATE ROOT 0xd4ce4b6c..0a55  ·  EXTRINSICS ROOT 0x7cbdef70..511a  ·  RUNTIME SPEC 2,001,001 · 23 APIS · TX_VERSION 26 · STATE_VERSION 1 · SYSTEM_VERSION 1 · AUTHORING_VERSION 0  ·  NODE parity-polkadot 1.22.0-2e4dd0bc223  ·  QUERIED VIA rpc.ibp.network  ·  polkadot-cookbook v0.15.1 verified against this runtime
+    </text>
+  </g>
+</svg>

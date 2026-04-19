@@ -1,0 +1,40 @@
+name: Brand Regenerate
+
+# Safety net: if tokens.yml is modified on master without accompanying
+# regenerated assets, this workflow opens a PR with the regenerated set.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/brand/tokens.yml"
+      - ".claude/skills/branding/templates/**"
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-yaml libxml2-utils
+      - name: Regenerate
+        run: bash .claude/skills/branding/generate.sh
+      - name: Open PR if changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/brand-regenerate
+          commit-message: "chore(brand): regenerate assets after token change"
+          title: "chore(brand): regenerate assets"
+          body: |
+            Auto-regenerated after a change to `.github/brand/tokens.yml` or a template under `.claude/skills/branding/templates/`.
+
+            If no files changed in `.github/media/`, this PR will not be created.
+          add-paths: |
+            .github/media
+            docs/favicon.svg
+          draft: true

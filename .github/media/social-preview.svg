@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" shape-rendering="geometricPrecision"
+     role="img" aria-label="Polkadot Cookbook — Build on Polkadot.">
+  <!-- Generated. 1280×640 GitHub social preview.
+       EVERGREEN — no version, no counts. Uploaded manually via
+       Settings → Social preview. -->
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="#0A0A0B"/>
+
+  <!-- Accent outline frame (24px inset) -->
+  <rect x="24" y="24" width="1232" height="592" fill="none" stroke="#E6007A" stroke-width="2"/>
+
+  <!-- Centered content -->
+  <text x="640" y="220" text-anchor="middle" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+        font-size="14" font-weight="700" letter-spacing="3">
+    <tspan fill="#E6007A">/</tspan>
+    <tspan fill="#F6F5F2" dx="8">THE POLKADOT COOKBOOK</tspan>
+    <tspan fill="#E6007A" dx="8">/</tspan>
+  </text>
+
+  <!-- Big title -->
+  <text x="640" y="320" text-anchor="middle" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+        font-size="86" font-weight="700" fill="#F6F5F2" letter-spacing="-3">Build on Polkadot.</text>
+
+  <!-- Tagline -->
+  <text x="640" y="380" text-anchor="middle" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+        font-size="14" fill="#9A9AA3" letter-spacing="1">Practical, tested recipes for building on Polkadot.</text>
+
+  <!-- Rule -->
+  <rect x="128" y="410" width="1024" height="2" fill="#F6F5F2" opacity=".3"/>
+
+  <!-- Bottom row -->
+  <text x="128" y="450" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+        font-size="11" fill="#6B6B74" letter-spacing="1.5">github.com/polkadot-developers/polkadot-cookbook</text>
+  <text x="1152" y="450" text-anchor="end" font-family="'JetBrains Mono', ui-monospace, Menlo, Consolas, 'Courier New', monospace"
+        font-size="11" fill="#6B6B74" letter-spacing="1.5">MIT / Apache-2.0</text>
+</svg>

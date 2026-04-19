@@ -1,0 +1,57 @@
+name: Uniswap V3 Core with Hardhat
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/**'
+      - '!polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/README.md'
+  pull_request:
+    paths:
+      - 'polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/**'
+      - '!polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/README.md'
+  workflow_dispatch:
+
+jobs:
+  test:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache npm dependencies (upstream uniswap-v3-core-hardhat)
+        uses: actions/cache@v4
+        with:
+          path: |
+            polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/.test-workspace/revm-hardhat-examples/uniswap-v3-core-hardhat/node_modules
+          key: ${{ runner.os }}-uniswap-v3-core-hardhat-npm-${{ hashFiles('polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/tests/docs.test.ts') }}
+
+      - name: Install wrapper dependencies
+        run: |
+          cd polkadot-docs/smart-contracts/uniswap-v3-core-hardhat
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/smart-contracts/uniswap-v3-core-hardhat
+          npm test
+        env:
+          TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_PRIVATE_KEY }}
+        timeout-minutes: 30
+
+  post-test:
+    needs: test
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/smart-contracts/uniswap-v3-core-hardhat/README.md'
+      workflow_name: 'Uniswap V3 Core with Hardhat'
+    permissions:
+      contents: read
+      issues: write

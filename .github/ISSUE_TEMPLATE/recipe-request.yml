@@ -1,0 +1,56 @@
+name: Recipe request
+description: Propose a new recipe for the cookbook.
+labels: ["recipe", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Recipe source lives in an external repo; this cookbook holds the test harness.
+        Read CONTRIBUTING.md and `.github/brand/voice.md` before filing.
+  - type: input
+    id: title
+    attributes:
+      label: Recipe title
+      placeholder: cross-chain asset reserve transfer (Asset Hub → parachain)
+    validations:
+      required: true
+  - type: dropdown
+    id: pathway
+    attributes:
+      label: Pathway
+      options:
+        - Pallets
+        - Contracts
+        - Transactions
+        - XCM
+        - Networks
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: What does a developer learn from this recipe?
+      description: Concrete. "Learns X, Y, Z." Not "best practices" or "overview."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: What's in / what's out
+      description: Bullet list. Be specific about boundaries.
+    validations:
+      required: true
+  - type: input
+    id: external-repo
+    attributes:
+      label: External repo (if drafted)
+      placeholder: github.com/your-handle/recipe-asset-reserve-transfer
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: I've checked there isn't already a similar recipe under `recipes/`.
+          required: true
+        - label: I've read `CONTRIBUTING.md`.
+          required: true
