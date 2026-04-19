@@ -11,7 +11,7 @@
 [![Polkadot Cookbook SDK](https://img.shields.io/github/actions/workflow/status/polkadot-developers/polkadot-cookbook/test-sdk.yml?label=Polkadot%20Cookbook%20SDK&color=E6007A)](https://github.com/polkadot-developers/polkadot-cookbook/actions/workflows/test-sdk.yml)
 [![CLI](https://img.shields.io/badge/CLI-dot%20v0.16.0-E6007A?logo=rust&logoColor=white)](dot/cli/)
 
-[**Browse Recipes**](#recipes) · [**Contribute a Recipe**](CONTRIBUTING.md) · [**Documentation**](#documentation)
+[**Browse Recipes**](#recipes) · [**Docs Tests**](#polkadot-docs-tests) · [**Contribute a Recipe**](CONTRIBUTING.md) · [**Documentation**](#documentation)
 
 </div>
 
@@ -25,13 +25,13 @@
 
 <a id="recipes"></a>
 
-## <img src=".github/media/icons/recipes-dark.svg" width="20" height="20" alt="" /> Recipes
+## Recipes
 
 The Polkadot Cookbook provides recipes across 5 pathways of Polkadot development:
 
 > **How it works:** Each recipe's source code lives in its own **external GitHub repository**. The `recipes/` directory here contains **test harnesses** that automatically clone, build, and verify each recipe.
 
-### <img src=".github/media/icons/runtime-dark.svg" width="20" height="20" alt="" /> Pallets
+### Pallets
 
 Build custom parachains with FRAME pallets, runtime logic, and PAPI integration testing.
 
@@ -39,31 +39,56 @@ Build custom parachains with FRAME pallets, runtime logic, and PAPI integration 
 >
 > [**pallet-example**](recipes/pallets/pallet-example) — Pallet-only development (no runtime) for advanced users
 
-### <img src=".github/media/icons/contracts-dark.svg" width="20" height="20" alt="" /> Contracts
+### Contracts
 
 Deploy and interact with Solidity smart contracts on Polkadot parachains.
 
 > [**contracts-example**](recipes/contracts/contracts-example) — Solidity contracts with Hardhat and deployment scripts
 
-### <img src=".github/media/icons/interactions-dark.svg" width="20" height="20" alt="" /> Transactions
+### Transactions
 
 Single-chain transaction submission and state queries using the Polkadot API.
 
 > [**transaction-example**](recipes/transactions/transaction-example) — Chain interactions with Polkadot API (TypeScript)
 
-### <img src=".github/media/icons/xcm-dark.svg" width="20" height="20" alt="" /> XCM
+### XCM
 
 Cross-chain asset transfers and messaging between parachains.
 
 > [**cross-chain-transaction-example**](recipes/cross-chain-transactions/cross-chain-transaction-example) — XCM messaging with Chopsticks local testing
 
-### <img src=".github/media/icons/testing-dark.svg" width="20" height="20" alt="" /> Networks
+### Networks
 
 Testing infrastructure with Zombienet and Chopsticks for local network development.
 
 > [**network-example**](recipes/networks/network-example) — Zombienet and Chopsticks network configurations
 
-> <img src=".github/media/icons/idea-dark.svg" width="18" height="18" alt="" /> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
+> **Want to share your knowledge?** See [Contributing a Recipe](CONTRIBUTING.md)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/media/divider-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset=".github/media/divider-light.svg">
+  <img alt="" src=".github/media/divider-dark.svg">
+</picture>
+
+<a id="polkadot-docs-tests"></a>
+
+## Polkadot Docs Tests
+
+Companion test harnesses for the tutorials published at [docs.polkadot.com](https://docs.polkadot.com). Each harness clones the tutorial's source at a pinned commit, runs the documented build and test steps, and fails loudly when a guide drifts from reality — so readers never land on a broken walkthrough.
+
+These harnesses are maintained primarily by the [polkadot-developers](https://github.com/polkadot-developers) team to guard the published docs. The cookbook's long-term direction is community-submitted **Recipes** (above); the docs-tests section reflects where most of the day-to-day activity sits today, not where the project is headed.
+
+**Coverage** — 32 harnesses across 4 pathways:
+
+| Pathway | Count | Example guides |
+|---|---:|---|
+| [Parachains](polkadot-docs/parachains/) | 12 | Parachain template, runtime customization, pallet composition |
+| [Smart Contracts](polkadot-docs/smart-contracts/) | 10 | Hardhat, Foundry, Remix, Uniswap V2/V3, zero-to-hero dApp |
+| [Chain Interactions](polkadot-docs/chain-interactions/) | 9 | Polkadot API, subxt, ParaSpell, fee calculation, state queries |
+| [Networks](polkadot-docs/networks/) | 1 | Run a parachain network with Zombienet |
+
+Browse [`polkadot-docs/`](polkadot-docs/) for the full index. On docs.polkadot.com, each covered tutorial links back to its harness via a CI badge in the page footer.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/media/divider-dark.svg">
@@ -73,7 +98,7 @@ Testing infrastructure with Zombienet and Chopsticks for local network developme
 
 <a id="quick-start"></a>
 
-## <img src=".github/media/icons/rocket-dark.svg" width="20" height="20" alt="" /> Quick Start
+## Quick Start
 
 ### Run a Recipe
 
@@ -175,7 +200,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 <a id="documentation"></a>
 
-## <img src=".github/media/icons/docs-dark.svg" width="20" height="20" alt="" /> Documentation
+## Documentation
 
 ### For Recipe Contributors
 - [Contributing Guide](CONTRIBUTING.md) - How to create and submit recipes
@@ -203,14 +228,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete guide.
 
 <a id="contributing"></a>
 
-## <img src=".github/media/icons/contributing-dark.svg" width="20" height="20" alt="" /> Contributing
+## Contributing
 
 We welcome all contributions:
 
-- **<img src=".github/media/icons/book-dark.svg" width="16" height="16" alt="" /> Recipe** - Share your Polkadot knowledge (most welcome!)
-- **<img src=".github/media/icons/bug-dark.svg" width="16" height="16" alt="" /> Bug Report** - Help us improve
-- **<img src=".github/media/icons/idea-dark.svg" width="16" height="16" alt="" /> Feature** - Suggest tooling improvements
-- **<img src=".github/media/icons/memo-dark.svg" width="16" height="16" alt="" /> Documentation** - Make things clearer
+- **Recipe** - Share your Polkadot knowledge (most welcome!)
+- **Bug Report** - Help us improve
+- **Feature** - Suggest tooling improvements
+- **Documentation** - Make things clearer
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
@@ -222,7 +247,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 <a id="license"></a>
 
-## <img src=".github/media/icons/contracts-dark.svg" width="20" height="20" alt="" /> License
+## License
 
 MIT OR Apache-2.0
 
