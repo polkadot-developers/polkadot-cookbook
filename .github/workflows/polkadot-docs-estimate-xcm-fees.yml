@@ -1,0 +1,80 @@
+name: XCM Fee Estimation
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/estimate-xcm-fees/**'
+      - '!polkadot-docs/chain-interactions/estimate-xcm-fees/README.md'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/estimate-xcm-fees/**'
+      - '!polkadot-docs/chain-interactions/estimate-xcm-fees/README.md'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  guard:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load versions
+        id: versions
+        run: |
+          echo "CHOPSTICKS_VERSION=$(yq '.javascript_packages.chopsticks.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "POLKADOT_API_VERSION=$(yq '.javascript_packages.polkadot_api.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "POLKADOT_JS_API_VERSION=$(yq '.javascript_packages.polkadot_js_api.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "HDKD_VERSION=$(yq '.javascript_packages.hdkd.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "HDKD_HELPERS_VERSION=$(yq '.javascript_packages.hdkd_helpers.version' versions.yml)" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/chain-interactions/estimate-xcm-fees
+          npm install
+
+      - name: Generate PAPI descriptors
+        run: |
+          cd polkadot-docs/chain-interactions/estimate-xcm-fees
+          npx papi add polkadotHub -n paseo_asset_hub
+          npx papi add paseoPeopleChain -w wss://people-paseo.rpc.amforc.com
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/estimate-xcm-fees
+          npm test
+        timeout-minutes: 15
+
+  post-test:
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/estimate-xcm-fees/README.md'
+      workflow_name: 'XCM Fee Estimation'
+    permissions:
+      contents: read
+      issues: write
