@@ -41,10 +41,9 @@ jobs:
         id: versions
         run: |
           echo "CHOPSTICKS_VERSION=$(yq '.javascript_packages.chopsticks.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "POLKADOT_API_VERSION=$(yq '.javascript_packages.polkadot_api.version' versions.yml)" >> $GITHUB_OUTPUT
           echo "POLKADOT_JS_API_VERSION=$(yq '.javascript_packages.polkadot_js_api.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "HDKD_VERSION=$(yq '.javascript_packages.hdkd.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "HDKD_HELPERS_VERSION=$(yq '.javascript_packages.hdkd_helpers.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "POLKADOT_KEYRING_VERSION=$(yq '.javascript_packages.polkadot_keyring.version' versions.yml)" >> $GITHUB_OUTPUT
+          echo "POLKADOT_JS_UTIL_CRYPTO_VERSION=$(yq '.javascript_packages.polkadot_js_util_crypto.version' versions.yml)" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-node@v4
         with:
@@ -54,12 +53,6 @@ jobs:
         run: |
           cd polkadot-docs/chain-interactions/estimate-xcm-fees
           npm install
-
-      - name: Generate PAPI descriptors
-        run: |
-          cd polkadot-docs/chain-interactions/estimate-xcm-fees
-          npx papi add polkadotHub -n paseo_asset_hub
-          npx papi add paseoPeopleChain -w wss://people-paseo.rpc.amforc.com
 
       - name: Run tests
         run: |

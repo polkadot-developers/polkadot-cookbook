@@ -6,23 +6,19 @@ Verification tests for the [XCM Fee Estimation](https://docs.polkadot.com/chain-
 
 ## What This Tests
 
-This harness verifies that the XCM fee estimation workflow described in the guide works correctly:
+Uses two local Chopsticks forks — Paseo Asset Hub (port 8001) and Paseo People Chain (port 8000) — and queries fee estimation APIs via `@polkadot/api` runtime calls:
 
-1. **Local execution fees** — queries XCM weight on Polkadot Hub (Paseo Asset Hub) via `XcmPaymentApi.query_xcm_weight` and converts weight to PAS using `XcmPaymentApi.query_weight_to_asset_fee`
-2. **Delivery fees** — dry-runs the XCM on Polkadot Hub via `DryRunApi.dry_run_xcm`, locates the forwarded message to People Chain, and queries delivery fees
-3. **Remote execution fees** — connects to Paseo People Chain and repeats the weight/fee conversion for the forwarded XCM
-
-Two Chopsticks forks run locally during the test suite:
-- Paseo Asset Hub on `ws://localhost:8001`
-- Paseo People Chain on `ws://localhost:8000`
+1. **XCM weight on Polkadot Hub** — calls `XcmPaymentApi.queryXcmWeight` with a V4 teleport message and asserts `refTime > 0`
+2. **Fee conversion on Polkadot Hub** — converts the weight to PAS via `XcmPaymentApi.queryWeightToAssetFee` and asserts `0 < fee < 10 PAS`
+3. **Dry-run on Polkadot Hub** — calls `DryRunApi.dryRunXcm` with an Alice origin and asserts the execution result is `Ok`
+4. **Remote XCM weight on People Chain** — repeats the weight query on Paseo People Chain for the receive-side message and asserts `refTime > 0`
+5. **Remote fee conversion on People Chain** — converts the remote weight to PAS and asserts `0 < fee < 10 PAS`
 
 ## Running Locally
 
 ```bash
-# Install dependencies and generate PAPI descriptors
+# Install dependencies
 npm install
-npx papi add polkadotHub -n paseo_asset_hub
-npx papi add paseoPeopleChain -w wss://people-paseo.rpc.amforc.com
 
 # Run tests (Chopsticks forks are started automatically)
 npm test

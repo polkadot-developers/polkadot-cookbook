@@ -1,5 +1,4 @@
 node_modules/
-.papi/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
