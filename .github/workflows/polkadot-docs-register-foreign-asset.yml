@@ -1,0 +1,65 @@
+name: Register a Foreign Asset
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'polkadot-docs/chain-interactions/register-foreign-asset/**'
+      - '!polkadot-docs/chain-interactions/register-foreign-asset/README.md'
+      - 'versions.yml'
+  pull_request:
+    paths:
+      - 'polkadot-docs/chain-interactions/register-foreign-asset/**'
+      - '!polkadot-docs/chain-interactions/register-foreign-asset/README.md'
+      - 'versions.yml'
+  workflow_dispatch:
+
+jobs:
+  guard:
+    if: github.repository == 'polkadot-developers/polkadot-cookbook'
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        uses: ./.github/actions/check-version-keys
+        with:
+          event-name: ${{ github.event_name }}
+          base-sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head-sha: ${{ github.sha }}
+
+  test:
+    needs: guard
+    if: needs.guard.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: |
+          cd polkadot-docs/chain-interactions/register-foreign-asset
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd polkadot-docs/chain-interactions/register-foreign-asset
+          npm test
+        timeout-minutes: 10
+
+  post-test:
+    needs: [guard, test]
+    if: github.repository == 'polkadot-developers/polkadot-cookbook' && needs.guard.outputs.should-run == 'true' && always() && github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/post-cleanup.yml
+    with:
+      test_result: ${{ needs.test.result }}
+      readme_path: 'polkadot-docs/chain-interactions/register-foreign-asset/README.md'
+      workflow_name: 'Register a Foreign Asset'
+    permissions:
+      contents: read
+      issues: write
