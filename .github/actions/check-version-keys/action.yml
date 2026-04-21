@@ -56,7 +56,7 @@ runs:
           exit 0
         fi
 
-        KEYS=$(grep -oP "yq\s+'(\.[^']+)'\s+versions\.yml" "$WORKFLOW_FILE" | grep -oP "'\.[^']+'" | tr -d "'" | sort -u | tr '\n' ' ')
+        KEYS=$(grep -oP "yq\s+'(\.[^']+)'\s+versions\.yml" "$WORKFLOW_FILE" | grep -oP "'\.[^']+'" | tr -d "'" | sort -u | tr '\n' ' ' || true)
         echo "Auto-detected keys: $KEYS"
 
         if [ -z "$KEYS" ]; then
