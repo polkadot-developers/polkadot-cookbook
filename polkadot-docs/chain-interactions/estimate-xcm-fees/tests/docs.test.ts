@@ -121,7 +121,11 @@ async function stopAllChopsticks(): Promise<void> {
   }
   assetHubProcess = null;
   peopleChainProcess = null;
-  execSync("pkill -f 'chopsticks' 2>/dev/null || true", { encoding: "utf-8" });
+  try {
+    execSync("pkill -f 'chopsticks' 2>/dev/null || true", { encoding: "utf-8" });
+  } catch {
+    // ignore — pkill may not find any processes or may be unavailable
+  }
   await new Promise((r) => setTimeout(r, 2000));
 }
 
