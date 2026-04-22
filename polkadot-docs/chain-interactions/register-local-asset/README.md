@@ -3,6 +3,7 @@ title: "Register a Local Asset on Polkadot Hub"
 description: "Verify the Register a Local Asset guide from docs.polkadot.com"
 source_url: "https://docs.polkadot.com/chain-interactions/token-operations/register-local-asset/"
 source_github: "https://github.com/polkadot-developers/polkadot-docs/blob/master/chain-interactions/token-operations/register-local-asset.md"
+docs_commit: "7b1781c51da42e1d5916dbe12ce4c596a4af7196"
 ---
 
 # Register a Local Asset on Polkadot Hub

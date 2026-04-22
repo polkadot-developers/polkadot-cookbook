@@ -2,9 +2,10 @@ import { describe, it, expect, afterAll, beforeAll } from "vitest";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady, addressEq } from "@polkadot/util-crypto";
-import { spawn, exec, ChildProcess } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
 
 const ASSET_HUB_WS = "ws://localhost:8000";
 
@@ -29,7 +30,7 @@ let chopsticksProcess: ChildProcess | null = null;
 // ---------------------------------------------------------------------------
 
 async function waitForChopsticks(
-  maxRetries = 40,
+  maxRetries = 15,
   retryDelayMs = 3000
 ): Promise<void> {
   for (let i = 1; i <= maxRetries; i++) {
@@ -99,12 +100,6 @@ async function stopChopsticks(): Promise<void> {
     }
   }
 
-  await new Promise<void>((resolve) => {
-    exec("pkill -f '@acala-network/chopsticks' 2>/dev/null || true", () =>
-      resolve()
-    );
-  });
-
   await new Promise((r) => setTimeout(r, 500));
 }
 
@@ -142,9 +137,9 @@ function rpcCall(
 
 // Submit an extrinsic, wait until it's in a block, advance one block, and
 // return the events. Fails fast if any ExtrinsicFailed event is emitted.
-async function submitAndFinalize(
+async function submitAndWaitInBlock(
   api: ApiPromise,
-  tx: ReturnType<ApiPromise["tx"]["assets"]["create"]>,
+  tx: SubmittableExtrinsic<"promise">,
   signer: KeyringPair
 ): Promise<ISubmittableResult> {
   const result = await new Promise<ISubmittableResult>((resolve, reject) => {
@@ -153,7 +148,12 @@ async function submitAndFinalize(
       if (settled) return;
       if (r.dispatchError) {
         settled = true;
-        reject(new Error(`dispatchError: ${r.dispatchError.toString()}`));
+        let detail = r.dispatchError.toString();
+        if (r.dispatchError.isModule) {
+          const decoded = api.registry.findMetaError(r.dispatchError.asModule);
+          detail = `${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`;
+        }
+        reject(new Error(`dispatchError: ${detail}`));
         return;
       }
       if (r.isInBlock || r.isFinalized) {
@@ -210,7 +210,7 @@ describe("Register a Local Asset on Polkadot Hub Guide", () => {
     });
     chopsticksProcess.stderr?.on("data", (data: Buffer) => {
       const line = data.toString().trim();
-      if (line) console.log(`[chopsticks:err] ${line}`);
+      if (line) console.error(`[chopsticks:err] ${line}`);
     });
 
     await waitForChopsticks();
@@ -311,7 +311,7 @@ describe("Register a Local Asset on Polkadot Hub Guide", () => {
   describe("2. Create the Asset (assets.create)", () => {
     it("should sign and submit assets.create with Alice as admin", async () => {
       const tx = api.tx.assets.create(assetId, ALICE_ADDRESS, MIN_BALANCE);
-      await submitAndFinalize(api, tx, alice);
+      await submitAndWaitInBlock(api, tx, alice);
 
       const details = await api.query.assets.asset(assetId);
       expect((details as any).isSome).toBe(true);
@@ -345,7 +345,7 @@ describe("Register a Local Asset on Polkadot Hub Guide", () => {
         ASSET_SYMBOL,
         ASSET_DECIMALS
       );
-      await submitAndFinalize(api, tx, alice);
+      await submitAndWaitInBlock(api, tx, alice);
 
       const metadata = (await api.query.assets.metadata(assetId)) as any;
       const name = Buffer.from(metadata.name.toU8a(true)).toString("utf-8");
@@ -371,7 +371,7 @@ describe("Register a Local Asset on Polkadot Hub Guide", () => {
         CHARLIE_ADDRESS,
         DAVE_ADDRESS
       );
-      await submitAndFinalize(api, tx, alice);
+      await submitAndWaitInBlock(api, tx, alice);
 
       const asset = ((await api.query.assets.asset(assetId)) as any).unwrap();
       expect(addressEq(asset.issuer.toString(), BOB_ADDRESS)).toBe(true);

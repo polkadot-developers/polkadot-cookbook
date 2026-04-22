@@ -37,6 +37,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The yq reads below are intentional: check-version-keys parses this
+      # step to auto-detect which versions.yml keys this workflow depends on,
+      # so it can skip the test job on unrelated versions.yml changes. The
+      # outputs themselves aren't consumed — install uses npm ci against the
+      # committed lockfile.
       - name: Load versions
         id: versions
         run: |
