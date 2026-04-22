@@ -12,6 +12,6 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
-    "polkadot-api": "^1.23.3"
+    "polkadot-api": "^2.0.1"
   }
 }
