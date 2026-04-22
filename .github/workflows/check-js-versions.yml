@@ -1,0 +1,28 @@
+name: Check JS Versions
+
+on:
+  pull_request:
+    paths:
+      - "versions.yml"
+      - "**/package.json"
+      - ".github/scripts/check-js-versions.mjs"
+      - ".github/workflows/check-js-versions.yml"
+  push:
+    branches: [master]
+    paths:
+      - "versions.yml"
+      - "**/package.json"
+      - ".github/scripts/check-js-versions.mjs"
+      - ".github/workflows/check-js-versions.yml"
+
+jobs:
+  check:
+    name: package.json vs versions.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify JS dependency versions match versions.yml
+        run: node .github/scripts/check-js-versions.mjs
