@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-04-22
+
+### Added
+- Test harness for **Estimate XCM Fees** polkadot-docs guide — end-to-end verification of the fee-estimation flow across Paseo Asset Hub and Paseo People Chain
+- Test harness for **Debug and Preview XCMs** polkadot-docs guide — CI coverage for dry-run, trace, and preview flows against the pinned Polkadot Hub build
+- Test harness for **Register a Local Asset** polkadot-docs guide — local-asset registration continuously verified against the pinned Asset Hub runtime
+- Test harness for **Convert Assets** polkadot-docs guide — swap / liquidity flows verified against the current Asset Hub interface
+- Test harness for **Register a Foreign Asset** polkadot-docs guide — foreign-asset registration tested end-to-end
+
+### Changed
+- Release skill: tightened Rust-crates count on the cover and trimmed long commit-list rendering so histories no longer overflow
+
+### Fixed
+- README mobile rendering — collapsed dual icons into a single responsive asset and centered the hero block
+
 ## [0.16.0] - 2026-04-19
 
 ### Added
@@ -88,7 +103,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.14.0...v0.15.0
