@@ -12,11 +12,15 @@ Branched from `master`. Deleted on merge.
 
 ## Release commit (on the release branch)
 
-**Subject:** `Release v{VERSION}`
+**Subject on the branch:** `chore(release): v{VERSION}` — required to pass the repo's `commit-msg` hook (`.cargo-husky/hooks/commit-msg`), which enforces conventional-commit prefixes and explicitly exempts `chore(release)`. `Release v{VERSION}` is not a conventional-commit type and will be rejected.
+
+**PR title (and therefore squash-merge subject on `master`):** `Release v{VERSION}`
 
 **Body (optional):** Empty; all narrative lives in `RELEASE_NOTES.md`.
 
-When the release PR merges (squash merge), GitHub's auto-generated squash-commit subject becomes `Release v{VERSION} (#N)` where `#N` is the PR number. This is desirable — downstream tooling matches the regex `^Release v[0-9]+\.[0-9]+\.[0-9]+ \(#[0-9]+\)$` to identify release commits.
+GitHub derives the squashed commit on `master` from the **PR title**, not the branch commit. So setting the PR title to `Release v{VERSION}` produces the final commit subject `Release v{VERSION} (#N)` on `master` — which is what downstream tooling matches with the regex `^Release v[0-9]+\.[0-9]+\.[0-9]+ \(#[0-9]+\)$`. The `chore(release): v{VERSION}` branch commit is only visible in the PR diff view and is discarded on merge.
+
+Do **not** bypass the hook with `--no-verify`. The two-subject pattern (branch vs. PR title) is intentional — it keeps both the local hook and the downstream tag regex happy without contorting either.
 
 ## Tag
 
@@ -47,4 +51,5 @@ These classifications feed `@@COMMIT_LIST` (cover.svg), `@@COMMIT_TYPES` (cover.
 - Edit an existing release commit (no `--amend`, no force-push to an already-pushed release branch).
 - Create a tag locally — that's `publish-release.yml`'s job.
 - Move or recreate a tag that already exists on the remote (would break immutability guarantees for anyone who already pulled it).
-- Use any commit subject format other than the exact string `Release v{VERSION}`.
+- Use `Release v{VERSION}` as the **branch** commit subject (the `commit-msg` hook rejects it). The string `Release v{VERSION}` belongs on the PR **title**, where GitHub turns it into the squash-merge subject on `master`.
+- Bypass the `commit-msg` hook with `--no-verify` to force `Release v{VERSION}` on the branch.

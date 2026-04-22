@@ -302,11 +302,13 @@ python3 .claude/skills/release/render.py manifest \
 
 1. Create a release branch: `git checkout -b release/vX.Y.Z`
 
-2. Stage and commit. The commit subject must match [`COMMIT_CONVENTIONS.md`](COMMIT_CONVENTIONS.md) exactly — `Release v{VERSION}` (capital R, no `chore:` prefix). Downstream tooling matches the regex `^Release v[0-9]+\.[0-9]+\.[0-9]+ \(#[0-9]+\)$` against the squashed commit on `master`:
+2. Stage the artifacts. Downstream tooling matches the regex `^Release v[0-9]+\.[0-9]+\.[0-9]+ \(#[0-9]+\)$` against the **squashed commit on `master`**, which GitHub derives from the **PR title** at merge time — not from the branch commit. The branch commit itself must pass the repo's `commit-msg` hook (`.cargo-husky/hooks/commit-msg`), which rejects `Release vX.Y.Z` because it is not a conventional-commit type. The hook explicitly exempts `chore(release)`:
    ```bash
    git add .github/releases/vX.Y.Z/ Cargo.toml Cargo.lock CHANGELOG.md  # includes cover.svg + cover-chain.svg
-   git commit -m "Release vX.Y.Z"
+   git commit -m "chore(release): vX.Y.Z"
    ```
+
+   Do not use `--no-verify`. Do not use `Release vX.Y.Z` as the branch commit subject — the hook blocks it. Set the **PR title** (step 3) to `Release vX.Y.Z` so the squash-merged commit on `master` satisfies downstream tooling.
 
 3. Push, then render the PR body from [`RELEASE_PR_BODY.template.md`](RELEASE_PR_BODY.template.md) via the renderer. The cover image src uses a **commit-SHA-pinned** raw URL (not the branch name — the branch is deleted on merge and branch-based raw URLs break retroactively). Capture `HEAD_SHA` after the commit lands:
 
