@@ -1,7 +1,19 @@
 import { describe, it, expect, afterAll, beforeAll } from "vitest";
-import { spawn, execSync, ChildProcess } from "child_process";
+import { spawn, exec, ChildProcess } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { createClient, Binary, Enum } from "polkadot-api";
+import { getWsProvider } from "polkadot-api/ws";
+import { polkadotHub } from "@polkadot-api/descriptors";
+import type { PolkadotClient } from "polkadot-api";
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import {
+  DEV_PHRASE,
+  entropyToMiniSecret,
+  mnemonicToEntropy,
+  ss58Address,
+} from "@polkadot-labs/hdkd-helpers";
+import { sr25519CreateDerive } from "@polkadot-labs/hdkd";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const HARNESS_DIR = resolve(__dirname, "..");
@@ -13,11 +25,24 @@ const HARNESS_DIR = resolve(__dirname, "..");
 const POLKADOT_HUB_PORT = 8000;
 const POLKADOT_HUB_WS = `ws://localhost:${POLKADOT_HUB_PORT}`;
 
-// The XCM call data from block 9079592 on Polkadot Hub (from the guide)
+// The XCM call data from block 9079592 on Polkadot Hub (from the guide).
+// The fork is pinned to block 9079592 in polkadot-hub.yml to ensure the
+// runtime's XCM codec matches this call data deterministically.
 const XCM_CALL_DATA =
   "0x1f0803010100411f0300010100fc39fcf04a8071b7409823b7c82427ce67910c6ed80aa0e5093aff234624c8200304000002043205011f0092e81d790000000000";
 
 const XCM_VERSION = 5;
+
+// ---------------------------------------------------------------------------
+// Alice derivation (module scope — reused across tests)
+// ---------------------------------------------------------------------------
+
+const entropy = mnemonicToEntropy(DEV_PHRASE);
+const miniSecret = entropyToMiniSecret(entropy);
+const derive = sr25519CreateDerive(miniSecret);
+const alice = derive("//Alice");
+const aliceAddress = ss58Address(alice.publicKey);
+const alicePublicKey = `0x${Buffer.from(alice.publicKey).toString("hex")}`;
 
 // ---------------------------------------------------------------------------
 // Chopsticks lifecycle helpers
@@ -96,29 +121,46 @@ function spawnChopsticks(
   });
   proc.stderr?.on("data", (data: Buffer) => {
     const line = data.toString().trim();
-    if (line) console.log(`[${label}:err] ${line}`);
+    if (line) console.error(`[${label}:err] ${line}`);
   });
 
   return proc;
 }
 
 async function stopAllChopsticks(): Promise<void> {
-  for (const proc of [polkadotHubProcess]) {
-    if (proc && !proc.killed) {
+  const proc = polkadotHubProcess;
+  polkadotHubProcess = null;
+
+  if (proc && !proc.killed) {
+    try {
+      process.kill(-proc.pid!, "SIGTERM");
+    } catch {
       try {
-        process.kill(-proc.pid!, "SIGTERM");
-      } catch {
         proc.kill("SIGTERM");
+      } catch {
+        // ignore
+      }
+    }
+
+    await new Promise((r) => setTimeout(r, 2000));
+
+    try {
+      process.kill(-proc.pid!, "SIGKILL");
+    } catch {
+      try {
+        proc.kill("SIGKILL");
+      } catch {
+        // ignore
       }
     }
   }
-  polkadotHubProcess = null;
-  try {
-    execSync("pkill -f 'chopsticks' 2>/dev/null || true", { encoding: "utf-8" });
-  } catch {
-    // ignore — pkill may not find any processes or may be unavailable
-  }
-  await new Promise((r) => setTimeout(r, 2000));
+
+  // Best-effort cleanup — never throws
+  await new Promise<void>((resolve) => {
+    exec("pkill -f '@acala-network/chopsticks' 2>/dev/null || true", () => resolve());
+  });
+
+  await new Promise((r) => setTimeout(r, 500));
 }
 
 // ---------------------------------------------------------------------------
@@ -148,26 +190,21 @@ describe("Replay and Dry Run XCMs Guide", () => {
   // ==================== 1. PAPI — XCM Replay and Dry Run ====================
 
   describe("1. PAPI — XCM Replay and Dry Run (Polkadot Hub)", () => {
-    let client: any;
+    let client: PolkadotClient;
 
     afterAll(async () => {
       if (client) client.destroy();
     });
 
     it("should connect to Polkadot Hub Chopsticks fork", async () => {
-      const { createClient } = await import("polkadot-api");
-      const { getWsProvider } = await import("polkadot-api/ws");
-
       client = createClient(getWsProvider(POLKADOT_HUB_WS));
-      expect(client).toBeDefined();
-      console.log("PAPI: Connected to Polkadot Hub Chopsticks fork");
+      const api = client.getTypedApi(polkadotHub);
+      const runtimeVersion = await api.constants.System.Version();
+      expect(runtimeVersion.spec_name).toBe("asset-hub-polkadot");
+      console.log("PAPI: Connected to Polkadot Hub Chopsticks fork, spec:", runtimeVersion.spec_name);
     });
 
     it("should decode XCM call data from block 9079592", async () => {
-      const { createClient, Binary } = await import("polkadot-api");
-      const { getWsProvider } = await import("polkadot-api/ws");
-      const { polkadotHub } = await import("@polkadot-api/descriptors");
-
       const localClient = createClient(getWsProvider(POLKADOT_HUB_WS));
       const api = localClient.getTypedApi(polkadotHub);
 
@@ -176,44 +213,24 @@ describe("Replay and Dry Run XCMs Guide", () => {
 
       expect(tx).toBeDefined();
       expect(tx.decodedCall).toBeDefined();
-      console.log(
-        "PAPI: XCM decoded call type:",
-        tx.decodedCall?.type
-      );
+      expect(typeof tx.decodedCall.type).toBe("string");
+      expect(tx.decodedCall.type.length).toBeGreaterThan(0);
+      console.log("PAPI: XCM decoded call type:", tx.decodedCall?.type);
 
       localClient.destroy();
     });
 
-    it("should dry-run the XCM call via DryRunApi", async () => {
-      const { createClient, Binary, Enum } = await import("polkadot-api");
-      const { getWsProvider } = await import("polkadot-api/ws");
-      const { polkadotHub } = await import("@polkadot-api/descriptors");
-      const {
-        DEV_PHRASE,
-        entropyToMiniSecret,
-        mnemonicToEntropy,
-        ss58Address,
-      } = await import("@polkadot-labs/hdkd-helpers");
-      const { sr25519CreateDerive } = await import("@polkadot-labs/hdkd");
-
+    it("should dry-run the XCM call via DryRunApi and get Ok", async () => {
       const localClient = createClient(getWsProvider(POLKADOT_HUB_WS));
       const api = localClient.getTypedApi(polkadotHub);
-
-      // Derive Alice's address
-      const entropy = mnemonicToEntropy(DEV_PHRASE);
-      const miniSecret = entropyToMiniSecret(entropy);
-      const derive = sr25519CreateDerive(miniSecret);
-      const alice = derive("//Alice");
-      const aliceAddress = ss58Address(alice.publicKey);
 
       // Decode the XCM call
       const callData = Binary.fromHex(XCM_CALL_DATA);
       const tx: any = await api.txFromCallData(callData);
 
-      // Build the origin as a signed account
+      // Build the origin as a signed account using module-scope derived Alice
       const origin = Enum("system", Enum("Signed", aliceAddress));
 
-      // Perform the dry run
       const dryRunResult: any = await api.apis.DryRunApi.dry_run_call(
         origin,
         tx.decodedCall,
@@ -221,30 +238,13 @@ describe("Replay and Dry Run XCMs Guide", () => {
       );
 
       expect(dryRunResult).toBeDefined();
-      console.log(
-        "PAPI: Dry run result type:",
-        dryRunResult?.type ?? "unknown"
-      );
-
-      // The dry run result should be an Ok or Err variant
-      if (dryRunResult?.type === "Ok") {
-        console.log("PAPI: Dry run succeeded");
-        expect(dryRunResult.value).toBeDefined();
-      } else if (dryRunResult?.type === "Err") {
-        // Dry run may fail due to missing funds in the fork — this is acceptable
-        console.log(
-          "PAPI: Dry run returned Err (expected for underfunded fork):",
-          JSON.stringify(dryRunResult.value)
-        );
-      } else {
-        console.log("PAPI: Dry run result:", JSON.stringify(dryRunResult));
-      }
+      expect(dryRunResult.type).toBe("Ok");
+      console.log("PAPI: Dry run succeeded with Ok result");
 
       localClient.destroy();
     });
 
     it("should verify DryRunApi is available on Polkadot Hub", async () => {
-      const { ApiPromise, WsProvider } = await import("@polkadot/api");
       const api = await ApiPromise.create({
         provider: new WsProvider(POLKADOT_HUB_WS),
       });
@@ -261,15 +261,11 @@ describe("Replay and Dry Run XCMs Guide", () => {
     });
 
     it("should dry-run the XCM call via Polkadot.js DryRunApi", async () => {
-      const { ApiPromise, WsProvider } = await import("@polkadot/api");
       const api = await ApiPromise.create({
         provider: new WsProvider(POLKADOT_HUB_WS),
       });
 
-      // Build the origin for Alice (dev account)
-      const alicePublicKey =
-        "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d";
-
+      // Build the origin for Alice using module-scope derived public key
       const origin = api.createType("XcmVersionedLocation", {
         V4: {
           parents: 0,
@@ -310,11 +306,12 @@ describe("Replay and Dry Run XCMs Guide", () => {
       });
 
       const dryRunResult = await api.call.dryRunApi.dryRunXcm(origin, xcm);
+      expect(dryRunResult).toBeDefined();
+      expect((dryRunResult as any).isOk || (dryRunResult as any).isErr).toBe(true);
       console.log(
         "PJS: Dry run XCM result:",
         (dryRunResult as any).isOk ? "Ok" : "Err"
       );
-      expect(dryRunResult).toBeDefined();
 
       await api.disconnect();
     });

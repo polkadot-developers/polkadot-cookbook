@@ -37,15 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Load versions
-        id: versions
-        run: |
-          echo "POLKADOT_API_VERSION=$(yq '.javascript_packages.polkadot_api.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "POLKADOT_JS_API_VERSION=$(yq '.javascript_packages.polkadot_js_api.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "HDKD_VERSION=$(yq '.javascript_packages.hdkd.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "HDKD_HELPERS_VERSION=$(yq '.javascript_packages.hdkd_helpers.version' versions.yml)" >> $GITHUB_OUTPUT
-          echo "CHOPSTICKS_VERSION=$(yq '.javascript_packages.chopsticks.version' versions.yml)" >> $GITHUB_OUTPUT
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -53,13 +44,7 @@ jobs:
       - name: Install npm dependencies
         run: |
           cd polkadot-docs/chain-interactions/debug-and-preview-xcms
-          npm install \
-            polkadot-api@${{ steps.versions.outputs.POLKADOT_API_VERSION }} \
-            @polkadot-labs/hdkd@${{ steps.versions.outputs.HDKD_VERSION }} \
-            @polkadot-labs/hdkd-helpers@${{ steps.versions.outputs.HDKD_HELPERS_VERSION }} \
-            @polkadot/api@${{ steps.versions.outputs.POLKADOT_JS_API_VERSION }}
-          npm install --save-dev \
-            @acala-network/chopsticks@${{ steps.versions.outputs.CHOPSTICKS_VERSION }}
+          npm ci
 
       # Generate PAPI descriptors from the live Polkadot Asset Hub network
       - name: Generate PAPI descriptors

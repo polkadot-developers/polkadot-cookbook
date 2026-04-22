@@ -1,4 +1,5 @@
 endpoint: wss://polkadot-asset-hub-rpc.polkadot.io
+block: 9079592
 mock-signature-host: true
 db: ./db-polkadot-hub.sqlite
 
