@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-// Treats versions.yml javascript_packages entries as a minimum floor: fails
+// Treats versions.yml javascript_packages entries as a minimum floor: reports
 // when any package.json under polkadot-docs/, recipes/, migration/ pins a
 // tracked dep to a version older than the floor. A harness ahead of the pin
 // is allowed — bump versions.yml if the cookbook standard should catch up.
 // Pure Node, no dependencies.
 //
 // Usage:
-//   node .github/scripts/check-js-versions.mjs         # CI mode, exits 1 on drift
-//   node .github/scripts/check-js-versions.mjs --fix   # rewrite behind package.json files to the floor
+//   node .github/scripts/check-js-versions.mjs              # dev mode, exits 1 on drift
+//   node .github/scripts/check-js-versions.mjs --fix        # rewrite behind specs to the floor
+//   node .github/scripts/check-js-versions.mjs --markdown   # emit a markdown report, always exit 0 (used by the issue-manager workflow)
 
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -129,8 +130,51 @@ function applyFix(pkgPath, raw, drifts) {
   writeFileSync(pkgPath, text);
 }
 
+// Stable heading the issue-manager workflow greps for to decide whether to
+// open/close the drift issue. Keep in sync with check-js-versions.yml.
+const DRIFT_HEADING = "## JS Dependency Drift";
+const CLEAN_HEADING = "## JS Dependencies: OK";
+
+function emitMarkdown(driftedFiles, totalDrifts, tracked, pkgFilesCount) {
+  if (driftedFiles.length === 0) {
+    console.log(CLEAN_HEADING);
+    console.log("");
+    console.log(`All ${tracked.size} tracked JS packages are at or above the \`versions.yml\` floor across ${pkgFilesCount} \`package.json\` files.`);
+    return;
+  }
+  console.log(DRIFT_HEADING);
+  console.log("");
+  console.log(`${totalDrifts} tracked dependency spec${totalDrifts === 1 ? "" : "s"} across ${driftedFiles.length} \`package.json\` file${driftedFiles.length === 1 ? "" : "s"} ${totalDrifts === 1 ? "is" : "are"} below the floor declared in [\`versions.yml\`](../blob/master/versions.yml) (\`javascript_packages\`).`);
+  console.log("");
+  console.log("| File | Dependency | Current | Floor |");
+  console.log("|------|------------|---------|-------|");
+  for (const { pkgPath, drifts } of driftedFiles) {
+    const rel = relative(REPO_ROOT, pkgPath);
+    for (const d of drifts) {
+      console.log(`| \`${rel}\` | \`${d.name}\` | \`${d.spec}\` | \`${d.floor}\` |`);
+    }
+  }
+  console.log("");
+  console.log("### How to resolve");
+  console.log("");
+  console.log("Either raise the specs in `package.json` to the floor (recommended when the floor is correct):");
+  console.log("");
+  console.log("```bash");
+  console.log("node .github/scripts/check-js-versions.mjs --fix");
+  console.log("# then, in each affected harness:");
+  console.log("npm install");
+  console.log("```");
+  console.log("");
+  console.log("…or lower the tracked version in `versions.yml` if the cookbook should track an older pin.");
+  console.log("");
+  console.log("---");
+  console.log("");
+  console.log("*This issue is managed automatically by [`.github/workflows/check-js-versions.yml`](../blob/master/.github/workflows/check-js-versions.yml). It will close itself once every tracked dep is at or above the floor on `master`.*");
+}
+
 function main() {
   const fix = process.argv.includes("--fix");
+  const markdown = process.argv.includes("--markdown");
   const tracked = loadTrackedVersions();
   const pkgFiles = findPackageJsonFiles();
 
@@ -143,6 +187,11 @@ function main() {
     driftedFiles.push({ pkgPath, drifts });
     totalDrifts += drifts.length;
     if (fix) applyFix(pkgPath, raw, drifts);
+  }
+
+  if (markdown) {
+    emitMarkdown(driftedFiles, totalDrifts, tracked, pkgFiles.length);
+    process.exit(0);
   }
 
   if (driftedFiles.length === 0) {
