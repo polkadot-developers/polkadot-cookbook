@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// Verifies that every tracked JS dependency in any package.json under
-// polkadot-docs/, recipes/, migration/ matches the version pinned in
-// versions.yml (javascript_packages). Pure Node, no dependencies.
+// Treats versions.yml javascript_packages entries as a minimum floor: fails
+// when any package.json under polkadot-docs/, recipes/, migration/ pins a
+// tracked dep to a version older than the floor. A harness ahead of the pin
+// is allowed — bump versions.yml if the cookbook standard should catch up.
+// Pure Node, no dependencies.
 //
 // Usage:
 //   node .github/scripts/check-js-versions.mjs         # CI mode, exits 1 on drift
-//   node .github/scripts/check-js-versions.mjs --fix   # rewrite drifted package.json files
+//   node .github/scripts/check-js-versions.mjs --fix   # rewrite behind package.json files to the floor
 
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -72,11 +74,24 @@ function walk(dir, out) {
 
 // Splits "^1.2.3" into { prefix: "^", version: "1.2.3" }. Returns null for
 // non-plain-semver specs (file:, workspace:, git+, url, tag, range, etc.) so
-// the caller skips them.
+// the caller skips them. Pre-release suffixes intentionally unsupported —
+// versions.yml entries are always plain "x.y.z".
 function parseSemverSpec(spec) {
-  const m = spec.match(/^([\^~]?)(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)$/);
+  const m = spec.match(/^([\^~]?)(\d+\.\d+\.\d+)$/);
   if (!m) return null;
   return { prefix: m[1], version: m[2] };
+}
+
+// Numeric 3-part semver compare. Returns negative if a<b, positive if a>b, 0
+// if equal. Both arguments must match /^\d+\.\d+\.\d+$/.
+function compareSemver(a, b) {
+  const pa = a.split(".").map(Number);
+  const pb = b.split(".").map(Number);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d !== 0) return d;
+  }
+  return 0;
 }
 
 function analyze(pkgPath, tracked) {
@@ -87,12 +102,12 @@ function analyze(pkgPath, tracked) {
     const deps = pkg[section];
     if (!deps) continue;
     for (const [name, spec] of Object.entries(deps)) {
-      const expected = tracked.get(name);
-      if (!expected) continue;
+      const floor = tracked.get(name);
+      if (!floor) continue;
       const parsed = parseSemverSpec(spec);
       if (!parsed) continue;
-      if (parsed.version !== expected) {
-        drifts.push({ section, name, spec, expected, prefix: parsed.prefix });
+      if (compareSemver(parsed.version, floor) < 0) {
+        drifts.push({ section, name, spec, floor, prefix: parsed.prefix });
       }
     }
   }
@@ -105,7 +120,7 @@ function applyFix(pkgPath, raw, drifts) {
   let text = raw;
   for (const d of drifts) {
     const needle = `"${d.name}": "${d.spec}"`;
-    const replacement = `"${d.name}": "${d.prefix}${d.expected}"`;
+    const replacement = `"${d.name}": "${d.prefix}${d.floor}"`;
     if (!text.includes(needle)) {
       throw new Error(`Cannot locate \`${needle}\` in ${pkgPath} for --fix`);
     }
@@ -131,29 +146,29 @@ function main() {
   }
 
   if (driftedFiles.length === 0) {
-    console.log(`OK — all tracked JS dependencies match versions.yml (${tracked.size} tracked packages, ${pkgFiles.length} package.json files scanned).`);
+    console.log(`OK — all tracked JS dependencies are at or above the versions.yml floor (${tracked.size} tracked packages, ${pkgFiles.length} package.json files scanned).`);
     process.exit(0);
   }
 
   if (fix) {
-    console.log(`Fixed ${totalDrifts} drift${totalDrifts === 1 ? "" : "s"} in ${driftedFiles.length} file${driftedFiles.length === 1 ? "" : "s"}:`);
+    console.log(`Fixed ${totalDrifts} behind-floor drift${totalDrifts === 1 ? "" : "s"} in ${driftedFiles.length} file${driftedFiles.length === 1 ? "" : "s"}:`);
     for (const { pkgPath, drifts } of driftedFiles) {
       console.log(`\n  ${relative(REPO_ROOT, pkgPath)}`);
       for (const d of drifts) {
-        console.log(`    ${d.name}: ${d.spec} → ${d.prefix}${d.expected}`);
+        console.log(`    ${d.name}: ${d.spec} → ${d.prefix}${d.floor}`);
       }
     }
     process.exit(0);
   }
 
-  console.error(`Found ${totalDrifts} drift${totalDrifts === 1 ? "" : "s"} in ${driftedFiles.length} file${driftedFiles.length === 1 ? "" : "s"}:`);
+  console.error(`Found ${totalDrifts} behind-floor drift${totalDrifts === 1 ? "" : "s"} in ${driftedFiles.length} file${driftedFiles.length === 1 ? "" : "s"}:`);
   for (const { pkgPath, drifts } of driftedFiles) {
     console.error(`\n  ${relative(REPO_ROOT, pkgPath)}`);
     for (const d of drifts) {
-      console.error(`    ${d.name}: ${d.spec} (expected ${d.prefix}${d.expected} per versions.yml)`);
+      console.error(`    ${d.name}: ${d.spec} is below the ${d.floor} floor in versions.yml`);
     }
   }
-  console.error(`\nRun \`node .github/scripts/check-js-versions.mjs --fix\` to apply, or update versions.yml.`);
+  console.error(`\nRun \`node .github/scripts/check-js-versions.mjs --fix\` to raise specs to the floor, or lower the floor in versions.yml.`);
   process.exit(1);
 }
 

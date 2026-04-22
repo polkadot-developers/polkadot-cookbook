@@ -77,9 +77,9 @@ Each recipe has its own dedicated workflow file (e.g., `recipe-parachain-example
 
 ---
 
-#### `check-js-versions.yml` - Enforce `versions.yml` for JS deps
+#### `check-js-versions.yml` - Enforce `versions.yml` JS floor
 
-Fails CI when any `package.json` under `polkadot-docs/`, `recipes/`, or `migration/` pins a tracked dependency to a version that doesn't match `versions.yml` (section `javascript_packages`).
+Treats each `versions.yml` `javascript_packages` entry as a **minimum version floor**. Fails CI when any `package.json` under `polkadot-docs/`, `recipes/`, or `migration/` pins a tracked dependency to a version below the floor. Specs at or above the floor pass — a harness tracking a newer upstream tutorial is expected and fine; to lift the floor for the whole repo, edit `versions.yml`.
 
 **Triggers:**
 - Push to master (paths: `versions.yml`, `**/package.json`, script, workflow)
@@ -90,8 +90,8 @@ Fails CI when any `package.json` under `polkadot-docs/`, `recipes/`, or `migrati
 
 **Local use:**
 ```bash
-node .github/scripts/check-js-versions.mjs         # verify, exits non-zero on drift
-node .github/scripts/check-js-versions.mjs --fix   # rewrite drifted specs in place
+node .github/scripts/check-js-versions.mjs         # verify, exits non-zero on below-floor drift
+node .github/scripts/check-js-versions.mjs --fix   # rewrite below-floor specs up to the floor
 ```
 
 Non-tracked deps (anything not listed under `versions.yml` `javascript_packages`) are ignored. `file:`, `workspace:`, `git+`, and URL specs are ignored; only plain semver (`1.2.3`, `^1.2.3`, `~1.2.3`) is checked.
