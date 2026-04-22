@@ -41,7 +41,7 @@ npm ci && npm test
 
 **Test harnesses** (`recipes/`, `polkadot-docs/`, `migration/`): Standalone Node.js/Vitest projects that clone external repos at pinned versions, install, build, and run their tests. They verify that external code and documentation guides actually work. Recipe tests pin by **git tag**; polkadot-docs tests pin by **commit SHA**.
 
-**`versions.yml`**: Single source of truth for pinned dependency versions (polkadot-sdk release tag, parachain template version, zombienet version). Referenced by CI workflows and `polkadot-docs/shared/load-variables.ts` (shared utility that parses versions at test runtime). Changes here trigger downstream CI runs.
+**`versions.yml`**: Single source of truth for pinned dependency versions (polkadot-sdk release tag, parachain template version, zombienet version, Rust crates under `crates.*`, and JS packages under `javascript_packages.*`). Referenced by CI workflows and `polkadot-docs/shared/load-variables.ts` (shared utility that parses versions at test runtime). JS entries are enforced by `.github/workflows/check-js-versions.yml`, which fails if any `package.json` under `polkadot-docs/`, `recipes/`, or `migration/` pins a tracked dep to a different version — fix drift with `node .github/scripts/check-js-versions.mjs --fix`. Changes to `versions.yml` trigger downstream CI runs.
 
 **CI composite actions** (`.github/actions/`): Reusable actions like `setup-revive-dev-node` (builds/caches pallet-revive dev node + eth-rpc adapter), `setup-zombienet-eth-rpc`, and `check-version-keys` (guard that skips expensive test jobs when a `versions.yml` change doesn't affect the workflow's keys). Used by recipe, migration, and polkadot-docs workflows.
 

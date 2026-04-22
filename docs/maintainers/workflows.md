@@ -77,6 +77,29 @@ Each recipe has its own dedicated workflow file (e.g., `recipe-parachain-example
 
 ---
 
+#### `check-js-versions.yml` - Enforce `versions.yml` for JS deps
+
+Fails CI when any `package.json` under `polkadot-docs/`, `recipes/`, or `migration/` pins a tracked dependency to a version that doesn't match `versions.yml` (section `javascript_packages`).
+
+**Triggers:**
+- Push to master (paths: `versions.yml`, `**/package.json`, script, workflow)
+- Pull requests (same paths)
+
+**Jobs:**
+1. **check** - Runs `node .github/scripts/check-js-versions.mjs`
+
+**Local use:**
+```bash
+node .github/scripts/check-js-versions.mjs         # verify, exits non-zero on drift
+node .github/scripts/check-js-versions.mjs --fix   # rewrite drifted specs in place
+```
+
+Non-tracked deps (anything not listed under `versions.yml` `javascript_packages`) are ignored. `file:`, `workspace:`, `git+`, and URL specs are ignored; only plain semver (`1.2.3`, `^1.2.3`, `~1.2.3`) is checked.
+
+**Files:** `.github/workflows/check-js-versions.yml`, `.github/scripts/check-js-versions.mjs`
+
+---
+
 ### 2. Release Workflows
 
 #### `/release` Skill - Release Creation
