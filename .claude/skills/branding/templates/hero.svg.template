@@ -44,28 +44,6 @@
     <rect x="18" y="148" width="56" height="4" fill="{{FG}}" opacity=".35"/>
   </g>
 
-  <!-- KPI strip -->
-  <line x1="800" y1="260" x2="1200" y2="260" stroke="{{LINE}}" stroke-width="1"/>
-
-  <text x="850" y="300" font-family="{{MONO}}" font-size="36" font-weight="700"
-        fill="{{PINK}}" letter-spacing="-1">{{RECIPE_COUNT}}</text>
-  <text x="850" y="320" font-family="{{MONO}}" font-size="9" fill="{{FG_DIM}}"
-        letter-spacing="1.5">RECIPES</text>
-
-  <line x1="933" y1="270" x2="933" y2="340" stroke="{{LINE}}" stroke-width="1"/>
-
-  <text x="960" y="300" font-family="{{MONO}}" font-size="36" font-weight="700"
-        fill="{{PINK}}" letter-spacing="-1">{{PATHWAY_COUNT}}</text>
-  <text x="960" y="320" font-family="{{MONO}}" font-size="9" fill="{{FG_DIM}}"
-        letter-spacing="1.5">PATHWAYS</text>
-
-  <line x1="1060" y1="270" x2="1060" y2="340" stroke="{{LINE}}" stroke-width="1"/>
-
-  <text x="1080" y="300" font-family="{{MONO}}" font-size="36" font-weight="700"
-        fill="{{PINK}}" letter-spacing="-1">{{WORKFLOW_COUNT}}</text>
-  <text x="1080" y="320" font-family="{{MONO}}" font-size="9" fill="{{FG_DIM}}"
-        letter-spacing="1.5">WORKFLOWS</text>
-
   <!-- Footer bar -->
   <rect x="0" y="352" width="1200" height="48" fill="{{PAPER}}"/>
   <text x="80" y="380" font-family="{{MONO}}" font-size="10" fill="{{INK}}"

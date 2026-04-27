@@ -136,15 +136,6 @@ def mode_subs(mode: str) -> dict:
         "EASE_OUT": T["motion"]["ease-out"],
         # Facts
         "VERSION": VERSION,
-        "RECIPE_COUNT": str(RECIPE_COUNT),
-        "PATHWAY_COUNT": str(PATHWAY_COUNT),
-        "WORKFLOW_COUNT": str(WORKFLOW_COUNT),
-        "DOCS_HARNESS_COUNT": str(DOCS_HARNESS_COUNT),
-        "PATHWAY_PALLETS": str(PW["pallets"]),
-        "PATHWAY_CONTRACTS": str(PW["contracts"]),
-        "PATHWAY_TRANSACTIONS": str(PW["transactions"]),
-        "PATHWAY_XCM": str(PW["xcm"]),
-        "PATHWAY_NETWORKS": str(PW["networks"]),
     }
     return s
 
@@ -209,13 +200,13 @@ render("contributing-hero.svg.template", OUT / "contributing-hero-light.svg", "l
 
 print("▸ pathway banners")
 pathways = [
-    ("pallets",      "Pallets",      PW["pallets"],      "Runtime logic with FRAME pallets",          "01"),
-    ("contracts",    "Contracts",    PW["contracts"],    "Solidity smart contracts on Polkadot",      "02"),
-    ("transactions", "Transactions", PW["transactions"], "Single-chain tx and state queries",         "03"),
-    ("xcm",          "XCM",          PW["xcm"],          "Cross-chain messaging between parachains",  "04"),
-    ("networks",     "Networks",     PW["networks"],     "Zombienet + Chopsticks local networks",     "05"),
+    ("pallets",      "Pallets",      "Runtime logic with FRAME pallets",          "01"),
+    ("contracts",    "Contracts",    "Solidity smart contracts on Polkadot",      "02"),
+    ("transactions", "Transactions", "Single-chain tx and state queries",         "03"),
+    ("xcm",          "XCM",          "Cross-chain messaging between parachains",  "04"),
+    ("networks",     "Networks",     "Zombienet + Chopsticks local networks",     "05"),
 ]
-for name, label, count, tagline, number in pathways:
+for name, label, tagline, number in pathways:
     render(
         "pathway-banner.svg.template",
         OUT / f"pathway-{name}-dark.svg",
@@ -223,7 +214,6 @@ for name, label, count, tagline, number in pathways:
         extra={
             "PATHWAY_NAME": name,
             "PATHWAY_LABEL": label,
-            "PATHWAY_COUNT": str(count),
             "PATHWAY_TAGLINE": tagline,
             "PATHWAY_NUMBER": number,
             "PATHWAY_GLYPH": resolve_glyph(PATHWAY_GLYPHS[name], "dark"),
