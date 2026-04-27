@@ -1,0 +1,81 @@
+name: Check JS Versions
+
+# Never fails the check. On drift vs versions.yml javascript_packages, opens
+# (or updates) a single issue labeled `versions-drift`. When drift is cleared
+# the issue is closed automatically.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "versions.yml"
+      - "**/package.json"
+      - ".github/scripts/check-js-versions.mjs"
+      - ".github/workflows/check-js-versions.yml"
+  schedule:
+    - cron: "0 12 * * 1"  # Weekly Mon 12:00 UTC, catches upstream versions.yml bumps
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  report:
+    name: Report JS drift via issue
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate drift report
+        id: report
+        run: |
+          node .github/scripts/check-js-versions.mjs --markdown > /tmp/drift-report.md
+          if head -n1 /tmp/drift-report.md | grep -q "^## JS Dependency Drift$"; then
+            echo "has_drift=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_drift=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "--- report ---"
+          cat /tmp/drift-report.md
+
+      - name: Ensure versions-drift label exists
+        if: steps.report.outputs.has_drift == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create versions-drift \
+            --color "D93F0B" \
+            --description "A tracked dep in package.json is behind versions.yml" \
+            2>/dev/null || true
+
+      - name: Create or update drift issue
+        if: steps.report.outputs.has_drift == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(gh issue list --label versions-drift --state open --json number --jq '.[0].number // empty')
+          TITLE="JS dependency drift: package.json behind versions.yml"
+          if [ -n "$EXISTING" ]; then
+            echo "Updating existing issue #$EXISTING"
+            gh issue edit "$EXISTING" --title "$TITLE" --body-file /tmp/drift-report.md
+          else
+            echo "Opening new drift issue"
+            gh issue create --title "$TITLE" --label versions-drift --body-file /tmp/drift-report.md
+          fi
+
+      - name: Close drift issue if resolved
+        if: steps.report.outputs.has_drift == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(gh issue list --label versions-drift --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Closing resolved drift issue #$EXISTING"
+            gh issue close "$EXISTING" --comment "All tracked JS deps are at or above the \`versions.yml\` floor. Closing automatically."
+          else
+            echo "No open drift issue to close."
+          fi

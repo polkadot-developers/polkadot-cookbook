@@ -77,6 +77,33 @@ Each recipe has its own dedicated workflow file (e.g., `recipe-parachain-example
 
 ---
 
+#### `check-js-versions.yml` - Track JS drift vs `versions.yml` floor
+
+Treats each `versions.yml` `javascript_packages` entry as a **minimum version floor**. Never fails the workflow — instead, when any `package.json` under `polkadot-docs/`, `recipes/`, or `migration/` pins a tracked dep below the floor, it **opens or updates a single issue labeled `versions-drift`** listing every affected file and dep. When every tracked dep is back at or above the floor, the issue is closed automatically. Specs at or above the floor are fine — a harness tracking a newer upstream tutorial is expected. To lift the floor for the whole repo, edit `versions.yml`.
+
+**Triggers:**
+- Push to `master` (paths: `versions.yml`, `**/package.json`, script, workflow) — typical case; issue reflects the state of `master`.
+- Weekly schedule (Mon 12:00 UTC) — catches any drift that slipped past a path filter.
+- `workflow_dispatch` — maintainers can run it on demand.
+
+No PR trigger: PRs never go red, and the issue only ever reflects merged state.
+
+**Jobs:**
+1. **report** - Runs `node .github/scripts/check-js-versions.mjs --markdown`, then creates/updates or closes the `versions-drift` issue depending on the report heading.
+
+**Local use:**
+```bash
+node .github/scripts/check-js-versions.mjs              # verify, exits non-zero on below-floor drift
+node .github/scripts/check-js-versions.mjs --fix        # rewrite below-floor specs up to the floor
+node .github/scripts/check-js-versions.mjs --markdown   # preview the issue body (always exits 0)
+```
+
+Non-tracked deps (anything not listed under `versions.yml` `javascript_packages`) are ignored. `file:`, `workspace:`, `git+`, and URL specs are ignored; only plain semver (`1.2.3`, `^1.2.3`, `~1.2.3`) is checked.
+
+**Files:** `.github/workflows/check-js-versions.yml`, `.github/scripts/check-js-versions.mjs`
+
+---
+
 ### 2. Release Workflows
 
 #### `/release` Skill - Release Creation
