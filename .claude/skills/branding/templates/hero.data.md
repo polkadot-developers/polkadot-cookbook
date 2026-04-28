@@ -18,10 +18,6 @@ The generator substitutes scalar tokens via exact-string replacement. Every toke
 | `{{PINK}}`                 | `color.primary.pink`                                        | no        |
 | `{{MONO}}`                 | `type.mono` (JetBrains Mono)                                | no        |
 | `{{VERSION}}`              | `Cargo.toml` `[workspace.package].version`                  | no        |
-| `{{RECIPE_COUNT}}`         | `find recipes -mindepth 2 -maxdepth 2 -type d \| wc -l`     | no        |
-| `{{PATHWAY_COUNT}}`        | number of pathway directories under `recipes/`              | no        |
-| `{{WORKFLOW_COUNT}}`       | `ls .github/workflows/*.yml \| wc -l`                       | no        |
-| `{{DOCS_HARNESS_COUNT}}`   | polkadot-docs harness count                                 | no        |
 | `{{REVEAL_DUR}}`           | `motion.reveal-dur`                                         | no        |
 | `{{CASCADE_STAGGER}}`      | `motion.cascade-stagger`                                    | no        |
 | `{{GRADIENT_FLOW_DUR}}`    | `motion.gradient-flow-dur`                                  | no        |

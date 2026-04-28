@@ -1,6 +1,6 @@
 ---
 name: branding
-description: Regenerate all brand assets under .github/media/ from .github/brand/tokens.yml + live repo facts. Run after changing tokens, adding a recipe/workflow, or bumping workspace version.
+description: Regenerate all brand assets under .github/media/ from .github/brand/tokens.yml. Run after editing tokens, templates, or bumping the workspace version.
 ---
 
 # /branding
@@ -10,19 +10,18 @@ Generates every visual artifact in `.github/media/` from a single source of trut
 ## When to invoke
 
 - After editing `.github/brand/tokens.yml`.
-- After adding / removing a recipe under `recipes/*/*/`.
-- After bumping `[workspace.package].version` in `Cargo.toml`.
+- After bumping `[workspace.package].version` in `Cargo.toml` (the `/release` skill does this for you).
+- After editing a template under `templates/`.
 - When `.github/workflows/brand-lint.yml` fails with a "drift" error.
 - Whenever onboarding the repo to a new branding surface (add a template + re-run).
+
+Recipe / workflow / docs-harness counts are **not** baked into any template, so adding one of those does not require a regeneration.
 
 ## What it does
 
 1. Reads `.github/brand/tokens.yml` (palette, type, space, motion).
 2. Reads live repo facts:
    - `{{VERSION}}` ← `Cargo.toml` `[workspace.package].version`
-   - `{{RECIPE_COUNT}}` ← count under `recipes/*/*/`
-   - `{{PATHWAY_*_COUNT}}` ← per-pathway count
-   - `{{WORKFLOW_COUNT}}` ← count under `.github/workflows/*.yml`
 3. Substitutes `{{TOKEN}}` scalars into every template under `templates/`.
 4. Validates each output with `xmllint --noout`.
 5. Writes to `.github/media/`.

@@ -32,15 +32,6 @@
   <text x="764" y="194" font-family="{{MONO}}" font-size="11" fill="{{FG_MUTED}}" letter-spacing="1">Open a draft PR with</text>
   <text x="764" y="214" font-family="{{MONO}}" font-size="11" fill="{{FG_MUTED}}" letter-spacing="1">completed test-plan</text>
 
-  <!-- Right KPI column -->
-  <line x1="1060" y1="80" x2="1060" y2="280" stroke="{{LINE}}" stroke-width="1"/>
-
-  <text x="1090" y="130" font-family="{{MONO}}" font-size="48" font-weight="800" fill="{{FG}}" letter-spacing="-2">{{RECIPE_COUNT}}</text>
-  <text x="1090" y="152" font-family="{{MONO}}" font-size="10" fill="{{FG_DIM}}" letter-spacing="2">RECIPES</text>
-
-  <text x="1090" y="210" font-family="{{MONO}}" font-size="48" font-weight="800" fill="{{FG}}" letter-spacing="-2">{{WORKFLOW_COUNT}}</text>
-  <text x="1090" y="232" font-family="{{MONO}}" font-size="10" fill="{{FG_DIM}}" letter-spacing="2">WORKFLOWS</text>
-
   <!-- Footer -->
   <text x="60" y="360" font-family="{{MONO}}" font-size="10" fill="{{FG_DIM}}" letter-spacing="1.5">CONTRIBUTING.md · .github/brand/DESIGN.md · MIT / Apache-2.0</text>
 </svg>

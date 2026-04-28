@@ -72,7 +72,7 @@ One file. Reads `tokens.yml`, computes live facts, renders every template twice 
 
 Key functions:
 
-- `mode_subs(mode)` — returns the substitution dict for a given mode. Per-mode values: `CANVAS`, `SURFACE`, `SURFACE_2`, `LINE`, `FG`, `FG_MUTED`, `FG_DIM`. Mode-independent: `PINK`, `INK`, `PAPER`, `MONO`, plus live facts (`VERSION`, `RECIPE_COUNT`, `PATHWAY_COUNT`, `PATHWAY_GLYPH`, `PATHWAY_NUMBER`, `WORKFLOW_COUNT`, `DOCS_HARNESS_COUNT`).
+- `mode_subs(mode)` — returns the substitution dict for a given mode. Per-mode values: `CANVAS`, `SURFACE`, `SURFACE_2`, `LINE`, `FG`, `FG_MUTED`, `FG_DIM`. Mode-independent: `PINK`, `INK`, `PAPER`, `MONO`, plus the live `VERSION` fact. Per-pathway banner extras (`PATHWAY_NAME`, `PATHWAY_LABEL`, `PATHWAY_TAGLINE`, `PATHWAY_NUMBER`, `PATHWAY_GLYPH`) are passed via the `extra` arg in `render()`.
 - `render(template, out_path, mode, extra=None)` — substitutes `{{TOKEN}}` into template body, writes output, validates.
 - `rasterize(svg, png, width)` — `rsvg-convert` → fallback to `cairosvg` → warn if neither available.
 
@@ -129,20 +129,11 @@ Tokens available inside every template:
 | `{{EASE_OUT}}`             | `motion.ease-out`                       | no              |
 | `{{GRADIENT_FLOW_DUR}}`    | `motion.gradient-flow-dur`              | no              |
 | `{{VERSION}}`              | `Cargo.toml` `[workspace.package].version` | no           |
-| `{{RECIPE_COUNT}}`         | `find recipes -mindepth 2 -maxdepth 2 -type d` | no       |
-| `{{PATHWAY_COUNT}}`        | number of pathway directories under `recipes/` | no       |
-| `{{PATHWAY_GLYPH}}`        | per-pathway icon glyph                  | no              |
-| `{{PATHWAY_NUMBER}}`        | per-pathway recipe count                | no              |
-| `{{PATHWAY_PALLETS}}`      | count under `recipes/pallets/` + `recipes/parachains/` | no |
-| `{{PATHWAY_CONTRACTS}}`    | count under `recipes/contracts/`        | no              |
-| `{{PATHWAY_TRANSACTIONS}}` | count under `recipes/transactions/`     | no              |
-| `{{PATHWAY_XCM}}`          | count under `recipes/cross-chain-transactions/` | no      |
-| `{{PATHWAY_NETWORKS}}`     | count under `recipes/networks/`         | no              |
-| `{{WORKFLOW_COUNT}}`       | `ls .github/workflows/*.yml`            | no              |
-| `{{DOCS_HARNESS_COUNT}}`   | polkadot-docs harness count             | no              |
 
 Per-pathway-banner extras (passed via the `extra` dict):
-`{{PATHWAY_NAME}}`, `{{PATHWAY_LABEL}}`, `{{PATHWAY_COUNT}}`, `{{PATHWAY_TAGLINE}}`.
+`{{PATHWAY_NAME}}`, `{{PATHWAY_LABEL}}`, `{{PATHWAY_TAGLINE}}`, `{{PATHWAY_NUMBER}}` (`01`–`05`), `{{PATHWAY_GLYPH}}`.
+
+Counts of recipes, pathways, workflows, and docs harnesses are deliberately **not** baked into any template — keeping the asset set independent of repo growth means adding a recipe / workflow / harness never requires regenerating brand assets. The release skill handles `VERSION` bumps as part of `/release`.
 
 ## Data flow for one run
 
