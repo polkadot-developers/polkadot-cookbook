@@ -7,10 +7,8 @@
 
   <!-- Col 1: Number -->
   <rect x="0" y="0" width="100" height="200" fill="{{SURFACE}}"/>
-  <text x="50" y="110" text-anchor="middle" font-family="{{MONO}}" font-size="40" font-weight="800"
+  <text x="50" y="115" text-anchor="middle" font-family="{{MONO}}" font-size="40" font-weight="800"
         fill="{{PINK}}" letter-spacing="-2">{{PATHWAY_NUMBER}}</text>
-  <text x="50" y="140" text-anchor="middle" font-family="{{MONO}}" font-size="9" fill="{{FG_DIM}}"
-        letter-spacing="1.5">RECIPES</text>
   <line x1="100" y1="0" x2="100" y2="200" stroke="{{LINE}}"/>
 
   <!-- Col 2: Body -->
