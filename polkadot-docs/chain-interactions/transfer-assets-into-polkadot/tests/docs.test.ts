@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { ethers } from "ethers";
 import {
   EvmBuilder,
   getSupportedAssets,
@@ -105,6 +106,12 @@ describe("3. ParaSpell — EXTERNAL_CHAINS constant", () => {
 // 4. EvmBuilder — Build transfer call (no signing, no network call)
 // ---------------------------------------------------------------------------
 
+// Pre-compute at module level so it.skipIf can use the result.
+const hydrationAssets = getSupportedAssets("Ethereum", "Hydration");
+const wethOnHydration = hydrationAssets.find(
+  (a) => a.symbol?.toUpperCase() === "WETH"
+);
+
 describe("4. ParaSpell — EvmBuilder construction", () => {
   it("should construct an EvmBuilder for Ethereum → AssetHubPolkadot without errors", () => {
     // EvmBuilder() returns a builder instance; calling methods on it should
@@ -119,24 +126,19 @@ describe("4. ParaSpell — EvmBuilder construction", () => {
     console.log("EvmBuilder instance created successfully");
   });
 
-  it("should construct an EvmBuilder for Ethereum → Hydration without errors", () => {
-    const assets = getSupportedAssets("Ethereum", "Hydration");
-    const weth = assets.find((a) => a.symbol?.toUpperCase() === "WETH");
+  it.skipIf(!wethOnHydration)(
+    "should construct an EvmBuilder for Ethereum → Hydration without errors",
+    () => {
+      const builder = EvmBuilder()
+        .from("Ethereum")
+        .to("Hydration")
+        .currency({ symbol: "WETH", amount: WETH_AMOUNT })
+        .recipient(RECIPIENT_ADDRESS);
 
-    if (!weth) {
-      console.log("WETH not supported on Hydration — skipping builder test");
-      return;
+      expect(builder).toBeDefined();
+      console.log("EvmBuilder (Ethereum → Hydration) created successfully");
     }
-
-    const builder = EvmBuilder()
-      .from("Ethereum")
-      .to("Hydration")
-      .currency({ symbol: "WETH", amount: WETH_AMOUNT })
-      .recipient(RECIPIENT_ADDRESS);
-
-    expect(builder).toBeDefined();
-    console.log("EvmBuilder (Ethereum → Hydration) created successfully");
-  });
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -151,7 +153,8 @@ describe("5. ParaSpell — Live bridge transfer (requires ETH_PRIVATE_KEY)", () 
       //   - ETH_PRIVATE_KEY: funded Ethereum wallet with WETH
       //   - Live Ethereum mainnet RPC access (ethers default provider)
       //   - ~0.001 WETH + ETH gas
-      const { ethers } = await import("ethers");
+      // .build() with a signer signs the approval + bridge tx and submits both,
+      // returning the final transaction hash as a string.
       const provider = new ethers.JsonRpcProvider(
         process.env.ETH_RPC_URL ?? "https://eth.llamarpc.com"
       );

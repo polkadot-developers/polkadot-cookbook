@@ -14,7 +14,7 @@ Verifies the [Transfer Assets from Ethereum into Polkadot](https://docs.polkadot
 | 3 | Both AssetHubPolkadot and Hydration destinations return supported assets | No |
 | 4 | `EvmBuilder` can be constructed for Ethereum → AssetHubPolkadot | No |
 | 4 | `EvmBuilder` can be constructed for Ethereum → Hydration | No |
-| 5 | Live bridge transfer sign + submit | **Yes** (skipped without `ETH_PRIVATE_KEY`) |
+| 5 | Live bridge transfer — `.build()` signs and submits the tx | **Yes** (skipped without `ETH_PRIVATE_KEY`) |
 
 ## Running Locally
 
@@ -38,7 +38,6 @@ ETH_PRIVATE_KEY=0x... ETH_RPC_URL=https://eth.llamarpc.com npm test
 | Package | Version |
 |---------|---------|
 | `@paraspell/sdk-pjs` | `13.2.2` |
-| `@polkadot/api` | `16.5.6` |
 | `ethers` | `^6.16.0` |
 
 Versions follow `versions.yml` at the repository root.
