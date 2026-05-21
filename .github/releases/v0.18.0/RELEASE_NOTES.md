@@ -49,13 +49,6 @@ Tested with:
 - Rust: 1.91.0
 - Node.js: v24.7.0
 
-## Next Steps
-
-Merging the release PR triggers [`publish-release.yml`](../../../.github/workflows/publish-release.yml), which:
-1. Creates the `v0.18.0` git tag
-2. Builds the `dot` CLI binaries for Linux, macOS (Intel + ARM), and Windows
-3. Publishes the GitHub Release with cover art, manifest, and binaries attached
-
 ---
 
 **Status:** Alpha (v0.x.x)
