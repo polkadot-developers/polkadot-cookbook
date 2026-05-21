@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-05-21
+
+### Added
+- Test harness for **Transfer Assets into Polkadot** polkadot-docs guide — verifies the XCM flow that moves assets from a remote consumer parachain into Polkadot
+- Test harness for **Uniswap V3 Periphery with Hardhat** polkadot-docs guide — exercises the full V3 Periphery deployment pipeline against pallet-revive
+- Self-healing CI workflow that detects when JavaScript harnesses fall below the `versions.yml` floor and manages a single `versions-drift` tracking issue automatically
+
+### Changed
+- Pathway banner template no longer carries the misleading `RECIPES` caption (banners are shared by recipes and polkadot-docs)
+- Hero, contributing-hero, and pathway banner templates no longer embed live counts, which previously drifted between local renders and CI
+- Release skill commit step now coexists cleanly with the local commit-msg hook
+
 ## [0.17.0] - 2026-04-22
 
 ### Added
@@ -103,7 +115,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.1...v0.16.0
 [0.15.1]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.0...v0.15.1
