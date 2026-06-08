@@ -29,7 +29,7 @@ jobs:
         with:
           path: |
             polkadot-docs/smart-contracts/uniswap-v2-core-hardhat/.test-workspace/revm-hardhat-examples/uniswap-v2-core-hardhat/node_modules
-          key: ${{ runner.os }}-uniswap-v2-core-hardhat-npm-${{ hashFiles('polkadot-docs/smart-contracts/uniswap-v2-core-hardhat/tests/recipe.test.ts') }}
+          key: ${{ runner.os }}-uniswap-v2-core-hardhat-npm-${{ hashFiles('polkadot-docs/smart-contracts/uniswap-v2-core-hardhat/tests/docs.test.ts') }}
 
       - name: Install wrapper dependencies
         run: |
