@@ -29,7 +29,11 @@ runs:
       if: steps.cache-revive-dev-node.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        cargo install --git https://github.com/paritytech/polkadot-sdk --tag ${{ inputs.polkadot-sdk-version }} revive-dev-node --root ~/.local
+        # --locked uses the polkadot-sdk Cargo.lock at this tag. Required because the
+        # transitive `core2` crate has been yanked from crates.io; without --locked,
+        # cargo re-resolves and fails ("failed to select a version for core2"). The
+        # yanked version is still installable when pinned by the lockfile.
+        cargo install --locked --git https://github.com/paritytech/polkadot-sdk --tag ${{ inputs.polkadot-sdk-version }} revive-dev-node --root ~/.local
 
     - name: Cache eth-rpc binary
       id: cache-eth-rpc

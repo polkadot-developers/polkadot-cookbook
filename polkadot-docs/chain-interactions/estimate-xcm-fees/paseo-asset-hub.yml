@@ -1,4 +1,4 @@
-endpoint: wss://asset-hub-paseo-rpc.n.dwellir.com
+endpoint: wss://asset-hub-paseo.dotters.network
 mock-signature-host: true
 db: ./db-asset-hub.sqlite
 

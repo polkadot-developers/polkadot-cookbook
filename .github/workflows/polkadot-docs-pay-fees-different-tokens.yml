@@ -78,6 +78,9 @@ jobs:
           done
           npx papi add assetHub -n polkadot_asset_hub
           cd tests/subxt-pay-fees
+          # metadata/ is gitignored, so it is absent on a fresh checkout — create it
+          # before subxt writes the .scale file (otherwise: ENOENT at the output path).
+          mkdir -p metadata
           subxt metadata --url ws://localhost:8000 -o metadata/asset_hub.scale
 
       - name: Build Subxt project
