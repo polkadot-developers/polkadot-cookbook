@@ -1,4 +1,6 @@
-endpoint: wss://people-paseo.dotters.network
+endpoint:
+  - wss://api2.zondax.ch/pas/people/node/rpc
+  - wss://people-paseo.rpc.amforc.com
 mock-signature-host: true
 db: ./db-people-chain.sqlite
 
