@@ -8,7 +8,7 @@
 
 # Root-level defaults — used unless overridden by a specific dependency below
 polkadot_sdk:
-  release_tag: polkadot-stable2512-3
+  release_tag: polkadot-stable2603-1
   repository: https://github.com/paritytech/polkadot-sdk
 
 parachain_template:
@@ -20,7 +20,7 @@ parachain_template:
   crates:
     polkadot_omni_node:
       name: polkadot-omni-node
-      version: "0.14.0"
+      version: "0.15.0"
     chain_spec_builder:
       name: staging-chain-spec-builder
       version: "16.0.0"
@@ -37,10 +37,13 @@ zombienet:
 crates:
   subxt:
     name: subxt
-    version: "0.50.0"
+    version: "0.50.1"
   subxt_cli:
     name: subxt-cli
-    version: "0.50.0"
+    version: "0.50.1"
+  subxt_signer:
+    name: subxt-signer
+    version: "0.50.1"
   tokio:
     name: tokio
     version: "1.44.2"
@@ -49,7 +52,7 @@ crates:
 javascript_packages:
   polkadot_api:
     name: polkadot-api
-    version: "2.0.1"
+    version: "2.1.0"
   polkadot_js_api:
     name: "@polkadot/api"
     version: "16.5.6"
@@ -61,28 +64,31 @@ javascript_packages:
     version: "0.242.0"
   hardhat_polkadot:
     name: "@parity/hardhat-polkadot"
-    version: "0.2.7"
+    version: "0.3.0"
   resolc:
     name: "@parity/resolc"
-    version: "1.0.0"
+    version: "1.2.0"
+  solc:
+    name: solc
+    version: "0.8.35"
   chopsticks:
     name: "@acala-network/chopsticks"
-    version: "1.2.8"
+    version: "1.3.1"
   paraspell_sdk:
     name: "@paraspell/sdk"
-    version: "13.2.2"
+    version: "13.4.0"
   hdkd:
     name: "@polkadot-labs/hdkd"
-    version: "0.0.27"
+    version: "0.0.28"
   hdkd_helpers:
     name: "@polkadot-labs/hdkd-helpers"
-    version: "0.0.28"
+    version: "0.0.30"
   polkadot_keyring:
     name: "@polkadot/keyring"
-    version: "14.0.2"
+    version: "14.0.3"
   polkadot_js_util_crypto:
     name: "@polkadot/util-crypto"
-    version: "14.0.2"
+    version: "14.0.3"
 
 # Python packages
 python_packages:
