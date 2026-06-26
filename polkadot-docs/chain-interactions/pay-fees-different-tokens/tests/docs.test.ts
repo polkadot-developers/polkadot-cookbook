@@ -56,16 +56,36 @@ async function waitForChopsticks(
 }
 
 async function stopChopsticks(): Promise<void> {
-  if (chopsticksProcess && !chopsticksProcess.killed) {
+  const proc = chopsticksProcess;
+  chopsticksProcess = null;
+
+  if (proc && !proc.killed) {
+    // Kill only our own process group (spawned with detached: true). A broad
+    // `pkill -f chopsticks` matches an ancestor of the kill command and gets
+    // SIGTERM'd itself, which throws past the `|| true` and fails the suite.
     try {
-      process.kill(-chopsticksProcess.pid!, "SIGTERM");
+      process.kill(-proc.pid!, "SIGTERM");
     } catch {
-      chopsticksProcess.kill("SIGTERM");
+      try {
+        proc.kill("SIGTERM");
+      } catch {
+        // ignore
+      }
     }
-    chopsticksProcess = null;
+
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // Force-kill if still alive
+    try {
+      process.kill(-proc.pid!, "SIGKILL");
+    } catch {
+      try {
+        proc.kill("SIGKILL");
+      } catch {
+        // ignore
+      }
+    }
   }
-  execSync("pkill -f 'chopsticks' 2>/dev/null || true", { encoding: "utf-8" });
-  await new Promise((r) => setTimeout(r, 2000));
 }
 
 // ---------------------------------------------------------------------------
