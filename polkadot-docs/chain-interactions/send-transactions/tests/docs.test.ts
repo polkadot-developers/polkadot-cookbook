@@ -5,7 +5,7 @@ import { DedotClient, WsProvider as DedotWsProvider } from "dedot";
 import { execSync } from "child_process";
 import { join } from "path";
 
-const WS_ENDPOINT = "wss://asset-hub-paseo.dotters.network";
+const WS_ENDPOINT = "wss://api2.zondax.ch/pas/assethub/node/rpc";
 // A well-known Paseo testnet address used as recipient when no env var is set
 const FALLBACK_DEST = "5GgbDVeKZwCmMHzn58iFSgSZDTojRMM52arXnuNXto28R7mg";
 

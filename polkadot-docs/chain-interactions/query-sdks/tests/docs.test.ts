@@ -5,7 +5,7 @@ import { hexToString } from "dedot/utils";
 import { execSync } from "child_process";
 import { join } from "path";
 
-const WS_ENDPOINT = "wss://asset-hub-paseo.dotters.network";
+const WS_ENDPOINT = "wss://api2.zondax.ch/pas/assethub/node/rpc";
 const ACCOUNT_ADDRESS = "5GgbDVeKZwCmMHzn58iFSgSZDTojRMM52arXnuNXto28R7mg";
 const USDT_ASSET_ID = 1984;
 const USDT_HOLDER_ADDRESS =

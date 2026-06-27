@@ -1,6 +1,6 @@
 from substrateinterface import SubstrateInterface
 
-WS_ENDPOINT = "wss://asset-hub-paseo.dotters.network"
+WS_ENDPOINT = "wss://api2.zondax.ch/pas/assethub/node/rpc"
 USDT_ASSET_ID = 1984
 USDT_HOLDER_ADDRESS = "13rxtPcR9nsAMzLKJsj6UevMR9TzGmyRohJVgQ6U6K2xeqU3"
 

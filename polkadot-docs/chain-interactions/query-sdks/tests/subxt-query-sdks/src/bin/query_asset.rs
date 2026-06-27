@@ -5,7 +5,7 @@ use subxt::{OnlineClient, PolkadotConfig};
 #[subxt::subxt(runtime_metadata_path = "asset_hub_metadata.scale")]
 pub mod asset_hub {}
 
-const ASSET_HUB_RPC: &str = "wss://asset-hub-paseo.dotters.network";
+const ASSET_HUB_RPC: &str = "wss://api2.zondax.ch/pas/assethub/node/rpc";
 const USDT_ASSET_ID: u32 = 1984;
 const USDT_HOLDER_ADDRESS: &str = "13rxtPcR9nsAMzLKJsj6UevMR9TzGmyRohJVgQ6U6K2xeqU3";
 

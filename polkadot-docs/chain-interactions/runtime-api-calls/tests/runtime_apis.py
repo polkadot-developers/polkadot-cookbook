@@ -1,6 +1,6 @@
 from substrateinterface import SubstrateInterface
 
-POLKADOT_TESTNET_RPC = "wss://asset-hub-paseo.dotters.network"
+POLKADOT_TESTNET_RPC = "wss://api2.zondax.ch/pas/assethub/node/rpc"
 ACCOUNT_ADDRESS = "5GgbDVeKZwCmMHzn58iFSgSZDTojRMM52arXnuNXto28R7mg"
 
 

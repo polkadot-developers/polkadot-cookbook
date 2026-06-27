@@ -28,7 +28,7 @@ jobs:
         run: |
           cd polkadot-docs/chain-interactions/calculate-transaction-fees
           npm install
-          npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+          npx papi add polkadotTestNet -w wss://api2.zondax.ch/pas/assethub/node/rpc
 
       - name: Run tests
         run: |

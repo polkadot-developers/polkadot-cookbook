@@ -25,7 +25,7 @@ Both SDKs connect to Asset Hub Paseo testnet and verify that estimated fees are 
 npm install
 
 # Generate PAPI descriptors
-npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+npx papi add polkadotTestNet -w wss://api2.zondax.ch/pas/assethub/node/rpc
 
 # Run all tests
 npm test

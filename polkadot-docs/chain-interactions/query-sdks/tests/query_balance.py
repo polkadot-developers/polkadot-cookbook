@@ -1,6 +1,6 @@
 from substrateinterface import SubstrateInterface
 
-WS_ENDPOINT = "wss://asset-hub-paseo.dotters.network"
+WS_ENDPOINT = "wss://api2.zondax.ch/pas/assethub/node/rpc"
 ACCOUNT_ADDRESS = "5GgbDVeKZwCmMHzn58iFSgSZDTojRMM52arXnuNXto28R7mg"
 
 
