@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-06-29
+
+### Changed
+- Synced tracked dependency versions to polkadot-docs: `polkadot-sdk` `polkadot-stable2603-1`, subxt/subxt-cli `0.50.1`, polkadot-omni-node `0.15.0`, polkadot-api `2.1.0`, chopsticks `1.3.1`, resolc `1.2.0`, hardhat-polkadot `0.3.0`, paraspell `13.4.0`, hdkd-helpers `0.0.30`, keyring/util-crypto `14.0.3`, solc `0.8.35` (across `versions.yml` and per-harness manifests)
+- Maintainer-tasks workflow now runs every 3 months instead of weekly (renamed to `maintainer-tasks.yml`)
+- Removed personal code owners and maintainers ahead of the Parity handoff, leaving placeholders for the incoming team
+- Renamed the Uniswap V2 Core harness test to the `docs.test.ts` convention
+
+### Fixed
+- `revive-dev-node` build now uses `cargo install --locked` (the transitive `core2` crate was yanked from crates.io)
+- Asset Hub zombienet collator uses `--authoring slot-based`, required from stable2603 (relay-parent descendants); without it the parachain stalled at block #0
+- Pay Fees harness: create the gitignored `metadata/` dir before `subxt metadata`, and kill only the chopsticks process group on teardown (no broad `pkill`)
+- Chain-interaction and chopsticks harnesses moved off flaky Paseo RPC providers to `rpc.polkadot.io` / Zondax so `papi add` no longer hangs
+
 ## [0.18.0] - 2026-05-21
 
 ### Added
@@ -115,7 +129,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Source URLs after upstream docs restructured periphery page
 - CI cache key to reference `docs.test.ts` after test file rename
 
-[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/polkadot-developers/polkadot-cookbook/compare/v0.15.1...v0.16.0
