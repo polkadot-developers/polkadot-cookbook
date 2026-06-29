@@ -1,14 +1,14 @@
-name: Weekly Maintainer Tasks
+name: Maintainer Tasks
 
 on:
   schedule:
-    # Every Monday at 9:00 AM Bangkok Time (02:00 UTC)
-    - cron: '0 2 * * 1'
+    # At 02:00 UTC on the 1st of every 3rd month (Jan, Apr, Jul, Oct)
+    - cron: '0 2 1 */3 *'
 
   workflow_dispatch: # Allow manual trigger
 
 jobs:
-  create-weekly-issue:
+  create-maintainer-issue:
     if: github.repository == 'polkadot-developers/polkadot-cookbook'
     runs-on: ubuntu-latest
     permissions:
@@ -44,25 +44,33 @@ jobs:
           } >> $GITHUB_OUTPUT
 
           # Date for title
-          WEEK_OF=$(date -u +"%b %d, %Y")
-          echo "week_of=$WEEK_OF" >> $GITHUB_OUTPUT
+          PERIOD=$(date -u +"%b %d, %Y")
+          echo "period=$PERIOD" >> $GITHUB_OUTPUT
+
+      - name: Ensure label exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "maintainer-tasks" \
+            --description "Periodic maintainer task checklist" \
+            --color "0e8a16" 2>/dev/null || true
 
       - name: Check for existing open issue
         id: existing
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          EXISTING=$(gh issue list --state open --label "weekly-tasks" --json number --jq '.[0].number // empty')
+          EXISTING=$(gh issue list --state open --label "maintainer-tasks" --json number --jq '.[0].number // empty')
           echo "issue_number=$EXISTING" >> $GITHUB_OUTPUT
 
-      - name: Create weekly issue
+      - name: Create maintainer issue
         if: steps.existing.outputs.issue_number == ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LAST_TAG: ${{ steps.context.outputs.last_tag }}
           COMMIT_COUNT: ${{ steps.context.outputs.commit_count }}
           COMMITS: ${{ steps.context.outputs.commits }}
-          WEEK_OF: ${{ steps.context.outputs.week_of }}
+          PERIOD: ${{ steps.context.outputs.period }}
         run: |
           # Build release task text based on whether there are unreleased commits
           if [ "$COMMIT_COUNT" -gt 0 ]; then
@@ -76,7 +84,7 @@ jobs:
             RELEASE_TASK="- [x] **Cut a release** — no unreleased commits since \`$LAST_TAG\` (nothing to release)"
           fi
 
-          BODY="## Weekly Maintainer Tasks
+          BODY="## Maintainer Tasks
 
             ${RELEASE_TASK}
 
@@ -84,18 +92,18 @@ jobs:
 
             ## Periodic Tasks
 
-            _Not required every week — run these when it's been a while._
+            _Not required every time — run these when it's been a while._
 
             - [ ] **Check internal docs** — run \`/check-internal-docs\` to catch stale references, version mismatches, and broken links
 
             ---
 
-            *Created automatically by the [Weekly Maintainer Tasks](.github/workflows/weekly-maintainer-tasks.yml) workflow.*"
+            *Created automatically every 3 months by the [Maintainer Tasks](.github/workflows/maintainer-tasks.yml) workflow.*"
 
           # Strip leading whitespace (12 spaces of YAML indentation)
           BODY=$(printf '%s' "$BODY" | sed 's/^            //')
 
           gh issue create \
-            --title "Weekly tasks — $WEEK_OF" \
-            --label "weekly-tasks" \
+            --title "Maintainer tasks — $PERIOD" \
+            --label "maintainer-tasks" \
             --body "$BODY"
