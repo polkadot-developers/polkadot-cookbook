@@ -1,6 +1,5 @@
-# Default owner for everything
-* @brunopgalvao
-
-# Smart contracts
-/polkadot-docs/smart-contracts/ @nhussein11
-/recipes/contracts/ @nhussein11
+# Code owners for automatic review requests.
+#
+# Cleared on handoff to Parity. Add the new owner team/handles below, e.g.:
+#   * @paritytech/<team>
+#   /polkadot-docs/smart-contracts/ @paritytech/<team>

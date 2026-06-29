@@ -31,7 +31,8 @@ jobs:
       - name: Read maintainers
         id: maintainers
         run: |
-          MAINTAINERS=$(cat polkadot-docs/MAINTAINERS | tr '\n' ' ')
+          # Ignore comment (#) and blank lines so placeholder text isn't @-mentioned
+          MAINTAINERS=$(grep -vE '^[[:space:]]*(#|$)' polkadot-docs/MAINTAINERS | tr '\n' ' ')
           echo "list=$MAINTAINERS" >> $GITHUB_OUTPUT
 
       - name: Derive guide path

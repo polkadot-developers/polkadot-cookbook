@@ -1,2 +1,4 @@
-@brunopgalvao
-@nhussein11
+# Maintainers @-mentioned on CI-failure issues (one GitHub @handle per line).
+# Comment (#) and blank lines are ignored.
+#
+# Cleared on handoff to Parity. Add the new maintainer @handles below.
