@@ -1,6 +1,5 @@
 endpoint:
-  - wss://rpc.ibp.network/polkadot
-  - wss://polkadot-rpc.dwellir.com
-  - wss://polkadot.public.curie.radiumblock.co/ws
+  - wss://rpc.polkadot.io
+  - wss://polkadot.dotters.network
 mock-signature-host: true
 port: 8000

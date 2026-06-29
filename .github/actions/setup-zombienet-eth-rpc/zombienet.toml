@@ -22,5 +22,10 @@ cumulus_based = true
   name = "collator1"
   validator = true
   command = "polkadot-parachain"
-  args = ["-lparachain=debug"]
+  # --authoring slot-based is required from polkadot-stable2603 onward: the Asset
+  # Hub runtime expects the collator to supply relay-parent descendants, which
+  # the default (lookahead) collator does not. Without it the runtime panics in
+  # parachain-system ("Unable to verify provided relay parent descendants") and
+  # the parachain stays stuck at block #0.
+  args = ["-lparachain=debug", "--authoring", "slot-based"]
   rpc_port = 9988

@@ -2,7 +2,7 @@ import os
 import sys
 from substrateinterface import SubstrateInterface, Keypair
 
-WS_ENDPOINT = "wss://asset-hub-paseo.dotters.network"
+WS_ENDPOINT = "wss://api2.zondax.ch/pas/assethub/node/rpc"
 
 SENDER_MNEMONIC = os.environ.get("SENDER_MNEMONIC")
 DEST_ADDRESS = os.environ.get(

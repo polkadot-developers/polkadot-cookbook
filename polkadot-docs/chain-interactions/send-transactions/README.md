@@ -31,14 +31,14 @@ Connection tests run unconditionally. Send tests require the `SENDER_MNEMONIC` e
 npm ci
 
 # Generate PAPI descriptors
-npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+npx papi add polkadotTestNet -w wss://api2.zondax.ch/pas/assethub/node/rpc
 
 # Install Python dependency
 pip install substrate-interface
 
 # Download Subxt metadata and build
 cd tests/subxt-send-transactions
-subxt metadata --url wss://asset-hub-paseo.dotters.network -o asset_hub_metadata.scale
+subxt metadata --url wss://api2.zondax.ch/pas/assethub/node/rpc -o asset_hub_metadata.scale
 cargo build
 cd ../..
 

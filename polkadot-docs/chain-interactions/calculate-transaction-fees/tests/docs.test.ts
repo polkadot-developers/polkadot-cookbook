@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
-const WS_ENDPOINT = "wss://asset-hub-paseo.dotters.network";
+const WS_ENDPOINT = "wss://api2.zondax.ch/pas/assethub/node/rpc";
 const ALICE_ADDRESS = "5GgbDVeKZwCmMHzn58iFSgSZDTojRMM52arXnuNXto28R7mg";
 const BOB_ADDRESS = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
 

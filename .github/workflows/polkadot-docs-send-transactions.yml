@@ -70,7 +70,7 @@ jobs:
         run: |
           cd polkadot-docs/chain-interactions/send-transactions
           npm install
-          npx papi add polkadotTestNet -w wss://asset-hub-paseo.dotters.network
+          npx papi add polkadotTestNet -w wss://api2.zondax.ch/pas/assethub/node/rpc
 
       - name: Install Python dependencies
         run: pip install substrate-interface==${{ steps.versions.outputs.SUBSTRATE_INTERFACE_VERSION }}
@@ -78,7 +78,7 @@ jobs:
       - name: Download Subxt metadata
         run: |
           cd polkadot-docs/chain-interactions/send-transactions/tests/subxt-send-transactions
-          subxt metadata --url wss://asset-hub-paseo.dotters.network -o asset_hub_metadata.scale
+          subxt metadata --url wss://api2.zondax.ch/pas/assethub/node/rpc -o asset_hub_metadata.scale
 
       - name: Build Subxt project
         run: |

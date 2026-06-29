@@ -8,7 +8,7 @@ use subxt_signer::SecretUri;
 #[subxt::subxt(runtime_metadata_path = "asset_hub_metadata.scale")]
 pub mod asset_hub {}
 
-const ASSET_HUB_RPC: &str = "wss://asset-hub-paseo.dotters.network";
+const ASSET_HUB_RPC: &str = "wss://api2.zondax.ch/pas/assethub/node/rpc";
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

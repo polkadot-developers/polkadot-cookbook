@@ -5,7 +5,7 @@ use subxt::{OnlineClient, PolkadotConfig};
 #[subxt::subxt(runtime_metadata_path = "polkadot_testnet_metadata.scale")]
 pub mod polkadot_testnet {}
 
-const POLKADOT_TESTNET_RPC: &str = "wss://asset-hub-paseo.dotters.network";
+const POLKADOT_TESTNET_RPC: &str = "wss://api2.zondax.ch/pas/assethub/node/rpc";
 const ACCOUNT_ADDRESS: &str = "5GgbDVeKZwCmMHzn58iFSgSZDTojRMM52arXnuNXto28R7mg";
 
 #[tokio::main(flavor = "current_thread")]
